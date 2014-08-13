@@ -6,7 +6,11 @@ function Generate_dynareOBCtemp2_GetMaxArgValues( NumberOfMax )
     FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', [ 'MaxArgValues = zeros( ' StringNumberOfMax ', 2 )' ] );
     FileText = regexprep( FileText, 'dynareOBCMaxArgA(\d+)__', 'MaxArgValues\($1,1\)' );
     FileText = regexprep( FileText, 'dynareOBCMaxArgB(\d+)__', 'MaxArgValues\($1,2\)' );
-    FileText = regexprep( FileText, [ '(?<=(dynareOBCMaxFunc' StringNumberOfMax '__[^;]*;)).*$' ], '' );
+    if NumberOfMax > 0
+        FileText = regexprep( FileText, [ '(?<=(dynareOBCMaxFunc' StringNumberOfMax '__[^;]*;)).*$' ], '' );
+    else
+        FileText = regexprep( FileText, [ '(?<=(MaxArgValues = zeros[^;]*;)).*$' ], '' );
+    end
 
     newmfile = fopen( 'dynareOBCtemp2_GetMaxArgValues.m', 'w' );
     fprintf( newmfile, '%s', FileText );
