@@ -17,8 +17,6 @@ function [ basevarargin, dynareOBC_ ] = ProcessArgument( Argument, basevarargin,
             dynareOBC_.Resume = true;
         case 'fastirfs'
             dynareOBC_.FastIRFs = true;
-        case 'simulatemlvs'
-            dynareOBC_.SimulateMLVs = true;
         case 'nosparse'
             dynareOBC_.Sparse = false;
         case 'irfsaroundzero'
