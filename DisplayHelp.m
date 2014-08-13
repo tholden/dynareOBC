@@ -102,10 +102,10 @@ function DisplayHelp
     disp( '      the approximate mean without it. This option instead centers IRFs around 0.' );
     disp( ' * mlvsimulationpoints=NUMBER (default: 0)' );
     disp( '      If this option is greater than 0, dynareOBC generates simulated paths and impulse responses for' );
-    disp( '      each model local variable. If this option is equal to 1, then future values within model local' );
-    disp( '      variables evaluate to their realised future value. If this options is greater than 1, then' );
-    disp( '      dynareOBC takes the expectation of each each model local variable, using Monte Carlo integration' );
-    disp( '      with NUMBER points.' );
+    disp( '      each model local variable which is not constant or purely backwards looking. If this option is' );
+    disp( '      equal to 1, then dynareOBC ignores any model local variables containing future value. If this' );
+    disp( '      options is greater than 1, then dynareOBC takes the expectation of each forward looking model' )
+    disp( '      local variable, using Monte Carlo integration with NUMBER points.' );
     disp( ' * nosparse' );
     disp( '      By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as' );
     disp( '      this generally speeds up dynareOBC. This option prevents dynareOBC from doing this.' );
