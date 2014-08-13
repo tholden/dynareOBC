@@ -14,6 +14,7 @@ function [ oo_, dynareOBC_ ] = RunStochasticSimulation( M_, options_, oo_, dynar
     oo_.exo_simul = [ ShockSequence; Simulation.shadow_shocks ]';
     oo_.endo_simul = Simulation.total_with_bounds;
     dynareOBC_.SimulationsWithoutBounds = Simulation.total;
+    dynareOBC_.MLVSimulation = Simulation.MLVs;
     
     options_.drop = dynareOBC_.SimulationDrop;
     disp_moments( oo_.endo_simul, char( dynareOBC_.VarList ) );

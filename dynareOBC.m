@@ -272,7 +272,7 @@ if dynareOBC_.MLVSimulationPoints > 0
     skipline( );
     disp( 'Generating code to recover MLVs.' );
     skipline( );
-    Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ );
+    dynareOBC_ = Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ );
 end
 
 skipline( );

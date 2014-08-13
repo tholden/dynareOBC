@@ -1,4 +1,4 @@
-function Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ )
+function dynareOBC_ = Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ )
     % read in the _dynamic.m file
     FileText = fileread( 'dynareOBCtemp3_dynamic.m' );
     % truncate the function after the last assignment to a MLV
@@ -22,6 +22,8 @@ function Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ )
     
     % split the file text into lines
     FileLines = StringSplit( FileText, { '\r', '\n' } );
+    % initialize dynareOBC_.MLVNames
+    dynareOBC_.MLVNames = {};
     % iterate through the lines
     for i = 1 : length( FileLines )
         FileLine = FileLines{i};
@@ -52,6 +54,8 @@ function Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ )
         if ( ( dynareOBC_.MLVSimulationPoints > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) )
             % add the variable to our MLV struct
             FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', '$1$2\tMLVs.$1 = $1__;', 'lineanchors' );
+            % and to dynareOBC_.MLVNames
+            dynareOBC_.MLVNames{ end + 1 } = VariableName( 1:(end-2) );
         end
     end
     % save the new file
