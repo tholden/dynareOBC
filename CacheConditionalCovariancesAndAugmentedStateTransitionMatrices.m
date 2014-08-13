@@ -185,7 +185,9 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         A3j = [ A3j; Tmpj + k3 ];
         A3s = [ A3s; Tmps ];
         
-        [ Tmpi, Tmpj, Tmps ] = spfind( ( spkron( oo_.dr.ghxu( SelectState, : ), B1S ) + 0.5 * K_nState_nState * spkron( A1S, oo_.dr.ghuu( SelectState, : ) ) ) * IKVecSigma );
+        T1 = sparse( nState2, nEndo );
+        T1( :, SelectState ) = ( spkron( oo_.dr.ghxu( SelectState, : ), B1S ) + 0.5 * K_nState_nState * spkron( A1S, oo_.dr.ghuu( SelectState, : ) ) ) * IKVecSigma;
+        [ Tmpi, Tmpj, Tmps ] = spfind( T1 );
         A3i = [ A3i; Tmpi + k2 ];
         A3j = [ A3j; Tmpj ];
         A3s = [ A3s; Tmps ];
@@ -200,7 +202,10 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         A3j = [ A3j; Tmpj + k3 ];
         A3s = [ A3s; Tmps ];
         
-        [ Tmpi, Tmpj, Tmps ] = find( ( ( spkron( speye( nState2 ) + K_nState_nState, speye( nState ) ) + commutation_sparse( nState2, nState ) ) * spkron( A1S, B1S2 ) ) * IKVecSigma );
+        nState3 = nState2 * nState;
+        T1 = sparse( nState3, nEndo );
+        T1( :, SelectState ) = ( ( spkron( speye( nState2 ) + K_nState_nState, speye( nState ) ) + commutation_sparse( nState2, nState ) ) * spkron( A1S, B1S2 ) ) * IKVecSigma;
+        [ Tmpi, Tmpj, Tmps ] = find( T1 );
         A3i = [ A3i; Tmpi + k3 ];
         A3j = [ A3j; Tmpj ];
         A3s = [ A3s; Tmps ];
@@ -210,7 +215,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         A3j = [ A3j; Tmpj + k3 ];
         A3s = [ A3s; Tmps ];
         
-        LengthZ3 = k3 + nState2 * nState;
+        LengthZ3 = k3 + nState3;
         A3 = sparse( A3i, A3j, A3s, LengthZ3, LengthZ3 );
         
     end
@@ -227,7 +232,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     elseif dynareOBC_.Order == 3
         dynareOBC_.A = A3;
         % dynareOBC_.B = B2;
-        dynareOBC_.AugmentedToTotal = [ speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 ) speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 + nState2 * nState ) ];
+        dynareOBC_.AugmentedToTotal = [ speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 ) speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 + nState3 ) ];
     else
         error( 'dynareOBC:UnsupportedOrder', 'Order %d is unsupported at present. The only currently supported orders are 1, 2 and 3.', dynareOBC_.Order );
     end
