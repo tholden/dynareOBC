@@ -10,15 +10,23 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
         DisplayProgress = true;
     end
     if nargin < 7
-        Simulation = pruning_abounds( M_, options_, ShockSequence, SimulationLength, dynareOBC_.Order, 'lan_meyer-gohde', 1 );
-        StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
+        EndoZeroVec = zeros( M_.endo_nbr, 1 );
         InitialFullState = struct;
-        InitialFullState.bound = zeros( M_.endo_nbr, 1 );
+        InitialFullState.first = EndoZeroVec;
+        if dynareOBC_.Order >= 2
+            InitialFullState.second = EndoZeroVec;
+            if dynareOBC_.Order >= 3
+                InitialFullState.third = EndoZeroVec;
+                InitialFullState.first_sigma_2 = EndoZeroVec;
+            end
+        end
+        InitialFullState.bound = EndoZeroVec;
+        InitialFullState.total = EndoZeroVec;
     else
-        Simulation = pruning_abounds( M_, options_, ShockSequence, SimulationLength, dynareOBC_.Order, 'lan_meyer-gohde', 1, InitialFullState );
-        StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
         DisplayProgress = false;
     end
+    Simulation = pruning_abounds( M_, options_, ShockSequence, SimulationLength, dynareOBC_.Order, 'lan_meyer-gohde', 1, InitialFullState );
+    StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
     
     ghx = dynareOBC_.HighestOrder_ghx;
     ghu = dynareOBC_.HighestOrder_ghu;
