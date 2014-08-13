@@ -137,14 +137,14 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
     Simulation.total_with_bounds = Simulation.total + Simulation.bound;
     Simulation.shadow_shocks = ShadowShockSequence( NewExoSelect, : );
     
-    if dynareOBC_.MLVSimulationPoints > 0 && ( ~SkipMLVSimulation )
+    if dynareOBC_.MLVSimulationSamples > 0 && ( ~SkipMLVSimulation )
         Simulation.MLVs = struct;
         LagValues = InitialFullState.total_with_bounds;
         LagIndices = M_.lead_lag_incidence( 1, : ) > 0;
         CurrentIndices = M_.lead_lag_incidence( 2, : ) > 0;
         FutureValues = nan( M_.nsfwrd, 1 );
         
-        if dynareOBC_.MLVSimulationPoints > 1
+        if dynareOBC_.MLVSimulationSamples > 1
             LeadIndices = M_.lead_lag_incidence( 3, : ) > 0;
             PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_.Sigma_e) == 0 ) );
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
@@ -180,8 +180,8 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                 CurrentValuesCurrentIndices = CurrentValues( CurrentIndices );
                 MLVNames = dynareOBC_.MLVNames;
                 nMLV = length( MLVNames );
-                if dynareOBC_.MLVSimulationPoints > 1
-                    FutureShocks = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC_.MLVSimulationPoints );
+                if dynareOBC_.MLVSimulationSamples > 1
+                    FutureShocks = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC_.MLVSimulationSamples );
                     InnerInitialFullState = struct;
                     for i = 1 : length( SimulationFieldNames )
                         SimulationFieldName = SimulationFieldNames{i};
@@ -189,7 +189,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                     end
                     MLVValues = zeros( nMLV, 1 );
                     WarningGenerated = false;
-                    parfor PointIndex = 1 : dynareOBC_.MLVSimulationPoints
+                    parfor PointIndex = 1 : dynareOBC_.MLVSimulationSamples
                         lastwarn( '' );
                         ParallelWarningState = warning( 'off', 'all' );
                         try
@@ -212,7 +212,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                     if WarningGenerated
                         warning( 'dynareOBC:InnerMLVWarning', 'Warnings were generated in the inner loop responsible for evaluating expectations of model local variables.' );
                     end
-                    MLVValues = MLVValues / dynareOBC_.MLVSimulationPoints;
+                    MLVValues = MLVValues / dynareOBC_.MLVSimulationSamples;
                     for i = 1 : nMLV
                         Simulation.MLVs.( MLVNames{i} )( t ) = MLVValues( i );
                     end
