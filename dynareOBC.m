@@ -268,6 +268,13 @@ skipline( );
 
 dynare( 'dynareOBCtemp3.mod', basevarargin{:} );
 
+if dynareOBC_.MLVSimulationPoints > 0
+    skipline( );
+    disp( 'Generating code to recover MLVs.' );
+    skipline( );
+    Generate_dynareOBCtemp3_GetMLVs;
+end
+
 skipline( );
 disp( 'Beginning to solve the model.' );
 skipline( );
