@@ -151,7 +151,10 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         
         [ A3i, A3j, A3s ] = find( A2 );
         
-        [ Tmpi, Tmpj, Tmps ] = spfind( 0.5 * oo_.dr.ghxss_nlma );
+        T1 = sparse( nEndo, nEndo );
+        T1( :, SelectState ) = 0.5 * oo_.dr.ghxss_nlma;
+
+        [ Tmpi, Tmpj, Tmps ] = spfind( T1 );
         A3i = [ A3i; Tmpi + LengthZ2 ];
         A3j = [ A3j; Tmpj ];
         A3s = [ A3s; Tmps ];
@@ -163,7 +166,9 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         A3s = [ A3s; Tmps; Tmps ];
         
         IKVecSigma = spkron( speye( nState ), vec( Sigma ) );
-        [ Tmpi, Tmpj, Tmps ] = spfind( 0.5 * oo_.dr.ghxuu * IKVecSigma );
+        T1 = sparse( nEndo, nEndo );
+        T1( :, SelectState ) = 0.5 * oo_.dr.ghxuu * IKVecSigma;
+        [ Tmpi, Tmpj, Tmps ] = spfind( T1 );
         A3i = [ A3i; Tmpi + k1 ];
         A3j = [ A3j; Tmpj ];
         A3s = [ A3s; Tmps ];
