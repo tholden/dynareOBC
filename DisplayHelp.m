@@ -100,6 +100,8 @@ function DisplayHelp
     disp( ' * irfsaroundzero' );
     disp( '      By default, IRFs are centered around the risky steady state with the fastirfs option, or around' );
     disp( '      the approximate mean without it. This option instead centers IRFs around 0.' );
+    disp( ' * simulatemlvs' );
+    disp( '      Causes dynareOBC to generate simulated paths for the expected value of each model local variable.' );
     disp( ' * nosparse' );
     disp( '      By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as' );
     disp( '      this generally speeds up dynareOBC. This option prevents dynareOBC from doing this.' );

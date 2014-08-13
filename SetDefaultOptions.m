@@ -32,6 +32,7 @@ function dynareOBC_ = SetDefaultOptions( dynareOBC_ )
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'Scale_kappa_lambda', 1 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'ShadowShockNumberMultiplier', [] ); % set later
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'ShadowApproximatingOrder', [] ); % set later    
+    dynareOBC_ = SetDefaultOption( dynareOBC_, 'SimulateMLVs', false );    
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'SimulationDrop', 100 );    
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'SimulationPeriods', 0 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'Sparse', 1 );

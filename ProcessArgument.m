@@ -2,37 +2,39 @@ function [ basevarargin, dynareOBC_ ] = ProcessArgument( Argument, basevarargin,
     LowerArgument = lower( Argument );
     switch LowerArgument
         case 'savemacro'
-            dynareOBC_.SaveMacro = 1;
+            dynareOBC_.SaveMacro = true;
         case 'noclearall'
         case 'nolinemacro'
         case 'nograph'
-            dynareOBC_.NoGraph = 1;
+            dynareOBC_.NoGraph = true;
         case 'notmpterms'
             warning( 'dynareOBC:UnusedArgument', 'Ignoring option notmpterms.' );
         case 'onlymacro'
             warning( 'dynareOBC:UnusedArgument', 'Ignoring option onlymacro.' );
         case 'nocleanup'
-            dynareOBC_.NoCleanUp = 1;
+            dynareOBC_.NoCleanUp = true;
         case 'resume'
-            dynareOBC_.Resume = 1;
+            dynareOBC_.Resume = true;
         case 'fastirfs'
-            dynareOBC_.FastIRFs = 1;
+            dynareOBC_.FastIRFs = true;
+        case 'simulatemlvs'
+            dynareOBC_.SimulateMLVs = true;
         case 'nosparse'
-            dynareOBC_.Sparse = 0;
+            dynareOBC_.Sparse = false;
         case 'irfsaroundzero'
-            dynareOBC_.IRFsAroundZero = 1;
+            dynareOBC_.IRFsAroundZero = true;
         case 'useficoxpress'
-            dynareOBC_.UseFICOXpress = 1;
+            dynareOBC_.UseFICOXpress = true;
         case 'orderfivequadrature'
-            dynareOBC_.OrderFiveQuadrature = 1;
+            dynareOBC_.OrderFiveQuadrature = true;
         case 'pseudoorderfivequadrature'
-            dynareOBC_.PseudoOrderFiveQuadrature = 1;
+            dynareOBC_.PseudoOrderFiveQuadrature = true;
         case 'firstorderconditionalcovariance'
-            dynareOBC_.FirstOrderConditionalCovariance = 1;
+            dynareOBC_.FirstOrderConditionalCovariance = true;
         case 'removenegativequadratureweights'
-            dynareOBC_.RemoveNegativeQuadratureWeights = 1;
+            dynareOBC_.RemoveNegativeQuadratureWeights = true;
         case 'forceequalquadratureweights'
-            dynareOBC_.ForceEqualQuadratureWeights = 1;
+            dynareOBC_.ForceEqualQuadratureWeights = true;
         case 'firstorderaroundrss'
             dynareOBC_.FirstOrderAroundRSS1OrMean2 = double( bitor( int32( dynareOBC_.FirstOrderAroundRSS1OrMean2 ), int32( 1 ) ) );
         case 'firstorderaroundmean'
