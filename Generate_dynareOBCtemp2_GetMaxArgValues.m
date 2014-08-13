@@ -9,7 +9,7 @@ function Generate_dynareOBCtemp2_GetMaxArgValues( NumberOfMax )
     if NumberOfMax > 0
         FileText = regexprep( FileText, [ '(?<=(dynareOBCMaxFunc' StringNumberOfMax '__[^;]*;)).*$' ], '' );
     else
-        FileText = regexprep( FileText, [ '(?<=(MaxArgValues = zeros[^;]*;)).*$' ], '' );
+        FileText = regexprep( FileText, '(?<=(MaxArgValues = zeros[^;]*;)).*$', '' );
     end
 
     newmfile = fopen( 'dynareOBCtemp2_GetMaxArgValues.m', 'w' );
