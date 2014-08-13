@@ -189,7 +189,6 @@ end
 dynareOBC_.Shocks = cellstr( M_.exo_names )';
 
 dynareOBC_ = SetDefaultOption( dynareOBC_, 'IRFShocks', dynareOBC_.Shocks );
-dynareOBC_ = SetDefaultOption( dynareOBC_, 'VarList', dynareOBC_.EndoVariables );
 
 dynareOBC_.StateVariablesAndShocks = [ {'1'} dynareOBC_.StateVariables dynareOBC_.Shocks ];
 
@@ -273,7 +272,10 @@ if dynareOBC_.MLVSimulationSamples > 0
     disp( 'Generating code to recover MLVs.' );
     skipline( );
     dynareOBC_ = Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ );
+else
+    dynareOBC_.MLVNames = {};
 end
+dynareOBC_ = SetDefaultOption( dynareOBC_, 'VarList', [ dynareOBC_.EndoVariables dynareOBC_.MLVNames ] );
 
 skipline( );
 disp( 'Beginning to solve the model.' );

@@ -17,6 +17,16 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
     RunWithBoundsWithShock = zeros( M_.endo_nbr, T2, Replications );
     RunWithoutBoundsWithShock = zeros( M_.endo_nbr, T2, Replications );
     
+    if dynareOBC_.MLVSimulationSamples > 0
+        MLVNames = dynareOBC_.MLVNames;
+        MLVSelect = dynareOBC_.MLVSelect;
+        nMLVIRFs = length( MLVSelect );
+        MLVsWithBoundsWithoutShock = zeros( nMLVIRFs, T2, Replications );
+        MLVsWithoutBoundsWithoutShock = zeros( nMLVIRFs, T2, Replications );
+        MLVsWithBoundsWithShock = zeros( nMLVIRFs, T2, Replications );
+        MLVsWithoutBoundsWithShock = zeros( nMLVIRFs, T2, Replications );
+    end
+    
     IRFIndices = ( Drop + 1 ) : T;
     
     StatePreShock( Replications ) = struct; % pre-allocate
@@ -35,22 +45,30 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
     p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Please wait for around ', '. Progress: ', 'Computing base path for average IRFs. Completed in ' );
     
     WarningGenerated = 0;
-    parfor j = 1: Replications
+    parfor k = 1: Replications
         lastwarn( '' );
         WarningState = warning( 'off', 'all' );
         try
             TempShockSequence = zeros( OriginalNumVarExo, T );
             TempShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, T );
-            ShockSequence( :, :, j ) = TempShockSequence( :, IRFIndices );
+            ShockSequence( :, :, k ) = TempShockSequence( :, IRFIndices );
 
             Simulation = SimulateModel( TempShockSequence, M_, options_, oo_, dynareOBC_, false );
 
-            RunWithBoundsWithoutShock( :, :, j ) = Simulation.total_with_bounds( :, IRFIndices );
-            RunWithoutBoundsWithoutShock( :, :, j ) = Simulation.total( :, IRFIndices );
+            RunWithBoundsWithoutShock( :, :, k ) = Simulation.total_with_bounds( :, IRFIndices );
+            RunWithoutBoundsWithoutShock( :, :, k ) = Simulation.total( :, IRFIndices );
+            
+            if dynareOBC_.MLVSimulationSamples > 0
+                for i = 1 : nMLVIRFs
+                    MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
+                    MLVsWithBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
+                    MLVsWithoutBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithoutBounds.( MLVName )( :, IRFIndices );
+                end
+            end
 
-            SimulationFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
-            for k = 1 : length( SimulationFieldNames )
-                StatePreShock( j ).( SimulationFieldNames{k} ) = Simulation.( SimulationFieldNames{k} )( :, Drop );
+            SimulationFieldNames = setdiff( fieldnames( Simulation ), { 'constant', 'MLVsWithBounds', 'MLVsWithoutBounds' } );
+            for l = 1 : length( SimulationFieldNames )
+                StatePreShock( k ).( SimulationFieldNames{l} ) = Simulation.( SimulationFieldNames{l} )( :, Drop );
             end
         catch Error
             warning( WarningState );
@@ -71,22 +89,30 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
     SS = M_.Sigma_e + 1e-14 * eye( M_.exo_nbr );
     cs = transpose( chol( SS ) );
     
-    for i = dynareOBC_.ShockSelect
-        Shock = cs( M_.exo_names_orig_ord, i );
+    for ShockIndex = dynareOBC_.ShockSelect
+        Shock = cs( M_.exo_names_orig_ord, ShockIndex );
 
-        p = TimedProgressBar( Replications, 20, [ 'Computing average IRFs for shock ' dynareOBC_.Shocks{i} '. Please wait for around ' ], '. Progress: ', [ 'Computing average IRFs for shock ' dynareOBC_.Shocks{i} '. Completed in ' ] );
+        p = TimedProgressBar( Replications, 20, [ 'Computing average IRFs for shock ' dynareOBC_.Shocks{ShockIndex} '. Please wait for around ' ], '. Progress: ', [ 'Computing average IRFs for shock ' dynareOBC_.Shocks{ShockIndex} '. Completed in ' ] );
     
-        parfor j = 1: Replications
+        parfor k = 1: Replications
             lastwarn( '' );
             WarningState = warning( 'off', 'all' );
             try
-                TempShockSequence = ShockSequence( :, :, j );
+                TempShockSequence = ShockSequence( :, :, k );
                 TempShockSequence( :, 1 ) = TempShockSequence( :, 1 ) + Shock;
 
-                Simulation = SimulateModel( TempShockSequence, M_, options_, oo_, dynareOBC_, false, StatePreShock( j ) );
+                Simulation = SimulateModel( TempShockSequence, M_, options_, oo_, dynareOBC_, false, StatePreShock( k ) );
 
-                RunWithBoundsWithShock( :, :, j ) = Simulation.total_with_bounds;
-                RunWithoutBoundsWithShock( :, :, j ) = Simulation.total;
+                RunWithBoundsWithShock( :, :, k ) = Simulation.total_with_bounds;
+                RunWithoutBoundsWithShock( :, :, k ) = Simulation.total;
+                
+                if dynareOBC_.MLVSimulationSamples > 0
+                    for i = 1 : nMLVIRFs
+                        MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
+                        MLVsWithBoundsWithShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName );
+                        MLVsWithoutBoundsWithShock( i, :, k ) = Simulation.MLVsWithoutBounds.( MLVName );
+                    end
+                end
             catch Error
                 warning( WarningState );
                 rethrow( Error );
@@ -102,11 +128,18 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
             warning( 'dynareOBC:SlowIRFsWarnings', 'Critical warnings were generated in the inner loop for calculating slow IRFs; accuracy may be compromised.' );
         end
         
-        for j = dynareOBC_.VariableSelect
-            IRFName = [ deblank( M_.endo_names( j, : ) ) '_' deblank( M_.exo_names( i, : ) ) ];
-            IRFsWithoutBounds.( IRFName ) = mean( RunWithoutBoundsWithShock( j, :, : ) - RunWithoutBoundsWithoutShock( j, :, : ), 3 );
-            oo_.irfs.( IRFName ) = mean( RunWithBoundsWithShock( j, :, : ) - RunWithBoundsWithoutShock( j, :, : ), 3 );
-            IRFOffsets.( IRFName ) = repmat( mean( mean( RunWithBoundsWithoutShock( j, :, : ), 3 ), 2 ), size( oo_.irfs.( IRFName ) ) );
+        for i = dynareOBC_.VariableSelect
+            IRFName = [ deblank( M_.endo_names( i, : ) ) '_' deblank( M_.exo_names( ShockIndex, : ) ) ];
+            IRFsWithoutBounds.( IRFName ) = mean( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
+            oo_.irfs.( IRFName ) = mean( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
+            IRFOffsets.( IRFName ) = repmat( mean( mean( RunWithBoundsWithoutShock( i, :, : ), 3 ), 2 ), size( oo_.irfs.( IRFName ) ) );
+        end
+        for i = 1 : nMLVIRFs
+            MLVName = MLVNames{MLVSelect(i)};
+            IRFName = [ MLVName '_' deblank( M_.exo_names( ShockIndex, : ) ) ];
+            IRFsWithoutBounds.( IRFName ) = mean( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
+            oo_.irfs.( IRFName ) = mean( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
+            IRFOffsets.( IRFName ) = repmat( mean( mean( MLVsWithBoundsWithoutShock( i, :, : ), 3 ), 2 ), size( oo_.irfs.( IRFName ) ) );
         end
     end
     dynareOBC_.IRFOffsets = IRFOffsets;

@@ -26,6 +26,20 @@ function PlotIRFs( M_, options_, oo_, dynareOBC_ )
                 end
             end
         end
+        for j = dynareOBC_.MLVSelect
+            CurrentVariable = dynareOBC_.MLVNames{j};
+            IRFName = [ CurrentVariable '_' CurrentShock ];
+            if isfield( oo_.irfs, IRFName )
+                CurrentIRF = oo_.irfs.( IRFName );
+                if max( abs( CurrentIRF ) ) > options_.impulse_responses.plot_threshold
+                    VariableNames{ end + 1 } = CurrentVariable; %#ok<AGROW>
+                    CurrentIRFOffset = dynareOBC_.IRFOffsets.( IRFName );
+                    IRFOffsets( end + 1, : ) = CurrentIRFOffset; %#ok<AGROW>
+                    IRFs( end + 1, : ) = CurrentIRFOffset + CurrentIRF; %#ok<AGROW>
+                    IRFsWithoutBounds( end + 1, : ) = CurrentIRFOffset + dynareOBC_.IRFsWithoutBounds.( IRFName ); %#ok<AGROW>
+                end
+            end
+        end
                 
         number_of_plots_to_draw = size(IRFs,1);
         [nbplt,nr,nc,lr,lc,nstar] = pltorg(number_of_plots_to_draw);

@@ -138,8 +138,12 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
     Simulation.shadow_shocks = ShadowShockSequence( NewExoSelect, : );
     
     if dynareOBC_.MLVSimulationSamples > 0 && ( ~SkipMLVSimulation )
-        Simulation.MLVs = struct;
-        LagValues = InitialFullState.total_with_bounds;
+        MLVNames = dynareOBC_.MLVNames;
+        nMLV = length( MLVNames );
+        Simulation.MLVsWithBounds = struct;
+        Simulation.MLVsWithoutBounds = struct;
+        LagValuesWithBounds = InitialFullState.total_with_bounds;
+        LagValuesWithoutBounds = InitialFullState.total;
         LagIndices = M_.lead_lag_incidence( 1, : ) > 0;
         CurrentIndices = M_.lead_lag_incidence( 2, : ) > 0;
         FutureValues = nan( M_.nsfwrd, 1 );
@@ -174,12 +178,13 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
             WarningState = warning( 'off', 'all' );
             % wrap in a try catch block to ensure they're re-enabled
             try
-                CurrentValues = Simulation.total_with_bounds( :, t );
+                CurrentValuesWithBounds = Simulation.total_with_bounds( :, t );
+                CurrentValuesWithoutBounds = Simulation.total( :, t );
                 CurrentShock = ShockSequence( :, t )';
-                LagValuesLagIndices = LagValues( LagIndices );
-                CurrentValuesCurrentIndices = CurrentValues( CurrentIndices );
-                MLVNames = dynareOBC_.MLVNames;
-                nMLV = length( MLVNames );
+                LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
+                LagValuesWithoutBoundsLagIndices = LagValuesWithoutBounds( LagIndices );
+                CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
+                CurrentValuesWithoutBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
                 if dynareOBC_.MLVSimulationSamples > 1
                     FutureShocks = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC_.MLVSimulationSamples );
                     InnerInitialFullState = struct;
@@ -187,7 +192,8 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                         SimulationFieldName = SimulationFieldNames{i};
                         InnerInitialFullState.( SimulationFieldName ) = Simulation.( SimulationFieldName )( :, t );
                     end
-                    MLVValues = zeros( nMLV, 1 );
+                    MLVValuesWithBounds = zeros( nMLV, 1 );
+                    MLVValuesWithoutBounds = zeros( nMLV, 1 );
                     WarningGenerated = false;
                     parfor PointIndex = 1 : dynareOBC_.MLVSimulationSamples
                         lastwarn( '' );
@@ -195,13 +201,23 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                         try
                             InnerShockSequence = FutureShocks( :, PointIndex );
                             InnerSimulation = SimulateModel( InnerShockSequence, M_, options_, oo_Internal, dynareOBC_, false, InnerInitialFullState, true );
-                            InnerFutureValues = InnerSimulation.total_with_bounds( :, 1 );
-                            InnerMLVs = dynareOBCtemp3_GetMLVs( [ LagValuesLagIndices; CurrentValuesCurrentIndices; InnerFutureValues( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
-                            NewMLVValues = zeros( nMLV, 1 );
-                            for i = 1 : nMLV
-                                NewMLVValues( i ) = InnerMLVs.( MLVNames{i} ); %#ok<PFBNS>
+                            InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( :, 1 );
+                            InnerFutureValuesWithoutBounds = InnerSimulation.total( :, 1 );
+                            InnerMLVsWithBounds = dynareOBCtemp3_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
+                            if dynareOBC_.NumberOfMax > 0
+                                InnerMLVsWithoutBounds = dynareOBCtemp3_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
+                            else
+                                InnerMLVsWithoutBounds = InnerMLVsWithBounds;
                             end
-                            MLVValues = MLVValues + NewMLVValues;
+                            NewMLVWithBoundsValues = zeros( nMLV, 1 );
+                            NewMLVWithoutBoundsValues = zeros( nMLV, 1 );
+                            for i = 1 : nMLV
+                                MLVName = MLVNames{i}; %#ok<PFBNS>
+                                NewMLVWithBoundsValues( i ) = InnerMLVsWithBounds.( MLVName );
+                                NewMLVWithoutBoundsValues( i ) = InnerMLVsWithoutBounds.( MLVName );
+                            end
+                            MLVValuesWithBounds = MLVValuesWithBounds + NewMLVWithBoundsValues;
+                            MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVWithoutBoundsValues;
                         catch Error
                             warning( ParallelWarningState );
                             rethrow( Error );
@@ -212,18 +228,27 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                     if WarningGenerated
                         warning( 'dynareOBC:InnerMLVWarning', 'Warnings were generated in the inner loop responsible for evaluating expectations of model local variables.' );
                     end
-                    MLVValues = MLVValues / dynareOBC_.MLVSimulationSamples;
+                    MLVValuesWithBounds = MLVValuesWithBounds / dynareOBC_.MLVSimulationSamples;
+                    MLVValuesWithoutBounds = MLVValuesWithoutBounds / dynareOBC_.MLVSimulationSamples;
                     for i = 1 : nMLV
-                        Simulation.MLVs.( MLVNames{i} )( t ) = MLVValues( i );
+                        Simulation.MLVsWithBounds.( MLVNames{i} )( t ) = MLVValuesWithBounds( i );
+                        Simulation.MLVsWithoutBounds.( MLVNames{i} )( t ) = MLVValuesWithoutBounds( i );
                     end
                else
-                    CurrentMLVs = dynareOBCtemp3_GetMLVs( [ LagValuesLagIndices; CurrentValuesCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                    CurrentMLVsWithBounds = dynareOBCtemp3_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                    if dynareOBC_.NumberOfMax > 0
+                        CurrentMLVsWithoutBounds = dynareOBCtemp3_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                    else
+                        CurrentMLVsWithoutBounds = CurrentMLVsWithBounds;
+                    end
                     for i = 1 : nMLV
                         MLVName = MLVNames{i};
-                        Simulation.MLVs.( MLVName )( t ) = CurrentMLVs.( MLVName );
+                        Simulation.MLVsWithBounds.( MLVName )( t ) = CurrentMLVsWithBounds.( MLVName );
+                        Simulation.MLVsWithoutBounds.( MLVName )( t ) = CurrentMLVsWithoutBounds.( MLVName );
                     end
                 end
-                LagValues = CurrentValues;
+                LagValuesWithBounds = CurrentValuesWithBounds;
+                LagValuesWithoutBounds = CurrentValuesWithoutBounds;
             catch Error
                 warning( WarningState );
                 rethrow( Error );
