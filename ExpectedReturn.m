@@ -56,7 +56,7 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
             z2 = [ y1; y2; y1sKy1s ];
             
             if dynareOBC_.Order > 2
-                
+
                 ghuss_nlma = dr.ghuss_nlma;
                 
                 i4 = i3 + nEndo;
@@ -82,7 +82,7 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
                 % TODO: Replace by kron class.
                 
                 ghxs = dr.ghx( SelectState, : );
-                ghus = dr.ghu ( SelectState, : );
+                ghus = dr.ghu( SelectState, : );
                 y2sKy1s = y2sKy1so + spkron( ghxs * y2os, ghusTShock ) + 0.5 * spkron( dr.ghxx( SelectState, : ) * y1sKy1so, ghusTShock ) ...
                                    + spkron( dr.ghxu( SelectState, : ), ghxs ) * spkron( speye( nState ), commutation_sparse( nExo, nState ) ) * spkron( y1sKy1so, Shock ) ...
                                    + 0.5 * spkron( dr.ghuu( SelectState, : ), ghus ) * ShockKShockKShock;
