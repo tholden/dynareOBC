@@ -1,4 +1,5 @@
 function [ oo_, dynareOBC_ ] = SimulationPreparation( M_, oo_, dynareOBC_ )
+    rng( 'default' );
     if ~isempty( dynareOBC_.VarList )
         [ ~, dynareOBC_.VariableSelect ] = ismember( dynareOBC_.VarList, cellstr( M_.endo_names ) );
         dynareOBC_.VariableSelect( dynareOBC_.VariableSelect == 0 ) = [];

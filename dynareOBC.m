@@ -169,6 +169,16 @@ if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
     error( 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
 end
 
+if dynareOBC_.MLVSimulationSamples > 0
+    skipline( );
+    disp( 'Generating code to recover MLVs.' );
+    skipline( );
+    dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ );
+    dynareOBC_.OriginalLeadLagIncidence = M_.lead_lag_incidence;
+else
+    dynareOBC_.MLVNames = {};
+end
+
 %% Generating the final mod file
 
 skipline( );
@@ -181,6 +191,7 @@ dynareOBC_.InternalIRFPeriods = max( [ dynareOBC_.IRFPeriods, dynareOBC_.TimeToE
 dynareOBC_.StateVariables = { };
 
 dynareOBC_.EndoVariables = cellstr( M_.endo_names )';
+dynareOBC_ = SetDefaultOption( dynareOBC_, 'VarList', [ dynareOBC_.EndoVariables dynareOBC_.MLVNames ] );
 
 for i = ( M_.nstatic + 1 ):( M_.nstatic + M_.nspred )
     dynareOBC_.StateVariables{ end + 1 } = [ dynareOBC_.EndoVariables{ oo_.dr.order_var(i) } '(-1)' ];
@@ -266,16 +277,6 @@ disp( 'Making the final call to dynare, as a first step in solving the full mode
 skipline( );
 
 dynare( 'dynareOBCtemp3.mod', basevarargin{:} );
-
-if dynareOBC_.MLVSimulationSamples > 0
-    skipline( );
-    disp( 'Generating code to recover MLVs.' );
-    skipline( );
-    dynareOBC_ = Generate_dynareOBCtemp3_GetMLVs( M_, dynareOBC_ );
-else
-    dynareOBC_.MLVNames = {};
-end
-dynareOBC_ = SetDefaultOption( dynareOBC_, 'VarList', [ dynareOBC_.EndoVariables dynareOBC_.MLVNames ] );
 
 skipline( );
 disp( 'Beginning to solve the model.' );
