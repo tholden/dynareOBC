@@ -305,14 +305,16 @@ skipline( );
 
 [ oo_, dynareOBC_ ] = SimulationPreparation( M_, oo_, dynareOBC_ );
 
-skipline( );
-disp( 'Simulating IRFs.' );
-skipline( );
+if dynareOBC_.IRFPeriods > 0
+    skipline( );
+    disp( 'Simulating IRFs.' );
+    skipline( );
 
-if dynareOBC_.FastIRFs
-    [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ );
-else
-    [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ );
+    if dynareOBC_.FastIRFs
+        [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ );
+    else
+        [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ );
+    end
 end
 
 if dynareOBC_.SimulationPeriods > 0
