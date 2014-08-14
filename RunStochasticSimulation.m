@@ -14,8 +14,10 @@ function [ oo_, dynareOBC_ ] = RunStochasticSimulation( M_, options_, oo_, dynar
     oo_.exo_simul = [ ShockSequence; Simulation.shadow_shocks ]';
     oo_.endo_simul = Simulation.total_with_bounds;
     dynareOBC_.SimulationsWithoutBounds = Simulation.total;
-    dynareOBC_.MLVSimulationWithBounds = Simulation.MLVsWithBounds;
-    dynareOBC_.MLVSimulationWithoutBounds = Simulation.MLVsWithoutBounds;
+    if dynareOBC_.MLVSimulationSamples > 0
+        dynareOBC_.MLVSimulationWithBounds = Simulation.MLVsWithBounds;
+        dynareOBC_.MLVSimulationWithoutBounds = Simulation.MLVsWithoutBounds;
+    end
     
     DispMoments( M_, options_, oo_, dynareOBC_ );
     

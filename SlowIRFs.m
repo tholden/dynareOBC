@@ -25,6 +25,10 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
         MLVsWithoutBoundsWithoutShock = zeros( nMLVIRFs, T2, Replications );
         MLVsWithBoundsWithShock = zeros( nMLVIRFs, T2, Replications );
         MLVsWithoutBoundsWithShock = zeros( nMLVIRFs, T2, Replications );
+    else
+        MLVNames = { };
+        MLVSelect = [];
+        nMLVIRFs = 0;
     end
     
     IRFIndices = ( Drop + 1 ) : T;
