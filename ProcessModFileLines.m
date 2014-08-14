@@ -48,7 +48,7 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC_ ] = ProcessModFileL
                     end
                     SearchState = 4;
                     Indices.SteadyStateModelStart = i;
-                elseif ~isempty( regexp( line, '^stoch_simul(\(.*\))?(\s*\w+\s*)*;', 'once' ) )
+                elseif ~isempty( regexp( line, '^stoch_simul(\(.*\))?(\s*\w+,?\s*)*;', 'once' ) )
                     StochSimulCommand = line;
                     FileLines = FileLines( 1:(i-1) );
                 end
