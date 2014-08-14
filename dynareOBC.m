@@ -325,7 +325,7 @@ if dynareOBC_.SimulationPeriods > 0
     [ oo_, dynareOBC_ ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC_ );
 end
 
-if ~dynareOBC_.NoGraph
+if ( dynareOBC_.IRFPeriods > 0 ) && ( ~dynareOBC_.NoGraph )
     if dynareOBC_.IRFsAroundZero
         IRFOffsetFieldNames = fieldnames( dynareOBC_.IRFOffsets );
         for i = 1 : length( IRFOffsetFieldNames )
