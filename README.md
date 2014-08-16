@@ -26,7 +26,7 @@ Note:
    endogenous variables of interest: "r = max( 0, 0.005 + 1.5 * pi );" will be more accurate than:
    "exp(R) = max( 1, exp( 0.005 + 1.5 * pi ) );".
  * dynareOBC may produce strange results on models with an indeterminate steady-state, so caution
-   should be taken when using the STEADY\_STATE command. The initval or steady\_state\_model blocks
+   should be taken when using the STEADY_STATE command. The initval or steady_state_model blocks
    should not be used to attempt to pin down a steady-state, since these will be ignored by dynareOBC
    in later steps of its solution procedure.
 
@@ -101,6 +101,13 @@ Note:
  * irfsaroundzero
       By default, IRFs are centered around the risky steady state with the fastirfs option, or around
       the approximate mean without it. This option instead centers IRFs around 0.
+ * mlvsimulationsamples=NUMBER (default: 0)
+      If this option is greater than 0, dynareOBC generates simulated paths and average impulse
+      responses for each model local variable which is used in the model and which is not constant
+      or purely backwards looking. If this option is equal to 1, then dynareOBC ignores any model
+      local variables containing future value. If this options is greater than 1, then dynareOBC
+      takes the expectation of each forward looking model local variable, using Monte Carlo
+      integration with NUMBER samples.
  * nosparse
       By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as
       this generally speeds up dynareOBC. This option prevents dynareOBC from doing this.
@@ -127,3 +134,4 @@ if it is used with an unsupported option. Currently supported options for stoch_
  * nocorr
 
 dynareOBC also supports a list of variables for simulation after the call to stoch_simul.
+When mlvsimulationsamples>0, this list can include the names of model local variables.
