@@ -340,28 +340,11 @@ dynareOBC_ = orderfields( dynareOBC_ );
 
 %% Cleaning up
 
-skipline( );
-disp( 'Cleaning up.' );
-skipline( );
-
 if dynareOBC_.SaveMacro && ~isempty( dynareOBC_.SaveMacroName )
     copyfile( 'dynareOBCtemp1.mod', dynareOBC_.SaveMacroName, 'f' );
 end
 if ~dynareOBC_.NoCleanUp
-    WarningState = warning( 'off', 'all' );
-    try
-        rmdir dynareOBCtemp* s
-    catch
-    end
-    try
-        delete dynareOBCtemp*.*;
-    catch
-    end
-    try
-        delete timedProgressbar*.*
-    catch
-    end
-    warning( WarningState );
+    dynareOBCCleanUp;
 end
 
 evalin( 'base', 'global dynareOBC_' );
