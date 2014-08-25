@@ -119,7 +119,7 @@ dynare( fname, run1varargin{:} );
 %% Finding non-differentiable functions
 
 skipline( );
-disp( 'Search the pre-processed output for non-differentiable functions.' );
+disp( 'Searching the pre-processed output for non-differentiable functions.' );
 skipline( );
 
 FileText = fileread( 'dynareOBCtemp1.mod' );
