@@ -79,7 +79,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         if Info ~= 0
             error( 'dynareOBC:GlobalNoSolution', 'The iterative global solution procedure method got stuck in a parameter range in which no determinate solution exists.' );
         end
-        CholSigma = RRChol( M_.Sigma_e );
+        CholSigma = RRChol( M_Internal.Sigma_e );
         switch dynareOBC_.Order
             case 1
                 Var_z = dynareOBC_.Var_z1;
@@ -92,8 +92,8 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         end
         CholVar_z = RRChol( Var_z );
         
-        nEndo = M_.endo_nbr;
-        nState = M_.nspred;
+        nEndo = M_Internal.endo_nbr;
+        nState = M_Internal.nspred;
         nVar_z = size( CholVar_z, 2 );
         nSigma = size( CholSigma, 2 );
         
@@ -129,9 +129,9 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         
         SimulationPresent = zeros( nEndo, NumberOfQuadratureNodes );
         SimulationPast = zeros( nEndo, NumberOfQuadratureNodes );
-        ShockPresent = zeros( size( M_.Sigma_e, 1 ), NumberOfQuadratureNodes );
+        ShockPresent = zeros( size( M_Internal.Sigma_e, 1 ), NumberOfQuadratureNodes );
         
-        inv_order_var = oo_.dr.inv_order_var;
+        inv_order_var = oo_Internal.dr.inv_order_var;
         Order = dynareOBC_.Order;
         Constant = dynareOBC_.Constant;
         
@@ -235,8 +235,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 NewxIndex = xIndex + nSVASC;
                 gx( ( xIndex+1 ):NewxIndex ) = beta;
                 xIndex = NewxIndex;
-                
-                % M_.params( PI_StateVariableAndShockCombinations( 1 : nSVASC, j, i ) ) = 0.5 * ( beta + old_beta );
             end
         end
         
@@ -251,8 +249,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         gx( ( xIndex+1 ):NewxIndex ) = LDLCovResiduals( LowerIndices );
         xIndex = NewxIndex;
 
-        % M_.params( PI_OtherShadowShockCombinations ) = LDLResiduals( LowerIndices );
-    
         for i = 1 : ns
             for j = 1 : T
                 
@@ -264,7 +260,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 NewxIndex = xIndex + nSSC;
                 if dynareOBC_.Order == 1
                     gx( ( xIndex+1 ):NewxIndex ) = [ StdResiduals; zeros( nSSC - 1, 1 ) ];
-                    % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations( :, j, i ) ) = [ StdResiduals; zeros( nSSC - 1, 1 ) ];
                 else
                     MinMaxScale = ApproximateInverseCDFMaxGaussians( DensitySimulationLength, 0.95 ) / ApproximateInverseCDFMaxGaussians( NumberOfQuadratureNodes, 0.05 );
 
@@ -281,7 +276,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                                                         x( ( xIndex+1 ):NewxIndex ), bsxfun( @rdivide, StdResiduals, StdShadowShockCompoents ), CMAESOptions );
 
                     gx( ( xIndex+1 ):NewxIndex ) = BestEver.x;
-                    % M_.params( PI_ShadowShockCombinations( 1 : nSSC, j, i ) ) = BestEver.x;
                 end
                 xIndex = NewxIndex;
 
