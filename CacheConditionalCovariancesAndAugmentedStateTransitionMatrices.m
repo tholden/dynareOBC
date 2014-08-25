@@ -19,7 +19,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     Sigma = spsparse( M_.Sigma_e );
     dynareOBC_.OriginalSigma = Sigma;
 
-    Order2VarianceRequired = ( ( dynareOBC_.Order >= 2 ) && dynareOBC_.CalculateTheoreticalVariance ) || ( dynareOBC_.Accuracy == 2 );
+    Order2VarianceRequired = ( dynareOBC_.Order >= 2 ) && ( dynareOBC_.CalculateTheoreticalVariance || ( dynareOBC_.Accuracy == 2 ) );
     if ( dynareOBC_.Order == 1 ) || Order2VarianceRequired
         dynareOBC_.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
     end
