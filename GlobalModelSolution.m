@@ -1,13 +1,8 @@
 function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSolution( M_Internal, options_, oo_Internal ,dynareOBC_ )
 
-    % error( 'dynareOBC:NotImplemented', 'I am still working on accuracy=2...' );
-    
     skipline( );
     disp( 'Beginning the semi-global solution of the model.' );
     skipline( );
-    
-    PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_Internal.Sigma_e) == 0 ) );
-    NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
     StateVariableAndShockCombinations = dynareOBC_.StateVariableAndShockCombinations;
     StateVariablesAndShocks = dynareOBC_.StateVariablesAndShocks;
@@ -34,18 +29,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     nSVASC = size( StateVariableAndShockCombinations, 1 );
     nSSC = size( ShadowShockCombinations, 1 );
     nSS = dynareOBC_.ShadowShockNumberMultiplier;
-    
-    SimulationDrop = dynareOBC_.SimulationDrop;
-    assert( SimulationDrop >= 1 );
-    
-    ActualSimulationLength = dynareOBC_.RegressionBaseSampleSize + dynareOBC_.RegressionSampleSizeMultiplier * ( 1 + nSVASC );
-    TotalSimulationLength = SimulationDrop + ActualSimulationLength;
-    
-    ShockSequence = zeros( dynareOBC_.OriginalNumVarExo, TotalSimulationLength );
-    CholSigma_e = chol( M_Internal.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
-
-    ShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, TotalSimulationLength );
-    
+        
     StateVariableAndShockTypes = zeros( 2, nSVAS );
     for i = 1 : nSVAS
         CurrentStateVariableOrShock = StateVariablesAndShocks{i};
@@ -62,35 +46,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             error( 'dynareOBC:UnrecognisedStateVariableOrShock', 'Unrecognised state variable or shock.' );
         end
     end
-    
-    Components = zeros( ActualSimulationLength, nSVAS );
-
-    DensitySimulationLength = ActualSimulationLength * dynareOBC_.DensityEstimationSimulationLengthMultiplier;
-
-    ShadowShocks = randn( DensitySimulationLength, nSS );
-
-    ShadowShockComponents = ones( DensitySimulationLength, nSSC );
-    
-    for k = 1 : nSSC
-        ShadowShockCombination = ShadowShockCombinations( k, : );
-        ShockMeanOne = true;
-        for l = 1 : nSS
-            ShockPower = ShadowShockCombination( l );
-            if ShockPower > 0
-                if mod( ShockPower, 2 ) == 1
-                    ShockMeanOne = false;
-                end
-                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowShocks( :, l ) .^ ShockPower );
-            end
-        end
-        if ShockMeanOne
-            ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) - 1;
-        end
-    end
-        
-    % StdSumShadowShockComponents = std( sum( ShadowShockComponents, 2 ) );
-    StdShadowShockCompoents = std( ShadowShockComponents );
-        
+          
     CMAESOptions = cmaes( 'defaults' );
     CMAESOptions.MaxIter = Inf;
     CMAESOptions.DiagonalOnly = '(1+100*N/sqrt(popsize))+(N>=1000)';
@@ -123,26 +79,127 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         if Info ~= 0
             error( 'dynareOBC:GlobalNoSolution', 'The iterative global solution procedure method got stuck in a parameter range in which no determinate solution exists.' );
         end
+        CholSigma = RRChol( M_.Sigma_e );
+        switch dynareOBC_.Order
+            case 1
+                Var_z = dynareOBC_.Var_z1;
+            case 2
+                Var_z = dynareOBC_.Var_z2;
+            case 3
+                error( 'dynareOBC:NotImplemented', 'Currently dynareOBC cannot solve globally at order 3.' );
+            otherwise
+                error( 'dynareOBC:UnsupportedOrder', 'dynareOBC only supports orders 1, 2 and 3.' );
+        end
+        CholVar_z = RRChol( Var_z );
         
-        Simulation = SimulateModel( ShockSequence, M_Internal, options_, oo_Internal, dynareOBC_, true );
-        SimulationPath = Simulation.total_with_bounds;
+        nEndo = M_.endo_nbr;
+        nState = M_.nspred;
+        nVar_z = size( CholVar_z, 2 );
+        nSigma = size( CholSigma, 2 );
+        
+        IntegrationDimension = nVar_z + nSigma;
+        [ QuadratureNodes, QuadratureWeights ] = nwspgr( 'KPN', IntegrationDimension, dynareOBC_.Order + 2 );
+        QuadratureWeights = QuadratureWeights / sum( QuadratureWeights );
+        NumberOfQuadratureNodes = length( QuadratureWeights );
+
+        Components = zeros( NumberOfQuadratureNodes, nSVAS );
+        DensitySimulationLength = NumberOfQuadratureNodes * dynareOBC_.DensityEstimationSimulationLengthMultiplier;
+        ShadowShocks = randn( DensitySimulationLength, nSS );
+        ShadowShockComponents = ones( DensitySimulationLength, nSSC );
+        for k = 1 : nSSC
+            ShadowShockCombination = ShadowShockCombinations( k, : );
+            ShockMeanOne = true;
+            for l = 1 : nSS
+                ShockPower = ShadowShockCombination( l );
+                if ShockPower > 0
+                    if mod( ShockPower, 2 ) == 1
+                        ShockMeanOne = false;
+                    end
+                    ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowShocks( :, l ) .^ ShockPower );
+                end
+            end
+            if ShockMeanOne
+                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) - 1;
+            end
+        end
+        StdShadowShockCompoents = std( ShadowShockComponents );       
+
+        p = TimedProgressBar( NumberOfQuadratureNodes, 50, 'Computing simulation at grid points. Please wait for around ', '. Progress: ', 'Computing simulation at grid points. Completed in ' );
+        WarningFlag = false;
+        
+        SimulationPresent = zeros( nEndo, NumberOfQuadratureNodes );
+        SimulationPast = zeros( nEndo, NumberOfQuadratureNodes );
+        ShockPresent = zeros( size( M_.Sigma_e, 1 ), NumberOfQuadratureNodes );
+        
+        inv_order_var = oo_.dr.inv_order_var;
+        Order = dynareOBC_.Order;
+        Constant = dynareOBC_.Constant;
+        
+        OpenPool;
+        parfor i = 1 : NumberOfQuadratureNodes       
+            lastwarn( '' );
+            WarningState = warning( 'off', 'all' );
+            try
+                CurrentNodes = QuadratureNodes( i, : );
+                z = CholVar_z * CurrentNodes( 1:nVar_z )';
+                EndoZeroVec = zeros( nEndo, 1 );
+                InitialFullState = struct;
+                InitialFullState.first = z( inv_order_var );
+                InitialFullState.total = InitialFullState.first;
+                if Order >= 2
+                    InitialFullState.second = z( nEndo + inv_order_var );
+                    InitialFullState.total = InitialFullState.total + InitialFullState.second;
+                    if Order >= 3
+                        idx3 = 2*nEndo+nState*nState;
+                        InitialFullState.first_sigma_2 = z( idx3 + inv_order_var );
+                        InitialFullState.third = z( idx3 + nEndo + inv_order_var );
+                        InitialFullState.total = InitialFullState.total + InitialFullState.first_sigma_2 + InitialFullState.third;
+                    end
+                end
+                InitialFullState.bound = EndoZeroVec;
+                InitialFullState.total = InitialFullState.total + Constant;
+                InitialFullState.total_with_bounds = InitialFullState.total + InitialFullState.bound;
+
+                Shock = CholSigma * CurrentNodes( (nVar_z+1):end )';
+                Simulation = SimulateModel( Shock, M_Internal, options_, oo_Internal, dynareOBC_, false, InitialFullState );
+                SimulationPresent( :, i ) = Simulation.total_with_bounds;
+                SimulationPast( :, i ) = InitialFullState.total_with_bounds;
+                ShockPresent( :, i ) = Shock;
+            catch Error
+                warning( WarningState );
+                rethrow( Error );
+            end
+            warning( WarningState );
+            
+            if ~isempty( lastwarn )
+                WarningFlag = WarningFlag | true;
+            end
+            if ~isempty( p )
+                p.progress;
+            end
+        end
+        if ~isempty( p )
+            p.stop;
+        end
+        if WarningFlag
+            warning( 'dynareOBC:InnerGlobal', 'Warnings were generated in an inner-loop during global simulation at grid points.' );
+        end
         
         for i = 1 : nSVAS
             switch StateVariableAndShockTypes( 1, i )
                 case 0
-                    Components( :, i ) = ones( ActualSimulationLength, 1 );
+                    Components( :, i ) = ones( NumberOfQuadratureNodes, 1 );
                 case 1
-                    Components( :, i ) = SimulationPath( StateVariableAndShockTypes( 2, i ), (SimulationDrop+1):end ).';
+                    Components( :, i ) = SimulationPast( StateVariableAndShockTypes( 2, i ), : ).';
                 case 2
-                    Components( :, i ) = ShockSequence( StateVariableAndShockTypes( 2, i ), (SimulationDrop+1):end ).';
+                    Components( :, i ) = ShockPresent( StateVariableAndShockTypes( 2, i ), : ).';
                 otherwise
                     error( 'dynareOBC:UnrecognisedStateVariableOrShockType', 'Unrecognised state variable or shock type.' );
             end
         end
             
-        Regressors = ones( ActualSimulationLength, nSVASC );
+        Regressors = ones( NumberOfQuadratureNodes, nSVASC );
         
-        OpenPool;
         parfor i = 1 : nSVASC
             StateVariableAndShockCombination = StateVariableAndShockCombinations( i, : );
             for l = 1 : length( StateVariableAndShockCombination )
@@ -159,14 +216,14 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         LinearIndex = 0;
         xIndex = 0;
         gx = x;
-        Residuals = zeros( ActualSimulationLength, Tns );
+        Residuals = zeros( NumberOfQuadratureNodes, Tns );
         
         for i = 1 : ns
             for j = 1 : T
                 LinearIndex = LinearIndex + 1;
-                ShadowInnovation = SimulationPath( dynareOBC_.VarIndices_Sum( j, i ), (SimulationDrop+1):end );
+                ShadowInnovation = SimulationPresent( dynareOBC_.VarIndices_Sum( j, i ), : );
                 if j < T
-                    ShadowInnovation = ShadowInnovation - SimulationPath( dynareOBC_.VarIndices_Sum( j + 1, i ), SimulationDrop:(end-1) );
+                    ShadowInnovation = ShadowInnovation - SimulationPast( dynareOBC_.VarIndices_Sum( j + 1, i ), : );
                 end
                 ShadowInnovation = ShadowInnovation';
                 betaTmp = GHWRidge( ShadowInnovation, RegressorsWithout1 );
@@ -183,7 +240,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
         
-        LDLCovResiduals = chol( ( 1 / ( ActualSimulationLength - nSVASC ) ) * ( Residuals' * Residuals ) + eps * eye( Tns ), 'lower' );
+        LDLCovResiduals = chol( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( Residuals' * Residuals ) + eps * eye( Tns ), 'lower' );
         LDLCovResiduals = LDLCovResiduals * diag( 1 ./ diag( LDLCovResiduals ) );
         
         Residuals = ( LDLCovResiduals \ ( Residuals' ) )';
@@ -202,14 +259,14 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 LinearIndex = LinearIndex + 1;
                 CurrentResiduals = Residuals( :, LinearIndex );
                 
-                StdResiduals = sqrt( ( 1 / ( ActualSimulationLength - nSVASC ) ) * ( CurrentResiduals' * CurrentResiduals ) );
+                StdResiduals = sqrt( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( CurrentResiduals' * CurrentResiduals ) );
                 
                 NewxIndex = xIndex + nSSC;
                 if dynareOBC_.Order == 1
                     gx( ( xIndex+1 ):NewxIndex ) = [ StdResiduals; zeros( nSSC - 1, 1 ) ];
                     % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations( :, j, i ) ) = [ StdResiduals; zeros( nSSC - 1, 1 ) ];
                 else
-                    MinMaxScale = ApproximateInverseCDFMaxGaussians( DensitySimulationLength, 0.95 ) / ApproximateInverseCDFMaxGaussians( ActualSimulationLength, 0.05 );
+                    MinMaxScale = ApproximateInverseCDFMaxGaussians( DensitySimulationLength, 0.95 ) / ApproximateInverseCDFMaxGaussians( NumberOfQuadratureNodes, 0.05 );
 
                     DensityMin = min( min( CurrentResiduals ), -2 * StdResiduals ) * MinMaxScale;
                     DensityMax = max( max( CurrentResiduals ), 2 * StdResiduals ) * MinMaxScale;
@@ -325,4 +382,11 @@ function KL = DensityObjective( ValuesMatrix, ShadowShockComponents, DensitySimu
         KL( i ) = sum( KLTemp ) + 10 * Penalty;
     end
     
+end
+function CholSigma = RRChol( Sigma )
+    FullSigma = full( 0.5 * ( Sigma + Sigma' ) );
+    [ V, D ] = eig( FullSigma );
+    d = diag( D );
+    Select = d > 1.81898940354586e-12;
+    CholSigma = V( :, Select ) * diag( sqrt( d( Select ) ) );
 end

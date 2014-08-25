@@ -19,8 +19,13 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     Sigma = spsparse( M_.Sigma_e );
     dynareOBC_.OriginalSigma = Sigma;
 
-    if ( dynareOBC_.Order == 1 ) && dynareOBC_.CalculateTheoreticalVariance
+    Order2VarianceRequired = ( ( dynareOBC_.Order >= 2 ) && dynareOBC_.CalculateTheoreticalVariance ) || ( dynareOBC_.Accuracy == 2 );
+    if ( dynareOBC_.Order == 1 ) || Order2VarianceRequired
         dynareOBC_.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
+    end
+    if ( dynareOBC_.Order == 1 ) && ( dynareOBC_.Accuracy == 2 )
+        dynareOBC_.UnconditionalVarXi = Sigma;
+        dynareOBC_.LengthXi = size( Sigma, 1 );
     end
         
     CurrentInternal = B1 * Sigma * B1';
@@ -34,7 +39,6 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     end
 
     Order2ConditionalCovariance = dynareOBC_.Accuracy > 0 && ~( options_.order == 1 || dynareOBC_.FirstOrderConditionalCovariance );
-    Order2VarianceRequired = ( dynareOBC_.Order == 2 ) && dynareOBC_.CalculateTheoreticalVariance;
     
     if dynareOBC_.Order > 1 || Order2ConditionalCovariance
         % pre-calculations common to finding the state transition when dynareOBC_.Order > 1 and to finding the conditional covariance when Order2ConditionalCovariance=true
@@ -81,9 +85,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     end
     
     if dynareOBC_.Order > 2 || Order2ConditionalCovariance || Order2VarianceRequired
-
-        K_nState_nState = commutation_sparse( nState, nState );
-        
+        K_nState_nState = commutation_sparse( nState, nState );        
     end
     
     if Order2ConditionalCovariance || Order2VarianceRequired
@@ -142,9 +144,9 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         Us = [ Vs; Tmps ];
 
         UnconditionalVarXi = sparse( Ui, Uj, Us, LengthXi, LengthXi );
+        dynareOBC_.UnconditionalVarXi = UnconditionalVarXi;
 
-        dynareOBC_.Var_z = SparseLyapunovSymm( A2, B2*UnconditionalVarXi*B2' );
-        
+        dynareOBC_.Var_z2 = SparseLyapunovSymm( A2, B2*UnconditionalVarXi*B2' );
     end
     
     if dynareOBC_.Order > 2
@@ -223,11 +225,11 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     % Save augmented state transition matrices
     if dynareOBC_.Order == 1
         dynareOBC_.A = A1;
-        % dynareOBC_.B = B1;
+        dynareOBC_.B = B1;
         dynareOBC_.AugmentedToTotal = speye( nEndo );
     elseif dynareOBC_.Order == 2
         dynareOBC_.A = A2;
-        % dynareOBC_.B = B2;
+        dynareOBC_.B = B2;
         dynareOBC_.AugmentedToTotal = [ speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 ) ];
     elseif dynareOBC_.Order == 3
         dynareOBC_.A = A3;
@@ -321,6 +323,8 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
             % RootD( RootD <= NRootD( end - dynareOBC_.MaxIntegrationDimension ) ) = 0;
             % IDv = RootD > sqrt( eps );
             % dynareOBC_.RootConditionalCovariance = L( :, IDv ) * diag( RootD( IDv ) );
+            
+            dynareOBC_.LengthXi = size( Sigma, 1 );
 
         else
 
@@ -353,5 +357,4 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
 
         end
     end
-
 end

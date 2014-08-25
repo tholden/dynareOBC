@@ -14,6 +14,8 @@ function DisplayHelp
     disp( 'http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf.' );
     disp( 'dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,' );
     disp( 'by Hong Lan and Alexander Meyer-Gohde.' );
+    disp( 'Additionally, dynareOBC incorporates code for integration on sparse grids that is copyright' );
+    disp( 'Florian Heiss and Viktor Winschel, 2007.' );
     skipline( );
     disp( 'Usage: dynareOBC FILENAME[.mod,.dyn] [OPTIONS]' );
     skipline( );
@@ -56,12 +58,6 @@ function DisplayHelp
     disp( '       * shadowapproxmiatingorder=NUMBER (default: the order of approximation)' );
     disp( '            The order with which to approximate the expected component of each shadow shock, when' );
     disp( '            accuracy=2.' );
-    disp( '       * regressionbasesamplesize=NUMBER (default: 1000)' );
-    disp( '            The base sample size for the regression used within the accuracy=2, semi-global' );
-    disp( '            approximation loop.' );
-    disp( '       * regressionsamplesizemultiplier=NUMBER (default: 30)' );
-    disp( '            The number by which the regression sample size increases for each additional regressor,' );
-    disp( '            within the accuracy=2, semi-global approximation loop.' );
     disp( '       * maxiterations=NUMBER (default: 1000)' );
     disp( '            The maximum number of iterations of the accuracy=2 fixed-point algorithm.' );
     disp( '       * densityaccuracy=NUMBER (default: 10)' );
