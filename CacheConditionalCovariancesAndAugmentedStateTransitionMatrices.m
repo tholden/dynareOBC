@@ -20,7 +20,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     dynareOBC_.OriginalSigma = Sigma;
 
     if ( dynareOBC_.Order == 1 ) && dynareOBC_.CalculateTheoreticalVariance
-        dynareOBC_.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B' );
+        dynareOBC_.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
     end
         
     CurrentInternal = B1 * Sigma * B1';
