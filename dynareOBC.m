@@ -227,6 +227,9 @@ if dynareOBC_.Accuracy < 2
     dynareOBC_.ShadowShockNumberMultiplier = 0;
 else
     dynareOBC_.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC_.StateVariablesAndShocks ), dynareOBC_.ShadowApproximatingOrder );
+    if dynareOBC_.ShadowApproximatingOrder == 0
+        dynareOBC_.StateVariableAndShockCombinations( 1 ) = 1;
+    end
     dynareOBC_.ShadowShockCombinations = GenerateCombinations( dynareOBC_.ShadowShockNumberMultiplier, dynareOBC_.ShadowOrder );
 end
 
