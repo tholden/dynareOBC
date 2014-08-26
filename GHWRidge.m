@@ -5,6 +5,10 @@ function beta = GHWRidge( y, X )
 % X should not contain a column of 1s.
 
     mean_y = mean( y );
+    if size( X, 2 ) == 0
+        beta = mean_y;
+        return;
+    end
     mean_X = mean( X );
     std_X = std( X );
     
@@ -25,7 +29,7 @@ function beta = GHWRidge( y, X )
     c1 = y' * y - z' * z;
     c2 = 1 - p / n;
     nInv = 1 / n;
-    
+
     kappa = fminbnd( @(kappa) ObjectiveFast( kappa, z, d2, c1, c2, nInv ), 0, 1, optimset( 'Display', 'off' ) );
     lambda = 1 / ( 1 - kappa ) - 1;
     
