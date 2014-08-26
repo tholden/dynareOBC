@@ -79,7 +79,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         if Info ~= 0
             error( 'dynareOBC:GlobalNoSolution', 'The iterative global solution procedure method got stuck in a parameter range in which no determinate solution exists.' );
         end
-        CholSigma = RRChol( M_Internal.Sigma_e );
+        CholSigma = RRRoot( M_Internal.Sigma_e );
         switch dynareOBC_.Order
             case 1
                 Var_z = dynareOBC_.Var_z1;
@@ -90,7 +90,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             otherwise
                 error( 'dynareOBC:UnsupportedOrder', 'dynareOBC only supports orders 1, 2 and 3.' );
         end
-        CholVar_z = RRChol( Var_z );
+        CholVar_z = RRRoot( Var_z );
         
         nEndo = M_Internal.endo_nbr;
         nState = M_Internal.nspred;
@@ -238,8 +238,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
         
-        LDLCovResiduals = chol( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( Residuals' * Residuals ) + eps * eye( Tns ), 'lower' );
-        LDLCovResiduals = LDLCovResiduals * diag( 1 ./ diag( LDLCovResiduals ) );
+        [ LDLCovResiduals, ~ ] = mchol( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( Residuals' * Residuals ) );
         
         Residuals = ( LDLCovResiduals \ ( Residuals' ) )';
         
@@ -377,7 +376,7 @@ function KL = DensityObjective( ValuesMatrix, ShadowShockComponents, DensitySimu
     end
     
 end
-function CholSigma = RRChol( Sigma )
+function CholSigma = RRRoot( Sigma )
     FullSigma = full( 0.5 * ( Sigma + Sigma' ) );
     [ V, D ] = eig( FullSigma );
     d = diag( D );

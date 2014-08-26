@@ -15,7 +15,8 @@ function DisplayHelp
     disp( 'dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,' );
     disp( 'by Hong Lan and Alexander Meyer-Gohde.' );
     disp( 'Additionally, dynareOBC incorporates code for integration on sparse grids that is copyright' );
-    disp( 'Florian Heiss and Viktor Winschel, 2007.' );
+    disp( 'Florian Heiss and Viktor Winschel, 2007, and code for LDL decompositions that is copyright' );
+    disp( 'Brian Borchers, 2002.' );
     skipline( );
     disp( 'Usage: dynareOBC FILENAME[.mod,.dyn] [OPTIONS]' );
     skipline( );
