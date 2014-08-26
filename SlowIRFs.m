@@ -94,7 +94,7 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
     cs = transpose( chol( SS ) );
     
     for ShockIndex = dynareOBC_.ShockSelect
-        Shock = cs( M_.exo_names_orig_ord, ShockIndex );
+        Shock = dynareOBC_.ShockScale * cs( M_.exo_names_orig_ord, ShockIndex );
 
         p = TimedProgressBar( Replications, 20, [ 'Computing average IRFs for shock ' dynareOBC_.Shocks{ShockIndex} '. Please wait for around ' ], '. Progress: ', [ 'Computing average IRFs for shock ' dynareOBC_.Shocks{ShockIndex} '. Completed in ' ] );
     

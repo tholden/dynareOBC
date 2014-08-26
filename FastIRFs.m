@@ -11,7 +11,7 @@ function [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ )
     
     for i = dynareOBC_.ShockSelect
         Shock = zeros( M_.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
-        Shock(:,1) = cs( M_.exo_names_orig_ord, i );
+        Shock(:,1) = dynareOBC_.ShockScale * cs( M_.exo_names_orig_ord, i );
         
         %pruning_abounds( M_, options_, IRFShockSequence, T, dynareOBC_.Order, 'lan_meyer-gohde', 1 );
         TempIRFStruct = ExpectedReturn( Shock, M_, oo_.dr, dynareOBC_ );

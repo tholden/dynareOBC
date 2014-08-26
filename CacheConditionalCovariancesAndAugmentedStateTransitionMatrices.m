@@ -229,7 +229,9 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         dynareOBC_.AugmentedToTotal = speye( nEndo );
     elseif dynareOBC_.Order == 2
         dynareOBC_.A = A2;
-        dynareOBC_.B = B2;
+        if Order2ConditionalCovariance || Order2VarianceRequired
+            dynareOBC_.B = B2;
+        end
         dynareOBC_.AugmentedToTotal = [ speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 ) ];
     elseif dynareOBC_.Order == 3
         dynareOBC_.A = A3;
