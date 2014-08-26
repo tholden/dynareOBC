@@ -1,3 +1,4 @@
+% Copyright Brian Borchers, 2002, taken from http://infohost.nmt.edu/~borchers/ldlt.html
 %
 %  [L,D,E,pneg]=mchol1(G)
 %
@@ -15,7 +16,7 @@
 %  Reference: Gill, Murray, and Wright, "Practical Optimization", p111.
 %  Author: Brian Borchers (borchers@nmt.edu)
 %
-function [L,D,E,pneg]=mcholmz1(G)
+function [L,D,E,pneg]=mchol(G)
 %
 %  n gives the size of the matrix.
 %
@@ -38,10 +39,10 @@ C=diag(diag(G));
 L=zeros(n);
 D=zeros(n);
 E=zeros(n);
-
+theta(n) = 0;
 for j=1:n,
-    bb=[1:j-1];
-    ee=[j+1:n];
+    bb=1:j-1;
+    ee=j+1:n;
 
     %
     %  Calculate the jth row of L.  
@@ -70,7 +71,7 @@ for j=1:n,
     %
     %  Update D
     %
-    D(j,j)=max([eps,abs(C(j,j)),theta(j)^2/beta2]');
+    D(j,j)=max([eps,abs(C(j,j)),theta(j)^2/beta2]);
     %
     % Update E.
     %
@@ -86,7 +87,7 @@ for j=1:n,
     %    C(i,i)=C(i,i)-C(i,j)^2/D(j,j);
     %end;
     
-    ind=[j*(n+1)+1 : n+1 : n*n]';
+    ind=(j*(n+1)+1 : n+1 : n*n)';
     C(ind)=C(ind)-(1/D(j,j))*C(ee,j).^2;
 
 
@@ -99,7 +100,7 @@ end;
 %    L(j,j)=1;
 %end;
 
-ind=[1 : n+1 : n*n]';
+ind=(1 : n+1 : n*n)';
 L(ind)=1;
 
 %%%%%%%%%%%%%%%%%%%%%%%% M.Zibulevsky: end of changes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -107,8 +108,8 @@ L(ind)=1;
 %
 %  if needed, find a descent direction.  
 %
-if ((nargout == 4) & (min(diag(C)) < 0.0))
-    [m,col]=min(diag(C));
+if ((nargout == 4) && (min(diag(C)) < 0.0))
+    [~,col]=min(diag(C));
     rhs=zeros(n,1);
     rhs(col)=1;
     pneg=L'\rhs;
@@ -118,9 +119,3 @@ end;
 
 
 return
-
-
-
-
-
-
