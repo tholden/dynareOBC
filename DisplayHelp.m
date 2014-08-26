@@ -55,7 +55,7 @@ function DisplayHelp
     disp( '       * shadowshocknumbermultiplier=NUMBER (default: the order of approximation)' );
     disp( '            The number of shocks with which to approximate the distribution of each shadow shock' );
     disp( '            innovation, when accuracy=2.' );
-    disp( '       * shadowapproxmiatingorder=NUMBER (default: the order of approximation)' );
+    disp( '       * shadowapproximatingorder=NUMBER (default: the order of approximation)' );
     disp( '            The order with which to approximate the expected component of each shadow shock, when' );
     disp( '            accuracy=2.' );
     disp( '       * maxiterations=NUMBER (default: 1000)' );
@@ -96,6 +96,8 @@ function DisplayHelp
     disp( ' * irfsaroundzero' );
     disp( '      By default, IRFs are centered around the risky steady state with the fastirfs option, or around' );
     disp( '      the approximate mean without it. This option instead centers IRFs around 0.' );
+    disp( ' * shockscale=NUMBER' );
+    disp( '      Scale of shocks for IRFs.' );
     disp( ' * mlvsimulationsamples=NUMBER (default: 0)' );
     disp( '      If this option is greater than 0, dynareOBC generates simulated paths and average impulse' );
     disp( '      responses for each model local variable which is used in the model and which is not constant' );
