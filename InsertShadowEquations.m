@@ -78,7 +78,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
             dynareOBC_.VarExoIndices_DummyShadowShocks( j + 1, i ) = CurrentNumVarExo;
             ToInsertInShocks{ end + 1 } = [ 'var ' varexoName '=1;' ];
             ToInsertInInitVal{ end + 1 } = [ varexoName '=0;' ];
-            for k = 1 : length( dynareOBC_.StateVariableAndShockCombinations )
+            for k = 1 : size( dynareOBC_.StateVariableAndShockCombinations, 1 )
                 string_k = int2str( k );
                 parameterName = [ varName '_model_' string_k ];
                 parametersString = [ parametersString ' ' parameterName ];
