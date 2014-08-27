@@ -179,6 +179,10 @@ else
     dynareOBC_.MLVNames = {};
 end
 
+if M_.orig_endo_nbr ~= M_.endo_nbr
+    warning( 'dynareOBC:AuxiliaryVariables', 'dynareOBC is untested on models with lags or leads on exogenous variables, or lags or leads on endogenous variables greater than one period.\nConsider manually adding additional variables for these lags and leads.' );
+end
+
 %% Generating the final mod file
 
 skipline( );
@@ -243,7 +247,7 @@ else
     EndoLLPrefix = '';
 end
 ToInsertInInitVal = { };
-for i = 1 : length( dynareOBC_.EndoVariables )
+for i = 1 : M_.orig_endo_nbr
     ToInsertInInitVal{ end + 1 } = sprintf( '%s%s=%.20e;', EndoLLPrefix, dynareOBC_.EndoVariables{ i }, oo_.dr.ys( i ) ); %#ok<AGROW>
 end
 
