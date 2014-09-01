@@ -67,6 +67,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     
     global oo_ M_
 
+    StepSize = 0.01;
     for Iteration = 0 : dynareOBC_.MaxIterations
         if Iteration > 0
             M_Internal = M_Internal_Init;
@@ -283,6 +284,11 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         
         if Iteration > 0
             ofx = fx;
+            ofxMax = fxMax;
+        else
+            ofx = [];
+            ofxMax = Inf;
+            LastFailed = false;
         end
         fx = gx - x;
         fxMax = max( abs( fx ) );
@@ -297,35 +303,55 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
         
         if fxMax < sqrt( eps )
-            x = gx;
+            x = 0.5 * ( x + gx );
             break;
         end
         
-        ox = x;
-        if Iteration > 0
-            dfx = fx - ofx;
-            if Iteration > 1
-                SF( :, end + 1 ) = dfx; %#ok<AGROW>
-                if size( SF, 2 ) > m
-                    SF( :, 1 ) = [];
-                end
-            else
-                SF = dfx;
-            end
-            gamma = pinv( SF ) * fx;
-            x = gx - ( SX + SF ) * gamma;
+        if fxMax <= ofxMax
+            ox = x;
+            x = x + StepSize * fx;
+            StepSize = StepSize * 1.1;
+            LastFailed = false;
         else
-            x = gx;
+            x = ox;
+            fx = ofx;
+            if LastFailed
+                StepSize = -StepSize;
+                LastFailed = false;
+            else
+                StepSize = StepSize * 0.5;
+                LastFailed = true;
+            end
+            x = x + StepSize * fx;
         end
         
-        dx = x - ox;
-        if Iteration > 0
-            SX( :, end + 1 ) = dx; %#ok<AGROW>
-            if size( SX, 2 ) > m
-                SX( :, 1 ) = [];
+        if 1 == 0
+            ox = x;
+            if Iteration > 0
+                dfx = fx - ofx;
+                if Iteration > 1
+                    SF( :, end + 1 ) = dfx; %#ok<AGROW>
+                    if size( SF, 2 ) > m
+                        SF( :, 1 ) = [];
+                    end
+                else
+                    SF = dfx;
+                end
+                gamma = pinv( SF ) * fx;
+                x = gx - ( SX + SF ) * gamma;
+            else
+                x = gx;
             end
-        else
-            SX = dx;
+
+            dx = x - ox;
+            if Iteration > 0
+                SX( :, end + 1 ) = dx; %#ok<AGROW>
+                if size( SX, 2 ) > m
+                    SX( :, 1 ) = [];
+                end
+            else
+                SX = dx;
+            end
         end
 
         % x = 0.01 * gx + 0.99 * ox;
