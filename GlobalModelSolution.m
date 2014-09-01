@@ -77,8 +77,32 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             M_Internal.params( PI ) = x;
         end
         [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( Iteration == 0, M_Internal, options_, oo_Internal ,dynareOBC_ );
+        if Iteration > 0
+            if Info ~= 0
+                StepSize = StepSize * 0.5;
+                LastFailed = true;
+                x = x + StepSize * fx;
+                continue;
+            else
+                ofx = fx;
+                ofxMax = fxMax;
+            end
+        else
+            if Info ~= 0
+                error( 'dynareOBC:FailedFirstStepGlobal', 'Failed to solve the model at the initial point while computing a global solution.' );
+            else
+                ofx = [];
+                ofxMax = Inf;
+                LastFailed = false;
+            end
+        end
         if Info ~= 0
-            error( 'dynareOBC:GlobalNoSolution', 'The iterative global solution procedure method got stuck in a parameter range in which no determinate solution exists.' );
+            x = ox;
+            fx = ofx;
+            fxMax = ofxMax;
+            StepSize = StepSize * 0.5;
+            LastFailed = true;
+            x = x + StepSize * fx;
         end
         CholSigma = RRRoot( M_Internal.Sigma_e );
         switch dynareOBC_.Order
@@ -282,14 +306,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
         
-        if Iteration > 0
-            ofx = fx;
-            ofxMax = fxMax;
-        else
-            ofx = [];
-            ofxMax = Inf;
-            LastFailed = false;
-        end
         fx = gx - x;
         fxMax = max( abs( fx ) );
         
@@ -315,6 +331,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         else
             x = ox;
             fx = ofx;
+            fxMax = ofxMax;
             if LastFailed
                 StepSize = -StepSize;
                 LastFailed = false;
