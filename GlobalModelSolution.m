@@ -263,7 +263,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
         
-        [ LDLCovResiduals, ~ ] = mchol( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( Residuals' * Residuals ) );
+        [ LDLCovResiduals, ~ ] = mchol( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( Residuals' * Residuals ) + sqrt( eps ) * eye( Tns ) );
         
         Residuals = ( LDLCovResiduals \ ( Residuals' ) )';
         
