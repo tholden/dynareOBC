@@ -67,7 +67,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     
     global oo_ M_
 
-    StepSize = 0.01;
+    StepSize = sqrt( eps );
     for Iteration = 0 : dynareOBC_.MaxIterations
         if Iteration > 0
             M_Internal = M_Internal_Init;
@@ -95,14 +95,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 ofxMax = Inf;
                 LastFailed = false;
             end
-        end
-        if Info ~= 0
-            x = ox;
-            fx = ofx;
-            fxMax = ofxMax;
-            StepSize = StepSize * 0.5;
-            LastFailed = true;
-            x = x + StepSize * fx;
         end
         CholSigma = RRRoot( M_Internal.Sigma_e );
         switch dynareOBC_.Order
@@ -324,14 +316,14 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             save dynareOBCSemiGlobalResume.mat x M_ oo_;
             save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
 
-            ox = x;
+            % ox = x;
             x = x + StepSize * fx;
             StepSize = StepSize * 1.1;
             LastFailed = false;
         else
-            x = ox;
-            fx = ofx;
-            fxMax = ofxMax;
+            % x = ox;
+            % fx = ofx;
+            % fxMax = ofxMax;
             if LastFailed
                 StepSize = -StepSize;
                 LastFailed = false;
