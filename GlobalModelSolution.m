@@ -311,19 +311,19 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         
         skipline( );
         fprintf( 'End of iteration %d. Maximum change in parameters: %e\n', Iteration, fxMax );
-        skipline( );
-        
-        M_ = M_Internal;
-        oo_ = oo_Internal;
-        save dynareOBCSemiGlobalResume.mat x M_ oo_;
-        save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
         
         if fxMax < sqrt( eps )
             x = 0.5 * ( x + gx );
+            skipline( );
             break;
         end
         
         if fxMax <= ofxMax
+            M_ = M_Internal;
+            oo_ = oo_Internal;
+            save dynareOBCSemiGlobalResume.mat x M_ oo_;
+            save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
+
             ox = x;
             x = x + StepSize * fx;
             StepSize = StepSize * 1.1;
@@ -339,8 +339,10 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 StepSize = StepSize * 0.5;
                 LastFailed = true;
             end
-            x = x + StepSize * fx;
+            x = x + StepSize * fx;            
         end
+        fprintf( 'New step size: %e\n', StepSize );
+        skipline( );
         
         if 1 == 0
             ox = x;
@@ -387,6 +389,10 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         warning( 'dynareOBC:ReachedMaxIterations', 'The semi-global solution algorithm reached the maximum allowed number of interations without converging. Results may be inaccurate.' );
         skipline( );
     end
+    M_Internal = M_Internal_Init;
+    options_ = options_Init;
+    oo_Internal = oo_Internal_Init;
+    dynareOBC_ = dynareOBC_Init;
     M_Internal.params( PI ) = x;
     [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( false, M_Internal, options_, oo_Internal ,dynareOBC_ );
     if Info ~= 0
