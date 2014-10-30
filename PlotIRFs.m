@@ -19,7 +19,7 @@ function PlotIRFs( M_, options_, oo_, dynareOBC_ )
                 CurrentIRF = oo_.irfs.( IRFName );
                 if max( abs( CurrentIRF ) ) > options_.impulse_responses.plot_threshold
                     VariableNames{ end + 1 } = CurrentVariable; %#ok<AGROW>
-                    CurrentIRFOffset = dynareOBC_.IRFOffsets.( IRFName );
+                    CurrentIRFOffset = dynareOBC_.IRFOffsets.( IRFName )( 1:T );
                     IRFOffsets( end + 1, : ) = CurrentIRFOffset; %#ok<AGROW>
                     IRFs( end + 1, : ) = CurrentIRFOffset + CurrentIRF; %#ok<AGROW>
                     IRFsWithoutBounds( end + 1, : ) = CurrentIRFOffset + dynareOBC_.IRFsWithoutBounds.( IRFName ); %#ok<AGROW>
@@ -33,7 +33,7 @@ function PlotIRFs( M_, options_, oo_, dynareOBC_ )
                 CurrentIRF = oo_.irfs.( IRFName );
                 if max( abs( CurrentIRF ) ) > options_.impulse_responses.plot_threshold
                     VariableNames{ end + 1 } = CurrentVariable; %#ok<AGROW>
-                    CurrentIRFOffset = dynareOBC_.IRFOffsets.( IRFName );
+                    CurrentIRFOffset = dynareOBC_.IRFOffsets.( IRFName )( 1:T );
                     IRFOffsets( end + 1, : ) = CurrentIRFOffset; %#ok<AGROW>
                     IRFs( end + 1, : ) = CurrentIRFOffset + CurrentIRF; %#ok<AGROW>
                     IRFsWithoutBounds( end + 1, : ) = CurrentIRFOffset + dynareOBC_.IRFsWithoutBounds.( IRFName ); %#ok<AGROW>

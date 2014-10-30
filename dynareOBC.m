@@ -169,7 +169,7 @@ if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
     error( 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
 end
 
-if dynareOBC_.MLVSimulationSamples > 0
+if dynareOBC_.MLVSimulationMode > 0
     skipline( );
     disp( 'Generating code to recover MLVs.' );
     skipline( );

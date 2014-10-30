@@ -1,4 +1,4 @@
-function [ alpha, exitflag ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, IgnoreAllButConstraintViolation )
+function [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, IgnoreAllButConstraintViolation )
 
     if isempty( alpha )
         alpha = dynareOBC_.ZeroVecS;
@@ -14,29 +14,28 @@ function [ alpha, exitflag ] = PostProcessBoundsProblem( alpha, FoundValue, exit
     ns = dynareOBC_.NumberOfMax;
     Tolerance = dynareOBC_.Tolerance;
     
-    SelectNow = 1 + ( 0:T:(T*(ns-1)) );
-    SelectNows = 1 + ( 0:Ts:(Ts*(ns-1)) );
-    ConstraintNow = V( SelectNow ) + M( SelectNow, : ) * alpha;
-    SelectError = ( ConstraintNow < -10 * Tolerance );
-
-    % Force the constraint not to be violated in the first period.
-    if any( SelectError )
-        WarningState = warning( 'off', 'all' );
-        try
-            alpha = SolveLinearProgrammingProblem( V, dynareOBC_, false, true );
-        catch
+    ReturnPath = V + M * alpha;
+    if any( ReturnPath < -2 * Tolerance )
+        % Fudge so at least the constraint isn't violated, even if the CS condition is
+        [ alpha_new, ~, ~, exitflag_new ] = lsqlin( eye( ns * Ts ), alpha, -M, V, [], [], dynareOBC_.ZeroVecS, [], alpha, dynareOBC_.LSqLinOptions );
+        if exitflag_new > 0
+            alpha = alpha_new;
         end
-        warning( WarningState );
-        
+    
+        SelectNow = 1 + ( 0:T:(T*(ns-1)) );
+        SelectNows = 1 + ( 0:Ts:(Ts*(ns-1)) );
         ConstraintNow = V( SelectNow ) + M( SelectNow, : ) * alpha;
-        SelectError = ( ConstraintNow < -10 * Tolerance );
+        SelectError = ( ConstraintNow < -2 * Tolerance );
 
+        % Force the constraint not to be violated in the first period.
         if any( SelectError )
             SelectNowError = SelectNow( SelectError );
             SelectNowsError = SelectNows( SelectError );
             alpha( SelectNowsError ) = alpha( SelectNowsError ) - M( SelectNowError, SelectNowsError ) \ ConstraintNow( SelectError );
             FoundValue = [];
         end
+
+        ReturnPath = V + M * alpha;
     end
     
     if exitflag <= 0

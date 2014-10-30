@@ -1,4 +1,4 @@
-function [ alpha, exitflag ] = SolveQuadraticProgrammingProblem( V, dynareOBC_, init_alpha, Homotopy )
+function [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_, init_alpha, Homotopy )
 % Solves argmin V(SelectIndices)' * alpha + (1/2) * alpha' * MsMatrixSymmetric * alpha such that V + M * alpha >= 0 and alpha >= 0
 
     % Solve the quadratic optimisation problem
@@ -54,6 +54,6 @@ function [ alpha, exitflag ] = SolveQuadraticProgrammingProblem( V, dynareOBC_, 
         alpha = init_alpha;
     end
     
-    [ alpha, exitflag ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, ( nargin == 4 ) && ( Homotopy < 1 ) );
+    [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, ( nargin == 4 ) && ( Homotopy < 1 ) );
     
 end

@@ -1,23 +1,24 @@
-function [ alpha, exitflag ] = SolveBoundsProblem( V, dynareOBC_ )
+function [ alpha, exitflag, ReturnPath ] = SolveBoundsProblem( V, dynareOBC_ )
     if all( V >= - dynareOBC_.Tolerance )
         alpha = dynareOBC_.ZeroVecS;
         exitflag = 1;
+        ReturnPath = V;
         return
     end
     switch dynareOBC_.Algorithm
         case 2
-            [ alpha, exitflag ] = SolveHomotopyProblem( V, dynareOBC_ );
+            [ alpha, exitflag, ReturnPath ] = SolveHomotopyProblem( V, dynareOBC_ );
         case 3
-            [ alpha, exitflag ] = SolveQCQPProblem( V, dynareOBC_ );
+            [ alpha, exitflag, ReturnPath ] = SolveQCQPProblem( V, dynareOBC_ );
         otherwise
             if dynareOBC_.CacheSize > 0
-                [ alpha, exitflag ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC_ );
+                [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC_ );
             else
-                [ alpha, exitflag ] = SolveQuadraticProgrammingProblem( V, dynareOBC_ );
+                [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_ );
             end
     end
 end
-function [ alpha, exitflag ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC_ )
+function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC_ )
     persistent VHistory;
     persistent alphaHistory;
     persistent VMean;
@@ -55,12 +56,12 @@ function [ alpha, exitflag ] = SolveCachedQuadraticProgrammingProblem( V, dynare
         alphaStart = sum( bsxfun( @times, Weights, alphaHistory ), 2 ) / sum( Weights, 2 );
     end
     if numel( alphaStart )
-        [ alpha, exitflag ] = SolveQuadraticProgrammingProblem( V, dynareOBC_, max( 0, alphaStart ) );
+        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_, max( 0, alphaStart ) );
     else
         exitflag = -1;
     end
     if exitflag < 0
-        [ alpha, exitflag ] = SolveQuadraticProgrammingProblem( V, dynareOBC_ );
+        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_ );
     end
     VHistory( :, WritePosition ) = V;
     alphaHistory( :, WritePosition ) = alpha;

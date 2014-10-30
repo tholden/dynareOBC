@@ -1,4 +1,4 @@
-function [ alpha, exitflag ] = SolveQCQPProblem( V, dynareOBC_ )
+function [ alpha, exitflag, ReturnPath ] = SolveQCQPProblem( V, dynareOBC_ )
 % Solves argmin [ OneVecS' * alpha | alpha' * alpha ] such that 0 = V(SelectIndices)' * alpha + (1/2) * alpha' * MsMatrixSymmetric * alpha, V + M alpha >= 0 and alpha >= 0
 
     % Solve the quadratic optimisation problem
@@ -44,6 +44,6 @@ function [ alpha, exitflag ] = SolveQCQPProblem( V, dynareOBC_ )
 
     end
     
-    [ alpha, exitflag ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, false );
+    [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, false );
     
 end

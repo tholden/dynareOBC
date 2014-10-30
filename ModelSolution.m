@@ -32,7 +32,7 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
         oo_Internal.dr.ghu = deflect_.y_u;
     end
     
-    if dynareOBC_.Sparse
+    if ~dynareOBC_.NoSparse
         skipline( );
         disp( 'Converting to sparse matrices.' );
         skipline( );

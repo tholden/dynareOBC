@@ -22,9 +22,9 @@ function [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ )
         
         ZeroLowerBoundedReturnPath = vec( TempIRFStruct.total( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
         
-        alpha = SolveBoundsProblem( ZeroLowerBoundedReturnPath, dynareOBC_ );
+        [ alpha, ~, ConstrainedReturnPath ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath, dynareOBC_ );
         if dynareOBC_.Accuracy > 0
-            alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_, oo_, dynareOBC_, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Completed in ' ] );
+            alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_, dynareOBC_, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Completed in ' ] );
         end
         
         for j = dynareOBC_.VariableSelect
@@ -35,7 +35,7 @@ function [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ )
                 CurrentIRF = CurrentIRF + ( dynareOBC_.MSubMatrices{ j }( 1:Ts, : ) * alpha )';
             end
             oo_.irfs.( IRFName ) = CurrentIRF;
-            IRFOffsets.( IRFName ) = TempIRFOffsets( j, : );
+            IRFOffsets.( IRFName ) = TempIRFOffsets( j, 1:Ts );
         end
     end
     dynareOBC_.IRFOffsets = IRFOffsets;

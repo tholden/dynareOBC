@@ -15,6 +15,11 @@ More information is contained in his paper describing the algorithm, available h
 http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf.
 dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,
 by Hong Lan and Alexander Meyer-Gohde.
+Additionally, dynareOBC incorporates code for nested Gaussian cubature that is copyright Alan Genz
+and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002,
+code for kernel density estimation that is copyright Zdravko Botev, 2007, code for displaying
+a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014, and code for
+the CMAES algorithm that is copyright Hansen, 2012.
 
 Usage: dynareOBC FILENAME[.mod,.dyn] [OPTIONS]
 
@@ -32,10 +37,13 @@ Note:
 
 [OPTIONS] include:
  * accuracy=0|1|2 (default: 1)
-      If accuracy<2, dynareOBC solves under the simplifying assumption that agents are perpetually
-      surprised by the bounds. Much faster, but inaccurate if the bound is hit regularly.
-      With accuracy=0, dynareOBC additionally assumes that agents act in a perfect-foresight manner
-      with respect to "shadow shocks".
+      If accuracy=0, dynareOBC assumes that agents are "surprised" by the existence of the bound.
+      At order=1, this is equivalent to a perfect foresight solution to the model.
+      If accuracy=1, dynareOBC assumes agents realise that shocks may arrive in the near future which
+      push them towards the bound. However, they do not take into account the risk of hitting the
+      bound in the far future.
+      If accuracy=2, dynareOBC assumes agents take into account the risk of hitting the bound at all
+      horizons. Note that this is significantly slower.
        * removenegativequadratureweights
             Zeros all negative quadrature weights, when accuracy>0. May or may not improve accuracy.
        * forceequalquadratureweights
@@ -54,15 +62,9 @@ Note:
        * shadowshocknumbermultiplier=NUMBER (default: the order of approximation)
             The number of shocks with which to approximate the distribution of each shadow shock
             innovation, when accuracy=2.
-       * shadowapproxmiatingorder=NUMBER (default: the order of approximation)
+       * shadowapproximatingorder=NUMBER (default: the order of approximation)
             The order with which to approximate the expected component of each shadow shock, when
             accuracy=2.
-       * regressionbasesamplesize=NUMBER (default: 1000)
-            The base sample size for the regression used within the accuracy=2, semi-global
-            approximation loop.
-       * regressionsamplesizemultiplier=NUMBER (default: 30)
-            The number by which the regression sample size increases for each additional regressor,
-            within the accuracy=2, semi-global approximation loop.
        * maxiterations=NUMBER (default: 1000)
             The maximum number of iterations of the accuracy=2 fixed-point algorithm.
        * densityaccuracy=NUMBER (default: 10)
@@ -85,12 +87,12 @@ Note:
       Takes a linear approximation around the ergodic mean of the non-linear model.
       If specifying this option, you should set order=2 or order=3 in your mod file.
  * algorithm=0|1|2|3 (default: 0)
-      If algorithm=0, an arbitrary solution is returned when there are several. If algorithm=1, a linear
-      programming problem is solved first, which will increase the likelihood that the same solution is
-      always returned, without guaranteeing this. When algorithm>1, the specific solution determined by
-      the objective option is returned. If algorithm=2 then this is guaranteed via homotopy, and when
-      algorithm=3, this is guaranteed via the solution of a quadratically constrained quadratic
-      programming problem.
+      If algorithm=0, an arbitrary solution is returned when there are several.
+      If algorithm=1, a linear programming problem is solved first, which will increase the likelihood
+      that the same solution is always returned, without guaranteeing this.
+      When algorithm>1, the specific solution determined by the objective option is returned.
+      If algorithm=2 then this is guaranteed via homotopy.
+      When algorithm=3, this is guaranteed via the solution of a QCQP problem.
        * homotopysteps=NUMSTEPS (default: 10)
             The number of homotopy steps to take when using algorithm=1.
        * objective=1|2 (default: 2)
@@ -101,13 +103,24 @@ Note:
  * irfsaroundzero
       By default, IRFs are centered around the risky steady state with the fastirfs option, or around
       the approximate mean without it. This option instead centers IRFs around 0.
- * mlvsimulationsamples=NUMBER (default: 0)
-      If this option is greater than 0, dynareOBC generates simulated paths and average impulse
-      responses for each model local variable which is used in the model and which is not constant
-      or purely backwards looking. If this option is equal to 1, then dynareOBC ignores any model
-      local variables containing future value. If this options is greater than 1, then dynareOBC
-      takes the expectation of each forward looking model local variable, using Monte Carlo
-      integration with NUMBER samples.
+ * shockscale=NUMBER
+      Scale of shocks for IRFs.
+ * mlvsimulationmode=0|1|2|3 (default: 0)
+      If mlvsimulationmode=0, dynareOBC does not attempt to simulate the path of model local variables.
+      If mlvsimulationmode>0, dynareOBC generates simulated paths and average impulse responses for each
+      model local variable (MLV) which is used in the model, non-constant, non-forward looking, and not
+      purely backwards looking.
+      If mlvsimulationmode>1, dynareOBC additionally generates simulated paths and average impulse
+      responses for each non-constant MLV, used in the model, containing forward looking terms.
+      If mlvsimulationmode=2, then dynareOBC takes the expectation of each forward looking MLV using
+      sparse cubature.
+      If mlvsimulationmode=3, then dynareOBC takes the expectation of each forward looking MLV using
+      Monte Carlo integration.
+       * mlvsimulationcubaturedegree=NUMBER (default: 9)
+            Specifies the degree of polynomial which should be integrated exactly, when mlvsimulationmode=1.
+            Values above 51 are treated as equal to 51.
+       * mlvsimulationsamples=NUMBER (default: 2000)
+            Specifies the number of samples to use for Monte Carlo integration, when mlvsimulationmode=2.
  * nosparse
       By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as
       this generally speeds up dynareOBC. This option prevents dynareOBC from doing this.
@@ -134,4 +147,4 @@ if it is used with an unsupported option. Currently supported options for stoch_
  * nocorr
 
 dynareOBC also supports a list of variables for simulation after the call to stoch_simul.
-When mlvsimulationsamples>0, this list can include the names of model local variables.
+When mlvsimulationmode>0, this list can include the names of model local variables.

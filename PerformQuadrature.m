@@ -1,4 +1,4 @@
-function alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_, oo_, dynareOBC_, FirstOrderSimulation, varargin )
+function alpha = PerformQuadrature( alpha, V, ReturnPath, options_, oo_, dynareOBC_, FirstOrderSimulation, varargin )
 
     if dynareOBC_.MaxIntegrationDimension == 0
         return;
@@ -54,6 +54,7 @@ function alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_,
     end
 
     alpha = w1 * alpha;
+    ReturnPath = w1 * ReturnPath;
     wSum = w1;
 
     if nargin > 7 && TotalLoopLength > 0
@@ -69,19 +70,23 @@ function alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_,
         parfor j = 1 : d
             WarningState = warning( 'off', 'all' );
             try
-                [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath + kappa * RootConditionalCovariance( :, j ), dynareOBC_ );
+                [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V + kappa * RootConditionalCovariance( :, j ), dynareOBC_ );
                 exitflag = min( exitflag, exitflag_new );
                 alpha = alpha + w2 * alpha_new;
-                [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath - kappa * RootConditionalCovariance( :, j ), dynareOBC_ );
+                ReturnPath = ReturnPath + w2 * ConstrainedReturnPath_new;
+                [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V - kappa * RootConditionalCovariance( :, j ), dynareOBC_ );
                 exitflag = min( exitflag, exitflag_new );
                 alpha = alpha + w2 * alpha_new;
+                ReturnPath = ReturnPath + w2 * ConstrainedReturnPath_new;
                 if dynareOBC_.PseudoOrderFiveQuadrature
-                    [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath + kappa_alt * RootConditionalCovariance( :, j ), dynareOBC_ );
+                    [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V + kappa_alt * RootConditionalCovariance( :, j ), dynareOBC_ );
                     exitflag = min( exitflag, exitflag_new );
                     alpha = alpha - w2 * alpha_new;
-                    [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath - kappa_alt * RootConditionalCovariance( :, j ), dynareOBC_ );
+                    ReturnPath = ReturnPath - w2 * ConstrainedReturnPath_new;
+                    [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V - kappa_alt * RootConditionalCovariance( :, j ), dynareOBC_ );
                     exitflag = min( exitflag, exitflag_new );
                     alpha = alpha - w2 * alpha_new;
+                    ReturnPath = ReturnPath - w2 * ConstrainedReturnPath_new;
                 end
                 if ~isempty( p )
                     p.progress;
@@ -106,21 +111,25 @@ function alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_,
             try
                 c = floor( 0.5*(1+sqrt(8*k-7)) ) + 1;
                 r = k - 0.5*(c-1)*(c-2);
-                [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath + lambda * RootConditionalCovariance( :, r ) + kappa * RootConditionalCovariance( :, c ), dynareOBC_ ); %#ok<PFBNS>
+                [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V + lambda * RootConditionalCovariance( :, r ) + kappa * RootConditionalCovariance( :, c ), dynareOBC_ ); %#ok<PFBNS>
                 exitflag = min( exitflag, exitflag_new );
                 alpha = alpha + w3 * alpha_new;
-                [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath + lambda * RootConditionalCovariance( :, r ) - kappa * RootConditionalCovariance( :, c ), dynareOBC_ );
+                ReturnPath = ReturnPath + w3 * ConstrainedReturnPath_new;
+                [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V + lambda * RootConditionalCovariance( :, r ) - kappa * RootConditionalCovariance( :, c ), dynareOBC_ );
                 exitflag = min( exitflag, exitflag_new );
                 alpha = alpha + w3 * alpha_new;
+                ReturnPath = ReturnPath + w3 * ConstrainedReturnPath_new;
                 if ~isempty( p )
                     p.progress;
                 end
-                [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath - lambda * RootConditionalCovariance( :, r ) + kappa * RootConditionalCovariance( :, c ), dynareOBC_ );
+                [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V - lambda * RootConditionalCovariance( :, r ) + kappa * RootConditionalCovariance( :, c ), dynareOBC_ );
                 exitflag = min( exitflag, exitflag_new );
                 alpha = alpha + w3 * alpha_new;
-                [ alpha_new, exitflag_new ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath - lambda * RootConditionalCovariance( :, r ) -+ kappa * RootConditionalCovariance( :, c ), dynareOBC_ );
+                ReturnPath = ReturnPath + w3 * ConstrainedReturnPath_new;
+                [ alpha_new, exitflag_new, ConstrainedReturnPath_new ] = SolveBoundsProblem( V - lambda * RootConditionalCovariance( :, r ) -+ kappa * RootConditionalCovariance( :, c ), dynareOBC_ );
                 exitflag = min( exitflag, exitflag_new );
                 alpha = alpha + w3 * alpha_new;
+                ReturnPath = ReturnPath + w3 * ConstrainedReturnPath_new;
                 if ~isempty( p )
                     p.progress;
                 end
@@ -136,6 +145,36 @@ function alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_,
         p.stop;
     end
     alpha = alpha / wSum;
+    ReturnPath = ReturnPath / wSum;
+    
+    M = dynareOBC_.MMatrix;
+    
+    [ alpha, ~, ~, exitflag_new ] = lsqlin( M, ReturnPath - V, -M, V, [], [], [], [], alpha, dynareOBC_.LSqLinOptions );
+    exitflag = min( exitflag, exitflag_new );
+%     figure;
+%     hold on;
+%     plot( ReturnPath );
+%     plot( V + M * alpha );
+    
+    T = dynareOBC_.InternalIRFPeriods;
+    Ts = dynareOBC_.TimeToEscapeBounds;
+    ns = dynareOBC_.NumberOfMax;
+    Tolerance = dynareOBC_.Tolerance;
+    
+    SelectNow = 1 + ( 0:T:(T*(ns-1)) );
+    SelectNows = 1 + ( 0:Ts:(Ts*(ns-1)) );
+    ConstraintNow = V( SelectNow ) + M( SelectNow, : ) * alpha;
+    SelectError = ( ConstraintNow < -2 * Tolerance );
+
+    % Force the constraint not to be violated in the first period.
+    if any( SelectError )
+        SelectNowError = SelectNow( SelectError );
+        SelectNowsError = SelectNows( SelectError );
+        alpha( SelectNowsError ) = alpha( SelectNowsError ) - M( SelectNowError, SelectNowsError ) \ ConstraintNow( SelectError );
+        exitflag = -1;
+    end
+%     plot( V + M * alpha );
+%     hold off;
     
     if exitflag < 0
         warning( 'dynareOBC:QuadratureWarnings', 'Critical warnings were generated in the inner quadrature loop; accuracy may be compromised.' );

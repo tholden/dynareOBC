@@ -22,6 +22,7 @@ function dynareOBC_ = InitialChecks( dynareOBC_ )
     
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'LinProgOptions',  optimset( 'display', 'off', 'Algorithm', 'simplex',        'MaxIter', 20 * Ts * ns, 'MaxFunEvals', 10 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance ) );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'QuadProgOptions', optimset( 'display', 'off', 'Algorithm', 'active-set',     'MaxIter', 40 * Ts * ns, 'MaxFunEvals', 20 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance ) ); % 'trust-region-reflective'
+    dynareOBC_ = SetDefaultOption( dynareOBC_, 'LSqLinOptions',   optimset( 'display', 'off', 'Algorithm', 'active-set',     'MaxIter', 40 * Ts * ns, 'MaxFunEvals', 20 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance, 'LargeScale', 'off' ) ); % 'trust-region-reflective'
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'FMinConOptions',  optimset( 'display', 'off', 'Algorithm', 'interior-point', 'MaxIter', 80 * Ts * ns, 'MaxFunEvals', 40 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance, 'TolConSQP', Tolerance, 'DerivativeCheck', 'off', 'GradConstr', 'on', 'GradObj', 'on', 'Hessian', 'user-supplied' ) ); % 'sqp'
     
     CompVec = false( T * ns, 1 );

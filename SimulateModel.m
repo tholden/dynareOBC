@@ -85,12 +85,12 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
 
                 ZeroLowerBoundedReturnPath = vec( ReturnPath( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
 
-                alpha = SolveBoundsProblem( ZeroLowerBoundedReturnPath, dynareOBC_ );
+                [ alpha, ~, ConstrainedReturnPath ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath, dynareOBC_ );
                 [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
                 
                 if dynareOBC_.Accuracy > 0
                     % tString = int2str( t );
-                    alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, options_, oo_Internal, dynareOBC_, ReturnStruct.first ); % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
+                    alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_Internal, dynareOBC_, ReturnStruct.first ); % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
                 end
                 
                 alpha = dynareOBC_.OriginalSigns(:) .* ( pseudo_alpha + alpha );
@@ -137,7 +137,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
     Simulation.total_with_bounds = Simulation.total + Simulation.bound;
     Simulation.shadow_shocks = ShadowShockSequence( NewExoSelect, : );
     
-    if dynareOBC_.MLVSimulationSamples > 0 && ( ~SkipMLVSimulation )
+    if dynareOBC_.MLVSimulationMode > 0 && ( ~SkipMLVSimulation )
         MLVNames = dynareOBC_.MLVNames;
         nMLV = length( MLVNames );
         Simulation.MLVsWithBounds = struct;
@@ -151,7 +151,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
         LeadIndices = dynareOBC_.OriginalLeadLagIncidence( 3, : ) > 0;
         FutureValues = nan( sum( LeadIndices ), 1 );
         
-        if dynareOBC_.MLVSimulationSamples > 1
+        if dynareOBC_.MLVSimulationMode > 1
             PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_.Sigma_e) == 0 ) );
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
             CholSigma_e = chol( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
@@ -168,11 +168,26 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
         WarningIDs = { };
         WarningPeriods = { };
 
+        if dynareOBC_.MLVSimulationMode == 2
+            if DisplayProgress
+                fprintf( '\nCalculating cubature points and weights.\n' );
+            end
+        	[ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC_.MLVSimulationCubatureDegree - 1 ) ) ) );
+            if DisplayProgress
+                fprintf( 'Found a cubature rule with %d points.\n', NumPoints );
+            end
+            FutureShocks = CholSigma_e' * Points;
+        else
+            NumPoints = dynareOBC_.MLVSimulationSamples;
+            Weights = ones( 1, NumPoints ) * ( 1 / NumPoints );
+        end
+        
         if DisplayProgress
             p = TimedProgressBar( SimulationLength, 50, 'Computing model local variable paths. Please wait for around ', '. Progress: ', 'Computing model local variable paths. Completed in ' );
         else
             p = [];
         end
+        
         for t = 1 : SimulationLength
             % clear the last warning
             lastwarn( '' );
@@ -187,8 +202,12 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                 LagValuesWithoutBoundsLagIndices = LagValuesWithoutBounds( LagIndices );
                 CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
                 CurrentValuesWithoutBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
-                if dynareOBC_.MLVSimulationSamples > 1
-                    FutureShocks = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC_.MLVSimulationSamples );
+                if dynareOBC_.MLVSimulationMode > 1
+                    if dynareOBC_.MLVSimulationMode == 3
+                        Points = randn( NumberOfPositiveVarianceShocks, NumPoints );
+                        FutureShocks = CholSigma_e' * Points;
+                    end
+                    
                     InnerInitialFullState = struct;
                     for i = 1 : length( SimulationFieldNames )
                         SimulationFieldName = SimulationFieldNames{i};
@@ -197,7 +216,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                     MLVValuesWithBounds = zeros( nMLV, 1 );
                     MLVValuesWithoutBounds = zeros( nMLV, 1 );
                     WarningGenerated = false;
-                    parfor PointIndex = 1 : dynareOBC_.MLVSimulationSamples
+                    parfor PointIndex = 1 : NumPoints
                         lastwarn( '' );
                         ParallelWarningState = warning( 'off', 'all' );
                         try
@@ -218,8 +237,8 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                                 NewMLVWithBoundsValues( i ) = InnerMLVsWithBounds.( MLVName );
                                 NewMLVWithoutBoundsValues( i ) = InnerMLVsWithoutBounds.( MLVName );
                             end
-                            MLVValuesWithBounds = MLVValuesWithBounds + NewMLVWithBoundsValues;
-                            MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVWithoutBoundsValues;
+                            MLVValuesWithBounds = MLVValuesWithBounds + NewMLVWithBoundsValues * Weights( PointIndex );
+                            MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVWithoutBoundsValues * Weights( PointIndex );
                         catch Error
                             warning( ParallelWarningState );
                             rethrow( Error );
@@ -230,8 +249,6 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                     if WarningGenerated
                         warning( 'dynareOBC:InnerMLVWarning', 'Warnings were generated in the inner loop responsible for evaluating expectations of model local variables.' );
                     end
-                    MLVValuesWithBounds = MLVValuesWithBounds / dynareOBC_.MLVSimulationSamples;
-                    MLVValuesWithoutBounds = MLVValuesWithoutBounds / dynareOBC_.MLVSimulationSamples;
                     for i = 1 : nMLV
                         Simulation.MLVsWithBounds.( MLVNames{i} )( t ) = MLVValuesWithBounds( i );
                         Simulation.MLVsWithoutBounds.( MLVNames{i} )( t ) = MLVValuesWithoutBounds( i );

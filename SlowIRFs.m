@@ -17,7 +17,7 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
     RunWithBoundsWithShock = zeros( M_.endo_nbr, T2, Replications );
     RunWithoutBoundsWithShock = zeros( M_.endo_nbr, T2, Replications );
     
-    if dynareOBC_.MLVSimulationSamples > 0
+    if dynareOBC_.MLVSimulationMode > 0
         MLVNames = dynareOBC_.MLVNames;
         MLVSelect = dynareOBC_.MLVSelect;
         nMLVIRFs = length( MLVSelect );
@@ -62,7 +62,7 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
             RunWithBoundsWithoutShock( :, :, k ) = Simulation.total_with_bounds( :, IRFIndices );
             RunWithoutBoundsWithoutShock( :, :, k ) = Simulation.total( :, IRFIndices );
             
-            if dynareOBC_.MLVSimulationSamples > 0
+            if dynareOBC_.MLVSimulationMode > 0
                 for i = 1 : nMLVIRFs
                     MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
                     MLVsWithBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
@@ -110,7 +110,7 @@ function [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ )
                 RunWithBoundsWithShock( :, :, k ) = Simulation.total_with_bounds;
                 RunWithoutBoundsWithShock( :, :, k ) = Simulation.total;
                 
-                if dynareOBC_.MLVSimulationSamples > 0
+                if dynareOBC_.MLVSimulationMode > 0
                     for i = 1 : nMLVIRFs
                         MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
                         MLVsWithBoundsWithShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName );

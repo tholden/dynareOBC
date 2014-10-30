@@ -67,7 +67,8 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     
     global oo_ M_
 
-    StepSize = sqrt( eps );
+    StepSize = 0.01;
+    InnerIteration = 0;
     for Iteration = 0 : dynareOBC_.MaxIterations
         if Iteration > 0
             M_Internal = M_Internal_Init;
@@ -76,24 +77,39 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             dynareOBC_ = dynareOBC_Init;
             M_Internal.params( PI ) = x;
         end
-        [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( Iteration == 0, M_Internal, options_, oo_Internal ,dynareOBC_ );
+        Info = -1;
+        try
+            [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( Iteration == 0, M_Internal, options_, oo_Internal ,dynareOBC_ );
+        catch
+        end
         if Iteration > 0
             if Info ~= 0
-                StepSize = StepSize * 0.5;
-                LastFailed = true;
-                x = x + StepSize * fx;
+                if dynareOBC_.FixedPointAcceleration
+                    x = 0.5 * x + 0.5 * ox;
+                else
+                    if LastFailed
+                        StepSize = -StepSize;
+                        LastFailed = false;
+                    else
+                        StepSize = StepSize * 0.5;
+                        LastFailed = true;
+                    end
+                    x = ox + StepSize * fx;
+                end
                 continue;
             else
                 ofx = fx;
-                ofxMax = fxMax;
+                ofxNorm = fxNorm;
             end
         else
             if Info ~= 0
                 error( 'dynareOBC:FailedFirstStepGlobal', 'Failed to solve the model at the initial point while computing a global solution.' );
             else
                 ofx = [];
-                ofxMax = Inf;
-                LastFailed = false;
+                ofxNorm = Inf;
+                if ~dynareOBC_.FixedPointAcceleration
+                    LastFailed = false;
+                end
             end
         end
         CholSigma = RRRoot( M_Internal.Sigma_e );
@@ -115,8 +131,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         nSigma = size( CholSigma, 2 );
         
         IntegrationDimension = nVar_z + nSigma;
-        [ QuadratureNodes, QuadratureWeights ] = nwspgr( 'KPN', IntegrationDimension, dynareOBC_.Order + 2 );
-        QuadratureWeights = QuadratureWeights / sum( QuadratureWeights );
+        [ QuadratureWeights, QuadratureNodes ] = fwtpts( IntegrationDimension, dynareOBC_.Order + 1 );
         NumberOfQuadratureNodes = length( QuadratureWeights );
 
         Components = zeros( NumberOfQuadratureNodes, nSVAS );
@@ -157,8 +172,8 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             lastwarn( '' );
             WarningState = warning( 'off', 'all' );
             try
-                CurrentNodes = QuadratureNodes( i, : );
-                z = CholVar_z * CurrentNodes( 1:nVar_z )';
+                CurrentNodes = QuadratureNodes( :, i );
+                z = CholVar_z * CurrentNodes( 1:nVar_z );
                 EndoZeroVec = zeros( nEndo, 1 );
                 InitialFullState = struct;
                 InitialFullState.first = z( inv_order_var );
@@ -177,7 +192,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 InitialFullState.total = InitialFullState.total + Constant;
                 InitialFullState.total_with_bounds = InitialFullState.total + InitialFullState.bound;
 
-                Shock = CholSigma * CurrentNodes( (nVar_z+1):end )';
+                Shock = CholSigma * CurrentNodes( (nVar_z+1):end );
                 Simulation = SimulateModel( Shock, M_Internal, options_, oo_Internal, dynareOBC_, false, InitialFullState );
                 SimulationPresent( :, i ) = Simulation.total_with_bounds;
                 SimulationPast( :, i ) = InitialFullState.total_with_bounds;
@@ -227,8 +242,8 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
         
-        OneIndex = all( Regressors == 1 );
-        RegressorsWithout1 = Regressors( :, ~OneIndex );
+        % OneIndex = all( Regressors == 1 );
+        % RegressorsWithout1 = Regressors( :, ~OneIndex );
         
         LinearIndex = 0;
         xIndex = 0;
@@ -242,14 +257,35 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 if j < T
                     ShadowInnovation = ShadowInnovation - SimulationPast( dynareOBC_.VarIndices_Sum( j + 1, i ), : );
                 end
-                ShadowInnovation = ShadowInnovation';
-                betaTmp = GHWRidge( ShadowInnovation, RegressorsWithout1 );
-                beta = betaTmp;
-                beta( OneIndex ) = betaTmp( 1 );
-                beta( ~OneIndex ) = betaTmp( 2:end );
-                Residuals( :, LinearIndex ) = ShadowInnovation - Regressors * beta;
+                
+                RootQuadratureWeights = sqrt( QuadratureWeights' );
+                Regressors = bsxfun( @times, Regressors, RootQuadratureWeights );
+                ShadowInnovation = ShadowInnovation' .* RootQuadratureWeights;
+                
+                % betaTmp = GHWRidgeWeighted( ShadowInnovation, RegressorsWithout1, QuadratureWeights );
+                % beta = betaTmp;
+                % beta( OneIndex ) = betaTmp( 1 );
+                % beta( ~OneIndex ) = betaTmp( 2:end );
+                
+                [ U1, D1, V1 ] = svd( Regressors, 0 );
+                d1 = diag( D1 );
+                PInvTolerance = NumberOfQuadratureNodes * eps( max( d1 ) );
+                FirstZeroSV = sum( d1 > PInvTolerance ) + 1;
+                U1( :, FirstZeroSV:end ) = [];
+                d1( FirstZeroSV:end ) = [];
+                V2 = V1( :, FirstZeroSV:end );
+                V1( :, FirstZeroSV:end ) = [];
+                PInvRegressors = bsxfun(@times,V1,(1./d1).')*U1';
+                ComplementMatrix = V2 * V2';
+                beta = PInvRegressors * ShadowInnovation;
                 
                 NewxIndex = xIndex + nSVASC;
+                old_beta = gx( ( xIndex+1 ):NewxIndex );
+                
+                beta = beta + ComplementMatrix * ( old_beta - beta );
+                
+                Residuals( :, LinearIndex ) = ShadowInnovation - Regressors * beta;
+                
                 gx( ( xIndex+1 ):NewxIndex ) = beta;
                 xIndex = NewxIndex;
             end
@@ -299,48 +335,54 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         end
         
         fx = gx - x;
-        fxMax = max( abs( fx ) );
+        fxNorm = norm( fx );
         
         skipline( );
-        fprintf( 'End of iteration %d. Maximum change in parameters: %e\n', Iteration, fxMax );
+        fprintf( 'End of iteration %d. Change in parameters: %e\n', Iteration, fxNorm );
         
-        if fxMax < sqrt( eps )
+        if fxNorm < sqrt( eps * nPI )
             x = 0.5 * ( x + gx );
             skipline( );
             break;
         end
         
-        if fxMax <= ofxMax
+        if fxNorm <= ofxNorm
             M_ = M_Internal;
             oo_ = oo_Internal;
             save dynareOBCSemiGlobalResume.mat x M_ oo_;
             save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
 
-            % ox = x;
-            x = x + StepSize * fx;
-            StepSize = StepSize * 1.1;
-            LastFailed = false;
-        else
-            % x = ox;
-            % fx = ofx;
-            % fxMax = ofxMax;
-            if LastFailed
-                StepSize = -StepSize;
+            if ~dynareOBC_.FixedPointAcceleration
+                ox = x;
+                x = ox + StepSize * fx;
+                StepSize = StepSize * 1.1;
                 LastFailed = false;
-            else
-                StepSize = StepSize * 0.5;
-                LastFailed = true;
             end
-            x = x + StepSize * fx;            
+        else
+            if ~dynareOBC_.FixedPointAcceleration
+                % x = ox;
+                fx = ofx;
+                fxNorm = ofxNorm;
+                if LastFailed
+                    StepSize = -StepSize;
+                    LastFailed = false;
+                else
+                    StepSize = StepSize * 0.5;
+                    LastFailed = true;
+                end
+                x = ox + StepSize * fx;
+            end
         end
-        fprintf( 'New step size: %e\n', StepSize );
-        skipline( );
+        if ~dynareOBC_.FixedPointAcceleration
+            fprintf( 'New step size: %e\n', StepSize );
+            skipline( );
+        end
         
-        if 1 == 0
+        if dynareOBC_.FixedPointAcceleration
             ox = x;
-            if Iteration > 0
+            if InnerIteration > 0
                 dfx = fx - ofx;
-                if Iteration > 1
+                if InnerIteration > 1
                     SF( :, end + 1 ) = dfx; %#ok<AGROW>
                     if size( SF, 2 ) > m
                         SF( :, 1 ) = [];
@@ -355,7 +397,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
 
             dx = x - ox;
-            if Iteration > 0
+            if InnerIteration > 0
                 SX( :, end + 1 ) = dx; %#ok<AGROW>
                 if size( SX, 2 ) > m
                     SX( :, 1 ) = [];
@@ -365,10 +407,9 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
 
-        % x = 0.01 * gx + 0.99 * ox;
-        
+        InnerIteration = InnerIteration + 1;        
     end
-    if fxMax < sqrt( eps )
+    if fxNorm < sqrt( eps * nPI )
         skipline( );
         disp( 'Convergence obtained.' );
         skipline( );
@@ -380,6 +421,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         skipline( );
         warning( 'dynareOBC:ReachedMaxIterations', 'The semi-global solution algorithm reached the maximum allowed number of interations without converging. Results may be inaccurate.' );
         skipline( );
+        x = ox;
     end
     M_Internal = M_Internal_Init;
     options_ = options_Init;
@@ -417,10 +459,10 @@ function KL = DensityObjective( ValuesMatrix, ShadowShockComponents, DensitySimu
     end
     
 end
-function CholSigma = RRRoot( Sigma )
+function RootSigma = RRRoot( Sigma )
     FullSigma = full( 0.5 * ( Sigma + Sigma' ) );
     [ V, D ] = eig( FullSigma );
     d = diag( D );
     Select = d > 1.81898940354586e-12;
-    CholSigma = V( :, Select ) * diag( sqrt( d( Select ) ) );
+    RootSigma = V( :, Select ) * diag( sqrt( d( Select ) ) );
 end
