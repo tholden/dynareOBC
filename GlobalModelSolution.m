@@ -131,7 +131,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         nSigma = size( CholSigma, 2 );
         
         IntegrationDimension = nVar_z + nSigma;
-        [ QuadratureWeights, QuadratureNodes ] = fwtpts( IntegrationDimension, dynareOBC_.Order + 1 );
+        [ QuadratureWeights, QuadratureNodes ] = fwtpts( IntegrationDimension, min( dynareOBC_.Order, IntegrationDimension + 1 ) );
         NumberOfQuadratureNodes = length( QuadratureWeights );
 
         Components = zeros( NumberOfQuadratureNodes, nSVAS );
