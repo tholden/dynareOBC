@@ -71,6 +71,9 @@ function DisplayHelp
     disp( '            2^NUMBER points.' );
     disp( '       * densityestimationsimulationlengthmultipler=NUMBER (default: 10)' );
     disp( '            The multiplier on the length of simulation to use for matching the shadow shock density.' );
+    disp( '       * fixedpointacceleration' );
+    disp( '            Enables an accelerated fixed-point algorithm, when accuracy=2. Works only for very well' );
+    disp( '            behaved problems, when starting close to the solution.' );
     disp( '       * resume' );
     disp( '            Resumes an interrupted semi-global solution iteration, when accuracy=2.' );
     disp( ' * timetoescapebounds=NUMBER (default: 10)' );
