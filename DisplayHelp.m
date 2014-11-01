@@ -15,10 +15,8 @@ function DisplayHelp
     disp( 'dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,' );
     disp( 'by Hong Lan and Alexander Meyer-Gohde.' );
     disp( 'Additionally, dynareOBC incorporates code for nested Gaussian cubature that is copyright Alan Genz' );
-    disp( 'and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002,' );
-    disp( 'code for kernel density estimation that is copyright Zdravko Botev, 2007, code for displaying' );
-    disp( 'a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014, and code for' );
-    disp( 'the CMAES algorithm that is copyright Hansen, 2012.' );
+    disp( 'and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002, and' );
+    disp( 'code for displaying a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014.' );
     skipline( );
     disp( 'Usage: dynareOBC FILENAME[.mod,.dyn] [OPTIONS]' );
     skipline( );
@@ -66,11 +64,6 @@ function DisplayHelp
     disp( '            accuracy=2.' );
     disp( '       * maxiterations=NUMBER (default: 1000)' );
     disp( '            The maximum number of iterations of the accuracy=2 fixed-point algorithm.' );
-    disp( '       * densityaccuracy=NUMBER (default: 10)' );
-    disp( '            The density of the regression residuals when accuracy=2 will be evaluated on a grid with' );
-    disp( '            2^NUMBER points.' );
-    disp( '       * densityestimationsimulationlengthmultipler=NUMBER (default: 10)' );
-    disp( '            The multiplier on the length of simulation to use for matching the shadow shock density.' );
     disp( '       * fixedpointacceleration' );
     disp( '            Enables an accelerated fixed-point algorithm, when accuracy=2. Works only for very well' );
     disp( '            behaved problems, when starting close to the solution.' );
