@@ -83,6 +83,10 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     StepSize = 0.01;
     InnerIteration = 0;
     for Iteration = 0 : dynareOBC_.MaxIterations
+        M_Internal = M_Internal_Init;
+        options_ = options_Init;
+        oo_Internal = oo_Internal_Init;
+        dynareOBC_ = dynareOBC_Init;
         [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionInternal( x, Iteration == 0, M_Internal, options_, oo_Internal, dynareOBC_, LowerIndices, PI, StateVariableAndShockTypes, fsolveOptions, ShadowQuadratureWeights, ShadowShockComponents );
         if Iteration > 0
             if ~isfinite( fxNorm )
