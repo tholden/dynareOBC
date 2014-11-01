@@ -206,7 +206,7 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
             CurrentResiduals = Residuals( :, LinearIndex );
             CurrentWeightedResiduals = WeightedResiduals( :, LinearIndex );
 
-            ResidualMoments = CurrentWeightedResiduals' * ( CurrentResiduals .^ ( 1 : nSSC ) );
+            ResidualMoments = CurrentWeightedResiduals' * bsxfun( @power, CurrentResiduals, 1 : nSSC );
             StdResiduals = sqrt( ResidualMoments( 1 ) );
 
             NewxIndex = xIndex + nSSC;
