@@ -56,7 +56,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 if mod( ShockPower, 2 ) == 1
                     ShockMeanOne = false;
                 end
-                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowQuadratureNodes( l, : )' .^ ShockPower );
+                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowQuadratureNodes( l, : ) .^ ShockPower );
             end
         end
         if ShockMeanOne
