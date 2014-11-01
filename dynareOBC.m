@@ -272,7 +272,14 @@ end
 [ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
 
 %Save the result
-FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC_.Order ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
+
+if isoctave || user_has_matlab_license('optimization_toolbox')
+    SolveAlgo = 0;
+else
+    SolveAlgo = 2;
+end
+
+FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC_.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
 newmodfile = fopen( 'dynareOBCtemp3.mod', 'w' );
 fprintf( newmodfile, '%s', FileText );
 fclose( newmodfile );
