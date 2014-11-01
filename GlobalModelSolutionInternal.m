@@ -173,7 +173,7 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
             V1( :, FirstZeroSV:end ) = [];
             PInvXpWX = bsxfun(@times,V1,(1./d1).')*U1';
             ComplementMatrix = V2 * V2';
-            beta = PInvXpWX * WeightedRegressors * ShadowInnovation;
+            beta = PInvXpWX * WeightedRegressors' * ShadowInnovation;
 
             NewxIndex = xIndex + nSVASC;
             old_beta = gx( ( xIndex+1 ):NewxIndex );
