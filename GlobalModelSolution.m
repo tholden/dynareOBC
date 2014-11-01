@@ -46,7 +46,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     
     [ ShadowQuadratureWeights, ShadowQuadratureNodes, ShadowQuadratureLength ] = fwtpts( nSS, ceil( 0.5 * ( ( nSSC + 1 ) * dynareOBC_.ShadowOrder - 1 ) ) );
     
-    ShadowShockComponents = ones( nSSC, ShadowQuadratureLength );
+    ShadowShockComponents = ones( ShadowQuadratureLength, nSSC );
     for k = 1 : nSSC
         ShadowShockCombination = ShadowShockCombinations( k, : );
         ShockMeanOne = true;
@@ -56,7 +56,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 if mod( ShockPower, 2 ) == 1
                     ShockMeanOne = false;
                 end
-                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowQuadratureNodes( l, : ) .^ ShockPower );
+                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowQuadratureNodes( l, : )' .^ ShockPower );
             end
         end
         if ShockMeanOne
