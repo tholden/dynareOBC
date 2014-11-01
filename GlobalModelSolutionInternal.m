@@ -1,5 +1,9 @@
 function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionInternal( x, FirstCall, M_Internal, options_, oo_Internal, dynareOBC_, LowerIndices, PI, StateVariableAndShockTypes, fsolveOptions, ShadowQuadratureWeights, ShadowShockComponents )
 
+    if any( ~isfinite( x ) )
+        error( 'dynareOBC:BadParameters', 'Non-finite parameters were passed to GlobalModelSolutionInternal.' );
+    end
+    
     M_Internal.params( PI ) = x;
     
     Info = -1;
