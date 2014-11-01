@@ -120,7 +120,7 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
     
     ReturnStruct = struct;
     ReturnStruct.first = zPath( dr.inv_order_var, : );
-    ReturnStruct.total = ReturnStruct.first + repmat( dynareOBC_.Constant, 1, T );
+    ReturnStruct.total = bsxfun( @plus, ReturnStruct.first, dynareOBC_.Constant );
     
     if dynareOBC_.Order > 1
         ReturnStruct.second = zPath( length( y1 ) + dr.inv_order_var, : );
