@@ -187,7 +187,7 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
         end
     end
 
-    Residuals = Residuals - QuadratureWeights * Residuals;
+    Residuals = bsxfun( @minus, Residuals, QuadratureWeights * Residuals );
     WeightedResiduals = bsxfun( @times, Residuals, QuadratureWeights' );
     [ LDLCovResiduals, ~ ] = mchol( ( 1 / ( NumberOfQuadratureNodes - nSVASC ) ) * ( Residuals' * WeightedResiduals ) + sqrt( eps ) * eye( Tns ) );
 
