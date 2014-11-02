@@ -93,9 +93,6 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 if dynareOBC_.FixedPointAcceleration
                     gx = Best_x;
                     fx = gx - x;
-                else
-                    x = Best_x;
-                    fx = Best_fx;
                 end
             end
         else
@@ -112,6 +109,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         skipline( );
         fprintf( 'End of iteration %d. Norm: %e\n', Iteration, fxNorm );
         
+        Save_ofx = false;
         if fxNorm < Best_fxNorm
             M_ = M_Internal;
             oo_ = oo_Internal;
@@ -121,13 +119,25 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             Best_x = x;
             Best_fx = fx;
             Best_fxNorm = fxNorm;
+            Save_ofx = true;
 
             if ~dynareOBC_.FixedPointAcceleration
                 StepSize = StepSize * 1.1;
                 LastFailed = false;
+                if Iteration > 0
+                    beta = max( 0, fx' * ( fx - ofx ) / ( ofx' * ofx ) );
+                    sConj = fx + beta * sConj;
+                else
+                    beta = 0;
+                    sConj = fx;
+                end
+                skipline( );
+                fprintf( 'New conjugate gradient parameter: %e\n', beta );
             end
         else
             if ~dynareOBC_.FixedPointAcceleration
+                x = Best_x;
+                fx = Best_fx;
                 if LastFailed
                     StepSize = -StepSize;
                     LastFailed = false;
@@ -146,6 +156,13 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             break;
         end
         
+        if StepSize < sqrt( eps )
+            skipline( );
+            disp( 'Stopping as step size is too small.' );
+            skipline( );
+            break;
+        end       
+         
         ox = x;
         if dynareOBC_.FixedPointAcceleration
             if InnerIteration > 0
@@ -174,13 +191,15 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 SX = dx;
             end
         else
-            x = x + StepSize * fx;
+            x = x + StepSize * sConj;
             fprintf( 'New step size: %e\n', StepSize );
             skipline( );
         end
         
-        ofx = fx;
-         
+        if Save_ofx
+            ofx = fx;
+        end
+        
         InnerIteration = InnerIteration + 1;        
     end
     if Iteration >= dynareOBC_.MaxIterations
@@ -194,15 +213,17 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     oo_Internal = oo_Internal_Init;
     dynareOBC_ = dynareOBC_Init;
     M_Internal.params( PI ) = x;
-    [ fxNorm, ~, ~, M_Internal, oo_Internal ] = GlobalModelSolutionInternal( x, false, M_Internal, options_, oo_Internal, dynareOBC_, LowerIndices, PI, StateVariableAndShockTypes, fsolveOptions, ShadowQuadratureWeights, ShadowShockComponents );
-    if ~isfinite( fxNorm )
+
+    Info = -1;
+    try
+        [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstCall, M_Internal, options_, oo_Internal ,dynareOBC_ );
+    catch
+    end
+    if Info ~= 0
         error( 'dynareOBC:GlobalNoSolution', 'At the final point, no determinate solution exists.' );
     end
-    fprintf( 'Final norm: %e\n', fxNorm );
-    skipline( );
     M_ = M_Internal;
     oo_ = oo_Internal;
     save dynareOBCSemiGlobalResume.mat x M_ oo_;
     save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
-    Info = 0;
 end
