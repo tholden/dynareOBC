@@ -91,27 +91,18 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         if Iteration > 0
             if ~isfinite( fxNorm )
                 if dynareOBC_.FixedPointAcceleration
-                    x = 0.5 * x + 0.5 * ox;
+                    gx = Best_x;
+                    fx = gx - x;
                 else
-                    if LastFailed
-                        StepSize = -StepSize;
-                        LastFailed = false;
-                    else
-                        StepSize = StepSize * 0.5;
-                        LastFailed = true;
-                    end
-                    fx = ofx;
-                    fxNorm = ofxNorm;
-                    x = ox + StepSize * fx;
+                    x = Best_x;
+                    fx = Best_fx;
                 end
-                continue;
             end
         else
             if ~isfinite( fxNorm )
                 error( 'dynareOBC:FailedFirstStepGlobal', 'Failed to solve the model at the initial point while computing a global solution.' );
             else
-                ofx = [];
-                ofxNorm = Inf;
+                Best_fxNorm = Inf;
                 if ~dynareOBC_.FixedPointAcceleration
                     LastFailed = false;
                 end
@@ -119,32 +110,24 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         end
         
         skipline( );
-        fprintf( 'End of iteration %d. Change in parameters: %e\n', Iteration, fxNorm );
+        fprintf( 'End of iteration %d. Norm: %e\n', Iteration, fxNorm );
         
-        if fxNorm < sqrt( eps * nPI )
-            ox = x;
-            x = 0.5 * ( x + gx );
-            skipline( );
-            break;
-        end
-        
-        if fxNorm <= ofxNorm
+        if fxNorm < Best_fxNorm
             M_ = M_Internal;
             oo_ = oo_Internal;
             save dynareOBCSemiGlobalResume.mat x M_ oo_;
             save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
+            
+            Best_x = x;
+            Best_fx = fx;
+            Best_fxNorm = fxNorm;
 
             if ~dynareOBC_.FixedPointAcceleration
-                ox = x;
-                x = ox + StepSize * fx;
                 StepSize = StepSize * 1.1;
                 LastFailed = false;
             end
         else
             if ~dynareOBC_.FixedPointAcceleration
-                % x = ox;
-                fx = ofx;
-                fxNorm = ofxNorm;
                 if LastFailed
                     StepSize = -StepSize;
                     LastFailed = false;
@@ -152,17 +135,19 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                     StepSize = StepSize * 0.5;
                     LastFailed = true;
                 end
-                x = ox + StepSize * fx;
             end
         end
         
-        if ~dynareOBC_.FixedPointAcceleration
-            fprintf( 'New step size: %e\n', StepSize );
+        if fxNorm < sqrt( eps * nPI )
+            x = 0.5 * ( x + gx );
             skipline( );
+            disp( 'Convergence obtained.' );
+            skipline( );
+            break;
         end
         
+        ox = x;
         if dynareOBC_.FixedPointAcceleration
-            ox = x;
             if InnerIteration > 0
                 dfx = fx - ofx;
                 if InnerIteration > 1
@@ -188,22 +173,17 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             else
                 SX = dx;
             end
+        else
+            x = x + StepSize * fx;
+            fprintf( 'New step size: %e\n', StepSize );
+            skipline( );
         end
         
         ofx = fx;
-        ofxNorm = fxNorm;
-        
+         
         InnerIteration = InnerIteration + 1;        
     end
-    if fxNorm < sqrt( eps * nPI )
-        skipline( );
-        disp( 'Convergence obtained.' );
-        skipline( );
-        M_ = M_Internal;
-        oo_ = oo_Internal;
-        save dynareOBCSemiGlobalResume.mat x M_ oo_;
-        save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
-    else
+    if Iteration >= dynareOBC_.MaxIterations
         skipline( );
         warning( 'dynareOBC:ReachedMaxIterations', 'The semi-global solution algorithm reached the maximum allowed number of interations without converging. Results may be inaccurate.' );
         skipline( );
@@ -214,9 +194,15 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     oo_Internal = oo_Internal_Init;
     dynareOBC_ = dynareOBC_Init;
     M_Internal.params( PI ) = x;
-    [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( false, M_Internal, options_, oo_Internal ,dynareOBC_ );
-    if Info ~= 0
+    [ fxNorm, ~, ~, M_Internal, oo_Internal ] = GlobalModelSolutionInternal( x, false, M_Internal, options_, oo_Internal, dynareOBC_, LowerIndices, PI, StateVariableAndShockTypes, fsolveOptions, ShadowQuadratureWeights, ShadowShockComponents );
+    if ~isfinite( fxNorm )
         error( 'dynareOBC:GlobalNoSolution', 'At the final point, no determinate solution exists.' );
     end
-
+    fprintf( 'Final norm: %e\n', fxNorm );
+    skipline( );
+    M_ = M_Internal;
+    oo_ = oo_Internal;
+    save dynareOBCSemiGlobalResume.mat x M_ oo_;
+    save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
+    Info = 0;
 end

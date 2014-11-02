@@ -13,7 +13,7 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
     end
     
     if Info ~= 0
-        fxNorm = NaN;
+        fxNorm = Inf;
         gx = NaN;
         fx = NaN;
         return
