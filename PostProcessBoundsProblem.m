@@ -32,11 +32,15 @@ function [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, Foun
             SelectNowError = SelectNow( SelectError );
             SelectNowsError = SelectNows( SelectError );
             alpha( SelectNowsError ) = alpha( SelectNowsError ) - M( SelectNowError, SelectNowsError ) \ ConstraintNow( SelectError );
-            FoundValue = [];
         end
 
         ReturnPath = V + M * alpha;
+        FoundValue = [];
     end
+    ReturnPathPositive = ReturnPath( 1:Ts ) > 10 * Tolerance;
+    alphaAlt = alpha;
+    alphaAlt( ReturnPathPositive ) = 0;
+    ReturnPath = max( 0, V + M * alphaAlt );
     
     if exitflag <= 0
         FoundValue = [];
