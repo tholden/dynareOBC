@@ -100,12 +100,11 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                         StepSize = StepSize * 0.5;
                         LastFailed = true;
                     end
+                    fx = ofx;
+                    fxNorm = ofxNorm;
                     x = ox + StepSize * fx;
                 end
                 continue;
-            else
-                ofx = fx;
-                ofxNorm = fxNorm;
             end
         else
             if ~isfinite( fxNorm )
@@ -123,6 +122,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         fprintf( 'End of iteration %d. Change in parameters: %e\n', Iteration, fxNorm );
         
         if fxNorm < sqrt( eps * nPI )
+            ox = x;
             x = 0.5 * ( x + gx );
             skipline( );
             break;
@@ -155,6 +155,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 x = ox + StepSize * fx;
             end
         end
+        
         if ~dynareOBC_.FixedPointAcceleration
             fprintf( 'New step size: %e\n', StepSize );
             skipline( );
@@ -188,7 +189,10 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 SX = dx;
             end
         end
-
+        
+        ofx = fx;
+        ofxNorm = fxNorm;
+        
         InnerIteration = InnerIteration + 1;        
     end
     if fxNorm < sqrt( eps * nPI )
