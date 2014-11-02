@@ -80,7 +80,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     
     global oo_ M_
 
-    StepSize = 0.01;
+    StepSize = 0.1;
     InnerIteration = 0;
     for Iteration = 0 : dynareOBC_.MaxIterations
         M_Internal = M_Internal_Init;
