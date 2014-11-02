@@ -7,7 +7,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     SelectState = dynareOBC_.SelectState;
     nEndo = M_.endo_nbr;
     
-    dynareOBC_.MaxIntegrationDimension = min( dynareOBC_.MaxIntegrationDimension, TsM2 * ns );
+    dynareOBC_.MaxCubatureDimension = min( dynareOBC_.MaxCubatureDimension, TsM2 * ns );
     
     % pre-calculations for order=1 terms
     A1 = sparse( nEndo, nEndo );
@@ -313,7 +313,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
             diagD = diag( D );
             assert( isreal( diagD ) );
             RootD = sqrt( max( 0, diagD ) );
-            RootD( 1 : end - dynareOBC_.MaxIntegrationDimension ) = 0;
+            RootD( 1 : end - dynareOBC_.MaxCubatureDimension ) = 0;
             IDv = RootD > sqrt( eps );
             dynareOBC_.RootConditionalCovariance = U( :, IDv ) * diag( RootD( IDv ) );
 
@@ -322,7 +322,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
             % diagD = diag( D );
             % RootD = sqrt( max( 0, diagD ) );
             % NRootD = sort( RootD );
-            % RootD( RootD <= NRootD( end - dynareOBC_.MaxIntegrationDimension ) ) = 0;
+            % RootD( RootD <= NRootD( end - dynareOBC_.MaxCubatureDimension ) ) = 0;
             % IDv = RootD > sqrt( eps );
             % dynareOBC_.RootConditionalCovariance = L( :, IDv ) * diag( RootD( IDv ) );
             

@@ -95,8 +95,8 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options_, o
         assert( isreal( diagD ) );
         max_diagD = max( diagD );
         diagD( diagD < 0.01 * max_diagD ) = 0;
+        diagD( 1 : end - dynareOBC_.MaxCubatureDimension ) = 0;
         RootD = sqrt( diagD );
-        RootD( 1 : end - dynareOBC_.MaxIntegrationDimension ) = 0;
         IDv = RootD > sqrt( eps );
         RootConditionalCovariance = U( :, IDv ) * diag( RootD( IDv ) );
 
@@ -105,7 +105,7 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options_, o
         % diagD = diag( D );
         % RootD = sqrt( max( 0, diagD ) );
         % NRootD = sort( RootD );
-        % RootD( RootD <= NRootD( end - dynareOBC_.MaxIntegrationDimension ) ) = 0;
+        % RootD( RootD <= NRootD( end - dynareOBC_.MaxCubatureDimension ) ) = 0;
         % IDv = RootD > sqrt( eps );
         % RootConditionalCovariance = L( :, IDv ) * diag( RootD( IDv ) );
     

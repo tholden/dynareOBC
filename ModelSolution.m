@@ -65,14 +65,6 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
     dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M_, options_, oo_Internal, dynareOBC_ );
         
     dynareOBC_.FullNumVarExo = M_.exo_nbr;
-    if dynareOBC_.Accuracy > 0
-        skipline( );
-        disp( 'Calibrating quadrature rule.' );
-        skipline( );
-        
-        dynareOBC_ = CalibrateQuadratureRule( M_, options_, oo_Internal, dynareOBC_ );
-
-    end
 
     skipline( );
     disp( 'Reducing the size of decision matrices.' );

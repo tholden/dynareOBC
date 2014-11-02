@@ -24,7 +24,7 @@ function [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ )
         
         [ alpha, ~, ConstrainedReturnPath ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath, dynareOBC_ );
         if dynareOBC_.Accuracy > 0
-            alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_, dynareOBC_, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Completed in ' ] );
+            alpha = PerformCubature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_, dynareOBC_, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for shock ' dynareOBC_.Shocks{i} '. Completed in ' ] );
         end
         
         for j = dynareOBC_.VariableSelect

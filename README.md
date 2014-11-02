@@ -1,7 +1,7 @@
-OBCToolkit
+dynareOBC: An OBC Toolkit
 ==========
 
-A toolkit for handling occasionally binding constraints with dynare, by Tom Holden.
+dynareOBC: A toolkit for handling occasionally binding constraints with dynare, by Tom Holden.
 
 Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone.
@@ -16,10 +16,8 @@ http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf.
 dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,
 by Hong Lan and Alexander Meyer-Gohde.
 Additionally, dynareOBC incorporates code for nested Gaussian cubature that is copyright Alan Genz
-and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002,
-code for kernel density estimation that is copyright Zdravko Botev, 2007, code for displaying
-a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014, and code for
-the CMAES algorithm that is copyright Hansen, 2012.
+and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002, and
+code for displaying a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014.
 
 Usage: dynareOBC FILENAME[.mod,.dyn] [OPTIONS]
 
@@ -44,17 +42,14 @@ Note:
       bound in the far future.
       If accuracy=2, dynareOBC assumes agents take into account the risk of hitting the bound at all
       horizons. Note that this is significantly slower.
-       * removenegativequadratureweights
-            Zeros all negative quadrature weights, when accuracy>0. May or may not improve accuracy.
-       * forceequalquadratureweights
-            Uses equal quadrature weights, when accuracy>0. May or may not improve accuracy.
-       * orderfivequadrature
-            Use a degree 5 quadrature rule, rather than the default degree 3 one, when accuracy>0.
-       * pseudoorderfivequadrature
-            Use a pseduo degree 5 quadrature rule instead, when accuracy>0.
-       * maxintegrationdimension=NUMBER (default: infinity)
-            The maximum dimension over which to integrate, when accuracy>0. Setting this to 0 makes
-            accuracy=1 equivalent to accuracy=0
+       * cubaturedegree=NUMBER (default: 3)
+            Specifies the degree of polynomial which should be integrated exactly, when accuracy>0.
+            Values above 51 are treated as equal to 51.
+       * avoidnegativecubatureweights
+            Causes dynareOBC to ignore the value specified with cubaturedegree, and to instead use a
+            degree 3 rule without negative weights, but involving evaluations further from the origin.
+       * maxcubaturedimension=NUMBER (default: infinity)
+            The maximum dimension over which to integrate, when accuracy>0.
        * firstorderconditionalcovariance
             When accuracy>0 and order>1 (possibly with firstorderaroundrss or firstorderaroundmean),
             by default, dynareOBC uses a second order approximation of the conditional covariance.
@@ -67,11 +62,9 @@ Note:
             accuracy=2.
        * maxiterations=NUMBER (default: 1000)
             The maximum number of iterations of the accuracy=2 fixed-point algorithm.
-       * densityaccuracy=NUMBER (default: 10)
-            The density of the regression residuals when accuracy=2 will be evaluated on a grid with
-            2^NUMBER points.
-       * densityestimationsimulationlengthmultipler=NUMBER (default: 10)
-            The multiplier on the length of simulation to use for matching the shadow shock density.
+       * fixedpointacceleration
+            Enables an accelerated fixed-point algorithm, when accuracy=2. Works only for very well
+            behaved problems, when starting close to the solution.
        * resume
             Resumes an interrupted semi-global solution iteration, when accuracy=2.
  * timetoescapebounds=NUMBER (default: 10)

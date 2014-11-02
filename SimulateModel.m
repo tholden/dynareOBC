@@ -90,7 +90,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                 
                 if dynareOBC_.Accuracy > 0
                     % tString = int2str( t );
-                    alpha = PerformQuadrature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_Internal, dynareOBC_, ReturnStruct.first ); % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
+                    alpha = PerformCubature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_Internal, dynareOBC_, ReturnStruct.first ); % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
                 end
                 
                 alpha = dynareOBC_.OriginalSigns(:) .* ( pseudo_alpha + alpha );
