@@ -157,6 +157,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         end
         
         if StepSize < sqrt( eps )
+            x = Best_x;
             skipline( );
             disp( 'Stopping as step size is too small.' );
             skipline( );
