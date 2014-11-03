@@ -66,10 +66,16 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
     
     fsolveOptions = optimset( 'display', 'off', 'Jacobian', 'on', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolFun', eps, 'TolX', eps );
     
+    x = M_Internal.params( PI );
     if dynareOBC_.Resume
-        load dynareOBCSemiGlobalResume.mat x;
-        M_Internal.params( PI ) = x;
-    else
+        ResumeData = load( 'dynareOBCSemiGlobalResume.mat' );
+        ResumeParamNames = cellstr( ResumeData.M_.param_names );
+        NewParamNames = cellstr( M_Internal.param_names );
+        for i = 1 : length( ResumeParamNames )
+            ParamName = ResumeParamNames{ i };
+            j = find( strcmp( ParamName, NewParamNames ), 1 );
+            M_Internal.params( j ) = ResumeData.M_.params( i );
+        end
         x = M_Internal.params( PI );
     end
     
