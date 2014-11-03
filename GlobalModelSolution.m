@@ -217,7 +217,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
 
     Info = -1;
     try
-        [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstCall, M_Internal, options_, oo_Internal ,dynareOBC_ );
+        [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( false, M_Internal, options_, oo_Internal ,dynareOBC_ );
     catch
     end
     if Info ~= 0
