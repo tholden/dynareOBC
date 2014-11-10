@@ -22,7 +22,7 @@ function [ X, Norm ] = SparseLyapunovSymm( A, B )
     Norm = norm( A*X*A' + B - X, Inf ) / norm( B, Inf );
     
     if Norm > sqrt( eps )
-        X = lyapunov_symm( A, B, 1+1e-6, 1e-15 );
+        X = lyapunov_symm( full( A ), full( B ), 1+1e-6, 1e-15 );
         X = spsparse( X );
         Norm = norm( A*X*A' + B - X, Inf ) / norm( B, Inf );
     end
