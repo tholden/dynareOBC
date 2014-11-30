@@ -29,7 +29,26 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
     if nargin < 8
         SkipMLVSimulation = false;
     end
-    Simulation = pruning_abounds( M_, options_, ShockSequence, SimulationLength, dynareOBC_.Order, 'lan_meyer-gohde', 1, InitialFullState );
+    if DisplayProgress
+        p = TimedProgressBar( SimulationLength * dynareOBC_.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
+    else
+        p = [];
+    end
+    if isempty( p )
+        call_back = @( x ) x;
+        call_back_arg = 0;
+    else
+        call_back = @( x ) x.progress;
+        call_back_arg = p;
+    end
+    try
+        Simulation = pruning_abounds( M_, options_, ShockSequence, SimulationLength, dynareOBC_.Order, 'lan_meyer-gohde', 1, InitialFullState, call_back, call_back_arg );
+    catch
+        Simulation = pruning_abounds( M_, options_, ShockSequence, SimulationLength, dynareOBC_.Order, 'lan_meyer-gohde', 1, InitialFullState );
+    end
+    if ~isempty( p )
+        p.stop;
+    end
     StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
     
     ghx = dynareOBC_.HighestOrder_ghx;
