@@ -43,7 +43,7 @@ end
 save dynareOBCtemp.mat fname varargin;
 
 if ~ismember( 'noclearall', varargin )
-    clear all;
+    clear all; %#ok<CLFUN>
 end
 
 load dynareOBCtemp.mat;
@@ -103,7 +103,7 @@ if ( dynareOBC_.Algorithm == 2 ) && ( dynareOBC_.UseFICOXpress == 1 )
     warning( 'dynareOBC:FicoHomoptopy', 'Using algorithm=1 with FICO Xpress is not recommended, as the Xpress solver will not be used for the quadratic programming. Try algorithm=2 instead.' );
 end
 
-basevarargin( end + 1 : end + 5 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive' };
+basevarargin( end + 1 : end + 5 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
 
 %% Dynare pre-processing
 
