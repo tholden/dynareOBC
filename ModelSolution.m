@@ -17,6 +17,17 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
     end
 
     if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0
+        if ~dynareOBC_.NoSparse
+            skipline( );
+            disp( 'Converting to sparse matrices.' );
+            skipline( );
+            DRFieldNames = fieldnames( oo_Internal.dr );
+            for i = 1 : length( DRFieldNames )
+                oo_Internal.dr.( DRFieldNames{i} ) = spsparse( oo_Internal.dr.( DRFieldNames{i} ) );
+            end
+            M_.Sigma_e = spsparse( M_.Sigma_e );
+        end
+
         skipline( );
         disp( 'Computing the first order approximation around the selected non-steady-state point.' );
         skipline( );
