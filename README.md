@@ -34,43 +34,43 @@ Note:
    in later steps of its solution procedure.
 
 [OPTIONS] include:
- * accuracy=0|1|2 (default: 1)
-      If accuracy=0, dynareOBC assumes that agents are "surprised" by the existence of the bound.
-      At order=1, this is equivalent to a perfect foresight solution to the model.
-      If accuracy=1, dynareOBC assumes agents realise that shocks may arrive in the near future which
-      push them towards the bound. However, they do not take into account the risk of hitting the
-      bound in the far future.
-      If accuracy=2, dynareOBC assumes agents take into account the risk of hitting the bound at all
-      horizons. Note that this is significantly slower.
-       * maxcubaturedegree=NUMBER (default: 3)
-            Specifies the degree of polynomial which should be integrated exactly, when accuracy>0.
-            Values above 51 are treated as equal to 51.
-       * fastcubature
-            Causes dynareOBC to ignore the value specified in maxcubaturedegree, and to instead use a
-            degree 3 rule without negative weights, but involving evaluations further from the origin.
-       * maxcubaturedimension=NUMBER (default: infinity)
-            The maximum dimension over which to integrate, when accuracy>0.
-       * firstorderconditionalcovariance
-            When accuracy>0 and order>1 (possibly with firstorderaroundrss or firstorderaroundmean),
-            by default, dynareOBC uses a second order approximation of the conditional covariance.
-            This option specifies that a first order approximation should be used instead.
+ * global
+      Without this, dynareOBC assumes agents realise that shocks may arrive in the near future which
+      push them towards the bound, but they do not take into account the risk of hitting the bound
+      in the far future. With the global option, dynareOBC assumes agents take into account the risk
+      of hitting the bound at all horizons. Note that this is significantly slower.
        * shadowshocknumbermultiplier=NUMBER (default: the order of approximation)
             The number of shocks with which to approximate the distribution of each shadow shock
-            innovation, when accuracy=2.
+            innovation, when using global.
        * shadowapproximatingorder=NUMBER (default: the order of approximation)
             The order with which to approximate the expected component of each shadow shock, when
-            accuracy=2.
+            using global.
        * maxiterations=NUMBER (default: 1000)
-            The maximum number of iterations of the accuracy=2 fixed-point algorithm.
+            The maximum number of iterations of the global fixed-point algorithm.
        * fixedpointacceleration
-            Enables an accelerated fixed-point algorithm, when accuracy=2. Works only for very well
+            Enables an accelerated fixed-point algorithm, when using global. Works only for very well
             behaved problems, when starting close to the solution.
        * resume
-            Resumes an interrupted semi-global solution iteration, when accuracy=2.
+            Resumes an interrupted solution iteration, when using global.
+ * maxcubaturedegree=NUMBER (default: 7)
+      Specifies the degree of polynomial which will be integrated exactly in the highest degree,
+      cubature performed. Values above 51 are treated as equal to 51.
+ * nocubature
+      Speeds up dynareOBC by assuming that agents are "surprised" by the existence of the bound.
+      At order=1, this is equivalent to a perfect foresight solution to the model.
+ * fastcubature
+      Causes dynareOBC to ignore the value specified in maxcubaturedegree, and to instead use a
+      degree 3 rule without negative weights, but involving evaluations further from the origin.
+ * maxcubaturedimension=NUMBER (default: infinity)
+      The maximum dimension over which to integrate.
+ * firstorderconditionalcovariance
+      When order>1 (possibly with firstorderaroundrss or firstorderaroundmean), by default,
+      dynareOBC uses a second order approximation of the conditional covariance.
+      This option specifies that a first order approximation should be used instead.
  * timetoescapebounds=NUMBER (default: 10)
       The number of periods following a shock after which the model is expected to be away from any
-      occasionally binding constraints. When accuracy>0, this also controls the number of periods of
-      uncertainty over which we integrate.
+      occasionally binding constraints. This also controls the number of periods of uncertainty over
+      which we integrate.
  * timetoreturntosteadystate=NUMBER (default: requested IRF length)
       The number of periods in which to verify that the constraints are not being violated.
  * firstorderaroundrss
