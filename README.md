@@ -42,11 +42,11 @@ Note:
       bound in the far future.
       If accuracy=2, dynareOBC assumes agents take into account the risk of hitting the bound at all
       horizons. Note that this is significantly slower.
-       * cubaturedegree=NUMBER (default: 3)
+       * maxcubaturedegree=NUMBER (default: 3)
             Specifies the degree of polynomial which should be integrated exactly, when accuracy>0.
             Values above 51 are treated as equal to 51.
        * fastcubature
-            Causes dynareOBC to ignore the value specified with cubaturedegree, and to instead use a
+            Causes dynareOBC to ignore the value specified in maxcubaturedegree, and to instead use a
             degree 3 rule without negative weights, but involving evaluations further from the origin.
        * maxcubaturedimension=NUMBER (default: infinity)
             The maximum dimension over which to integrate, when accuracy>0.

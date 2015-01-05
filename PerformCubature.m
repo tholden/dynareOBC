@@ -1,6 +1,6 @@
 function alpha = PerformCubature( alpha, V, ReturnPath, options_, oo_, dynareOBC_, FirstOrderSimulation, varargin )
 
-    if dynareOBC_.MaxCubatureDimension == 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.CubatureDegree <= 1 )
+    if dynareOBC_.MaxCubatureDimension == 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
         return;
     end
     
@@ -16,7 +16,7 @@ function alpha = PerformCubature( alpha, V, ReturnPath, options_, oo_, dynareOBC
         wTemp = 0.5 * sqrt( 2 * NumPoints );
         CubaturePoints = [ zeros( d, 1 ), eye( d ) * wTemp, eye( d ) * (-wTemp) ];
     else
-        [ CubatureWeights, CubaturePoints, NumPoints ] = fwtpts( d, ceil( 0.5 * ( dynareOBC_.CubatureDegree - 1 ) ) );
+        [ CubatureWeights, CubaturePoints, NumPoints ] = fwtpts( d, ceil( 0.5 * ( dynareOBC_.MaxCubatureDegree - 1 ) ) );
     end
     CubatureWeights = CubatureWeights / sum( CubatureWeights );
 

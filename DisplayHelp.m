@@ -41,11 +41,11 @@ function DisplayHelp
     disp( '      bound in the far future.' );
     disp( '      If accuracy=2, dynareOBC assumes agents take into account the risk of hitting the bound at all' );
     disp( '      horizons. Note that this is significantly slower.' );
-    disp( '       * cubaturedegree=NUMBER (default: 3)' );
+    disp( '       * maxcubaturedegree=NUMBER (default: 3)' );
     disp( '            Specifies the degree of polynomial which should be integrated exactly, when accuracy>0.' );
     disp( '            Values above 51 are treated as equal to 51.' );
     disp( '       * fastcubature' );
-    disp( '            Causes dynareOBC to ignore the value specified with cubaturedegree, and to instead use a' );
+    disp( '            Causes dynareOBC to ignore the value specified in maxcubaturedegree, and to instead use a' );
     disp( '            degree 3 rule without negative weights, but involving evaluations further from the origin.' );
     disp( '       * maxcubaturedimension=NUMBER (default: infinity)' );
     disp( '            The maximum dimension over which to integrate, when accuracy>0.' );
