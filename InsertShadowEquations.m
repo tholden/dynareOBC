@@ -96,7 +96,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
                     end
                 end
             end
-            if dynareOBC_.Accuracy > 1
+            if dynareOBC_.Global
                 LinearIndex2 = 0;
                 for i2 = 1 : i
                     string_i2 = int2str( i2 );

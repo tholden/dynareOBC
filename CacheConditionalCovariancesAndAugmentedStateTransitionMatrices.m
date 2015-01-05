@@ -19,11 +19,11 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     Sigma = spsparse( M_.Sigma_e );
     dynareOBC_.OriginalSigma = Sigma;
 
-    Order2VarianceRequired = ( dynareOBC_.Order >= 2 ) && ( dynareOBC_.CalculateTheoreticalVariance || ( dynareOBC_.Accuracy == 2 ) );
+    Order2VarianceRequired = ( dynareOBC_.Order >= 2 ) && ( dynareOBC_.CalculateTheoreticalVariance || dynareOBC_.Global );
     if ( dynareOBC_.Order == 1 ) || Order2VarianceRequired
         dynareOBC_.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
     end
-    if ( dynareOBC_.Order == 1 ) && ( dynareOBC_.Accuracy == 2 )
+    if ( dynareOBC_.Order == 1 ) && dynareOBC_.Global
         dynareOBC_.UnconditionalVarXi = Sigma;
         dynareOBC_.LengthXi = size( Sigma, 1 );
     end
@@ -38,7 +38,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
         VarianceZ1{ k } = VarianceZ1{ k - 1 } + CurrentInternal;
     end
 
-    Order2ConditionalCovariance = dynareOBC_.Accuracy > 0 && ~( options_.order == 1 || dynareOBC_.FirstOrderConditionalCovariance );
+    Order2ConditionalCovariance = ( ~dynareOBC_.NoCubature ) && ~( options_.order == 1 || dynareOBC_.FirstOrderConditionalCovariance );
     
     if dynareOBC_.Order > 1 || Order2ConditionalCovariance
         % pre-calculations common to finding the state transition when dynareOBC_.Order > 1 and to finding the conditional covariance when Order2ConditionalCovariance=true
@@ -267,7 +267,7 @@ function dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatr
     dynareOBC_.Mean = dynareOBC_.RelativeMean + dynareOBC_.Constant;
     
     % Calculate conditional covariances
-    if dynareOBC_.Accuracy > 0
+    if ~dynareOBC_.NoCubature
         OpenPool;
         if ~Order2ConditionalCovariance
 

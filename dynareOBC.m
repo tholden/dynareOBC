@@ -90,9 +90,6 @@ end
 if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 2
     error( 'dynareOBC:Arguments', 'You cannot select both firstorderaroundrss and firstorderaroundmean.' );
 end
-if ( dynareOBC_.Accuracy < 0 ) || ( dynareOBC_.Accuracy > 2 )
-    error( 'dynareOBC:Arguments', 'accuracy should be between 0 and 2.' );
-end
 if ( dynareOBC_.Algorithm < 0 ) || ( dynareOBC_.Algorithm > 3 )
     error( 'dynareOBC:Arguments', 'algorithm should be between 0 and 3.' );
 end
@@ -106,9 +103,8 @@ end
 basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
 
 if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
-    dynareOBC_.Accuracy = 0;
+    dynareOBC_.NoCubature = true;
 end
-
 
 %% Dynare pre-processing
 
@@ -213,7 +209,7 @@ dynareOBC_ = SetDefaultOption( dynareOBC_, 'IRFShocks', dynareOBC_.Shocks );
 dynareOBC_.StateVariablesAndShocks = [ {'1'} dynareOBC_.StateVariables dynareOBC_.Shocks ];
 
 % Generate combinations
-if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0 % dynareOBC_.Accuracy < 2 || 
+if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0 % ~dynareOBC_.Global || 
     dynareOBC_.ShadowShockNumberMultiplier = 1;
 else
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'ShadowShockNumberMultiplier', dynareOBC_.Order );
@@ -230,16 +226,16 @@ else
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'ShadowApproximatingOrder', dynareOBC_.ShadowOrder );
 end
 
-if dynareOBC_.Accuracy < 2
-    dynareOBC_.StateVariableAndShockCombinations = { };
-    dynareOBC_.ShadowShockCombinations = { };
-    dynareOBC_.ShadowShockNumberMultiplier = 0;
-else
+if dynareOBC_.Global
     dynareOBC_.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC_.StateVariablesAndShocks ), dynareOBC_.ShadowApproximatingOrder );
     if dynareOBC_.ShadowApproximatingOrder == 0
         dynareOBC_.StateVariableAndShockCombinations( 1 ) = 1;
     end
     dynareOBC_.ShadowShockCombinations = GenerateCombinations( dynareOBC_.ShadowShockNumberMultiplier, dynareOBC_.ShadowOrder );
+else
+    dynareOBC_.StateVariableAndShockCombinations = { };
+    dynareOBC_.ShadowShockCombinations = { };
+    dynareOBC_.ShadowShockNumberMultiplier = 0;
 end
 
 
@@ -305,10 +301,10 @@ options_.noprint = 0;
 options_.nomoments = dynareOBC_.NoMoments;
 options_.nocorr = dynareOBC_.NoCorr;
 
-if dynareOBC_.Accuracy < 2
-    [ Info, M_, options_, oo_ ,dynareOBC_ ] = ModelSolution( 1, M_, options_, oo_ ,dynareOBC_ );
-else
+if dynareOBC_.Global
     [ Info, M_, options_, oo_ ,dynareOBC_ ] = GlobalModelSolution( M_, options_, oo_ ,dynareOBC_ );
+else
+    [ Info, M_, options_, oo_ ,dynareOBC_ ] = ModelSolution( 1, M_, options_, oo_ ,dynareOBC_ );
 end
 
 dynareOBC_ = orderfields( dynareOBC_ );
