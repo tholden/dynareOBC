@@ -1,9 +1,5 @@
 function alpha = PerformCubature( alpha, V, ReturnPath, options_, oo_, dynareOBC_, FirstOrderSimulation, varargin )
-
-    if dynareOBC_.MaxCubatureDimension == 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
-        return;
-    end
-    
+   
     RootConditionalCovariance = RetrieveConditionalCovariances( options_, oo_, dynareOBC_, FirstOrderSimulation );
     d = size( RootConditionalCovariance, 2 );
     if d == 0

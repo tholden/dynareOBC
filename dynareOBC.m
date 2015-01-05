@@ -105,6 +105,11 @@ end
 
 basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
 
+if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
+    dynareOBC_.Accuracy = 0;
+end
+
+
 %% Dynare pre-processing
 
 skipline( );
