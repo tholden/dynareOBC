@@ -1,7 +1,7 @@
 function dynareOBC_ = SetDefaultOptions( dynareOBC_ )
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'Accuracy', 1 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'Algorithm', 0 );
-    dynareOBC_ = SetDefaultOption( dynareOBC_, 'AvoidNegativeCubatureWeights', false );
+    dynareOBC_ = SetDefaultOption( dynareOBC_, 'FastCubature', false );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'CacheSize', 0 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'CalculateTheoreticalVariance', false );    
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'CubatureDegree', 3 );    

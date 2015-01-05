@@ -44,7 +44,7 @@ function DisplayHelp
     disp( '       * cubaturedegree=NUMBER (default: 3)' );
     disp( '            Specifies the degree of polynomial which should be integrated exactly, when accuracy>0.' );
     disp( '            Values above 51 are treated as equal to 51.' );
-    disp( '       * avoidnegativecubatureweights' );
+    disp( '       * fastcubature' );
     disp( '            Causes dynareOBC to ignore the value specified with cubaturedegree, and to instead use a' );
     disp( '            degree 3 rule without negative weights, but involving evaluations further from the origin.' );
     disp( '       * maxcubaturedimension=NUMBER (default: infinity)' );

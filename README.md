@@ -45,7 +45,7 @@ Note:
        * cubaturedegree=NUMBER (default: 3)
             Specifies the degree of polynomial which should be integrated exactly, when accuracy>0.
             Values above 51 are treated as equal to 51.
-       * avoidnegativecubatureweights
+       * fastcubature
             Causes dynareOBC to ignore the value specified with cubaturedegree, and to instead use a
             degree 3 rule without negative weights, but involving evaluations further from the origin.
        * maxcubaturedimension=NUMBER (default: infinity)
