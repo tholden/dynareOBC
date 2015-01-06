@@ -54,6 +54,11 @@ function DisplayHelp
     disp( ' * maxcubaturedegree=NUMBER (default: 7)' );
     disp( '      Specifies the degree of polynomial which will be integrated exactly in the highest degree,' );
     disp( '      cubature performed. Values above 51 are treated as equal to 51.' );
+    disp( '       * cubatureaccuracy=NUMBER (default: 3)' );
+    disp( '            Specifies that the maximum acceptable change in the integrals is 10^(-NUMBER).' );
+    disp( '       * nostatisticalcubature' );
+    disp( '            Disables the statistical improvement to the cubature algorithm, which aggregates results' );
+    disp( '            of cubature at different degrees. Will generally reduce accuracy, but increase speed.' );
     disp( ' * nocubature' );
     disp( '      Speeds up dynareOBC by assuming that agents are "surprised" by the existence of the bound.' );
     disp( '      At order=1, this is equivalent to a perfect foresight solution to the model.' );

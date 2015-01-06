@@ -102,14 +102,14 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
                     ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC_.MSubMatrices{ i }( 1:T, : ) * pseudo_alpha )';
                 end
 
-                ZeroLowerBoundedReturnPath = vec( ReturnPath( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
+                UnconstrainedReturnPath = vec( ReturnPath( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
 
-                [ alpha, ~, ConstrainedReturnPath ] = SolveBoundsProblem( ZeroLowerBoundedReturnPath, dynareOBC_ );
+                [ alpha, ~, ConstrainedReturnPath ] = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC_ );
                 [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
                 
                 if ~dynareOBC_.NoCubature
                     % tString = int2str( t );
-                    alpha = PerformCubature( alpha, ZeroLowerBoundedReturnPath, ConstrainedReturnPath, options_, oo_Internal, dynareOBC_, ReturnStruct.first ); % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
+                    alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedReturnPath, options_, oo_Internal, dynareOBC_, ReturnStruct.first ); % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
                 end
                 
                 alpha = dynareOBC_.OriginalSigns(:) .* ( pseudo_alpha + alpha );
