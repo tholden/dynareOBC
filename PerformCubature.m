@@ -75,11 +75,11 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
             ConstrainedReturnPath = ReturnPath_new;
         else
             if i == 2
-                HyperParams = [ 0; 0; 0.1 ];
+                HyperParams = [ 0; 0; 0.01 ];
             end
             x_alpha = [ alpha_orig alphaMatrix( :, 1:i ) ];
             x_ReturnPath = [ ReturnPath_orig ReturnPathMatrix( :, 1:i ) ];
-            HyperParams = fmincon( @( HP ) GetTwoNLogL( HP, x_alpha ), HyperParams, [], [], [], [], [ -1; -1; 0 ], [ 1; 1; 1 ], [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
+            HyperParams = fmincon( @( HP ) GetTwoNLogL( HP, x_ReturnPath ), HyperParams, [], [], [], [], [ -1; -1; 0 ], [ 1; 1; 1 ], [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
             alpha_new = GetMu( HyperParams, x_alpha );
             ReturnPath_new = GetMu( HyperParams, x_ReturnPath );
             alphaError = max( abs( alpha - alpha_new ) );
@@ -157,7 +157,7 @@ function [ mu, sigma, PhiInv, diagKappaInvRhoInvdiagKappaInv, Error ] = GetMu( H
     T = size( x, 2 );
     RhoInv = GetInvARCovMat( rho, T );
     PhiInv = GetInvARCovMat( phi, I );
-    KappaInv = kappa .^ ((0:(T-1))');
+    KappaInv = kappa .^ (-(0:(T-1))');
     diagKappaInvRhoInvdiagKappaInv = diag( KappaInv ) * RhoInv * diag( KappaInv );
     II = eye( I );
     OI = ones( I, 1 );
