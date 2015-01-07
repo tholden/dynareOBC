@@ -55,7 +55,7 @@ Note:
  * maxcubaturedegree=NUMBER (default: 7)
       Specifies the degree of polynomial which will be integrated exactly in the highest degree,
       cubature performed. Values above 51 are treated as equal to 51.
-       * cubatureaccuracy=NUMBER (default: 8)
+       * cubatureaccuracy=NUMBER (default: 6)
             Specifies that the maximum acceptable change in the integrals is 10^(-NUMBER).
        * nostatisticalcubature
             Disables the statistical improvement to the cubature algorithm, which aggregates results

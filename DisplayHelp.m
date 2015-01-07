@@ -54,7 +54,7 @@ function DisplayHelp
     disp( ' * maxcubaturedegree=NUMBER (default: 7)' );
     disp( '      Specifies the degree of polynomial which will be integrated exactly in the highest degree,' );
     disp( '      cubature performed. Values above 51 are treated as equal to 51.' );
-    disp( '       * cubatureaccuracy=NUMBER (default: 8)' );
+    disp( '       * cubatureaccuracy=NUMBER (default: 6)' );
     disp( '            Specifies that the maximum acceptable change in the integrals is 10^(-NUMBER).' );
     disp( '       * nostatisticalcubature' );
     disp( '            Disables the statistical improvement to the cubature algorithm, which aggregates results' );
