@@ -75,7 +75,7 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
     disp( 'Pre-calculating the augmented state transition matrices and possibly conditional covariances.' );
     skipline( );
 
-    if dynareOBC_.NumberOfMax > 0
+    if dynareOBC_.NumberOfMax > 0 || dynareOBC_.FastIRFs
         dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M_, options_, oo_Internal, dynareOBC_ );
     end
         
