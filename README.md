@@ -57,6 +57,9 @@ Note:
       cubature performed. Values above 51 are treated as equal to 51.
        * cubatureaccuracy=NUMBER (default: 6)
             Specifies that the maximum acceptable change in the integrals is 10^(-NUMBER).
+       * kappapriorparameter=NUMBER (default: 1)
+            The rate of decay of the standard deviation of the error is given a Frechet distributed
+            prior with shape parameter 1/NUMBER. Setting this to 0 disables the prior on kappa.
        * nostatisticalcubature
             Disables the statistical improvement to the cubature algorithm, which aggregates results
             of cubature at different degrees. Will generally reduce accuracy, but increase speed.

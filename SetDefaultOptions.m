@@ -14,6 +14,7 @@ function dynareOBC_ = SetDefaultOptions( dynareOBC_ )
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'HomotopySteps', 10 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'IRFPeriods', 40 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'IRFsAroundZero', false );
+    dynareOBC_ = SetDefaultOption( dynareOBC_, 'KappaPriorParameter', 1 );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'MaxCubatureDegree', 3 );    
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'MaxCubatureDimension', Inf );
     dynareOBC_ = SetDefaultOption( dynareOBC_, 'MaxIterations', 1000 );

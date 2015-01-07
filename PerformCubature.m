@@ -44,9 +44,12 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
     exitflag = Inf;
     
     OpenPool;
-	if ~isempty( p )
-		p.progress;
-	end    
+    if ~isempty( p )
+        p.progress;
+    end
+    
+    HyperParams = [ 0; 0; 0.5 ];
+    
     for i = 1 : CubatureOrder
     
         parfor j = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 )
@@ -66,29 +69,24 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
             end
         end
 		
-        if i == 1 || dynareOBC_.NoStatisticalCubature
+        if dynareOBC_.FastCubature || dynareOBC_.NoStatisticalCubature || ( i == 1 && dynareOBC_.KappaPriorParameter == 0 )
             alpha_new = alphaMatrix( :, i );
             ReturnPath_new = ReturnPathMatrix( :, i );
-            alphaError = max( abs( alpha - alpha_new ) );
             ReturnPathError = max( abs( ConstrainedReturnPath - ReturnPath_new ) );
             alpha = alpha_new;
             ConstrainedReturnPath = ReturnPath_new;
         else
-            if i == 2
-                HyperParams = [ 0; 0; 0.01 ];
-            end
             x_alpha = [ alpha_orig alphaMatrix( :, 1:i ) ];
             x_ReturnPath = [ ReturnPath_orig ReturnPathMatrix( :, 1:i ) ];
-            HyperParams = fmincon( @( HP ) GetTwoNLogL( HP, x_ReturnPath ), HyperParams, [], [], [], [], [ -1; -1; 0 ], [ 1; 1; 1 ], [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
+            HyperParams = fmincon( @( HP ) GetTwoNLogL( HP, x_ReturnPath, dynareOBC_.KappaPriorParameter ), HyperParams, [], [], [], [], [ -1; -1; 0 ], [ 1; 1; 1 ], [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
             alpha_new = GetMu( HyperParams, x_alpha );
             ReturnPath_new = GetMu( HyperParams, x_ReturnPath );
-            alphaError = max( abs( alpha - alpha_new ) );
             ReturnPathError = max( abs( ConstrainedReturnPath - ReturnPath_new ) );
             alpha = alpha_new;
             ConstrainedReturnPath = ReturnPath_new;
         end
         
-        if max( alphaError, ReturnPathError ) < 10 ^ ( -dynareOBC_.CubatureAccuracy )
+        if ReturnPathError < 10 ^ ( -dynareOBC_.CubatureAccuracy )
             break;
         end
     
@@ -158,7 +156,8 @@ function [ mu, sigma, PhiInv, diagKappaInvRhoInvdiagKappaInv, Error ] = GetMu( H
     RhoInv = GetInvARCovMat( rho, T );
     PhiInv = GetInvARCovMat( phi, I );
     KappaInv = kappa .^ (-(0:(T-1))');
-    diagKappaInvRhoInvdiagKappaInv = diag( KappaInv ) * RhoInv * diag( KappaInv );
+    diagKappaInv = diag( KappaInv );
+    diagKappaInvRhoInvdiagKappaInv = diagKappaInv * RhoInv * diagKappaInv;
     II = eye( I );
     OI = ones( I, 1 );
     OT = ones( T, 1 );
@@ -168,7 +167,7 @@ function [ mu, sigma, PhiInv, diagKappaInvRhoInvdiagKappaInv, Error ] = GetMu( H
     sigma = sqrt( eps + max( 0, 1 / T * Temp' * kron( RhoInv, PhiInv ) * Temp * OI ) );
 end
 
-function TwoNLogL = GetTwoNLogL( HyperParams, x )
+function TwoNLogL = GetTwoNLogL( HyperParams, x, KappaPriorParameter )
     rho = HyperParams( 1 );
     phi = HyperParams( 2 );
     kappa = HyperParams( 3 );
@@ -177,5 +176,11 @@ function TwoNLogL = GetTwoNLogL( HyperParams, x )
     T = size( x, 2 );
     OI = ones( I, 1 );
     diag_sigmaInv = diag( 1 ./ sigma );
-    TwoNLogL = I * ( T * ( T - 1 ) * log( kappa ) - log( 1 - rho ) - log( 1 + rho ) ) + T * ( 2 * OI' * log( sigma ) - log( 1 - phi ) - log( 1 + phi ) ) + Error' * kron( diagKappaInvRhoInvdiagKappaInv, diag_sigmaInv * PhiInv * diag_sigmaInv ) * Error;
+    log_kappa = log( kappa );
+    TwoNLogL = I * ( T * ( T - 1 ) * log_kappa - log( 1 - rho ) - log( 1 + rho ) ) + T * ( 2 * OI' * log( sigma ) - log( 1 - phi ) - log( 1 + phi ) ) + Error' * kron( diagKappaInvRhoInvdiagKappaInv, diag_sigmaInv * PhiInv * diag_sigmaInv ) * Error;
+    if KappaPriorParameter > 0
+        alpha = 1 / KappaPriorParameter;
+        OPalpha = 1 + alpha;
+        TwoNLogL = TwoNLogL + KappaPriorParameter * ( kappa ^ ( -alpha ) * OPalpha + alpha * OPalpha * log_kappa );
+    end
 end
