@@ -55,6 +55,11 @@ Note:
  * maxcubaturedegree=NUMBER (default: 7)
       Specifies the degree of polynomial which will be integrated exactly in the highest degree,
       cubature performed. Values above 51 are treated as equal to 51.
+       * cubatureaccuracy=NUMBER (default: 8)
+            Specifies that the maximum acceptable change in the integrals is 10^(-NUMBER).
+       * nostatisticalcubature
+            Disables the statistical improvement to the cubature algorithm, which aggregates results
+            of cubature at different degrees. Will generally reduce accuracy, but increase speed.
  * nocubature
       Speeds up dynareOBC by assuming that agents are "surprised" by the existence of the bound.
       At order=1, this is equivalent to a perfect foresight solution to the model.
