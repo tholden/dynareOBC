@@ -19,6 +19,10 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
     CurrentNumVarExo = M_.exo_nbr;
     
     dynareOBC_.OriginalNumParams = CurrentNumParams;
+    if dynareOBC_.ZeroParameterInserted
+        dynareOBC_.OriginalNumParams = dynareOBC_.OriginalNumParams - 1;
+    end
+    
     dynareOBC_.OriginalNumVar = CurrentNumVar;
     dynareOBC_.OriginalNumVarExo = CurrentNumVarExo;
     

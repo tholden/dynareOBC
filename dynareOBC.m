@@ -156,6 +156,9 @@ if dynareOBC_.MLVSimulationMode > 0 && isfield( dynareOBC_, 'VarList' ) && ~isem
             break;
         end
     end
+    dynareOBC_.ZeroParameterInserted = true;
+else
+    dynareOBC_.ZeroParameterInserted = false;
 end
 
 FileText = strjoin( [ FileLines { [ 'stoch_simul(' LogLinearString 'order=1,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' );
