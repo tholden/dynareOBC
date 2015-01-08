@@ -148,4 +148,5 @@ if it is used with an unsupported option. Currently supported options for stoch_
  * nocorr
 
 dynareOBC also supports a list of variables for simulation after the call to stoch_simul.
-When mlvsimulationmode>0, this list can include the names of model local variables.
+When mlvsimulationmode>0, this list can include the names of model local variables. Any MLV
+included in this list will be simulated even if it does not meet the previous criteria.
