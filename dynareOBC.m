@@ -150,7 +150,7 @@ if dynareOBC_.MLVSimulationMode > 0 && isfield( dynareOBC_, 'VarList' ) && ~isem
     for i = ( Indices.ModelEnd - 1 ): -1 : ( Indices.ModelStart + 1 )
         if FileLines{i}(1) ~= '#'
             LastEquation = FileLines{i};
-            FileLines{ i:( Indices.ModelEnd - 2 ) } = FileLines{ ( i + 1 ):( Indices.ModelEnd - 1 ) };
+            FileLines( i:( Indices.ModelEnd - 2 ) ) = FileLines( ( i + 1 ):( Indices.ModelEnd - 1 ) );
             LastEquation = [ LastEquation( 1 : ( end - 1 ) ) '+dynareOBCZeroParameter*(' strjoin( dynareOBC_.VarList, '+' ) ');' ];
             FileLines{ Indices.ModelEnd - 1 } = LastEquation;
             break;
