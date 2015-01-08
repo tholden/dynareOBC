@@ -19,8 +19,7 @@ function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
     for i = min( M_.lead_lag_incidence( 3, M_.lead_lag_incidence( 3, : ) > 0 ) ) : max( M_.lead_lag_incidence( 3, : ) )
         FutureVariablesSearch = [ FutureVariablesSearch '|\<y\(\s*' int2str( i ) '\s*\)' ]; %#ok<AGROW>
     end
-    disp( ContemporaneousVariablesSearch );
-    disp( FutureVariablesSearch );
+    
     % split the file text into lines
     FileLines = StringSplit( FileText, { '\r', '\n' } );
     % initialize dynareOBC_.MLVNames
