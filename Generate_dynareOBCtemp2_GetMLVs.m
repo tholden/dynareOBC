@@ -11,7 +11,7 @@ function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
     FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = struct' );
     
     % find the contemporaneous and lead variables
-    ContemporaneousVariablesSearch = '\<__AStringThatWillNotOccur';
+    ContemporaneousVariablesSearch = '\<x\(\s*it_\s*,\s*\d+\s*\)';
     for i = min( M_.lead_lag_incidence( 2, M_.lead_lag_incidence( 2, : ) > 0 ) ) : max( M_.lead_lag_incidence( 2, : ) )
         ContemporaneousVariablesSearch = [ ContemporaneousVariablesSearch '|\<y\(\s*' int2str( i ) '\s*\)' ]; %#ok<AGROW>
     end
@@ -19,7 +19,8 @@ function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
     for i = min( M_.lead_lag_incidence( 3, M_.lead_lag_incidence( 3, : ) > 0 ) ) : max( M_.lead_lag_incidence( 3, : ) )
         FutureVariablesSearch = [ FutureVariablesSearch '|\<y\(\s*' int2str( i ) '\s*\)' ]; %#ok<AGROW>
     end
-    
+    disp( ContemporaneousVariablesSearch );
+    disp( FutureVariablesSearch );
     % split the file text into lines
     FileLines = StringSplit( FileText, { '\r', '\n' } );
     % initialize dynareOBC_.MLVNames
