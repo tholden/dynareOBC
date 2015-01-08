@@ -144,6 +144,20 @@ else
     LogLinearString = '';
 end
 
+if dynareOBC_.MLVSimulationMode > 0 && isfield( dynareOBC_, 'VarList' ) && ~isempty( dynareOBC_.VarList )
+    [ FileLines, Indices ] = PerformInsertion( { 'parameters dynareOBCZeroParameter;', 'dynareOBCZeroParameter=0;' }, Indices.ModelStart, FileLines, Indices );
+    dynareOBC_.MaxFuncIndices = dynareOBC_.MaxFuncIndices + 2;
+    for i = ( Indices.ModelEnd - 1 ): -1 : ( Indices.ModelStart + 1 )
+        if FileLines{i}(1) ~= '#'
+            LastEquation = FileLines{i};
+            FileLines{ i:( Indices.ModelEnd - 2 ) } = FileLines{ ( i + 1 ):( Indices.ModelEnd - 1 ) };
+            LastEquation = [ LastEquation( 1 : ( end - 1 ) ) '+dynareOBCZeroParameter*(' strjoin( dynareOBC_.VarList, '+' ) ');' ];
+            FileLines{ Indices.ModelEnd - 1 } = LastEquation;
+            break;
+        end
+    end
+end
+
 FileText = strjoin( [ FileLines { [ 'stoch_simul(' LogLinearString 'order=1,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' );
 newmodfile = fopen( 'dynareOBCtemp2.mod', 'w' );
 fprintf( newmodfile, '%s', FileText );
@@ -268,7 +282,7 @@ end
 
 [ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
 [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
-[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd - 1, FileLines, Indices );
+[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
 [ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
 [ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
 

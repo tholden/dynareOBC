@@ -51,7 +51,7 @@ function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
         if ~isempty( regexp( FileLine, '^\s*dynareOBC', 'once' ) )
             continue;
         end
-        if ( ( dynareOBC_.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) )
+        if ( isfield( dynareOBC_, 'VarList' ) && ismember( VariableName, dynareOBC_.VarList ) ) || ( ( dynareOBC_.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) )
             % add the variable to our MLV struct
             FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', '$1$2\tMLVs.$1 = $1__;', 'lineanchors' );
             % and to dynareOBC_.MLVNames

@@ -147,6 +147,7 @@ function DisplayHelp
     disp( ' * nocorr' );
     skipline( );
     disp( 'dynareOBC also supports a list of variables for simulation after the call to stoch_simul.' );
-    disp( 'When mlvsimulationmode>0, this list can include the names of model local variables.' );
+    disp( 'When mlvsimulationmode>0, this list can include the names of model local variables. Any MLV' );
+    disp( 'included in this list will be simulated even if it does not meet the previous criteria.' );
     skipline( );
 end
