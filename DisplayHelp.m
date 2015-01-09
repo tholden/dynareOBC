@@ -128,7 +128,7 @@ function DisplayHelp
     disp( '      Enables estimation of the model''s parameters.' );
     disp( '       * estimationdatafile=STRING (default: MOD-FILE-NAME.xlsx)' );
     disp( '            Specifies the spreadsheet containing the data to estimate.' );
-    disp( '       * estimationfixedpointmaxiterations=NUMBER (default: 1000)' );
+    disp( '       * estimationfixedpointmaxiterations=NUMBER (default: 100)' );
     disp( '            The maximum number of iterations used to evaluate the stationary distribution.' );
     disp( ' * useficoxpress' );
     disp( '      Performance of dynareOBC is higher when the FICO Xpress library is installed.' );
