@@ -366,13 +366,27 @@ if dynareOBC_.Estimation
     dynareOBC_.CalculateTheoreticalVariance = true;
     [ ~, dynareOBC_.EstimationParameterSelect ] = ismember( dynareOBC_.EstimationParameterNames, cellstr( M_.param_names ) );
     NumObservables = length( dynareOBC_.VarList );
+    NumEstimatedParams = length( dynareOBC_.EstimationParameterSelect );
     LBTemp = dynareOBC_.EstimationParameterBounds(1,:)';
     UBTemp = dynareOBC_.EstimationParameterBounds(2,:)';
     LBTemp( ~isfinite( LBTemp ) ) = -Inf;
     UBTemp( ~isfinite( UBTemp ) ) = Inf;
     OpenPool;
-    ResTemp = fmincon( @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC_ ), [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], [], [], [], [], [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], [], optimset( 'Algorithm', 'interior-point', 'Display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'UseParallel', false ) );
-    M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : length( dynareOBC_.EstimationParameterSelect ) );
+    [ TwoNLogLikelihood, EndoSelect ] = EstimationObjective( [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], M_, options_, oo_, dynareOBC_ );
+    disp( 'Initial log-likelihood:' );
+    disp( -0.5 * TwoNLogLikelihood );
+    [ ResTemp, TwoNLogLikelihood ] = fmincon( @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC_, EndoSelect ), [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], [], [], [], [], [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], [], optimset( 'Algorithm', 'interior-point', 'Display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'UseParallel', false ) );
+    disp( 'Final log-likelihood:' );
+    disp( -0.5 * TwoNLogLikelihood );
+    M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
+    disp( 'Final parameter estimates:' );
+    for i = 1 : NumEstimatedParams
+        fprintf( '%s:\t\t%.20e', strtrim( M_.param_names( dynareOBC_.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC_.EstimationParameterSelect( i ) ) );
+    end
+    disp( 'Final measurement error standard deviation estimates:' );
+    for i = 1 : NumObservables
+        fprintf( '%s:\t\t%.20e', dynareOBC_.VarList( i ), ResTemp( NumEstimatedParams + i ) );
+    end
 end
 
 if dynareOBC_.Global
