@@ -125,6 +125,12 @@ Note:
  * nosparse
       By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as
       this generally speeds up dynareOBC. This option prevents dynareOBC from doing this.
+ * estimation
+      Enables estimation of the model's parameters.
+       * estimationdatafile=STRING (default: MOD-FILE-NAME.xlsx)
+            Specifies the spreadsheet containing the data to estimate.
+       * estimationfixedpointmaxiterations=NUMBER (default: 100)
+            The maximum number of iterations used to evaluate the stationary distribution.
  * useficoxpress
       Performance of dynareOBC is higher when the FICO Xpress library is installed.
       This is available for free to academics from: https://community.fico.com/download.jspa
