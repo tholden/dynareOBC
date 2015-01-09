@@ -1,6 +1,7 @@
 function OpenPool
     global spkron_use_mex
     value_spkron_use_mex = spkron_use_mex;
+    WarningState = warning( 'off', 'all' );
     OpenPoolInternal;
     try
         spmd
@@ -8,6 +9,7 @@ function OpenPool
         end
     catch
     end
+    warning( WarningState );
 end
 
 function OpenPoolInternal

@@ -30,7 +30,7 @@ function Simulation = SimulateModel( ShockSequence, M_, options_, oo_Internal, d
         SkipMLVSimulation = false;
     end
     if DisplayProgress
-        p = TimedProgressBar( SimulationLength * dynareOBC_.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
+        p = TimedProgressBar( SimulationLength * dynareOBC_.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
     else
         p = [];
     end

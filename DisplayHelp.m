@@ -124,6 +124,12 @@ function DisplayHelp
     disp( ' * nosparse' );
     disp( '      By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as' );
     disp( '      this generally speeds up dynareOBC. This option prevents dynareOBC from doing this.' );
+    disp( ' * estimation' );
+    disp( '      Enables estimation of the model''s parameters.' );
+    disp( '       * estimationdatafile=STRING (default: MOD-FILE-NAME.xlsx)' );
+    disp( '            Specifies the spreadsheet containing the data to estimate.' );
+    disp( '       * estimationfixedpointmaxiterations=NUMBER (default: 1000)' );
+    disp( '            The maximum number of iterations used to evaluate the stationary distribution.' );
     disp( ' * useficoxpress' );
     disp( '      Performance of dynareOBC is higher when the FICO Xpress library is installed.' );
     disp( '      This is available for free to academics from: https://community.fico.com/download.jspa' );

@@ -43,7 +43,7 @@ end
 save dynareOBCtemp.mat fname varargin;
 
 if ~ismember( 'noclearall', varargin )
-    clear all; %#ok<CLFUN>
+    clear all; 
 end
 
 load dynareOBCtemp.mat;
@@ -135,13 +135,39 @@ FileLines = StringSplit( FileText, { '\n', '\r' } );
 dynareOBC_ = orderfields( dynareOBC_ );
 
 if dynareOBC_.SimulationDrop < 1
-    error( 'dynareOBC:StochSimulCommand', 'drop must be at least 1.' );
+    error( 'dynareOBC:StochSimulCommand', 'Drop must be at least 1.' );
 end
 
 if LogLinear
     LogLinearString = 'loglinear,';
 else
     LogLinearString = '';
+end
+
+if dynareOBC_.Estimation
+    skipline( );
+    disp( 'Loading data for estimation.' );
+    skipline( );    
+    
+    [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC_.EstimationDataFile );
+    if isempty( XLSStatus )
+        error( 'dynareOBC:UnsupportedSpreadsheet', 'The given estimation data is in a format that cannot be read.' );
+    end
+    if length( XLSSheets ) < 2
+        error( 'dynareOBC:MissingSpreadsheet', 'The data file does not contain a spreadsheet with observations and a spreadsheet with parameters.' );
+    end
+    XLSParameterSheetName = XLSSheets{2};
+    [ dynareOBC_.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC_.EstimationDataFile, XLSParameterSheetName );
+    dynareOBC_.EstimationParameterNames = XLSText( 1, : );
+    if isfield( dynareOBC_, 'VarList' ) && ~isempty( dynareOBC_.VarList )
+        warning( 'dynareOBC:OverwritingVarList', 'The variable list passed to stoch_simul will be replaced with the list of observable variables.' );
+    end
+    [ dynareOBC_.EstimationData, XLSText ] = xlsread( dynareOBC_.EstimationDataFile );
+    dynareOBC_.VarList = XLSText( 1, : );
+    if dynareOBC_.MLVSimulationMode > 1
+        warning( 'dynareOBC:UnsupportedMLVSimulationModeWithEstimation', 'With estimation, MLV simulation modes greater than 1 are not currently supported.' );
+    end
+    dynareOBC_.MLVSimulationMode = 1;
 end
 
 if dynareOBC_.MLVSimulationMode > 0 && isfield( dynareOBC_, 'VarList' ) && ~isempty( dynareOBC_.VarList )
@@ -318,6 +344,37 @@ options_.noprint = 0;
 options_.nomoments = dynareOBC_.NoMoments;
 options_.nocorr = dynareOBC_.NoCorr;
 
+if ~isempty( dynareOBC_.VarList )
+    [ ~, dynareOBC_.VariableSelect ] = ismember( dynareOBC_.VarList, cellstr( M_.endo_names ) );
+    dynareOBC_.VariableSelect( dynareOBC_.VariableSelect == 0 ) = [];
+    [ ~, dynareOBC_.MLVSelect ] = ismember( dynareOBC_.VarList, dynareOBC_.MLVNames );
+    dynareOBC_.MLVSelect( dynareOBC_.MLVSelect == 0 ) = [];
+else
+    dynareOBC_.VariableSelect = 1 : dynareOBC_.OriginalNumVar;
+    dynareOBC_.MLVSelect = 1 : length( dynareOBC_.MLVNames );
+end
+
+if dynareOBC_.Estimation    
+    if any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
+        error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
+    end
+    
+    skipline( );
+    disp( 'Beginning the estimation of the model.' );
+    skipline( );
+    
+    dynareOBC_.CalculateTheoreticalVariance = true;
+    [ ~, dynareOBC_.EstimationParameterSelect ] = ismember( dynareOBC_.EstimationParameterNames, cellstr( M_.param_names ) );
+    NumObservables = length( dynareOBC_.VarList );
+    LBTemp = dynareOBC_.EstimationParameterBounds(1,:)';
+    UBTemp = dynareOBC_.EstimationParameterBounds(2,:)';
+    LBTemp( ~isfinite( LBTemp ) ) = -Inf;
+    UBTemp( ~isfinite( UBTemp ) ) = Inf;
+    OpenPool;
+    ResTemp = fmincon( @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC_ ), [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], [], [], [], [], [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], [], optimset( 'Algorithm', 'interior-point', 'Display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'UseParallel', false ) );
+    M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : length( dynareOBC_.EstimationParameterSelect ) );
+end
+
 if dynareOBC_.Global
     [ Info, M_, options_, oo_ ,dynareOBC_ ] = GlobalModelSolution( M_, options_, oo_ ,dynareOBC_ );
 else
@@ -380,4 +437,3 @@ if ~dynareOBC_.NoCleanUp
 end
 
 evalin( 'base', 'global dynareOBC_' );
-

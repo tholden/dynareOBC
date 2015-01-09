@@ -4,7 +4,15 @@ function [ Matched, dynareOBC_ ] = ProcessOtherArgument( Argument, dynareOBC_ )
     [ startindex, endindex ] = regexp( Argument, '(?<=(^savemacro\=)).*$', 'once' );
     if ~isempty( startindex )
         dynareOBC_.SaveMacroName = Argument( startindex:endindex );
-        dynareOBC_.SaveMacro = 1;
+        dynareOBC_.SaveMacro = true;
+        Matched = true;
+        return
+    end
+
+    [ startindex, endindex ] = regexp( Argument, '(?<=(^estimationdatafile\=)).*$', 'once' );
+    if ~isempty( startindex )
+        dynareOBC_.EstimationDataFile = Argument( startindex:endindex );
+        dynareOBC_.Estimation = true;
         Matched = true;
         return
     end
@@ -20,7 +28,7 @@ function [ Matched, dynareOBC_ ] = ProcessOtherArgument( Argument, dynareOBC_ )
                 Matched = true;
                 return
             else
-                error( 'dynareOBC:Arguments', [ Argument ' was found without a number. Please do not put a space between ' Argument ' and the equals sign.' ] );
+                error( 'dynareOBC:Arguments', [ Argument ' was found without a value. Please do not put a space between ' Argument ' and the equals sign.' ] );
             end
         end
     end
