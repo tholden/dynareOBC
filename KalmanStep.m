@@ -1,4 +1,4 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M_Internal, options_, oo_Internal, dynareOBC_, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M_Internal, options_, oo_Internal, dynareOBC_, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
     NEndo = M_Internal.endo_nbr;
     NExo = dynareOBC_.OriginalNumVarExo;
     Nm = length( OldMean );
@@ -7,9 +7,12 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     FiniteMeasurements = Measurement( Observed );
     No = length( Observed );
     Mx = 2 * Nx;
+    Nmc = sum( EndoSelectWithControls );
+    Nxc = min( Nmc, Mx ) + NExo;
+    Mxc = 2 * Nxc;
     
     StateCubaturePoints = [ bsxfun( @plus, [ OldRootCovariance, -OldRootCovariance ] * sqrt( Nx ), OldMean ), repmat( OldMean, 1, 2 * NExo ); zeros( NExo, 2 * Nm ),  [ RootQ -RootQ ] * sqrt( Nx ) ];
-    NewStatePoints = zeros( Nm, Mx );
+    NewStatePoints = zeros( Nmc, Mx );
            
     % actual augmented state contains shock(+1), but we treat the shock(+1) component separately
     parfor i = 1 : Mx
@@ -22,20 +25,21 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         else
             TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound ];
         end
-        NewStatePoints( :, i ) = TempNewStatePoints( EndoSelect );
+        NewStatePoints( :, i ) = TempNewStatePoints( EndoSelectWithControls ); % TempNewStatePoints( EndoSelect );
     end
     PredictedState = mean( NewStatePoints, 2 );
     RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
     
+    SubEndoSelect = EndoSelect( EndoSelectWithControls );
     if No > 0
-        MeasurementCubaturePoints = [ bsxfun( @plus, [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( Nx ), PredictedState ), repmat( PredictedState, 1, 2 * NExo ); zeros( NExo, 2 * Nm ),  [ RootQ -RootQ ] * sqrt( Nx ) ];
-        NewMeasurementPoints = zeros( No, Mx );
+        MeasurementCubaturePoints = [ bsxfun( @plus, [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( Nxc ), PredictedState ), repmat( PredictedState, 1, 2 * NExo ); zeros( NExo, 2 * min( Nmc, Mx ) ),  [ RootQ -RootQ ] * sqrt( Nxc ) ];
+        NewMeasurementPoints = zeros( No, Mxc );
 
         InitialFullState = GetFullStateStruct( OldMean, NEndo, EndoSelect, FullMean, dynareOBC_.Order, dynareOBC_.Constant );
         LagValuesWithBounds = InitialFullState.total_with_bounds( OriginalVarSelect );
         LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
-        parfor i = 1 : Mx
-            Simulation = GetFullStateStruct( MeasurementCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC_.Order, dynareOBC_.Constant );
+        parfor i = 1 : Mxc
+            Simulation = GetFullStateStruct( MeasurementCubaturePoints( 1:Nmc, i ), NEndo, EndoSelectWithControls, FullMean, dynareOBC_.Order, dynareOBC_.Constant );
             CurrentValuesWithBounds = Simulation.total_with_bounds( OriginalVarSelect );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
             MLVs = dynareOBCtemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, M_Internal.params, oo_Internal.dr.ys, 1 );
@@ -44,18 +48,18 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
             end
         end
         PredictedMeasurements = mean( NewMeasurementPoints, 2 );
-        CurlyY = 1 / sqrt( Mx ) * bsxfun( @minus, NewMeasurementPoints, PredictedMeasurements );
+        CurlyY = 1 / sqrt( Mxc ) * bsxfun( @minus, NewMeasurementPoints, PredictedMeasurements );
         RootPredictedInnovationCovariance = Tria( [ CurlyY, diag( RootMEVar ) ] );
         Error = RootPredictedInnovationCovariance \ ( FiniteMeasurements - PredictedMeasurements );
         TwoNLogObservationLikelihood = 2 * sum( log( diag( RootPredictedInnovationCovariance ) ) ) + Error' * Error;
-        CurlyX = 1 / sqrt( Mx ) * bsxfun( @minus, MeasurementCubaturePoints( 1:Nm, : ), PredictedState );
+        CurlyX = 1 / sqrt( Mxc ) * bsxfun( @minus, MeasurementCubaturePoints( SubEndoSelect, : ), PredictedState( SubEndoSelect ) );
         CrossCovariance = CurlyX * CurlyY';
         KalmanGain = ( CrossCovariance / RootPredictedInnovationCovariance' ) / RootPredictedInnovationCovariance;
-        Mean = PredictedState + KalmanGain * ( FiniteMeasurements - PredictedMeasurements );
+        Mean = PredictedState( SubEndoSelect ) + KalmanGain * ( FiniteMeasurements - PredictedMeasurements );
         RootCovariance = Tria( [ CurlyX - KalmanGain * CurlyY, KalmanGain * diag( RootMEVar ) ] );
     else
-        Mean = PredictedState;
-        RootCovariance = RootPredictedErrorCovariance;
+        Mean = PredictedState( SubEndoSelect );
+        RootCovariance = Tria( RootPredictedErrorCovariance( SubEndoSelect, : ) );
         TwoNLogObservationLikelihood = 0;
     end
 end

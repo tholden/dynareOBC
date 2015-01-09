@@ -372,10 +372,10 @@ if dynareOBC_.Estimation
     LBTemp( ~isfinite( LBTemp ) ) = -Inf;
     UBTemp( ~isfinite( UBTemp ) ) = Inf;
     OpenPool;
-    [ TwoNLogLikelihood, EndoSelect ] = EstimationObjective( [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], M_, options_, oo_, dynareOBC_ );
+    [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationObjective( [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], M_, options_, oo_, dynareOBC_ );
     disp( 'Initial log-likelihood:' );
     disp( -0.5 * TwoNLogLikelihood );
-    [ ResTemp, TwoNLogLikelihood ] = fmincon( @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC_, EndoSelect ), [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], [], [], [], [], [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], [], optimset( 'Algorithm', 'interior-point', 'Display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'UseParallel', false ) );
+    [ ResTemp, TwoNLogLikelihood ] = fmincon( @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC_, EndoSelectWithControls, EndoSelect ), [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], [], [], [], [], [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], [], optimset( 'Algorithm', 'interior-point', 'Display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'UseParallel', false ) );
     disp( 'Final log-likelihood:' );
     disp( -0.5 * TwoNLogLikelihood );
     M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
