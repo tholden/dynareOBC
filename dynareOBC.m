@@ -381,11 +381,12 @@ if dynareOBC_.Estimation
     M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
     disp( 'Final parameter estimates:' );
     for i = 1 : NumEstimatedParams
-        fprintf( '%s:\t\t%.20e', strtrim( M_.param_names( dynareOBC_.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC_.EstimationParameterSelect( i ) ) );
+        fprintf( '%s:\t\t%.20e\n', strtrim( M_.param_names( dynareOBC_.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC_.EstimationParameterSelect( i ) ) );
     end
+    skipline( );
     disp( 'Final measurement error standard deviation estimates:' );
     for i = 1 : NumObservables
-        fprintf( '%s:\t\t%.20e', dynareOBC_.VarList( i ), ResTemp( NumEstimatedParams + i ) );
+        fprintf( '%s:\t\t%.20e\n', dynareOBC_.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
     end
 end
 
