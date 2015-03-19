@@ -43,7 +43,7 @@ end
 save dynareOBCtemp.mat fname varargin;
 
 if ~ismember( 'noclearall', varargin )
-    clear all; 
+    clear all;  %#ok<CLFUN>
 end
 
 load dynareOBCtemp.mat;
