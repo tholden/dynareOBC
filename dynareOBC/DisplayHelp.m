@@ -6,13 +6,11 @@ function DisplayHelp
     disp( ' * Matlab version R2013a or later, or a fully compatible clone.' );
     disp( ' * The MATLAB Optimization toolbox, or a fully compatible clone.' );
     disp( ' * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable' );
-    disp( ' * Tom Holden''s fork of Hong Lan and Alexander Meyer-Gohde''s nonlinear moving average toolkit,' );
-    disp( '   available from: https://github.com/tholden/nlma' );
     skipline( );
     disp( 'dynareOBC incorporates code by Alexander Meyer-Gohde for calculating risky first order approximations.' );
     disp( 'More information is contained in his paper describing the algorithm, available here:' );
     disp( 'http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf.' );
-    disp( 'dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,' );
+    disp( 'dynareOBC also incorporates code taken from the nonlinear moving average toolkit,' );
     disp( 'by Hong Lan and Alexander Meyer-Gohde.' );
     disp( 'Additionally, dynareOBC incorporates code for nested Gaussian cubature that is copyright Alan Genz' );
     disp( 'and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002, and' );

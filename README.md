@@ -7,13 +7,11 @@ Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone.
  * The MATLAB Optimization toolbox, or a fully compatible clone.
  * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
- * Tom Holden's fork of Hong Lan and Alexander Meyer-Gohde's nonlinear moving average toolkit,
-   available from: https://github.com/tholden/nlma
 
 dynareOBC incorporates code by Alexander Meyer-Gohde for calculating risky first order approximations.
 More information is contained in his paper describing the algorithm, available here:
 http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf.
-dynareOBC also incorporates code taken from the aforementioned nonlinear moving average toolkit,
+dynareOBC also incorporates code taken from the nonlinear moving average toolkit,
 by Hong Lan and Alexander Meyer-Gohde.
 Additionally, dynareOBC incorporates code for nested Gaussian cubature that is copyright Alan Genz
 and Bradley Keister, 1996, code for LDL decompositions that is copyright Brian Borchers, 2002, and
