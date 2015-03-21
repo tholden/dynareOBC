@@ -1,0 +1,3 @@
+[submodule "dynareOBC/nlma"]
+	path = dynareOBC/nlma
+	url = https://github.com/tholden/nlma

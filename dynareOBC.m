@@ -35,12 +35,18 @@ function dynareOBC(fname, varargin)
 
 %% Initialization
 
+CurrentPath = fileparts( mfilename( 'fullpath' ) );
+addpath( [ CurrentPath '/dynareOBC/' ] );
+addpath( [ CurrentPath '/dynareOBC/nlma/' ] );
+
 if nargin < 1 || strcmpi(fname,'help')
     DisplayHelp;
+    rmpath( [ CurrentPath '/dynareOBC/' ] );
+    rmpath( [ CurrentPath '/dynareOBC/nlma/' ] );
     return;
 end
 
-save dynareOBCtemp.mat fname varargin;
+save dynareOBCtemp.mat fname varargin CurrentPath;
 
 if ~ismember( 'noclearall', varargin )
     clear all;  %#ok<CLFUN>
@@ -452,3 +458,8 @@ if ~dynareOBC_.NoCleanUp
 end
 
 evalin( 'base', 'global dynareOBC_' );
+
+rmpath( [ CurrentPath '/dynareOBC/' ] );
+rmpath( [ CurrentPath '/dynareOBC/nlma/' ] );
+
+end
