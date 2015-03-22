@@ -46,14 +46,9 @@ if nargin < 1 || strcmpi(fname,'help')
     return;
 end
 
-save dynareOBCtemp.mat fname varargin CurrentPath;
-
 if ~ismember( 'noclearall', varargin )
-    clear all;  %#ok<CLFUN>
+    evalin( 'base', 'clear all;' );
 end
-
-load dynareOBCtemp.mat;
-delete dynareOBCtemp.mat;
 
 global dynareOBC_ spkron_use_mex;
 if isempty( dynareOBC_ )
