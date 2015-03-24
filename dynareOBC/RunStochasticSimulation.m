@@ -1,24 +1,24 @@
-function [ oo_, dynareOBC_ ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC_ )
+function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC )
 
     % derived from simult.m
-    PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_.Sigma_e) == 0 ) );
+    PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) == 0 ) );
     NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
-    ShockSequence = zeros( dynareOBC_.OriginalNumVarExo, dynareOBC_.SimulationPeriods );
-    CholSigma_e = chol( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
+    ShockSequence = zeros( dynareOBC.OriginalNumVarExo, dynareOBC.SimulationPeriods );
+    CholSigma_e = chol( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
 
-    ShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC_.SimulationPeriods );
+    ShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC.SimulationPeriods );
     
-    Simulation = SimulateModel( ShockSequence, M_, options_, oo_, dynareOBC_, true );
+    Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, true );
     
-    oo_.exo_simul = [ ShockSequence; Simulation.shadow_shocks ]';
-    oo_.endo_simul = Simulation.total_with_bounds;
-    dynareOBC_.SimulationsWithoutBounds = Simulation.total;
-    if dynareOBC_.MLVSimulationMode > 0
-        dynareOBC_.MLVSimulationWithBounds = Simulation.MLVsWithBounds;
-        dynareOBC_.MLVSimulationWithoutBounds = Simulation.MLVsWithoutBounds;
+    oo.exo_simul = [ ShockSequence; Simulation.shadow_shocks ]';
+    oo.endo_simul = Simulation.total_with_bounds;
+    dynareOBC.SimulationsWithoutBounds = Simulation.total;
+    if dynareOBC.MLVSimulationMode > 0
+        dynareOBC.MLVSimulationWithBounds = Simulation.MLVsWithBounds;
+        dynareOBC.MLVSimulationWithoutBounds = Simulation.MLVsWithoutBounds;
     end
     
-    DispMoments( M_, options_, oo_, dynareOBC_ );
+    DispMoments( M, options, oo, dynareOBC );
     
 end

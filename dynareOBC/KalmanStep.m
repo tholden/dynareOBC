@@ -1,6 +1,6 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M_Internal, options_, oo_Internal, dynareOBC_, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
-    NEndo = M_Internal.endo_nbr;
-    NExo = dynareOBC_.OriginalNumVarExo;
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
+    NEndo = M.endo_nbr;
+    NExo = dynareOBC.OriginalNumVarExo;
     Nm = length( OldMean );
     Nx = Nm + NExo;
     Observed = find( isfinite( Measurement ) );
@@ -16,11 +16,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
            
     % actual augmented state contains shock(+1), but we treat the shock(+1) component separately
     parfor i = 1 : Mx
-        InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC_.Order, dynareOBC_.Constant ); %#ok<*PFBNS>
-        Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), M_Internal, options_, oo_Internal, dynareOBC_, false, InitialFullState, true );
-        if dynareOBC_.Order == 1
+        InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
+        Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), M, options, oo, dynareOBC, false, InitialFullState, true );
+        if dynareOBC.Order == 1
             TempNewStatePoints = [ Simulation.first; Simulation.bound ];
-        elseif dynareOBC_.Order == 2
+        elseif dynareOBC.Order == 2
             TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.bound ];
         else
             TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound ];
@@ -35,16 +35,16 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         MeasurementCubaturePoints = [ bsxfun( @plus, [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( Nxc ), PredictedState ), repmat( PredictedState, 1, 2 * NExo ); zeros( NExo, 2 * min( Nmc, Mx ) ),  [ RootQ -RootQ ] * sqrt( Nxc ) ];
         NewMeasurementPoints = zeros( No, Mxc );
 
-        InitialFullState = GetFullStateStruct( OldMean, NEndo, EndoSelect, FullMean, dynareOBC_.Order, dynareOBC_.Constant );
+        InitialFullState = GetFullStateStruct( OldMean, NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant );
         LagValuesWithBounds = InitialFullState.total_with_bounds( OriginalVarSelect );
         LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
         parfor i = 1 : Mxc
-            Simulation = GetFullStateStruct( MeasurementCubaturePoints( 1:Nmc, i ), NEndo, EndoSelectWithControls, FullMean, dynareOBC_.Order, dynareOBC_.Constant );
+            Simulation = GetFullStateStruct( MeasurementCubaturePoints( 1:Nmc, i ), NEndo, EndoSelectWithControls, FullMean, dynareOBC.Order, dynareOBC.Constant );
             CurrentValuesWithBounds = Simulation.total_with_bounds( OriginalVarSelect );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
-            MLVs = dynareOBCtemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, M_Internal.params, oo_Internal.dr.ys, 1 );
+            MLVs = dynareOBCtemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, M.params, oo.dr.ys, 1 );
             for j = 1 : No
-                NewMeasurementPoints( j, i ) = MLVs.( dynareOBC_.VarList{ Observed( j ) } );
+                NewMeasurementPoints( j, i ) = MLVs.( dynareOBC.VarList{ Observed( j ) } );
             end
         end
         PredictedMeasurements = mean( NewMeasurementPoints, 2 );

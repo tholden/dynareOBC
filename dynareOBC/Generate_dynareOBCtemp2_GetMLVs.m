@@ -1,4 +1,4 @@
-function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
+function dynareOBC = Generate_dynareOBCtemp2_GetMLVs( M, dynareOBC )
     % read in the _dynamic.m file
     FileText = fileread( 'dynareOBCtemp2_dynamic.m' );
     % truncate the function after the last assignment to a MLV
@@ -12,18 +12,18 @@ function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
     
     % find the contemporaneous and lead variables
     ContemporaneousVariablesSearch = '\<x\(\s*it_\s*,\s*\d+\s*\)';
-    for i = min( M_.lead_lag_incidence( 2, M_.lead_lag_incidence( 2, : ) > 0 ) ) : max( M_.lead_lag_incidence( 2, : ) )
+    for i = min( M.lead_lag_incidence( 2, M.lead_lag_incidence( 2, : ) > 0 ) ) : max( M.lead_lag_incidence( 2, : ) )
         ContemporaneousVariablesSearch = [ ContemporaneousVariablesSearch '|\<y\(\s*' int2str( i ) '\s*\)' ]; %#ok<AGROW>
     end
     FutureVariablesSearch = '\<__AStringThatWillNotOccur';
-    for i = min( M_.lead_lag_incidence( 3, M_.lead_lag_incidence( 3, : ) > 0 ) ) : max( M_.lead_lag_incidence( 3, : ) )
+    for i = min( M.lead_lag_incidence( 3, M.lead_lag_incidence( 3, : ) > 0 ) ) : max( M.lead_lag_incidence( 3, : ) )
         FutureVariablesSearch = [ FutureVariablesSearch '|\<y\(\s*' int2str( i ) '\s*\)' ]; %#ok<AGROW>
     end
     
     % split the file text into lines
     FileLines = StringSplit( FileText, { '\r', '\n' } );
     % initialize dynareOBC_.MLVNames
-    dynareOBC_.MLVNames = {};
+    dynareOBC.MLVNames = {};
     % iterate through the lines
     for i = 1 : length( FileLines )
         FileLine = FileLines{i};
@@ -51,11 +51,11 @@ function dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ )
         if ~isempty( regexp( FileLine, '^\s*dynareOBC', 'once' ) )
             continue;
         end
-        if ( isfield( dynareOBC_, 'VarList' ) && ismember( VariableName, dynareOBC_.VarList ) ) || ( ( dynareOBC_.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) )
+        if ( isfield( dynareOBC, 'VarList' ) && ismember( VariableName, dynareOBC.VarList ) ) || ( ( dynareOBC.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) )
             % add the variable to our MLV struct
             FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', '$1$2\tMLVs.$1 = $1__;', 'lineanchors' );
             % and to dynareOBC_.MLVNames
-            dynareOBC_.MLVNames{ end + 1 } = VariableName( 1:(end-2) );
+            dynareOBC.MLVNames{ end + 1 } = VariableName( 1:(end-2) );
         end
     end
     % save the new file

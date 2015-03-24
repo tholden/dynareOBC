@@ -1,13 +1,13 @@
-function [ oo_, dynareOBC_ ] = SimulationPreparation( M_, oo_, dynareOBC_ )
+function [ oo, dynareOBC ] = SimulationPreparation( M, oo, dynareOBC )
     rng( 'default' );
 
-    if ~isempty( dynareOBC_.IRFShocks )
-        [ ~, dynareOBC_.ShockSelect ] = ismember( dynareOBC_.IRFShocks, cellstr( M_.exo_names ) );
+    if ~isempty( dynareOBC.IRFShocks )
+        [ ~, dynareOBC.ShockSelect ] = ismember( dynareOBC.IRFShocks, cellstr( M.exo_names ) );
     else
-        dynareOBC_.ShockSelect = 1 : dynareOBC_.OriginalNumVarExo;
+        dynareOBC.ShockSelect = 1 : dynareOBC.OriginalNumVarExo;
     end
-    if ~isfield( oo_, 'irfs' ) || isempty( oo_.irfs )
-        oo_.irfs = struct;
+    if ~isfield( oo, 'irfs' ) || isempty( oo.irfs )
+        oo.irfs = struct;
     end
 end
 

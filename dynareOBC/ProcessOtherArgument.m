@@ -1,30 +1,30 @@
-function [ Matched, dynareOBC_ ] = ProcessOtherArgument( Argument, dynareOBC_ )
+function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
     Matched = false;
 
     [ startindex, endindex ] = regexp( Argument, '(?<=(^savemacro\=)).*$', 'once' );
     if ~isempty( startindex )
-        dynareOBC_.SaveMacroName = Argument( startindex:endindex );
-        dynareOBC_.SaveMacro = true;
+        dynareOBC.SaveMacroName = Argument( startindex:endindex );
+        dynareOBC.SaveMacro = true;
         Matched = true;
         return
     end
 
     [ startindex, endindex ] = regexp( Argument, '(?<=(^estimationdatafile\=)).*$', 'once' );
     if ~isempty( startindex )
-        dynareOBC_.EstimationDataFile = Argument( startindex:endindex );
-        dynareOBC_.Estimation = true;
+        dynareOBC.EstimationDataFile = Argument( startindex:endindex );
+        dynareOBC.Estimation = true;
         Matched = true;
         return
     end
 
-    FieldNames = fieldnames( dynareOBC_ );
+    FieldNames = fieldnames( dynareOBC );
     if ~any( Argument == '=' )
         MatchedOptionIndex = find( strcmpi( Argument, FieldNames ), 1 );
         if isempty( MatchedOptionIndex )
             return
         else
-            if islogical( dynareOBC_.( FieldNames{ MatchedOptionIndex } ) )
-                dynareOBC_.( FieldNames{ MatchedOptionIndex } ) = true;
+            if islogical( dynareOBC.( FieldNames{ MatchedOptionIndex } ) )
+                dynareOBC.( FieldNames{ MatchedOptionIndex } ) = true;
                 Matched = true;
                 return
             else
@@ -48,7 +48,7 @@ function [ Matched, dynareOBC_ ] = ProcessOtherArgument( Argument, dynareOBC_ )
     end
     
     try
-        dynareOBC_.( FieldNames{ MatchedOptionIndex } ) = str2double( TokenNames( 1 ).Value );
+        dynareOBC.( FieldNames{ MatchedOptionIndex } ) = str2double( TokenNames( 1 ).Value );
         Matched = true;
     catch
     end

@@ -1,4 +1,4 @@
-function [ basevarargin, dynareOBC_ ] = ProcessArgument( Argument, basevarargin, dynareOBC_ )
+function [ basevarargin, dynareOBC ] = ProcessArgument( Argument, basevarargin, dynareOBC )
     LowerArgument = lower( Argument );
     switch LowerArgument
         case 'noclearall'
@@ -8,16 +8,16 @@ function [ basevarargin, dynareOBC_ ] = ProcessArgument( Argument, basevarargin,
         case 'onlymacro'
             warning( 'dynareOBC:UnusedArgument', 'Ignoring option onlymacro.' );
         case 'firstorderaroundrss'
-            dynareOBC_.FirstOrderAroundRSS1OrMean2 = double( bitor( int32( dynareOBC_.FirstOrderAroundRSS1OrMean2 ), int32( 1 ) ) );
+            dynareOBC.FirstOrderAroundRSS1OrMean2 = double( bitor( int32( dynareOBC.FirstOrderAroundRSS1OrMean2 ), int32( 1 ) ) );
         case 'firstorderaroundmean'
-            dynareOBC_.FirstOrderAroundRSS1OrMean2 = double( bitor( int32( dynareOBC_.FirstOrderAroundRSS1OrMean2 ), int32( 2 ) ) );
+            dynareOBC.FirstOrderAroundRSS1OrMean2 = double( bitor( int32( dynareOBC.FirstOrderAroundRSS1OrMean2 ), int32( 2 ) ) );
         case 'savemacro='
             error( 'dynareOBC:Arguments', 'savemacro was found without a file name. Please do not put a space between the equals sign and the file name.' );
         case 'estimationdatafile='
             error( 'dynareOBC:Arguments', 'estimationdatafile was found without a file name. Please do not put a space between the equals sign and the file name.' );
 
         otherwise
-            [ Matched, dynareOBC_ ] = ProcessOtherArgument( LowerArgument, dynareOBC_ );
+            [ Matched, dynareOBC ] = ProcessOtherArgument( LowerArgument, dynareOBC );
             if ~Matched
                 basevarargin{ end + 1 } = Argument; %#ok<*AGROW>
             end

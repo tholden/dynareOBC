@@ -1,7 +1,7 @@
-function dynareOBC_ = SetDefaultOption( dynareOBC_, Field, Value )
+function dynareOBC = SetDefaultOption( dynareOBC, Field, Value )
 
-    if ~isfield( dynareOBC_, Field ) || isempty( dynareOBC_.( Field ) )
-        dynareOBC_.( Field ) = Value;
+    if ~isfield( dynareOBC, Field ) || isempty( dynareOBC.( Field ) )
+        dynareOBC.( Field ) = Value;
         return
     end
 

@@ -1,18 +1,18 @@
-function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ )
+function ReturnStruct = ExpectedReturn( InitialStateOrShock, M, dr, dynareOBC )
 
-    SelectState = dynareOBC_.SelectState;
-    T = dynareOBC_.InternalIRFPeriods;
+    SelectState = dynareOBC.SelectState;
+    T = dynareOBC.InternalIRFPeriods;
     
     if isstruct( InitialStateOrShock )
         % then we are being called from SimulateModel and InitialStateOrModel is the InitialState
         InitialState = InitialStateOrShock;
         y1 = InitialState.first( dr.order_var );   
-        if dynareOBC_.Order > 1
+        if dynareOBC.Order > 1
             y1s = y1( SelectState );
             y2 = InitialState.second( dr.order_var );
             y1s2 = spkron( y1s, y1s );
             z2 = [ y1; y2; y1s2 ];
-            if dynareOBC_.Order > 2
+            if dynareOBC.Order > 2
                 z = [ z2; InitialState.first_sigma_2( dr.order_var ); InitialState.third( dr.order_var ); spkron( y2( SelectState ), y1s ); spkron( y1s2, y1s ) ];
             else
                 z = z2;
@@ -23,9 +23,9 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
     else
         % then we are being called from FastIRFs and InitialStateOrShock is the Shock
         Shock = InitialStateOrShock;
-        z = dynareOBC_.Mean_z;
+        z = dynareOBC.Mean_z;
         
-        nEndo = M_.endo_nbr;
+        nEndo = M.endo_nbr;
         nState = length( SelectState );
         
         % derived from pruning_abounds.m
@@ -37,7 +37,7 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
         ghuTShock = dr.ghu * Shock;
         y1 = ghuTShock;
         
-        if dynareOBC_.Order > 1
+        if dynareOBC.Order > 1
             
             i2 = i1 + nEndo;
             y2o = z( (i1+1):i2 );
@@ -55,7 +55,7 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
             
             z2 = [ y1; y2; y1sKy1s ];
             
-            if dynareOBC_.Order > 2
+            if dynareOBC.Order > 2
 
                 ghuss_nlma = dr.ghuss_nlma;
                 
@@ -67,10 +67,10 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
                 i5 = i4 + nEndo;
                 y3o = z( (i4+1):i5 );
                 
-                nExo = M_.exo_nbr;
+                nExo = M.exo_nbr;
                 nExo2 = nExo * nExo;
                 nExo3 = nExo2 * nExo;
-                ShockKShockKShock = ( speye( nExo3 ) + spkron( speye( nExo ), commutation_sparse( nExo, nExo ) ) + commutation_sparse( nExo, nExo2 ) ) * spkron( vec( M_.Sigma_e ), Shock ) + spkron( ShockKShock, Shock );
+                ShockKShockKShock = ( speye( nExo3 ) + spkron( speye( nExo ), commutation_sparse( nExo, nExo ) ) + commutation_sparse( nExo, nExo2 ) ) * spkron( vec( M.Sigma_e ), Shock ) + spkron( ShockKShock, Shock );
                 y3 = y3o + (1/6) * ( dr.ghuuu * ShockKShockKShock ) + 0.5 * ( dr.ghxxu * spkron( y1sKy1so, Shock ) ) + dr.ghxu * spkron( y2os, Shock );
                                     
                 i6 = i5 + nState2;
@@ -109,8 +109,8 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
     zPath = zeros( Length_z, T );
     zPath( :, 1 ) = z;
     
-    c = dynareOBC_.c;
-    A = dynareOBC_.A;
+    c = dynareOBC.c;
+    A = dynareOBC.A;
     
     for i = 2 : T
         % z( (i6+1):end ) = 0;
@@ -120,12 +120,12 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M_, dr, dynareOBC_ 
     
     ReturnStruct = struct;
     ReturnStruct.first = zPath( dr.inv_order_var, : );
-    ReturnStruct.total = bsxfun( @plus, ReturnStruct.first, dynareOBC_.Constant );
+    ReturnStruct.total = bsxfun( @plus, ReturnStruct.first, dynareOBC.Constant );
     
-    if dynareOBC_.Order > 1
+    if dynareOBC.Order > 1
         ReturnStruct.second = zPath( length( y1 ) + dr.inv_order_var, : );
         ReturnStruct.total = ReturnStruct.total + ReturnStruct.second;
-        if dynareOBC_.Order > 2
+        if dynareOBC.Order > 2
             ReturnStruct.first_sigma_2 = zPath( length( z2 ) + dr.inv_order_var, : );
             ReturnStruct.third = zPath( length( y1 ) + length( z2 ) + dr.inv_order_var, : );
             ReturnStruct.total = ReturnStruct.total + ReturnStruct.first_sigma_2 + ReturnStruct.third;

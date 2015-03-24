@@ -1,6 +1,6 @@
-function [ FileLines, Indices, StochSimulCommand, dynareOBC_ ] = ProcessModFileLines( FileLines, dynareOBC_ )
-    dynareOBC_.MaxFuncIndices = [];
-    dynareOBC_.NumberOfMax = 0;
+function [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLines( FileLines, dynareOBC )
+    dynareOBC.MaxFuncIndices = [];
+    dynareOBC.NumberOfMax = 0;
     StochSimulCommand = '';
     Indices = struct;
     Indices.ModelStart = 0;
@@ -59,9 +59,9 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC_ ] = ProcessModFileL
                 else
                     [ TempIndexStart, TempIndexEnd ] = regexp( line, '(?<=(^\#dynareOBCMaxFunc))\d+', 'once' );
                     if isempty( TempIndexStart )
-                        [ FileLines, TempCounter, dynareOBC_.NumberOfMax, write_i ] = ProcessModelLines( line, FileLines, TempCounter, dynareOBC_.NumberOfMax, write_i );
+                        [ FileLines, TempCounter, dynareOBC.NumberOfMax, write_i ] = ProcessModelLines( line, FileLines, TempCounter, dynareOBC.NumberOfMax, write_i );
                     else
-                        dynareOBC_.MaxFuncIndices( str2double( line( TempIndexStart:TempIndexEnd ) ) ) = i;
+                        dynareOBC.MaxFuncIndices( str2double( line( TempIndexStart:TempIndexEnd ) ) ) = i;
                     end
                 end
             case 2 % in the shocks block

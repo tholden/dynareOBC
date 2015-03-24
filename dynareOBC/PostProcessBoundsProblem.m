@@ -1,7 +1,7 @@
-function [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC_, IgnoreAllButConstraintViolation )
+function [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, FoundValue, exitflag, M, V, dynareOBC, IgnoreAllButConstraintViolation )
 
     if isempty( alpha )
-        alpha = dynareOBC_.ZeroVecS;
+        alpha = dynareOBC.ZeroVecS;
     end
     
     if any( alpha ) < 0
@@ -9,15 +9,15 @@ function [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, Foun
         FoundValue = [];
     end
     
-    T = dynareOBC_.InternalIRFPeriods;
-    Ts = dynareOBC_.TimeToEscapeBounds;
-    ns = dynareOBC_.NumberOfMax;
-    Tolerance = dynareOBC_.Tolerance;
+    T = dynareOBC.InternalIRFPeriods;
+    Ts = dynareOBC.TimeToEscapeBounds;
+    ns = dynareOBC.NumberOfMax;
+    Tolerance = dynareOBC.Tolerance;
     
     ReturnPath = V + M * alpha;
     if any( ReturnPath < -2 * Tolerance )
         % Fudge so at least the constraint isn't violated, even if the CS condition is
-        [ alpha_new, ~, ~, exitflag_new ] = lsqlin( eye( ns * Ts ), alpha, -M, V, [], [], dynareOBC_.ZeroVecS, [], alpha, dynareOBC_.LSqLinOptions );
+        [ alpha_new, ~, ~, exitflag_new ] = lsqlin( eye( ns * Ts ), alpha, -M, V, [], [], dynareOBC.ZeroVecS, [], alpha, dynareOBC.LSqLinOptions );
         if exitflag_new > 0
             alpha = alpha_new;
         end
@@ -57,7 +57,7 @@ function [ alpha, exitflag, ReturnPath ] = PostProcessBoundsProblem( alpha, Foun
         end
 
         if isempty( FoundValue )
-            FoundValue = V(dynareOBC_.SelectIndices)' * alpha + (1/2) * alpha' * dynareOBC_.MsMatrixSymmetric * alpha;
+            FoundValue = V(dynareOBC.SelectIndices)' * alpha + (1/2) * alpha' * dynareOBC.MsMatrixSymmetric * alpha;
         end
 
         if abs( FoundValue ) >= 10 * Tolerance

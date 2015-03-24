@@ -1,18 +1,18 @@
-function RootConditionalCovariance = RetrieveConditionalCovariances( options_, oo_, dynareOBC_, ReturnPathFirstOrder )
-    if options_.order == 1 || dynareOBC_.FirstOrderConditionalCovariance
-        RootConditionalCovariance = dynareOBC_.RootConditionalCovariance;
+function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo, dynareOBC, ReturnPathFirstOrder )
+    if options.order == 1 || dynareOBC.FirstOrderConditionalCovariance
+        RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
     else
-        T = dynareOBC_.InternalIRFPeriods;
-        Ts = dynareOBC_.TimeToEscapeBounds;
+        T = dynareOBC.InternalIRFPeriods;
+        Ts = dynareOBC.TimeToEscapeBounds;
         TsM2 = Ts - 2;
-        ns = dynareOBC_.NumberOfMax;
+        ns = dynareOBC.NumberOfMax;
         
-        LengthXi = dynareOBC_.LengthXi;
-        Sigma = dynareOBC_.OriginalSigma;
+        LengthXi = dynareOBC.LengthXi;
+        Sigma = dynareOBC.OriginalSigma;
         
-        ReturnPathFirstOrder = ReturnPathFirstOrder( oo_.dr.order_var( dynareOBC_.SelectState ), : );
+        ReturnPathFirstOrder = ReturnPathFirstOrder( oo.dr.order_var( dynareOBC.SelectState ), : );
         
-        nExo = dynareOBC_.FullNumVarExo;
+        nExo = dynareOBC.FullNumVarExo;
         Offset3 = nExo + nExo * nExo;
         
         % Jdx1 = 1:M_.exo_nbr;
@@ -20,12 +20,12 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options_, o
         % Jdx3 = (Offset3 + 1):LengthXi;
 
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
-        [ Ci, Cj, Cs ] = find( dynareOBC_.VarianceXiSkeleton );
+        [ Ci, Cj, Cs ] = find( dynareOBC.VarianceXiSkeleton );
             
         BCovXiB = cell( TsM2, 1 );
         
-        VarianceY1State = dynareOBC_.VarianceY1State;
-        B2 = dynareOBC_.B2;
+        VarianceY1State = dynareOBC.VarianceY1State;
+        B2 = dynareOBC.B2;
         
         OpenPool;
         parfor i = 1 : TsM2
@@ -47,7 +47,7 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options_, o
             
         end
         
-        A2Powers = dynareOBC_.A2Powers;
+        A2Powers = dynareOBC.A2Powers;
         LengthZ2 = size( A2Powers{1}, 1 );
         
         VarianceZ2 = cell( TsM2, 1 );
@@ -63,8 +63,8 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options_, o
         ConditionalCovariance = zeros( T * ns, T * ns );
         StepIndices = 0:T:T*(ns-1);
         
-        inv_order_var = oo_.dr.inv_order_var;
-        VarIndices_ZeroLowerBounded = dynareOBC_.VarIndices_ZeroLowerBounded;
+        inv_order_var = oo.dr.inv_order_var;
+        VarIndices_ZeroLowerBounded = dynareOBC.VarIndices_ZeroLowerBounded;
         
         LengthConditionalCovarianceTemp = 0.5 * TsM2 * ( TsM2 + 1 );
         ConditionalCovarianceTemp = cell( LengthConditionalCovarianceTemp, 1 );
@@ -95,7 +95,7 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options_, o
         assert( isreal( diagD ) );
         max_diagD = max( diagD );
         diagD( diagD < 0.01 * max_diagD ) = 0;
-        diagD( 1 : end - dynareOBC_.MaxCubatureDimension ) = 0;
+        diagD( 1 : end - dynareOBC.MaxCubatureDimension ) = 0;
         RootD = sqrt( diagD );
         IDv = RootD > sqrt( eps );
         RootConditionalCovariance = U( :, IDv ) * diag( RootD( IDv ) );

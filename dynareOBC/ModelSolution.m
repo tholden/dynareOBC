@@ -1,4 +1,4 @@
-function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstCall, M_, options_, oo_Internal ,dynareOBC_, Display )
+function [ Info, M, options, oo ,dynareOBC ] = ModelSolution( FirstCall, M, options, oo, dynareOBC, Display )
 
     if nargin < 6
         Display = true;
@@ -13,27 +13,25 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
     if FirstCall
         Info = 0;
     else
-        % M_.exo_nbr = dynareOBC_.FullNumVarExo;
-        % M_.exo_names_orig_ord = 1:M_.exo_nbr;
-        [dr,Info,M_,options_,oo_Internal] = resol(0,M_,options_,oo_Internal);
-        oo_Internal.dr = dr;
+        [ dr, Info, M, options, oo ] = resol( 0, M, options, oo );
+        oo.dr = dr;
         if Info ~= 0
             return
         end
     end
 
-    if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0
-        if ~dynareOBC_.NoSparse
+    if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
+        if ~dynareOBC.NoSparse
             if Display
                 skipline( );
                 disp( 'Converting to sparse matrices.' );
                 skipline( );
             end
-            DRFieldNames = fieldnames( oo_Internal.dr );
+            DRFieldNames = fieldnames( oo.dr );
             for i = 1 : length( DRFieldNames )
-                oo_Internal.dr.( DRFieldNames{i} ) = spsparse( oo_Internal.dr.( DRFieldNames{i} ) );
+                oo.dr.( DRFieldNames{i} ) = spsparse( oo.dr.( DRFieldNames{i} ) );
             end
-            M_.Sigma_e = spsparse( M_.Sigma_e );
+            M.Sigma_e = spsparse( M.Sigma_e );
         end
 
         if Display
@@ -41,31 +39,31 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
             disp( 'Computing the first order approximation around the selected non-steady-state point.' );
             skipline( );
         end
-        dynareOBC_.Order = options_.order;
-        deflect_ = compute_deflected_linear_approximation( M_, options_, oo_Internal, dynareOBC_.FirstOrderAroundRSS1OrMean2 );
-        dynareOBC_.Order = 1;
+        dynareOBC.Order = options.order;
+        deflect_ = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
+        dynareOBC.Order = 1;
     else
         deflect_ = [];
     end
     if ~isempty( deflect_ )
-        oo_Internal.dr.ys = deflect_.y;
-        oo_Internal.dr.ghx = deflect_.y_x;
-        oo_Internal.dr.ghu = deflect_.y_u;
+        oo.dr.ys = deflect_.y;
+        oo.dr.ghx = deflect_.y_x;
+        oo.dr.ghu = deflect_.y_u;
     end
     
-    oo_Internal.steady_state = oo_Internal.dr.ys;
+    oo.steady_state = oo.dr.ys;
     
-    if ~dynareOBC_.NoSparse
+    if ~dynareOBC.NoSparse
         if Display
             skipline( );
             disp( 'Converting to sparse matrices.' );
             skipline( );
         end
-        DRFieldNames = fieldnames( oo_Internal.dr );
+        DRFieldNames = fieldnames( oo.dr );
         for i = 1 : length( DRFieldNames )
-            oo_Internal.dr.( DRFieldNames{i} ) = spsparse( oo_Internal.dr.( DRFieldNames{i} ) );
+            oo.dr.( DRFieldNames{i} ) = spsparse( oo.dr.( DRFieldNames{i} ) );
         end
-        M_.Sigma_e = spsparse( M_.Sigma_e );
+        M.Sigma_e = spsparse( M.Sigma_e );
     end
     
     if Display
@@ -74,10 +72,10 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
         skipline( );
     end
     global oo_
-    oo_ = oo_Internal;
-    EmptySimulation = pruning_abounds( M_, options_, [], 0, dynareOBC_.Order, 'lan_meyer-gohde', 0 );
-    oo_Internal = oo_;
-    dynareOBC_.Constant = EmptySimulation.constant;
+    oo_ = oo;
+    EmptySimulation = pruning_abounds( M, options, [], 0, dynareOBC.Order, 'lan_meyer-gohde', 0 );
+    oo = oo_;
+    dynareOBC.Constant = EmptySimulation.constant;
     
     if Display
         skipline( );
@@ -85,7 +83,7 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
         skipline( );
     end
 
-    dynareOBC_ = GetIRFsToShadowShocks( M_, options_, oo_Internal, dynareOBC_ );
+    dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC );
 
     if Display
         skipline( );
@@ -93,11 +91,11 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
         skipline( );
     end
 
-    if dynareOBC_.NumberOfMax > 0 || dynareOBC_.FastIRFs || dynareOBC_.Order2VarianceRequired
-        dynareOBC_ = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M_, options_, oo_Internal, dynareOBC_ );
+    if dynareOBC.NumberOfMax > 0 || dynareOBC.FastIRFs || dynareOBC.Order2VarianceRequired
+        dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M, options, oo, dynareOBC );
     end
         
-    dynareOBC_.FullNumVarExo = M_.exo_nbr;
+    dynareOBC.FullNumVarExo = M.exo_nbr;
 
     if Display
         skipline( );
@@ -105,7 +103,7 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
         skipline( );
     end
 
-    [ M_, oo_Internal, dynareOBC_ ] = ReduceDecisionMatrices( M_, oo_Internal, dynareOBC_ );
+    [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
 
     if Display
         skipline( );
@@ -113,6 +111,6 @@ function [ Info, M_, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstC
         skipline( );
     end
 
-    dynareOBC_ = InitialChecks( dynareOBC_ );
+    dynareOBC = InitialChecks( dynareOBC );
     
 end

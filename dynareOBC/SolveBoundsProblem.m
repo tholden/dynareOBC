@@ -1,24 +1,24 @@
-function [ alpha, exitflag, ReturnPath ] = SolveBoundsProblem( V, dynareOBC_ )
-    if all( V >= - dynareOBC_.Tolerance )
-        alpha = dynareOBC_.ZeroVecS;
+function [ alpha, exitflag, ReturnPath ] = SolveBoundsProblem( V, dynareOBC )
+    if all( V >= - dynareOBC.Tolerance )
+        alpha = dynareOBC.ZeroVecS;
         exitflag = 1;
         ReturnPath = V;
         return
     end
-    switch dynareOBC_.Algorithm
+    switch dynareOBC.Algorithm
         case 2
-            [ alpha, exitflag, ReturnPath ] = SolveHomotopyProblem( V, dynareOBC_ );
+            [ alpha, exitflag, ReturnPath ] = SolveHomotopyProblem( V, dynareOBC );
         case 3
-            [ alpha, exitflag, ReturnPath ] = SolveQCQPProblem( V, dynareOBC_ );
+            [ alpha, exitflag, ReturnPath ] = SolveQCQPProblem( V, dynareOBC );
         otherwise
-            if dynareOBC_.CacheSize > 0
-                [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC_ );
+            if dynareOBC.CacheSize > 0
+                [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC );
             else
-                [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_ );
+                [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC );
             end
     end
 end
-function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC_ )
+function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC )
     persistent VHistory;
     persistent alphaHistory;
     persistent VMean;
@@ -34,10 +34,10 @@ function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProble
         VMean = V;
         cholVCov = eye( nV );
         VHistory = zeros( nV, 0 );
-        alphaHistory = zeros( dynareOBC_.TimeToEscapeBounds, 0 );
+        alphaHistory = zeros( dynareOBC.TimeToEscapeBounds, 0 );
     else
-        if CacheElements >= dynareOBC_.CacheSize
-            CacheElements = dynareOBC_.CacheSize - 1;
+        if CacheElements >= dynareOBC.CacheSize
+            CacheElements = dynareOBC.CacheSize - 1;
         end
         InvNewCacheElements = 1 / ( 1 + CacheElements );
         VMean = CacheElements * InvNewCacheElements * VMean + InvNewCacheElements * V;
@@ -56,12 +56,12 @@ function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProble
         alphaStart = sum( bsxfun( @times, Weights, alphaHistory ), 2 ) / sum( Weights, 2 );
     end
     if numel( alphaStart )
-        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_, max( 0, alphaStart ) );
+        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC, max( 0, alphaStart ) );
     else
         exitflag = -1;
     end
     if exitflag < 0
-        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC_ );
+        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC );
     end
     VHistory( :, WritePosition ) = V;
     alphaHistory( :, WritePosition ) = alpha;
@@ -71,7 +71,7 @@ function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProble
     end
     CacheElements = CacheElements + 1;
     WritePosition = WritePosition + 1;
-    if WritePosition > dynareOBC_.CacheSize
+    if WritePosition > dynareOBC.CacheSize
         WritePosition = 1;
     end
 end

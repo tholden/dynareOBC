@@ -1,14 +1,14 @@
-function [ alpha, ConstraintVector ] = SolveLinearProgrammingProblem( V, dynareOBC_, SkipFullSolution, ForceZeroNow )
+function [ alpha, ConstraintVector ] = SolveLinearProgrammingProblem( V, dynareOBC, SkipFullSolution, ForceZeroNow )
 % Solves argmin OneVecS' * alpha such that V + M * alpha >= 0 and alpha >= 0
 
-    T = dynareOBC_.InternalIRFPeriods;
-    Ts = dynareOBC_.TimeToEscapeBounds;
-    ns = dynareOBC_.NumberOfMax;
-    Tolerance = dynareOBC_.Tolerance;
-    M = dynareOBC_.MMatrix;
+    T = dynareOBC.InternalIRFPeriods;
+    Ts = dynareOBC.TimeToEscapeBounds;
+    ns = dynareOBC.NumberOfMax;
+    Tolerance = dynareOBC.Tolerance;
+    M = dynareOBC.MMatrix;
 
-    ZeroVecS = dynareOBC_.ZeroVecS;
-    TVecS = dynareOBC_.TVecS;
+    ZeroVecS = dynareOBC.ZeroVecS;
+    TVecS = dynareOBC.TVecS;
 
     if all( V >= 0 )
         alpha = ZeroVecS;
@@ -20,13 +20,13 @@ function [ alpha, ConstraintVector ] = SolveLinearProgrammingProblem( V, dynareO
         SkipFullSolution = false;
     end
     
-    if dynareOBC_.UseFICOXpress && ~SkipFullSolution
+    if dynareOBC.UseFICOXpress && ~SkipFullSolution
         
-        RowType = dynareOBC_.RowType;
+        RowType = dynareOBC.RowType;
         if ForceZeroNow
             RowType( 1 + ( 0:T:((ns-1)*T) ) ) = 'E';
         end
-        alpha = max( 0, xprslp( TVecS, -M, V, RowType, ZeroVecS, [], xprsoptimset( dynareOBC_.LinProgOptions ) ) );
+        alpha = max( 0, xprslp( TVecS, -M, V, RowType, ZeroVecS, [], xprsoptimset( dynareOBC.LinProgOptions ) ) );
         
     else
         
@@ -36,14 +36,14 @@ function [ alpha, ConstraintVector ] = SolveLinearProgrammingProblem( V, dynareO
     if isempty( alpha )
         
         alpha = ZeroVecS;
-        if SkipFullSolution || ( isfield( dynareOBC_.LinProgOptions, 'Algorithm' ) && strcmpi( dynareOBC_.LinProgOptions.Algorithm, 'active-set' ) )
+        if SkipFullSolution || ( isfield( dynareOBC.LinProgOptions, 'Algorithm' ) && strcmpi( dynareOBC.LinProgOptions.Algorithm, 'active-set' ) )
             % Generate a sensible initial point, using domain knowledge.
-            alpha = dynareOBC_.AlphaStart * max( 0, max( -V( dynareOBC_.SelectIndices ) ) );
+            alpha = dynareOBC.AlphaStart * max( 0, max( -V( dynareOBC.SelectIndices ) ) );
             ConstraintVector = V + M * alpha;
             Indices = [ ];
             for conv_iter = 1 : ( Ts * ns )
                 Indices = union( Indices, find( ConstraintVector < -Tolerance ) );
-                InnerIndices = setdiff( dynareOBC_.InverseSelectIndices( Indices ), 0 );
+                InnerIndices = setdiff( dynareOBC.InverseSelectIndices( Indices ), 0 );
                 if isempty( Indices )
                     break;
                 end
@@ -65,9 +65,9 @@ function [ alpha, ConstraintVector ] = SolveLinearProgrammingProblem( V, dynareO
                 Mineq( 1 + ( 0:T:((ns-1)*T) ), : ) = [];
                 Vineq = V;
                 V( 1 + ( 0:T:((ns-1)*T) ), : ) = [];
-                alpha = max( 0, linprog( TVecS, -Mineq, Vineq, -Meq, Veq, ZeroVecS, [ ], alpha, dynareOBC_.LinProgOptions ) ); 
+                alpha = max( 0, linprog( TVecS, -Mineq, Vineq, -Meq, Veq, ZeroVecS, [ ], alpha, dynareOBC.LinProgOptions ) ); 
             else
-                alpha = max( 0, linprog( TVecS, -M, V, [ ], [ ], ZeroVecS, [ ], alpha, dynareOBC_.LinProgOptions ) ); 
+                alpha = max( 0, linprog( TVecS, -M, V, [ ], [ ], ZeroVecS, [ ], alpha, dynareOBC.LinProgOptions ) ); 
             end
         end
     

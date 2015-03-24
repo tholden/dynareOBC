@@ -1,4 +1,4 @@
-function DispMoments(M_, options_, oo_, dynareOBC_)
+function DispMoments(M, options, oo, dynareOBC)
 % Derived from disp_moments.m in Dynare. Original file follows.
 
 % Displays moments of simulated variables
@@ -23,52 +23,52 @@ function DispMoments(M_, options_, oo_, dynareOBC_)
 WarningState = warning( 'off', 'all' );
 
 try
-    Drop = dynareOBC_.SimulationDrop;
-    y = oo_.endo_simul;
-    VariableSelect = dynareOBC_.VariableSelect;
+    Drop = dynareOBC.SimulationDrop;
+    y = oo.endo_simul;
+    VariableSelect = dynareOBC.VariableSelect;
     y = y(VariableSelect,Drop+1:end)';
-    MLVNames = dynareOBC_.MLVNames;
-    MLVSelect = dynareOBC_.MLVSelect;
+    MLVNames = dynareOBC.MLVNames;
+    MLVSelect = dynareOBC.MLVSelect;
     for i = MLVSelect
         MLVName = MLVNames{i};
-        y = [ y, dynareOBC_.MLVSimulationWithBounds.( MLVName )( Drop+1:end )' ]; %#ok<AGROW>
+        y = [ y, dynareOBC.MLVSimulationWithBounds.( MLVName )( Drop+1:end )' ]; %#ok<AGROW>
     end
     m = mean(y);
 
-    if options_.hp_filter
-        [~,y] = sample_hp_filter(y,options_.hp_filter);
+    if options.hp_filter
+        [~,y] = sample_hp_filter(y,options.hp_filter);
     else
         y = bsxfun(@minus, y, m);
     end
 
     s2 = mean(y.*y);
     s = sqrt(s2);
-    oo_.mean = transpose(m);
-    oo_.var = y'*y/size(y,1);
+    oo.mean = transpose(m);
+    oo.var = y'*y/size(y,1);
 
-    labels = deblank( char( [ dynareOBC_.EndoVariables( VariableSelect ) dynareOBC_.MLVNames( MLVSelect ) ] ) );
+    labels = deblank( char( [ dynareOBC.EndoVariables( VariableSelect ) dynareOBC.MLVNames( MLVSelect ) ] ) );
 
-    if options_.nomoments == 0
+    if options.nomoments == 0
         z = [ m' s' s2' (mean(y.^3)./s2.^1.5)' (mean(y.^4)./(s2.*s2)-3)' ];    
         title='MOMENTS OF SIMULATED VARIABLES';
-        if options_.hp_filter
+        if options.hp_filter
             title = [title ' (HP filter, lambda = ' ...
-                     num2str(options_.hp_filter) ')'];
+                     num2str(options.hp_filter) ')'];
         end
         headers=char('VARIABLE','MEAN','STD. DEV.','VARIANCE','SKEWNESS', ...
                      'KURTOSIS');
         dyntable(title,headers,labels,z,size(labels,2)+2,16,6);
     end
 
-    if options_.nocorr == 0
+    if options.nocorr == 0
         corr = (y'*y/size(y,1))./(s'*s);
-        if options_.noprint == 0
+        if options.noprint == 0
             title = 'CORRELATION OF SIMULATED VARIABLES';
-            if options_.hp_filter
+            if options.hp_filter
                 title = [title ' (HP filter, lambda = ' ...
-                         num2str(options_.hp_filter) ')'];
+                         num2str(options.hp_filter) ')'];
             end
-            headers = char('VARIABLE',M_.endo_names(VariableSelect,:));
+            headers = char('VARIABLE',M.endo_names(VariableSelect,:));
             dyntable(title,headers,labels,corr,size(labels,2)+2,8,4);
         end
     end
@@ -77,18 +77,18 @@ try
 %        fprintf('\nSTOCH_SIMUL: conditional_variance_decomposition requires theoretical moments, i.e. periods=0.\n') 
 %     end
 
-    ar = options_.ar;
+    ar = options.ar;
     if ar > 0
         autocorr = [];
         for i=1:ar
-            oo_.autocorr{i} = y(ar+1:end,:)'*y(ar+1-i:end-i,:)./((size(y,1)-ar)*std(y(ar+1:end,:))'*std(y(ar+1-i:end-i,:)));
-            autocorr = [ autocorr diag(oo_.autocorr{i}) ];
+            oo.autocorr{i} = y(ar+1:end,:)'*y(ar+1-i:end-i,:)./((size(y,1)-ar)*std(y(ar+1:end,:))'*std(y(ar+1-i:end-i,:)));
+            autocorr = [ autocorr diag(oo.autocorr{i}) ];
         end
-        if options_.noprint == 0
+        if options.noprint == 0
             title = 'AUTOCORRELATION OF SIMULATED VARIABLES';
-            if options_.hp_filter
+            if options.hp_filter
                 title = [title ' (HP filter, lambda = ' ...
-                         num2str(options_.hp_filter) ')'];
+                         num2str(options.hp_filter) ')'];
             end
             headers = char('VARIABLE',int2str([1:ar]'));
             dyntable(title,headers,labels,autocorr,size(labels,2)+2,8,4);

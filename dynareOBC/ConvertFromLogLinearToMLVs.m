@@ -1,11 +1,11 @@
-function [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, EndoVariables, M_ )
+function [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, EndoVariables, M )
     ToInsertInModelAtStart = { };
     for j = 1 : length( EndoVariables )
-        for k = 1 : M_.maximum_endo_lead
+        for k = 1 : M.maximum_endo_lead
             string_k = int2str( k );
             ToInsertInModelAtStart{ end + 1 } = [ '#LEAD' string_k '_' EndoVariables{ j } '=exp(log_' EndoVariables{ j } '(' string_k '));' ]; %#ok<*AGROW>
         end
-        for k = 1 : M_.maximum_endo_lag
+        for k = 1 : M.maximum_endo_lag
             string_k = int2str( k );
             ToInsertInModelAtStart{ end + 1 } = [ '#LAG' string_k '_' EndoVariables{ j } '=exp(log_' EndoVariables{ j } '(-' string_k '));' ];
         end
@@ -22,11 +22,11 @@ function [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( Fil
     for i = ( Indices.ModelStart + 1 ) : ( Indices.ModelEnd - 1 )
         CurrentLine = FileLines{ i };
         for j = 1 : length( EndoVariables )
-            for k = 1 : M_.maximum_endo_lead
+            for k = 1 : M.maximum_endo_lead
                 string_k = int2str( k );
                 CurrentLine = regexprep( CurrentLine, [ '(?<=(^|\W))' EndoVariables{ j } '\(' string_k '\)(?=\W)' ], [ 'LEAD' string_k '_' EndoVariables{ j } ] );
             end
-            for k = 1 : M_.maximum_endo_lag
+            for k = 1 : M.maximum_endo_lag
                 string_k = int2str( k );
                 CurrentLine = regexprep( CurrentLine, [ '(?<=(^|\W))' EndoVariables{ j } '\(\-' string_k '\)(?=\W)' ], [ 'LAG' string_k '_' EndoVariables{ j } ] );
             end

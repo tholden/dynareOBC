@@ -1,19 +1,19 @@
-function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedReturnPath, options_, oo_, dynareOBC_, FirstOrderSimulation, varargin )
+function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedReturnPath, options, oo, dynareOBC, FirstOrderSimulation, varargin )
    
-    RootConditionalCovariance = RetrieveConditionalCovariances( options_, oo_, dynareOBC_, FirstOrderSimulation );
+    RootConditionalCovariance = RetrieveConditionalCovariances( options, oo, dynareOBC, FirstOrderSimulation );
     d = size( RootConditionalCovariance, 2 );
     if d == 0
         return;
     end
     
-    if dynareOBC_.FastCubature
+    if dynareOBC.FastCubature
         NumPoints = 1 + 2 * d;
         CubatureWeights = ones( NumPoints, 1 ) * ( 1 / NumPoints );
         wTemp = 0.5 * sqrt( 2 * NumPoints );
         CubaturePoints = [ zeros( d, 1 ), eye( d ) * wTemp, eye( d ) * (-wTemp) ];
         CubatureOrder = 1;
     else
-        CubatureOrder = ceil( 0.5 * ( dynareOBC_.MaxCubatureDegree - 1 ) );
+        CubatureOrder = ceil( 0.5 * ( dynareOBC.MaxCubatureDegree - 1 ) );
         [ CubatureWeightsCurrent, CubaturePoints, NumPointsCurrent ] = fwtpts( d, CubatureOrder );
         CubatureWeights = zeros( NumPointsCurrent, CubatureOrder );
         CubatureWeights( :, end ) = CubatureWeightsCurrent;
@@ -55,7 +55,7 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
         parfor j = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 )
             WarningState = warning( 'off', 'all' );
             try
-                [ alpha_new, exitflag_new, ReturnPath_new ] = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ), dynareOBC_ );
+                [ alpha_new, exitflag_new, ReturnPath_new ] = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ), dynareOBC );
                 exitflag = min( exitflag, exitflag_new );
                 alphaMatrix = alphaMatrix + alpha_new * CubatureWeights( j, : );
                 ReturnPathMatrix = ReturnPathMatrix + ReturnPath_new * CubatureWeights( j, : );
@@ -69,7 +69,7 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
             end
         end
 		
-        if dynareOBC_.FastCubature || dynareOBC_.NoStatisticalCubature || ( i == 1 && dynareOBC_.KappaPriorParameter == 0 )
+        if dynareOBC.FastCubature || dynareOBC.NoStatisticalCubature || ( i == 1 && dynareOBC.KappaPriorParameter == 0 )
             alpha_new = alphaMatrix( :, i );
             ReturnPath_new = ReturnPathMatrix( :, i );
             ReturnPathError = max( abs( ConstrainedReturnPath - ReturnPath_new ) );
@@ -78,7 +78,7 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
         else
             x_alpha = [ alpha_orig alphaMatrix( :, 1:i ) ];
             x_ReturnPath = [ ReturnPath_orig ReturnPathMatrix( :, 1:i ) ];
-            HyperParams = fmincon( @( HP ) GetTwoNLogL( HP, x_ReturnPath, dynareOBC_.KappaPriorParameter ), HyperParams, [], [], [], [], [ -1; -1; 0 ], [ 1; 1; 1 ], [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
+            HyperParams = fmincon( @( HP ) GetTwoNLogL( HP, x_ReturnPath, dynareOBC.KappaPriorParameter ), HyperParams, [], [], [], [], [ -1; -1; 0 ], [ 1; 1; 1 ], [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
             alpha_new = GetMu( HyperParams, x_alpha );
             ReturnPath_new = GetMu( HyperParams, x_ReturnPath );
             ReturnPathError = max( abs( ConstrainedReturnPath - ReturnPath_new ) );
@@ -86,7 +86,7 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
             ConstrainedReturnPath = ReturnPath_new;
         end
         
-        if ReturnPathError < 10 ^ ( -dynareOBC_.CubatureAccuracy )
+        if ReturnPathError < 10 ^ ( -dynareOBC.CubatureAccuracy )
             break;
         end
     
@@ -96,19 +96,19 @@ function alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedRet
         p.stop;
     end
     
-    M = dynareOBC_.MMatrix;
+    M = dynareOBC.MMatrix;
     
-    [ alpha, ~, ~, exitflag_new ] = lsqlin( M, ConstrainedReturnPath - UnconstrainedReturnPath, -M, UnconstrainedReturnPath, [], [], [], [], alpha, dynareOBC_.LSqLinOptions );
+    [ alpha, ~, ~, exitflag_new ] = lsqlin( M, ConstrainedReturnPath - UnconstrainedReturnPath, -M, UnconstrainedReturnPath, [], [], [], [], alpha, dynareOBC.LSqLinOptions );
     exitflag = min( exitflag, exitflag_new );
 %     figure;
 %     hold on;
 %     plot( ReturnPath );
 %     plot( V + M * alpha );
     
-    T = dynareOBC_.InternalIRFPeriods;
-    Ts = dynareOBC_.TimeToEscapeBounds;
-    ns = dynareOBC_.NumberOfMax;
-    Tolerance = dynareOBC_.Tolerance;
+    T = dynareOBC.InternalIRFPeriods;
+    Ts = dynareOBC.TimeToEscapeBounds;
+    ns = dynareOBC.NumberOfMax;
+    Tolerance = dynareOBC.Tolerance;
     
     SelectNow = 1 + ( 0:T:(T*(ns-1)) );
     SelectNows = 1 + ( 0:Ts:(Ts*(ns-1)) );
