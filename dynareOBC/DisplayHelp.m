@@ -36,12 +36,6 @@ function DisplayHelp
     disp( '      push them towards the bound, but they do not take into account the risk of hitting the bound' );
     disp( '      in the far future. With the global option, dynareOBC assumes agents take into account the risk' );
     disp( '      of hitting the bound at all horizons. Note that this is significantly slower.' );
-    disp( '       * shadowshocknumbermultiplier=NUMBER (default: the order of approximation)' );
-    disp( '            The number of shocks with which to approximate the distribution of each shadow shock' );
-    disp( '            innovation, when using global.' );
-    disp( '       * shadowapproximatingorder=NUMBER (default: the order of approximation)' );
-    disp( '            The order with which to approximate the expected component of each shadow shock, when' );
-    disp( '            using global.' );
     disp( '       * maxiterations=NUMBER (default: 1000)' );
     disp( '            The maximum number of iterations of the global fixed-point algorithm.' );
     disp( '       * fixedpointacceleration' );

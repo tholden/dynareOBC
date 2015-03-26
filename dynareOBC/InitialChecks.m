@@ -20,10 +20,10 @@ function dynareOBC = InitialChecks( dynareOBC )
 
     Tolerance = dynareOBC.Tolerance;
     
-    dynareOBC = SetDefaultOption( dynareOBC, 'LinProgOptions',  optimset( 'display', 'off', 'Algorithm', 'simplex',        'MaxIter', 20 * Ts * ns, 'MaxFunEvals', 10 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance ) );
-    dynareOBC = SetDefaultOption( dynareOBC, 'QuadProgOptions', optimset( 'display', 'off', 'Algorithm', 'active-set',     'MaxIter', 40 * Ts * ns, 'MaxFunEvals', 20 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance ) ); % 'trust-region-reflective'
-    dynareOBC = SetDefaultOption( dynareOBC, 'LSqLinOptions',   optimset( 'display', 'off', 'Algorithm', 'active-set',     'MaxIter', 40 * Ts * ns, 'MaxFunEvals', 20 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance, 'LargeScale', 'off' ) ); % 'trust-region-reflective'
-    dynareOBC = SetDefaultOption( dynareOBC, 'FMinConOptions',  optimset( 'display', 'off', 'Algorithm', 'interior-point', 'MaxIter', 80 * Ts * ns, 'MaxFunEvals', 40 * Ts * ns, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance, 'TolConSQP', Tolerance, 'DerivativeCheck', 'off', 'GradConstr', 'on', 'GradObj', 'on', 'Hessian', 'user-supplied' ) ); % 'sqp'
+    dynareOBC = SetDefaultOption( dynareOBC, 'LinProgOptions',  optimset( 'display', 'off', 'Algorithm', 'simplex',        'MaxIter', Inf, 'MaxFunEvals', Inf, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance ) );
+    dynareOBC = SetDefaultOption( dynareOBC, 'QuadProgOptions', optimset( 'display', 'off', 'Algorithm', 'active-set',     'MaxIter', Inf, 'MaxFunEvals', Inf, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance ) ); % 'trust-region-reflective'
+    dynareOBC = SetDefaultOption( dynareOBC, 'LSqLinOptions',   optimset( 'display', 'off', 'Algorithm', 'active-set',     'MaxIter', Inf, 'MaxFunEvals', Inf, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance, 'LargeScale', 'off' ) ); % 'trust-region-reflective'
+    dynareOBC = SetDefaultOption( dynareOBC, 'FMinConOptions',  optimset( 'display', 'off', 'Algorithm', 'interior-point', 'MaxIter', Inf, 'MaxFunEvals', Inf, 'TolFun', Tolerance, 'TolX', Tolerance, 'TolCon', Tolerance, 'TolConSQP', Tolerance, 'DerivativeCheck', 'off', 'GradConstr', 'on', 'GradObj', 'on', 'Hessian', 'user-supplied' ) ); % 'sqp'
     
     CompVec = false( T * ns, 1 );
     GuaranteedHorizon = 0;

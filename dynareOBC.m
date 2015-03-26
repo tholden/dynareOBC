@@ -39,10 +39,14 @@ CurrentPath = fileparts( mfilename( 'fullpath' ) );
 addpath( [ CurrentPath '/dynareOBC/' ] );
 addpath( [ CurrentPath '/dynareOBC/nlma/' ] );
 
-if nargin < 1 || strcmpi(fname,'help')
+if nargin < 1 || strcmpi( fname, 'help' )
     DisplayHelp;
     rmpath( [ CurrentPath '/dynareOBC/' ] );
     rmpath( [ CurrentPath '/dynareOBC/nlma/' ] );
+    return;
+end
+
+if strcmpi( fname, 'path' )
     return;
 end
 
@@ -228,13 +232,7 @@ if M_.orig_endo_nbr ~= M_.endo_nbr
     warning( 'dynareOBC:AuxiliaryVariables', 'dynareOBC is untested on models with lags or leads on exogenous variables, or lags or leads on endogenous variables greater than one period.\nConsider manually adding additional variables for these lags and leads.' );
 end
 
-%% Generating the final mod file
-
-skipline( );
-disp( 'Generating the final mod file.' );
-skipline( );
-
-dynareOBC_.InternalIRFPeriods = max( [ dynareOBC_.IRFPeriods, dynareOBC_.TimeToEscapeBounds, dynareOBC_.TimeToReturnToSteadyState ] );
+%% Preparation for the final runs
 
 % Find the state variables, endo variables and shocks
 dynareOBC_.StateVariables = { };
@@ -252,40 +250,10 @@ dynareOBC_ = SetDefaultOption( dynareOBC_, 'IRFShocks', dynareOBC_.Shocks );
 
 dynareOBC_.StateVariablesAndShocks = [ {'1'} dynareOBC_.StateVariables dynareOBC_.Shocks ];
 
-% Generate combinations
-if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0 % ~dynareOBC_.Global || 
-    dynareOBC_.ShadowShockNumberMultiplier = 1;
-else
-    dynareOBC_ = SetDefaultOption( dynareOBC_, 'ShadowShockNumberMultiplier', dynareOBC_.Order );
-end
-
-% dynareOBC_.NumberOfShadowShockGroups = dynareOBC_.NumberOfMax * dynareOBC_.TimeToEscapeBounds;
-% dynareOBC_.NumberOfShadowShocks = dynareOBC_.ShadowShockNumberMultiplier * dynareOBC_.NumberOfShadowShockGroups;
-
-if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0
-    dynareOBC_.ShadowOrder = 1;
-    dynareOBC_.ShadowApproximatingOrder = 1;
-else
-    dynareOBC_.ShadowOrder = dynareOBC_.Order;
-    dynareOBC_ = SetDefaultOption( dynareOBC_, 'ShadowApproximatingOrder', dynareOBC_.ShadowOrder );
-end
-
-if dynareOBC_.Global
-    dynareOBC_.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC_.StateVariablesAndShocks ), dynareOBC_.ShadowApproximatingOrder );
-    if dynareOBC_.ShadowApproximatingOrder == 0
-        dynareOBC_.StateVariableAndShockCombinations( 1 ) = 1;
-    end
-    dynareOBC_.ShadowShockCombinations = GenerateCombinations( dynareOBC_.ShadowShockNumberMultiplier, dynareOBC_.ShadowOrder );
-else
-    dynareOBC_.StateVariableAndShockCombinations = { };
-    dynareOBC_.ShadowShockCombinations = { };
-    dynareOBC_.ShadowShockNumberMultiplier = 0;
-end
-
-
 dynareOBC_ = orderfields( dynareOBC_ );
 
-% Insert new variables and equations etc.
+% Extra processing for log-linear models
+
 if LogLinear
     EndoLLPrefix = 'log_';
 else
@@ -293,9 +261,8 @@ else
 end
 ToInsertInInitVal = { };
 for i = 1 : M_.orig_endo_nbr
-    ToInsertInInitVal{ end + 1 } = sprintf( '%s%s=%.20e;', EndoLLPrefix, dynareOBC_.EndoVariables{ i }, oo_.dr.ys( i ) ); %#ok<AGROW>
+    ToInsertInInitVal{ end + 1 } = sprintf( '%s%s=%.17e;', EndoLLPrefix, dynareOBC_.EndoVariables{ i }, oo_.dr.ys( i ) ); %#ok<AGROW>
 end
-
 
 if LogLinear
     [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, dynareOBC_.EndoVariables, M_ );
@@ -304,11 +271,117 @@ else
     ToInsertInModelAtStart = { };
 end
 
-[ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC_ ] = ...
-    InsertShadowEquations( FileLines, ToInsertInInitVal, MaxArgValues, M_, dynareOBC_ );
+% Common file changes
 
 [ FileLines, Indices ] = PerformDeletion( Indices.InitValStart, Indices.InitValEnd, FileLines, Indices );
 [ FileLines, Indices ] = PerformDeletion( Indices.SteadyStateModelStart, Indices.SteadyStateModelEnd, FileLines, Indices );
+
+ToInsertBeforeModel = { };
+ToInsertInModelAtEnd = { };
+ToInsertInShocks = { };
+   
+% Other common set-up
+
+if isoctave || user_has_matlab_license('optimization_toolbox')
+    SolveAlgo = 0;
+else
+    SolveAlgo = 2;
+end
+
+if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0
+    dynareOBC_.ShadowOrder = 1;
+else
+    dynareOBC_.ShadowOrder = dynareOBC_.Order;
+end
+
+CurrentNumParams = M_.param_nbr;
+CurrentNumVar = M_.endo_nbr;
+CurrentNumVarExo = M_.exo_nbr;
+
+dynareOBC_.OriginalNumParams = CurrentNumParams;
+if dynareOBC_.ZeroParameterInserted
+    dynareOBC_.OriginalNumParams = dynareOBC_.OriginalNumParams - 1;
+end
+
+dynareOBC_.OriginalNumVar = CurrentNumVar;
+dynareOBC_.OriginalNumVarExo = CurrentNumVarExo;
+
+%% Global polynomial approximation
+
+if dynareOBC_.Global
+    error( 'dynareOBC:UnsupportedGlobal', 'Global solution is temporarily disabled.' );
+    skipline( );
+    disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
+    skipline( );
+
+    dynareOBC_.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC_.StateVariablesAndShocks ), dynareOBC_.Order );
+    
+    OldFileLines = FileLines;
+    OldIndices = Indices;
+    OldToInsertBeforeModel = ToInsertBeforeModel;
+    OldToInsertInModelAtEnd = ToInsertInModelAtEnd;
+    OldToInsertInShocks = ToInsertInShocks;
+    OldToInsertInInitVal = ToInsertInInitVal;
+    OldNumParams = CurrentNumParams;
+    OldNumVar = CurrentNumVar;
+    
+    skipline( );
+    disp( 'Generating the intermediate mod file.' );
+    skipline( );
+    
+    [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC_ ] = ...
+        InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC_ );
+
+    [ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
+    [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
+    [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
+    [ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
+    [ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
+
+    %Save the result
+
+    FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC_.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
+    newmodfile = fopen( 'dynareOBCtempG.mod', 'w' );
+    fprintf( newmodfile, '%s', FileText );
+    fclose( newmodfile );
+    
+    skipline( );
+    disp( 'Calling dynare on the intermediate mod file.' );
+    skipline( );
+
+    dynare( 'dynareOBCtempG.mod', basevarargin{:} );   
+    
+    GlobalModelSolution;
+    
+    GlobalApproximationParameters = M_.params( dynareOBC_.ParameterIndices_StateVariableAndShockCombinations );
+
+    FileLines = OldFileLines;
+    Indices = OldIndices;
+    ToInsertBeforeModel = OldToInsertBeforeModel;
+    ToInsertInModelAtEnd = OldToInsertInModelAtEnd;
+    ToInsertInShocks = OldToInsertInShocks;
+    ToInsertInInitVal = OldToInsertInInitVal;
+    CurrentNumParams = OldNumParams;
+    CurrentNumVar = OldNumVar;
+    
+else
+    dynareOBC_.StateVariableAndShockCombinations = { };
+    GlobalApproximationParameters = [];
+end
+
+%% Generating the final mod file
+
+skipline( );
+disp( 'Generating the final mod file.' );
+skipline( );
+
+dynareOBC_.InternalIRFPeriods = max( [ dynareOBC_.IRFPeriods, dynareOBC_.TimeToEscapeBounds, dynareOBC_.TimeToReturnToSteadyState ] );
+dynareOBC_ = orderfields( dynareOBC_ );
+
+% Insert new variables and equations etc.
+
+[ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC_ ] = ...
+    InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, CurrentNumVarExo, dynareOBC_, GlobalApproximationParameters );
 
 [ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
 [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
@@ -317,12 +390,6 @@ end
 [ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
 
 %Save the result
-
-if isoctave || user_has_matlab_license('optimization_toolbox')
-    SolveAlgo = 0;
-else
-    SolveAlgo = 2;
-end
 
 FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC_.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
 newmodfile = fopen( 'dynareOBCtemp3.mod', 'w' );
@@ -355,7 +422,10 @@ else
     dynareOBC_.MLVSelect = 1 : length( dynareOBC_.MLVNames );
 end
 
-if dynareOBC_.Estimation    
+if dynareOBC_.Estimation
+    if dynareOBC_.Global
+        error( 'dynareOBC:UnsupportedGlobalEstimation', 'Estimation of models solved globally is not currently supported.' );
+    end
     if any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
         error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
     end
@@ -382,20 +452,16 @@ if dynareOBC_.Estimation
     M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
     disp( 'Final parameter estimates:' );
     for i = 1 : NumEstimatedParams
-        fprintf( '%s:\t\t%.20e\n', strtrim( M_.param_names( dynareOBC_.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC_.EstimationParameterSelect( i ) ) );
+        fprintf( '%s:\t\t%.17e\n', strtrim( M_.param_names( dynareOBC_.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC_.EstimationParameterSelect( i ) ) );
     end
     skipline( );
     disp( 'Final measurement error standard deviation estimates:' );
     for i = 1 : NumObservables
-        fprintf( '%s:\t\t%.20e\n', dynareOBC_.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
+        fprintf( '%s:\t\t%.17e\n', dynareOBC_.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
     end
 end
 
-if dynareOBC_.Global
-    [ Info, M_, options_, oo_ ,dynareOBC_ ] = GlobalModelSolution( M_, options_, oo_ ,dynareOBC_ );
-else
-    [ Info, M_, options_, oo_ ,dynareOBC_ ] = ModelSolution( 1, M_, options_, oo_ ,dynareOBC_ );
-end
+[ Info, M_, options_, oo_ ,dynareOBC_ ] = ModelSolution( 1, M_, options_, oo_ ,dynareOBC_ );
 
 dynareOBC_ = orderfields( dynareOBC_ );
 

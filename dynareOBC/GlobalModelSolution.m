@@ -1,31 +1,17 @@
-function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSolution( M_Internal, options_, oo_Internal ,dynareOBC_ )
+function [ Info, M, options, oo ,dynareOBC ] = GlobalModelSolution( M, options, oo, dynareOBC )
 
     skipline( );
-    disp( 'Beginning the semi-global solution of the model.' );
+    disp( 'Beginning solving the fixed point problem.' );
     skipline( );
     
-    StateVariablesAndShocks = dynareOBC_.StateVariablesAndShocks;
-    ShadowShockCombinations = dynareOBC_.ShadowShockCombinations;
+    StateVariablesAndShocks = dynareOBC.StateVariablesAndShocks;
 
-    T = dynareOBC_.TimeToEscapeBounds;
-    ns = dynareOBC_.NumberOfMax;
-
-    Tns = ns * T;
+    nSVASC = size( dynareOBC.StateVariableAndShockCombinations, 1 );
     
-    LowerIndices = tril( reshape( ( 1 : ( Tns * Tns ) )', [ Tns, Tns ] ), -1 );
-    LowerIndices = LowerIndices(:);
-    LowerIndices( LowerIndices == 0 ) = [];
-    
-    PI_StateVariableAndShockCombinations = dynareOBC_.ParameterIndices_StateVariableAndShockCombinations;
-    PI_OtherShadowShockCombinations = dynareOBC_.ParameterIndices_OtherShadowShockCombinations( LowerIndices );
-    PI_ShadowShockCombinations = dynareOBC_.ParameterIndices_ShadowShockCombinations;
-    PI = [ PI_StateVariableAndShockCombinations( : ); PI_OtherShadowShockCombinations( : ); PI_ShadowShockCombinations( : ) ];
-    nPI = length( PI );
-    m = min(nPI,ceil(4+4*(nPI-1).^(1/4))); % seems "reasonable" and fits http://users.wpi.edu/~walker/Papers/Walker-Ni,SINUM,V49,1715-1735.pdf
+    PI = dynareOBC.ParameterIndices_StateVariableAndShockCombinations;
+    m = min(nSVASC,ceil(4+4*(nSVASC-1).^(1/4))); % seems "reasonable" and fits http://users.wpi.edu/~walker/Papers/Walker-Ni,SINUM,V49,1715-1735.pdf
     
     nSVAS = length( StateVariablesAndShocks );
-    nSS = dynareOBC_.ShadowShockNumberMultiplier;
-    nSSC = size( ShadowShockCombinations, 1 );
     
     StateVariableAndShockTypes = zeros( 2, nSVAS );
     for i = 1 : nSVAS
@@ -33,70 +19,48 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         if CurrentStateVariableOrShock == '1'
             StateVariableAndShockTypes( 1, i ) = 0;
             StateVariableAndShockTypes( 2, i ) = 1;
-        elseif ismember( CurrentStateVariableOrShock, dynareOBC_.StateVariables )
+        elseif ismember( CurrentStateVariableOrShock, dynareOBC.StateVariables )
             StateVariableAndShockTypes( 1, i ) = 1;
-            StateVariableAndShockTypes( 2, i ) = find( ismember( dynareOBC_.EndoVariables, CurrentStateVariableOrShock(1:(end-4)) ), 1 ); % end - 4 remove (-1)
-        elseif ismember( CurrentStateVariableOrShock, dynareOBC_.Shocks )
+            StateVariableAndShockTypes( 2, i ) = find( ismember( dynareOBC.EndoVariables, CurrentStateVariableOrShock(1:(end-4)) ), 1 ); % end - 4 remove (-1)
+        elseif ismember( CurrentStateVariableOrShock, dynareOBC.Shocks )
             StateVariableAndShockTypes( 1, i ) = 2;
-            StateVariableAndShockTypes( 2, i ) = find( ismember( dynareOBC_.Shocks, CurrentStateVariableOrShock ), 1 );
+            StateVariableAndShockTypes( 2, i ) = find( ismember( dynareOBC.Shocks, CurrentStateVariableOrShock ), 1 );
         else
             error( 'dynareOBC:UnrecognisedStateVariableOrShock', 'Unrecognised state variable or shock.' );
         end
     end
     
-    [ ShadowQuadratureWeights, ShadowQuadratureNodes, ShadowQuadratureLength ] = fwtpts( nSS, ceil( 0.5 * ( ( nSSC + 1 ) * dynareOBC_.ShadowOrder - 1 ) ) );
-    
-    ShadowShockComponents = ones( ShadowQuadratureLength, nSSC );
-    for k = 1 : nSSC
-        ShadowShockCombination = ShadowShockCombinations( k, : );
-        ShockMeanOne = true;
-        for l = 1 : nSS
-            ShockPower = ShadowShockCombination( l );
-            if ShockPower > 0
-                if mod( ShockPower, 2 ) == 1
-                    ShockMeanOne = false;
-                end
-                ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) .* ( ShadowQuadratureNodes( l, : )' .^ ShockPower );
-            end
-        end
-        if ShockMeanOne
-            ShadowShockComponents( :, k ) = ShadowShockComponents( :, k ) - 1;
-        end
-    end 
-    
-    fsolveOptions = optimset( 'display', 'off', 'Jacobian', 'on', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolFun', eps, 'TolX', eps );
-    
-    x = M_Internal.params( PI );
-    if dynareOBC_.Resume
-        ResumeData = load( 'dynareOBCSemiGlobalResume.mat' );
+    x = M.params( PI );
+    if dynareOBC.Resume
+        ResumeData = load( 'dynareOBCGlobalResume.mat' );
         ResumeParamNames = cellstr( ResumeData.M_.param_names );
-        NewParamNames = cellstr( M_Internal.param_names );
+        NewParamNames = cellstr( M.param_names );
         for i = 1 : length( ResumeParamNames )
             ParamName = ResumeParamNames{ i };
             j = find( strcmp( ParamName, NewParamNames ), 1 );
-            M_Internal.params( j ) = ResumeData.M_.params( i );
+            M.params( j ) = ResumeData.M_.params( i );
         end
-        x = M_Internal.params( PI );
+        x = M.params( PI );
     end
     
-    M_Internal_Init = M_Internal;
-    options_Init = options_;
-    oo_Internal_Init = oo_Internal;
-    dynareOBC_Init = dynareOBC_;
+    MInit = M;
+    optionsInit = options;
+    ooInit = oo;
+    dynareOBCInit = dynareOBC;
     
     global oo_ M_
 
     StepSize = 0.1;
     InnerIteration = 0;
-    for Iteration = 0 : dynareOBC_.MaxIterations
-        M_Internal = M_Internal_Init;
-        options_ = options_Init;
-        oo_Internal = oo_Internal_Init;
-        dynareOBC_ = dynareOBC_Init;
-        [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionInternal( x, Iteration == 0, M_Internal, options_, oo_Internal, dynareOBC_, LowerIndices, PI, StateVariableAndShockTypes, fsolveOptions, ShadowQuadratureWeights, ShadowShockComponents );
+    for Iteration = 0 : dynareOBC.MaxIterations
+        M = MInit;
+        options = optionsInit;
+        oo = ooInit;
+        dynareOBC = dynareOBCInit;
+        [ fxNorm, gx, fx, M, oo ] = GlobalModelSolutionInternal( x, Iteration == 0, M, options, oo, dynareOBC, LowerIndices, PI, StateVariableAndShockTypes );
         if Iteration > 0
             if ~isfinite( fxNorm )
-                if dynareOBC_.FixedPointAcceleration
+                if dynareOBC.FixedPointAcceleration
                     gx = Best_x;
                     fx = gx - x;
                 end
@@ -106,7 +70,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 error( 'dynareOBC:FailedFirstStepGlobal', 'Failed to solve the model at the initial point while computing a global solution.' );
             else
                 Best_fxNorm = Inf;
-                if ~dynareOBC_.FixedPointAcceleration
+                if ~dynareOBC.FixedPointAcceleration
                     LastFailed = false;
                 end
             end
@@ -117,17 +81,17 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         
         Save_ofx = false;
         if fxNorm < Best_fxNorm
-            M_ = M_Internal;
-            oo_ = oo_Internal;
-            save dynareOBCSemiGlobalResume.mat x M_ oo_;
-            save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
+            M_ = M;
+            oo_ = oo;
+            save dynareOBCGlobalResume.mat x M_ oo_;
+            save_params_and_steady_state( 'dynareOBCGlobalSteady.txt' );
             
             Best_x = x;
             Best_fx = fx;
             Best_fxNorm = fxNorm;
             Save_ofx = true;
 
-            if ~dynareOBC_.FixedPointAcceleration
+            if ~dynareOBC.FixedPointAcceleration
                 StepSize = StepSize * 1.1;
                 LastFailed = false;
                 if Iteration > 0
@@ -141,7 +105,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
                 fprintf( 'New conjugate gradient parameter: %e\n', beta );
             end
         else
-            if ~dynareOBC_.FixedPointAcceleration
+            if ~dynareOBC.FixedPointAcceleration
                 x = Best_x;
                 fx = Best_fx;
                 if LastFailed
@@ -154,7 +118,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
             end
         end
         
-        if fxNorm < sqrt( eps * nPI )
+        if fxNorm < sqrt( eps * nSVASC )
             x = 0.5 * ( x + gx );
             skipline( );
             disp( 'Convergence obtained.' );
@@ -171,7 +135,7 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         end       
          
         ox = x;
-        if dynareOBC_.FixedPointAcceleration
+        if dynareOBC.FixedPointAcceleration
             if InnerIteration > 0
                 dfx = fx - ofx;
                 if InnerIteration > 1
@@ -209,28 +173,29 @@ function [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = GlobalModelSo
         
         InnerIteration = InnerIteration + 1;        
     end
-    if Iteration >= dynareOBC_.MaxIterations
+    if Iteration >= dynareOBC.MaxIterations
         skipline( );
         warning( 'dynareOBC:ReachedMaxIterations', 'The semi-global solution algorithm reached the maximum allowed number of interations without converging. Results may be inaccurate.' );
         skipline( );
         x = ox;
     end
-    M_Internal = M_Internal_Init;
-    options_ = options_Init;
-    oo_Internal = oo_Internal_Init;
-    dynareOBC_ = dynareOBC_Init;
-    M_Internal.params( PI ) = x;
+    M = MInit;
+    options = optionsInit;
+    oo = ooInit;
+    dynareOBC = dynareOBCInit;
+    M.params( PI ) = x;
 
     Info = -1;
     try
-        [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( false, M_Internal, options_, oo_Internal ,dynareOBC_ );
+        [ dr, Info, M, options, oo ] = resol( 0, M, options, oo );
+        oo.dr = dr;
     catch
     end
     if Info ~= 0
         error( 'dynareOBC:GlobalNoSolution', 'At the final point, no determinate solution exists.' );
     end
-    M_ = M_Internal;
-    oo_ = oo_Internal;
-    save dynareOBCSemiGlobalResume.mat x M_ oo_;
-    save_params_and_steady_state( 'dynareOBCSemiGlobalSteady.txt' );
+    M_ = M;
+    oo_ = oo;
+    save dynareOBCGlobalResume.mat x M_ oo_;
+    save_params_and_steady_state( 'dynareOBCGlobalSteady.txt' );
 end

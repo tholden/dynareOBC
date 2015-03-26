@@ -32,7 +32,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
             CurrentIRF = TempIRFs( j, 1:Ts );
             IRFsWithoutBounds.( IRFName ) = CurrentIRF;
             if dynareOBC.NumberOfMax > 0
-                CurrentIRF = CurrentIRF + ( dynareOBC.MSubMatrices{ j }( 1:Ts, : ) * ( alpha .* dynareOBC.OriginalSigns(:) ) )';
+                CurrentIRF = CurrentIRF + ( dynareOBC.MSubMatrices{ j }( 1:Ts, : ) * ( alpha .* M.params( dynareOBC.ParameterIndices_Signs ) ) )';
             end
             oo.irfs.( IRFName ) = CurrentIRF;
             IRFOffsets.( IRFName ) = TempIRFOffsets( j, 1:Ts );

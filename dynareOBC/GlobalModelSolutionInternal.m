@@ -1,15 +1,20 @@
-function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionInternal( x, FirstCall, M_Internal, options_, oo_Internal, dynareOBC_, LowerIndices, PI, StateVariableAndShockTypes, fsolveOptions, ShadowQuadratureWeights, ShadowShockComponents )
+function [ fxNorm, gx, fx, M, oo ] = GlobalModelSolutionInternal( x, FirstCall, M, options, oo, dynareOBC, PI, StateVariableAndShockTypes )
 
     if any( ~isfinite( x ) )
         error( 'dynareOBC:BadParameters', 'Non-finite parameters were passed to GlobalModelSolutionInternal.' );
     end
     
-    M_Internal.params( PI ) = x;
+    M.params( PI ) = x;
     
-    Info = -1;
-    try
-        [ Info, M_Internal, options_, oo_Internal ,dynareOBC_ ] = ModelSolution( FirstCall, M_Internal, options_, oo_Internal ,dynareOBC_ );
-    catch
+    if FirstCall
+        Info = 0;
+    else
+        Info = -1;
+        try
+            [ dr, Info, M, options, oo ] = resol( 0, M, options, oo );
+            oo.dr = dr;
+        catch
+        end
     end
     
     if Info ~= 0
@@ -19,41 +24,35 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
         return
     end
     
-    StateVariableAndShockCombinations = dynareOBC_.StateVariableAndShockCombinations;
-    StateVariablesAndShocks = dynareOBC_.StateVariablesAndShocks;
-    ShadowShockCombinations = dynareOBC_.ShadowShockCombinations;
+    StateVariableAndShockCombinations = dynareOBC.StateVariableAndShockCombinations;
+    StateVariablesAndShocks = dynareOBC.StateVariablesAndShocks;
 
-    T = dynareOBC_.TimeToEscapeBounds;
-    ns = dynareOBC_.NumberOfMax;
+    ns = dynareOBC.NumberOfMax;
 
-    Tns = ns * T;
-    
-    nOSSC = length( LowerIndices );
     nSVAS = length( StateVariablesAndShocks );
     nSVASC = size( StateVariableAndShockCombinations, 1 );
-    nSSC = size( ShadowShockCombinations, 1 );
-    
-    CholSigma = RRRoot( M_Internal.Sigma_e );
-    switch dynareOBC_.Order
+
+    CholSigma = RRRoot( M.Sigma_e );
+    switch dynareOBC.Order
         case 1
-            Var_z = dynareOBC_.Var_z1;
+            Var_z = dynareOBC.Var_z1;
         case 2
-            Var_z = dynareOBC_.Var_z2;
+            Var_z = dynareOBC.Var_z2;
         case 3
             error( 'dynareOBC:NotImplemented', 'Currently dynareOBC cannot solve globally at order 3.' );
         otherwise
             error( 'dynareOBC:UnsupportedOrder', 'dynareOBC only supports orders 1, 2 and 3.' );
     end
     CholVar_z = RRRoot( Var_z );
-    Mean_z = dynareOBC_.Mean_z;
+    Mean_z = dynareOBC.Mean_z;
 
-    nEndo = M_Internal.endo_nbr;
-    nState = M_Internal.nspred;
+    nEndo = M.endo_nbr;
+    nState = M.nspred;
     nVar_z = size( CholVar_z, 2 );
     nSigma = size( CholSigma, 2 );
 
     IntegrationDimension = nVar_z + nSigma;
-    [ QuadratureWeights, QuadratureNodes ] = fwtpts( IntegrationDimension, min( dynareOBC_.Order, IntegrationDimension + 1 ) );
+    [ QuadratureWeights, QuadratureNodes ] = fwtpts( IntegrationDimension, min( dynareOBC.Order, IntegrationDimension + 1 ) );
     NumberOfQuadratureNodes = length( QuadratureWeights );
 
     p = TimedProgressBar( NumberOfQuadratureNodes, 50, 'Computing simulation at grid points. Please wait for around ', '. Progress: ', 'Computing simulation at grid points. Completed in ' );
@@ -61,11 +60,11 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
 
     SimulationPresent = zeros( nEndo, NumberOfQuadratureNodes );
     SimulationPast = zeros( nEndo, NumberOfQuadratureNodes );
-    ShockPresent = zeros( size( M_Internal.Sigma_e, 1 ), NumberOfQuadratureNodes );
+    ShockPresent = zeros( size( M.Sigma_e, 1 ), NumberOfQuadratureNodes );
 
-    inv_order_var = oo_Internal.dr.inv_order_var;
-    Order = dynareOBC_.Order;
-    Constant = dynareOBC_.Constant;
+    inv_order_var = oo.dr.inv_order_var;
+    Order = dynareOBC.Order;
+    Constant = dynareOBC.Constant;
 
     OpenPool;
     parfor i = 1 : NumberOfQuadratureNodes       
@@ -93,7 +92,7 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
             InitialFullState.total_with_bounds = InitialFullState.total + InitialFullState.bound;
 
             Shock = CholSigma * CurrentNodes( (nVar_z+1):end );
-            Simulation = SimulateModel( Shock, M_Internal, options_, oo_Internal, dynareOBC_, false, InitialFullState );
+            Simulation = SimulateModel( Shock, M, options, oo, dynareOBC, false, InitialFullState );
             SimulationPresent( :, i ) = Simulation.total_with_bounds;
             SimulationPast( :, i ) = InitialFullState.total_with_bounds;
             ShockPresent( :, i ) = Shock;
@@ -154,9 +153,9 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
     for i = 1 : ns
         for j = 1 : T
             LinearIndex = LinearIndex + 1;
-            ShadowInnovation = SimulationPresent( dynareOBC_.VarIndices_Sum( j, i ), : );
+            ShadowInnovation = SimulationPresent( dynareOBC.VarIndices_Sum( j, i ), : );
             if j < T
-                ShadowInnovation = ShadowInnovation - SimulationPast( dynareOBC_.VarIndices_Sum( j + 1, i ), : );
+                ShadowInnovation = ShadowInnovation - SimulationPast( dynareOBC.VarIndices_Sum( j + 1, i ), : );
             end
 
             ShadowInnovation = ShadowInnovation';
@@ -214,10 +213,10 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
             StdResiduals = sqrt( ResidualMoments( 1 ) );
 
             NewxIndex = xIndex + nSSC;
-            if dynareOBC_.Order == 1
+            if dynareOBC.Order == 1
                 gx( ( xIndex+1 ):NewxIndex ) = [ StdResiduals; zeros( nSSC - 1, 1 ) ];
             else
-                BestValues = fsolve( @( Values ) MomentObjective( Values, ResidualMoments, ShadowQuadratureWeights, ShadowShockComponents, nSSC ), gx( ( xIndex+1 ):NewxIndex ), fsolveOptions );
+                % BROKEN
                 gx( ( xIndex+1 ):NewxIndex ) = BestValues;
             end
             xIndex = NewxIndex;
@@ -229,19 +228,6 @@ function [ fxNorm, gx, fx, M_Internal, oo_Internal ] = GlobalModelSolutionIntern
     fxNorm = norm( fx );
 
     
-end
-
-function [ Distance, DDistance ] = MomentObjective( Values, ResidualMoments, ShadowQuadratureWeights, ShadowShockComponents, nSSC )
-    ShadowValues = ShadowShockComponents * Values;
-    DShadowValues = ShadowShockComponents;
-    WeightedShadowValues = ShadowValues .* ShadowQuadratureWeights';
-    DWeightedShadowValues = bsxfun( @times, DShadowValues, ShadowQuadratureWeights' );
-    ShadowValuePowersReduced = bsxfun( @power, ShadowValues, 0 : (nSSC-1) );
-    ShadowValuePowers = bsxfun( @times, ShadowValuePowersReduced, ShadowValues );
-    ShadowMoments = WeightedShadowValues' * ShadowValuePowers;
-    DShadowMoments = bsxfun( @times, WeightedShadowValues', bsxfun( @times, ( 1 : nSSC )', ShadowValuePowersReduced' ) ) * DShadowValues + ShadowValuePowers' * DWeightedShadowValues;
-    Distance = ShadowMoments - ResidualMoments;
-    DDistance = DShadowMoments;
 end
 
 function RootSigma = RRRoot( Sigma )
