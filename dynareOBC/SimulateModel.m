@@ -99,7 +99,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 
                 pseudo_alpha = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
                 for i = dynareOBC.VarIndices_ZeroLowerBounded
-                    ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * ( pseudo_alpha .* M.params( dynareOBC.ParameterIndices_Signs ) ) )';
+                    ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * ( pseudo_alpha .* M.params( dynareOBC.ParameterIndices_Signs( : ) ) ) )';
                 end
 
                 UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
@@ -113,7 +113,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
                 end
                 
-                alpha = ( pseudo_alpha + alpha ) .* M.params( dynareOBC.ParameterIndices_Signs );
+                alpha = ( pseudo_alpha + alpha ) .* M.params( dynareOBC.ParameterIndices_Signs( : ) );
 
                 ShadowShockSequence( dynareOBC.VarExoIndices_DummyShadowShocks(:), t ) = alpha ./ sqrt( eps ); % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations_Slice(:) );
 
