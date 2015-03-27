@@ -310,59 +310,9 @@ dynareOBC_.OriginalNumVarExo = CurrentNumVarExo;
 
 if dynareOBC_.Global
     error( 'dynareOBC:UnsupportedGlobal', 'Global solution is temporarily disabled.' );
-    skipline( );
-    disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
-    skipline( );
 
-    dynareOBC_.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC_.StateVariablesAndShocks ), dynareOBC_.Order );
-    
-    OldFileLines = FileLines;
-    OldIndices = Indices;
-    OldToInsertBeforeModel = ToInsertBeforeModel;
-    OldToInsertInModelAtEnd = ToInsertInModelAtEnd;
-    OldToInsertInShocks = ToInsertInShocks;
-    OldToInsertInInitVal = ToInsertInInitVal;
-    OldNumParams = CurrentNumParams;
-    OldNumVar = CurrentNumVar;
-    
-    skipline( );
-    disp( 'Generating the intermediate mod file.' );
-    skipline( );
-    
-    [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC_ ] = ...
-        InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC_ );
-
-    [ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
-    [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
-    [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
-    [ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
-    [ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
-
-    %Save the result
-
-    FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC_.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
-    newmodfile = fopen( 'dynareOBCtempG.mod', 'w' );
-    fprintf( newmodfile, '%s', FileText );
-    fclose( newmodfile );
-    
-    skipline( );
-    disp( 'Calling dynare on the intermediate mod file.' );
-    skipline( );
-
-    dynare( 'dynareOBCtempG.mod', basevarargin{:} );   
-    
-    GlobalModelSolution;
-    
-    GlobalApproximationParameters = M_.params( dynareOBC_.ParameterIndices_StateVariableAndShockCombinations );
-
-    FileLines = OldFileLines;
-    Indices = OldIndices;
-    ToInsertBeforeModel = OldToInsertBeforeModel;
-    ToInsertInModelAtEnd = OldToInsertInModelAtEnd;
-    ToInsertInShocks = OldToInsertInShocks;
-    ToInsertInInitVal = OldToInsertInInitVal;
-    CurrentNumParams = OldNumParams;
-    CurrentNumVar = OldNumVar;
+    dynareOBC_ = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, CurrentNumParams, CurrentNumVar, dynareOBC_ );
+    GlobalApproximationParameters = M_.params( dynareOBC.ParameterIndices_StateVariableAndShockCombinations );
     
 else
     dynareOBC_.StateVariableAndShockCombinations = { };
