@@ -39,7 +39,7 @@ Note:
    the STEADY_STATE command. The initval or steady_state_model blocks should not be used to attempt to pin down a
    steady-state, since these will be ignored by dynareOBC in later steps of its solution procedure.
 
-[OPTIONS] (NOT CASE SENSITIVE!) include:
+OPTIONS (NOT CASE SENSITIVE!) include:
 
 ### For controlling the inner solution procedure ###
  * TimeToSolveParametrically=INTEGER (default: 4)
