@@ -5,11 +5,11 @@ function dynareOBCCleanUp
 
     WarningState = warning( 'off', 'all' );
     try
-        rmdir dynareOBCtemp* s
+        rmdir dynareOBCTemp* s
     catch
     end
     try
-        delete dynareOBCtemp*.*;
+        delete dynareOBCTemp*.*;
     catch
     end
     try

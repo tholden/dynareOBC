@@ -20,14 +20,16 @@ function [ ix, jx, sx, rx, cx ] = spkron( A, B )
     else
         if isempty( spkron_use_mex )
             [ ix, jx, sx ] = spkron_internal( K,a, L,b );
-        else
+        elseif spkron_use_mex
             [ ix, jx, sx ] = spkron_internal_mex_mex( int32(K),a, int32(L),b );
+        else
+            [ ix, jx, sx ] = spkron_internal_mex( int32(K),a, int32(L),b );
         end
     end
     rx = I*K;
     cx = J*L;
     
-    if nargout == 1
+    if nargout <= 1
         ix = sparse( ix, jx, sx, rx, cx );
     end
 

@@ -1,14 +1,11 @@
-function dynareOBC(fname, varargin)
-%       This command runs dynare with specified model file in argument
-%       Filename.
-%       The name of model file begins with an alphabetic character, 
-%       and has a filename extension of .mod or .dyn.
-%       When extension is omitted, a model file with .mod extension
-%       is processed.
+function dynareOBC( InputFileName, varargin )
+%       This command runs dynareOBC with the model file specified in
+%       the InputFileName arument.
+%       Please type "dynareOBC help" to see the full instructions.
 %
 % INPUTS
-%   fname:      file name
-%   varargin:   list of arguments following fname
+%   InputFileName:  Input file name, "help", "addpath", "rmpath" or "testsolvers"
+%   varargin:       List of arguments
 %             
 % OUTPUTS
 %   none
@@ -16,461 +13,332 @@ function dynareOBC(fname, varargin)
 % SPECIAL REQUIREMENTS
 %   none
 
-% Copyright (C) 2001-2014 Dynare Team
+% Copyright (C) 2001-2015 Dynare Team and Tom Holden
 %
-% This file is part of Dynare.
+% This file is part of dynareOBC.
 %
-% Dynare is free software: you can redistribute it and/or modify
+% dynareOBC is free software: you can redistribute it and/or modify
 % it under the terms of the GNU General Public License as published by
 % the Free Software Foundation, either version 3 of the License, or
 % (at your option) any later version.
 %
-% Dynare is distributed in the hope that it will be useful,
+% dynareOBC is distributed in the hope that it will be useful,
 % but WITHOUT ANY WARRANTY; without even the implied warranty of
 % MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 % GNU General Public License for more details.
 %
 % You should have received a copy of the GNU General Public License
-% along with Dynare.  If not, see <http://www.gnu.org/licenses/>.
+% along with dynareOBC. If not, see <http://www.gnu.org/licenses/>.
 
-%% Initialization
+	%% Initialization
 
-CurrentPath = fileparts( mfilename( 'fullpath' ) );
-addpath( [ CurrentPath '/dynareOBC/' ] );
-addpath( [ CurrentPath '/dynareOBC/nlma/' ] );
+	dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
 
-if nargin < 1 || strcmpi( fname, 'help' )
-    DisplayHelp;
-    rmpath( [ CurrentPath '/dynareOBC/' ] );
-    rmpath( [ CurrentPath '/dynareOBC/nlma/' ] );
-    return;
+	if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
+		skipline( );
+		disp( fileread( [ dynareOBCPath '/README.md' ] ) );
+        skipline( );
+		return;
+	end
+
+	OriginalPath = path;
+
+	WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
+	rmpath( genpath( [ dynareOBCPath '/dynareOBC/' ] ) );
+	warning( WarningState );
+
+	if strcmpi( InputFileName, 'rmpath' )
+		return;
+	end
+
+	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
+
+	if strcmpi( InputFileName, 'addpath' )
+		return;
+	end
+
+	if ~ismember( 'noclearall', varargin )
+		evalin( 'base', 'clear all;' );
+	end
+
+	CompileMEX;
+
+	global dynareOBC_;
+	if isempty( dynareOBC_ )
+		dynareOBC_ = struct;
+	end
+
+	FNameDots = strfind( InputFileName, '.' );
+	if isempty( FNameDots )
+		dynareOBC_.BaseFileName = InputFileName;
+	else
+		dynareOBC_.BaseFileName = InputFileName( 1:(FNameDots(end)-1) );
+	end
+
+	dynareOBC_ = SetDefaultOptions( dynareOBC_ );
+
+	basevarargin = cell( 1, 0 );
+	for i = 1:length( varargin )
+		[ basevarargin, dynareOBC_ ] = ProcessArgument( varargin{ i }, basevarargin, dynareOBC_ );
+	end
+
+	if dynareOBC_.TimeToEscapeBounds <= 0
+		error( 'dynareOBC:Arguments', 'TimeToEscapeBounds must be strictly positive.' );
+	end
+	if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 2
+		error( 'dynareOBC:Arguments', 'You cannot select both FirstOrderAroundRSS and FirstOrderAroundMean.' );
+	end
+
+	basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
+
+	if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
+		dynareOBC_.NoCubature = true;
+	end
+
+	if strcmpi( InputFileName, 'TestSolvers' )
+		yalmiptest;
+		if ~isempty( dynareOBC_.QPSolver )
+			yalmiptest( dynareOBC_.QPSolver );
+		end
+		if ~isempty( dynareOBC_.MILPSolver )
+			yalmiptest( dynareOBC_.MILPSolver );
+		end
+		opti_Install_Test;
+        path( OriginalPath );
+		return;
+    end
+
+    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_ );
+    
+	%% Cleaning up
+
+	if dynareOBC_.SaveMacro && ~isempty( dynareOBC_.SaveMacroName )
+		copyfile( 'dynareOBCTemp1.mod', dynareOBC_.SaveMacroName, 'f' );
+	end
+	if ~dynareOBC_.NoCleanUp
+		dynareOBCCleanUp;
+	end
+
+	evalin( 'base', 'global dynareOBC_' );
+
+	path( OriginalPath );
+
 end
 
-if strcmpi( fname, 'path' )
-    return;
+function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin )
+	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/' ] );
+	if ~MKDirStatus
+		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+	end
+	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2012/' ] );
+	if ~MKDirStatus
+		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+	end
+	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2013/' ] );
+	if ~MKDirStatus
+		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+	end
+
+	DLLInstalled = false;
+	Architecture = computer;
+	if strcmp( Architecture, 'PCWIN' )
+        DLLInstalled = CheckRequirement( 'BD95A8CD-1D9F-35AD-981A-3E7925026EBB', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe', dynareOBCPath, '2012/vcredist_x86.exe' ) || DLLInstalled;
+        DLLInstalled = CheckRequirement( '13A4EE12-23EA-3371-91EE-EFB36DDFFF3E', 201347597, 'http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe', dynareOBCPath, '2013/vcredist_x86.exe' ) || DLLInstalled;
+        DLLInstalled = CheckRequirement( '5018D8E6-8D8E-4F76-9AFD-CB2EF1100E84', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_ia32_2013_sp1.4.237.msi' ) || DLLInstalled;
+        DLLInstalled = CheckRequirement( '71343AE0-11AC-4B7F-B15C-B9692CA3A23D', 251658419, 'https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip', dynareOBCPath, 'w_fcompxe_redist_msi_2015.2.179.zip', 'w_fcompxe_redist_ia32_2015.2.179.msi' ) || DLLInstalled;
+	elseif strcmp( Architecture, 'PCWIN64' )
+        DLLInstalled = CheckRequirement( 'CF2BEA3C-26EA-32F8-AA9B-331F7E34BA97', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe', dynareOBCPath, '2012/vcredist_x64.exe' ) || DLLInstalled;
+        DLLInstalled = CheckRequirement( 'A749D8E6-B613-3BE3-8F5F-045C84EBA29B', 201347597, 'http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe', dynareOBCPath, '2013/vcredist_x64.exe' ) || DLLInstalled;
+        DLLInstalled = CheckRequirement( 'B548D238-D8C7-4A36-8C4E-496F62285BB3', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_intel64_2013_sp1.4.237.msi' ) || DLLInstalled;
+        DLLInstalled = CheckRequirement( '7FD876F7-BE2A-45B2-ADDC-0316304540CF', 251658419, 'https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip', dynareOBCPath, 'w_fcompxe_redist_msi_2015.2.179.zip', 'w_fcompxe_redist_intel64_2015.2.179.msi' ) || DLLInstalled;
+	end
+	if DLLInstalled
+		skipline( );
+		disp( 'Restarting MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
+		skipline( );
+		system( [ 'start matlab.exe -sd ' pwd( ) ' -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
+		system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );     
+	end
+
+	addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
+	addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
+
+	if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
+		[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+		if ~MKDirStatus
+			error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+		end
+
+		if ~exist( [ dynareOBCPath '/dynareOBC/OptiToolbox/opti_Install.m' ], 'file' )
+			skipline( );
+			disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
+			disp( 'SCIP is an efficient solver which should speed up dynareOBC. However, SCIP is available under the ZLIB Academic License.' );
+			disp( 'Thus you are only allowed to retrieve SCIP for research purposes as a memor of a non-commercial and academic institution.' );
+			skipline( );
+			SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
+			skipline( );
+
+			if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
+				OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip';
+			else
+				OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip';
+			end
+			skipline( );
+			disp( 'Downloading the OptiToolbox.' );
+			disp( 'This may take several minutes even on fast university connections.' );
+			disp( 'You may monitor progress by checking the size of the OptiToolbox.zip file within the dynareOBC\requirements folder.' );
+			skipline( );
+			urlwrite( OptiURL, [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
+
+			skipline( );
+			disp( 'Extracting files from OptiToolbox.zip.' );
+			skipline( );
+			unzip( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ], [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+
+			copyfile( [ dynareOBCPath '/dynareOBC/clobber/OptiToolbox/' ], [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'f' );
+			addpath( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+			rehash path;
+			opti_Install( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], false );
+		else
+			addpath( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+			opti_Install( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], true );
+		end
+	end
+
+	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
+	if ~MKDirStatus
+		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+	end
+
+	TBXManagerDetails = dir( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ] );
+	if ~isempty( TBXManagerDetails )
+		CurrentDate = now;
+		TBXManagerDate = TBXManagerDetails.datenum;
+		if CurrentDate - TBXManagerDate > 7
+			TBXManagerDetails = [];
+		end
+	end
+
+	if isempty( TBXManagerDetails )
+		skipline( );
+		disp( 'Downloading the latest version of tbxmanager.' );
+		skipline( );
+		[ NewTBXManagerContents, URLReadStatus ] = urlread( 'http://www.tbxmanager.com/tbxmanager.m' );
+		if URLReadStatus
+			NewTBXManagerContents = regexprep( NewTBXManagerContents, '^\s*(\w*)\s*=\s*input\s*\(\s*\w*\s*,\s*''s''\s*\)\s*;$', '$1=''y'';\nfprintf(''Agreed automatically. Please delete this folder if you do not agree.\\n\\n'');', 'lineanchors' );
+			NewTBXManagerFile = fopen( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ], 'w' );
+			fprintf( NewTBXManagerFile, '%s', NewTBXManagerContents );
+			fclose( NewTBXManagerFile );    
+		else
+			warning( 'dynareOBC:URLRead', 'Failed to download the latest MATLAB toolkit manager (tbxmanager).' );
+		end
+	end
+
+	addpath( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
+
+	skipline( );
+	disp( 'Ensuring key packages are up to date.' );
+	skipline( );
+
+    tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+	tbxmanager restorepath;
+
+	addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+	addpath( [ dynareOBCPath '/dynareOBC/' ] );
 end
 
-if ~ismember( 'noclearall', varargin )
-    evalin( 'base', 'clear all;' );
-end
-
-global dynareOBC_ spkron_use_mex;
-if isempty( dynareOBC_ )
-    dynareOBC_ = struct;
-end
-
-if license( 'test', 'coder' )
-    if ~exist( 'spkron_internal_mex_mex', 'file' )
+function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPath, SavePath, UnzipPath )
+    Version = int32( 0 );
+    try
+        Version = winqueryreg( 'HKEY_LOCAL_MACHINE', [ 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{' GUID '}' ], 'Version' );
+    catch
+    end
+    if Version < int32( DesiredVersion )
         try
-            coder -build spkron.prj;
-            spkron_use_mex = 1;
-            if any(any( sprkon( eye( 2 ), eye( 3 ) ) ~= eye( 5 ) ) )
-                spkron_use_mex = [];
-            end
+            Version = winqueryreg( 'HKEY_LOCAL_MACHINE', [ 'SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{' GUID '}' ], 'Version' );
         catch
-            spkron_use_mex = [];
         end
+    end
+    if Version < int32( DesiredVersion )
+        if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' SavePath ], 'file' )
+            skipline( );
+            disp( [ 'Downloading ' SavePath '.' ] );
+            skipline( );
+            urlwrite( URL, [ dynareOBCPath '/dynareOBC/requirements/' SavePath ] );
+        end
+        if nargin > 5
+            if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' UnzipPath ], 'file' )
+                skipline( );
+                disp( [ 'Extracting files from ' SavePath '.' ] );
+                skipline( );
+                unzip( [ dynareOBCPath '/dynareOBC/requirements/' SavePath ], fileparts( [ dynareOBCPath '/dynareOBC/requirements/' UnzipPath ] ) );
+            end
+            ExePath = UnzipPath;
+        else
+            ExePath = SavePath;
+        end
+        skipline( );
+        disp( [ 'Running ' ExePath '.' ] );
+        skipline( );
+        system( [ 'start /wait ' dynareOBCPath '/dynareOBC/requirements/' ExePath ' /passive /norestart' ] );
+        DLLInstalled = true;
     else
-        spkron_use_mex = 1;
+        DLLInstalled = false;
     end
 end
 
-FNameDots = strfind( fname, '.' );
-if isempty( FNameDots )
-    dynareOBC_.BaseFileName = fname;
-else
-    dynareOBC_.BaseFileName = fname( 1:(FNameDots(end)-1) );
-end
-
-dynareOBC_ = SetDefaultOptions( dynareOBC_ );
-
-basevarargin = cell( 1, 0 );
-for i = 1:length( varargin )
-    [ basevarargin, dynareOBC_ ] = ProcessArgument( varargin{ i }, basevarargin, dynareOBC_ );
-end
-
-if dynareOBC_.TimeToEscapeBounds <= 0
-    error( 'dynareOBC:Arguments', 'timetoescapebounds must be strictly positive.' );
-end
-if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 2
-    error( 'dynareOBC:Arguments', 'You cannot select both firstorderaroundrss and firstorderaroundmean.' );
-end
-if ( dynareOBC_.Algorithm < 0 ) || ( dynareOBC_.Algorithm > 3 )
-    error( 'dynareOBC:Arguments', 'algorithm should be between 0 and 3.' );
-end
-if ( dynareOBC_.Objective < 1 ) || ( dynareOBC_.Objective > 2 )
-    error( 'dynareOBC:Arguments', 'objective should be between 1 and 2.' );
-end
-if ( dynareOBC_.Algorithm == 2 ) && ( dynareOBC_.UseFICOXpress == 1 )
-    warning( 'dynareOBC:FicoHomoptopy', 'Using algorithm=1 with FICO Xpress is not recommended, as the Xpress solver will not be used for the quadratic programming. Try algorithm=2 instead.' );
-end
-
-basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
-
-if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
-    dynareOBC_.NoCubature = true;
-end
-
-%% Dynare pre-processing
-
-skipline( );
-disp( 'Performing first dynare run to perform pre-processing.' );
-skipline( );
-
-run1varargin = basevarargin;
-run1varargin( end + 1 : end + 2 ) = { 'savemacro=dynareOBCtemp1.mod', 'onlymacro' };
-
-dynare( fname, run1varargin{:} );
-
-%% Finding non-differentiable functions
-
-skipline( );
-disp( 'Searching the pre-processed output for non-differentiable functions.' );
-skipline( );
-
-FileText = fileread( 'dynareOBCtemp1.mod' );
-FileText = ProcessModFileText( FileText );
-
-FileLines = StringSplit( FileText, { '\n', '\r' } );
-
-[ FileLines, Indices, StochSimulCommand, dynareOBC_ ] = ProcessModFileLines( FileLines, dynareOBC_ );
-
-[ LogLinear, dynareOBC_ ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC_ );
-
-dynareOBC_ = orderfields( dynareOBC_ );
-
-if dynareOBC_.SimulationDrop < 1
-    error( 'dynareOBC:StochSimulCommand', 'Drop must be at least 1.' );
-end
-
-if LogLinear
-    LogLinearString = 'loglinear,';
-else
-    LogLinearString = '';
-end
-
-if dynareOBC_.Estimation
-    skipline( );
-    disp( 'Loading data for estimation.' );
-    skipline( );    
-    
-    [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC_.EstimationDataFile );
-    if isempty( XLSStatus )
-        error( 'dynareOBC:UnsupportedSpreadsheet', 'The given estimation data is in a format that cannot be read.' );
-    end
-    if length( XLSSheets ) < 2
-        error( 'dynareOBC:MissingSpreadsheet', 'The data file does not contain a spreadsheet with observations and a spreadsheet with parameters.' );
-    end
-    XLSParameterSheetName = XLSSheets{2};
-    [ dynareOBC_.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC_.EstimationDataFile, XLSParameterSheetName );
-    dynareOBC_.EstimationParameterNames = XLSText( 1, : );
-    if isfield( dynareOBC_, 'VarList' ) && ~isempty( dynareOBC_.VarList )
-        warning( 'dynareOBC:OverwritingVarList', 'The variable list passed to stoch_simul will be replaced with the list of observable variables.' );
-    end
-    [ dynareOBC_.EstimationData, XLSText ] = xlsread( dynareOBC_.EstimationDataFile );
-    dynareOBC_.VarList = XLSText( 1, : );
-    if dynareOBC_.MLVSimulationMode > 1
-        warning( 'dynareOBC:UnsupportedMLVSimulationModeWithEstimation', 'With estimation, MLV simulation modes greater than 1 are not currently supported.' );
-    end
-    dynareOBC_.MLVSimulationMode = 1;
-end
-
-if dynareOBC_.MLVSimulationMode > 0 && isfield( dynareOBC_, 'VarList' ) && ~isempty( dynareOBC_.VarList )
-    [ FileLines, Indices ] = PerformInsertion( { 'parameters dynareOBCZeroParameter;', 'dynareOBCZeroParameter=0;' }, Indices.ModelStart, FileLines, Indices );
-    dynareOBC_.MaxFuncIndices = dynareOBC_.MaxFuncIndices + 2;
-    for i = ( Indices.ModelEnd - 1 ): -1 : ( Indices.ModelStart + 1 )
-        if FileLines{i}(1) ~= '#'
-            LastEquation = FileLines{i};
-            FileLines( i:( Indices.ModelEnd - 2 ) ) = FileLines( ( i + 1 ):( Indices.ModelEnd - 1 ) );
-            LastEquation = [ LastEquation( 1 : ( end - 1 ) ) '+dynareOBCZeroParameter*(' strjoin( dynareOBC_.VarList, '+' ) ');' ];
-            FileLines{ Indices.ModelEnd - 1 } = LastEquation;
-            break;
-        end
-    end
-    dynareOBC_.ZeroParameterInserted = true;
-else
-    dynareOBC_.ZeroParameterInserted = false;
-end
-
-FileText = strjoin( [ FileLines { [ 'stoch_simul(' LogLinearString 'order=1,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' );
-newmodfile = fopen( 'dynareOBCtemp2.mod', 'w' );
-fprintf( newmodfile, '%s', FileText );
-fclose( newmodfile );
-
-%% Finding the steady-state
-
-skipline( );
-disp( 'Performing second dynare run to get the steady-state.' );
-skipline( );
-
-steadystatemfilename = [ dynareOBC_.BaseFileName '_steadystate.m' ];
-if exist( steadystatemfilename, 'file' )
-    copyfile( steadystatemfilename, 'dynareOBCtemp2_steadystate.m', 'f' );
-end
-
-dynare( 'dynareOBCtemp2.mod', basevarargin{:} );
-
-Generate_dynareOBCtemp2_GetMaxArgValues( dynareOBC_.NumberOfMax );
-
-global oo_ M_ options_
-MaxArgValues = dynareOBCtemp2_GetMaxArgValues( oo_.steady_state, [oo_.exo_steady_state; oo_.exo_det_steady_state], M_.params);
-if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
-    error( 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
-end
-
-if dynareOBC_.MLVSimulationMode > 0
-    skipline( );
-    disp( 'Generating code to recover MLVs.' );
-    skipline( );
-    dynareOBC_ = Generate_dynareOBCtemp2_GetMLVs( M_, dynareOBC_ );
-    dynareOBC_.OriginalLeadLagIncidence = M_.lead_lag_incidence;
-else
-    dynareOBC_.MLVNames = {};
-end
-
-if M_.orig_endo_nbr ~= M_.endo_nbr
-    warning( 'dynareOBC:AuxiliaryVariables', 'dynareOBC is untested on models with lags or leads on exogenous variables, or lags or leads on endogenous variables greater than one period.\nConsider manually adding additional variables for these lags and leads.' );
-end
-
-%% Preparation for the final runs
-
-% Find the state variables, endo variables and shocks
-dynareOBC_.StateVariables = { };
-
-dynareOBC_.EndoVariables = cellstr( M_.endo_names )';
-dynareOBC_ = SetDefaultOption( dynareOBC_, 'VarList', [ dynareOBC_.EndoVariables dynareOBC_.MLVNames ] );
-
-for i = ( M_.nstatic + 1 ):( M_.nstatic + M_.nspred )
-    dynareOBC_.StateVariables{ end + 1 } = [ dynareOBC_.EndoVariables{ oo_.dr.order_var(i) } '(-1)' ];
-end
-
-dynareOBC_.Shocks = cellstr( M_.exo_names )';
-
-dynareOBC_ = SetDefaultOption( dynareOBC_, 'IRFShocks', dynareOBC_.Shocks );
-
-dynareOBC_.StateVariablesAndShocks = [ {'1'} dynareOBC_.StateVariables dynareOBC_.Shocks ];
-
-dynareOBC_ = orderfields( dynareOBC_ );
-
-% Extra processing for log-linear models
-
-if LogLinear
-    EndoLLPrefix = 'log_';
-else
-    EndoLLPrefix = '';
-end
-ToInsertInInitVal = { };
-for i = 1 : M_.orig_endo_nbr
-    ToInsertInInitVal{ end + 1 } = sprintf( '%s%s=%.17e;', EndoLLPrefix, dynareOBC_.EndoVariables{ i }, oo_.dr.ys( i ) ); %#ok<AGROW>
-end
-
-if LogLinear
-    [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, dynareOBC_.EndoVariables, M_ );
-    options_.loglinear = 0;
-else
-    ToInsertInModelAtStart = { };
-end
-
-% Common file changes
-
-[ FileLines, Indices ] = PerformDeletion( Indices.InitValStart, Indices.InitValEnd, FileLines, Indices );
-[ FileLines, Indices ] = PerformDeletion( Indices.SteadyStateModelStart, Indices.SteadyStateModelEnd, FileLines, Indices );
-
-ToInsertBeforeModel = { };
-ToInsertInModelAtEnd = { };
-ToInsertInShocks = { };
-   
-% Other common set-up
-
-if isoctave || user_has_matlab_license('optimization_toolbox')
-    SolveAlgo = 0;
-else
-    SolveAlgo = 2;
-end
-
-if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 0
-    dynareOBC_.ShadowOrder = 1;
-else
-    dynareOBC_.ShadowOrder = dynareOBC_.Order;
-end
-
-CurrentNumParams = M_.param_nbr;
-CurrentNumVar = M_.endo_nbr;
-CurrentNumVarExo = M_.exo_nbr;
-
-dynareOBC_.OriginalNumParams = CurrentNumParams;
-if dynareOBC_.ZeroParameterInserted
-    dynareOBC_.OriginalNumParams = dynareOBC_.OriginalNumParams - 1;
-end
-
-dynareOBC_.OriginalNumVar = CurrentNumVar;
-dynareOBC_.OriginalNumVarExo = CurrentNumVarExo;
-
-%% Global polynomial approximation
-
-if dynareOBC_.Global
-    error( 'dynareOBC:UnsupportedGlobal', 'Global solution is temporarily disabled.' );
-
-    dynareOBC_ = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, CurrentNumParams, CurrentNumVar, dynareOBC_ );
-    GlobalApproximationParameters = M_.params( dynareOBC.ParameterIndices_StateVariableAndShockCombinations );
-    
-else
-    dynareOBC_.StateVariableAndShockCombinations = { };
-    GlobalApproximationParameters = [];
-end
-
-%% Generating the final mod file
-
-skipline( );
-disp( 'Generating the final mod file.' );
-skipline( );
-
-dynareOBC_.InternalIRFPeriods = max( [ dynareOBC_.IRFPeriods, dynareOBC_.TimeToEscapeBounds, dynareOBC_.TimeToReturnToSteadyState ] );
-dynareOBC_ = orderfields( dynareOBC_ );
-
-% Insert new variables and equations etc.
-
-[ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC_ ] = ...
-    InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, CurrentNumVarExo, dynareOBC_, GlobalApproximationParameters );
-
-[ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
-[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
-[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
-[ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
-[ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
-
-%Save the result
-
-FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC_.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
-newmodfile = fopen( 'dynareOBCtemp3.mod', 'w' );
-fprintf( newmodfile, '%s', FileText );
-fclose( newmodfile );
-
-%% Solution
-
-skipline( );
-disp( 'Making the final call to dynare, as a first step in solving the full model.' );
-skipline( );
-
-dynare( 'dynareOBCtemp3.mod', basevarargin{:} );
-
-skipline( );
-disp( 'Beginning to solve the model.' );
-skipline( );
-
-options_.noprint = 0;
-options_.nomoments = dynareOBC_.NoMoments;
-options_.nocorr = dynareOBC_.NoCorr;
-
-if ~isempty( dynareOBC_.VarList )
-    [ ~, dynareOBC_.VariableSelect ] = ismember( dynareOBC_.VarList, cellstr( M_.endo_names ) );
-    dynareOBC_.VariableSelect( dynareOBC_.VariableSelect == 0 ) = [];
-    [ ~, dynareOBC_.MLVSelect ] = ismember( dynareOBC_.VarList, dynareOBC_.MLVNames );
-    dynareOBC_.MLVSelect( dynareOBC_.MLVSelect == 0 ) = [];
-else
-    dynareOBC_.VariableSelect = 1 : dynareOBC_.OriginalNumVar;
-    dynareOBC_.MLVSelect = 1 : length( dynareOBC_.MLVNames );
-end
-
-if dynareOBC_.Estimation
-    if dynareOBC_.Global
-        error( 'dynareOBC:UnsupportedGlobalEstimation', 'Estimation of models solved globally is not currently supported.' );
-    end
-    if any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
-        error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
-    end
-    
-    skipline( );
-    disp( 'Beginning the estimation of the model.' );
-    skipline( );
-    
-    dynareOBC_.CalculateTheoreticalVariance = true;
-    [ ~, dynareOBC_.EstimationParameterSelect ] = ismember( dynareOBC_.EstimationParameterNames, cellstr( M_.param_names ) );
-    NumObservables = length( dynareOBC_.VarList );
-    NumEstimatedParams = length( dynareOBC_.EstimationParameterSelect );
-    LBTemp = dynareOBC_.EstimationParameterBounds(1,:)';
-    UBTemp = dynareOBC_.EstimationParameterBounds(2,:)';
-    LBTemp( ~isfinite( LBTemp ) ) = -Inf;
-    UBTemp( ~isfinite( UBTemp ) ) = Inf;
-    OpenPool;
-    [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationObjective( [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], M_, options_, oo_, dynareOBC_ );
-    disp( 'Initial log-likelihood:' );
-    disp( -0.5 * TwoNLogLikelihood );
-    [ ResTemp, TwoNLogLikelihood ] = fmincon( @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC_, EndoSelectWithControls, EndoSelect ), [ M_.params( dynareOBC_.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], [], [], [], [], [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], [], optimset( 'Algorithm', 'interior-point', 'Display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'UseParallel', false ) );
-    disp( 'Final log-likelihood:' );
-    disp( -0.5 * TwoNLogLikelihood );
-    M_.params( dynareOBC_.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
-    disp( 'Final parameter estimates:' );
-    for i = 1 : NumEstimatedParams
-        fprintf( '%s:\t\t%.17e\n', strtrim( M_.param_names( dynareOBC_.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC_.EstimationParameterSelect( i ) ) );
-    end
-    skipline( );
-    disp( 'Final measurement error standard deviation estimates:' );
-    for i = 1 : NumObservables
-        fprintf( '%s:\t\t%.17e\n', dynareOBC_.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
-    end
-end
-
-[ Info, M_, options_, oo_ ,dynareOBC_ ] = ModelSolution( 1, M_, options_, oo_ ,dynareOBC_ );
-
-dynareOBC_ = orderfields( dynareOBC_ );
-
-if Info ~= 0
-    error( 'dynareOBC:FailedToSolve', 'dynareOBC failed to find a solution to the model.' );
-end
-
-%% Simulating
-
-skipline( );
-disp( 'Preparing to simulate the model.' );
-skipline( );
-
-[ oo_, dynareOBC_ ] = SimulationPreparation( M_, oo_, dynareOBC_ );
-
-if dynareOBC_.IRFPeriods > 0
-    skipline( );
-    disp( 'Simulating IRFs.' );
-    skipline( );
-
-    if dynareOBC_.FastIRFs
-        [ oo_, dynareOBC_ ] = FastIRFs( M_, options_, oo_, dynareOBC_ );
-    else
-        [ oo_, dynareOBC_ ] = SlowIRFs( M_, options_, oo_, dynareOBC_ );
-    end
-end
-
-if dynareOBC_.SimulationPeriods > 0
-    skipline( );
-    disp( 'Running stochastic simulation.' );
-    skipline( );
-
-    [ oo_, dynareOBC_ ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC_ );
-end
-
-if ( dynareOBC_.IRFPeriods > 0 ) && ( ~dynareOBC_.NoGraph )
-    if dynareOBC_.IRFsAroundZero
-        IRFOffsetFieldNames = fieldnames( dynareOBC_.IRFOffsets );
-        for i = 1 : length( IRFOffsetFieldNames )
-            dynareOBC_.IRFOffsets.( IRFOffsetFieldNames{i} ) = zeros( size( dynareOBC_.IRFOffsets.( IRFOffsetFieldNames{i} ) ) );
-        end
-    end
-    PlotIRFs( M_, options_, oo_, dynareOBC_ );
-end
-
-dynareOBC_ = orderfields( dynareOBC_ );
-
-%% Cleaning up
-
-if dynareOBC_.SaveMacro && ~isempty( dynareOBC_.SaveMacroName )
-    copyfile( 'dynareOBCtemp1.mod', dynareOBC_.SaveMacroName, 'f' );
-end
-if ~dynareOBC_.NoCleanUp
-    dynareOBCCleanUp;
-end
-
-evalin( 'base', 'global dynareOBC_' );
-
-rmpath( [ CurrentPath '/dynareOBC/' ] );
-rmpath( [ CurrentPath '/dynareOBC/nlma/' ] );
-
+function CompileMEX
+	skipline( );
+	global spkron_use_mex ptest_use_mex;
+	try
+		spkron_use_mex = 1;
+		if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
+			spkron_use_mex = [];
+		end
+    catch 
+		try
+			skipline( );
+			disp( 'Attempting to compile spkron.' );
+			skipline( );
+			coder -build spkron.prj;
+			rehash path;
+			spkron_use_mex = 1;
+			if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
+				spkron_use_mex = [];
+			end
+        catch
+			spkron_use_mex = [];
+		end
+	end
+	if ~isempty( spkron_use_mex )
+		disp( 'Using the mex version of spkron.' );
+	else
+		disp( 'Not using the mex version of spkron.' );
+	end
+	try
+		ptest_use_mex = 1;
+		if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
+			ptest_use_mex = [];
+		end
+	catch
+		try
+			skipline( );
+			disp( 'Attempting to compile ptest.' );
+			skipline( );
+			coder -build ptest.prj;
+			rehash path;
+			ptest_use_mex = 1;
+			if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
+				ptest_use_mex = [];
+			end
+		catch
+			ptest_use_mex = [];
+		end
+	end
+	if ~isempty( ptest_use_mex )
+		disp( 'Using the mex version of ptest.' );
+	else
+		disp( 'Not using the mex version of ptest.' );
+	end
+	skipline( );
 end

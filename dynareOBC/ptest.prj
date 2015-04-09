@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.matlabcoder" plugin-version="R2012a">
-  <configuration build-checksum="117052182" file="spkron.prj" location="./" name="spkron" target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation">
+  <configuration build-checksum="1627996248" file="ptest.prj" location=".\" name="ptest" target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -39,7 +39,7 @@
       <param.PostCodeGenCommand />
       <param.mex.GenCodeOnly>false</param.mex.GenCodeOnly>
       <param.ConstantFoldingTimeout>2147483647</param.ConstantFoldingTimeout>
-      <param.RecursionLimit>2147483647</param.RecursionLimit>
+      <param.RecursionLimit>100</param.RecursionLimit>
       <param.PreserveVariableNames>option.PreserveVariableNames.UserNames</param.PreserveVariableNames>
       <param.TargetLang>option.TargetLang.C</param.TargetLang>
       <param.EchoExpressions>true</param.EchoExpressions>
@@ -59,28 +59,10 @@
         <param.BuildFolder />
         <param.SpecifiedBuildFolder />
         <param.SearchPaths />
-        <param.EnableVariableSizing />
-        <param.DynamicMemoryAllocationThreshold />
-        <param.StackUsageMax />
-        <param.FilePartitionMethod />
-        <param.GenerateComments />
-        <param.ReservedNameArray />
         <param.EnableScreener />
-        <param.EnableDebugging />
-        <param.GenerateReport />
-        <param.LaunchReport />
         <param.DefaultTestFile />
         <param.MergeInstrumentationResults />
-        <param.CustomInclude />
-        <param.CustomSource />
-        <param.CustomLibrary />
-        <param.mex.GenCodeOnly />
-        <param.PreserveVariableNames />
-        <param.TargetLang />
-        <param.EchoExpressions />
-        <param.MemcpyThreshold />
-        <param.EnableOpenMP />
-        <param.ConstantInputs />
+        <param.RecursionLimit />
       </unset>
     </profile>
     <profile key="profile.c">
@@ -95,10 +77,10 @@
       <param.SupportNonFinite />
       <param.EnableVariableSizing>true</param.EnableVariableSizing>
       <param.DynamicMemoryAllocation>option.DynamicMemoryAllocation.Threshold</param.DynamicMemoryAllocation>
-      <param.DynamicMemoryAllocationThreshold>65536</param.DynamicMemoryAllocationThreshold>
-      <param.StackUsageMax>200000</param.StackUsageMax>
+      <param.DynamicMemoryAllocationThreshold />
+      <param.StackUsageMax />
       <param.MultiInstanceCode />
-      <param.FilePartitionMethod>option.FilePartitionMethod.MapMFileToCFile</param.FilePartitionMethod>
+      <param.FilePartitionMethod />
       <param.GenerateComments>true</param.GenerateComments>
       <param.CommentStyle />
       <param.MATLABSourceComments />
@@ -120,18 +102,18 @@
       <param.ReservedNameArray />
       <param.EnableScreener>true</param.EnableScreener>
       <param.Verbose />
-      <param.GenerateReport>true</param.GenerateReport>
+      <param.GenerateReport />
       <param.GenerateCodeMetricsReport />
       <param.GenerateCodeReplacementReport />
       <param.HighlightPotentialDataTypeIssues />
-      <param.LaunchReport>false</param.LaunchReport>
+      <param.LaunchReport />
       <param.SILDebugging />
       <param.CodeExecutionProfiling />
       <param.DefaultTestFile />
       <param.MergeInstrumentationResults>false</param.MergeInstrumentationResults>
       <param.RanPilSilVerification>false</param.RanPilSilVerification>
       <param.VerificationMode />
-      <param.VerificationStatus>option.VerificationStatus.Inactive</param.VerificationStatus>
+      <param.VerificationStatus />
       <param.CustomSourceCode />
       <param.CustomHeaderCode />
       <param.CustomInitializer />
@@ -189,10 +171,10 @@
       <param.IndentStyle />
       <param.IndentSize />
       <param.ConstantFoldingTimeout />
-      <param.RecursionLimit />
+      <param.RecursionLimit>100</param.RecursionLimit>
       <param.IncludeTerminateFcn />
       <param.GenerateExampleMain>option.GenerateExampleMain.GenerateCodeOnly</param.GenerateExampleMain>
-      <param.PreserveVariableNames>option.PreserveVariableNames.UserNames</param.PreserveVariableNames>
+      <param.PreserveVariableNames />
       <param.TargetLang>option.TargetLang.C</param.TargetLang>
       <param.CCompilerOptimization>option.CCompilerOptimization.Off</param.CCompilerOptimization>
       <param.CCompilerCustomOptimizations />
@@ -205,8 +187,8 @@
       <param.InlineThresholdMax />
       <param.InlineStackLimit />
       <param.EnableMemcpy>true</param.EnableMemcpy>
-      <param.MemcpyThreshold>64</param.MemcpyThreshold>
-      <param.EnableOpenMP>true</param.EnableOpenMP>
+      <param.MemcpyThreshold />
+      <param.EnableOpenMP />
       <param.InitFltsAndDblsToZero />
       <param.PassStructByReference />
       <param.UseECoderFeatures />
@@ -679,19 +661,17 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
+    <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
-      <item>global spkron_use_mex;spkron_use_mex=0;spkron( eye( 2 ), eye( 3 ) )</item>
-      <item>global spkron_use_mex;spkron_use_mex=[];spkron( eye( 2 ), eye( 3 ) )</item>
-      <item>global spkron_use_mex;spkron_use_mex=1;spkron( eye( 2 ), eye( 3 ) )</item>
-      <item>spkron( eye( 2 ), eye( 3 ) )</item>
+      <item>ptest(magic(4)*magic(4)')</item>
+      <item>ptest_mex(magic(4)*magic(4)')</item>
     </param.TestSnippets>
     <param.DefaultImportExportVariable>config</param.DefaultImportExportVariable>
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
-    <param.outputfile>${PROJECT_ROOT}\spkron_internal_mex_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\ptest_mex.mexw64</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
-    <param.mex.mainhtml>./codegen/mex/spkron_internal_mex/html/index.html</param.mex.mainhtml>
+    <param.mex.mainhtml>./codegen/mex/ptest/html/index.html</param.mex.mainhtml>
     <param.grt.mainhtml />
     <param.CallGeneratedCodeFromTest>true</param.CallGeneratedCodeFromTest>
     <param.AutoInferDefaultFile />
@@ -700,17 +680,17 @@
     <param.AutoInferVariableSizeThreshold>1024</param.AutoInferVariableSizeThreshold>
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
     <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
-    <param.AnnotationChecksum>1728168121</param.AnnotationChecksum>
+    <param.AnnotationChecksum>3266290755</param.AnnotationChecksum>
     <var.LegacyTarget>target.matlab.coder</var.LegacyTarget>
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>false</param.FixedPointEnabled>
     <var.redirectedInputTypeData />
     <var.DismissScreener>true</var.DismissScreener>
     <param.unifiedParamStorage />
-    <param.mex.outputfile>spkron_internal_mex_mex</param.mex.outputfile>
-    <param.grt.outputfile>spkron_internal_mex</param.grt.outputfile>
+    <param.mex.outputfile>ptest_mex</param.mex.outputfile>
+    <param.grt.outputfile>ptest</param.grt.outputfile>
     <param.artifact>option.target.artifact.mex</param.artifact>
-    <param.outputfile>${PROJECT_ROOT}\spkron_internal_mex_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\ptest_mex.mexw64</param.outputfile>
     <param.EnableAutoExtrinsicCalls>true</param.EnableAutoExtrinsicCalls>
     <param.UsePreconditions>false</param.UsePreconditions>
     <param.FeatureFlags />
@@ -765,7 +745,6 @@
       <param.unifiedParamStorage />
       <param.mex.outputfile />
       <param.grt.outputfile />
-      <param.EnableAutoExtrinsicCalls />
       <param.UsePreconditions />
       <param.FeatureFlags />
       <param.AutoScaleLoopIndexVariables />
@@ -800,35 +779,11 @@
       <param.FixedPointTypeProposalMode />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="true" value="${PROJECT_ROOT}\spkron_internal_mex.m">
-        <Inputs fileName="spkron_internal_mex.m" functionName="spkron_internal_mex">
-          <Input Name="K">
-            <Class>int32</Class>
-            <Size>1 x 1</Size>
-            <Value />
-            <InitialValue />
-            <UserDefined>true</UserDefined>
-            <Complex>false</Complex>
-          </Input>
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\ptest.m">
+        <Inputs fileName="ptest.m" functionName="ptest">
           <Input Name="a">
             <Class>double</Class>
-            <Size>:inf x 3</Size>
-            <Value />
-            <InitialValue />
-            <UserDefined>true</UserDefined>
-            <Complex>false</Complex>
-          </Input>
-          <Input Name="L">
-            <Class>int32</Class>
-            <Size>1 x 1</Size>
-            <Value />
-            <InitialValue />
-            <UserDefined>true</UserDefined>
-            <Complex>false</Complex>
-          </Input>
-          <Input Name="b">
-            <Class>double</Class>
-            <Size>:inf x 3</Size>
+            <Size>:inf x :inf</Size>
             <Value />
             <InitialValue />
             <UserDefined>true</UserDefined>
@@ -839,7 +794,7 @@
     </fileset.entrypoints>
     <fileset.testbench />
     <build-deliverables>
-      <file location="./" name="spkron_internal_mex_mex.mexw64" optional="false">spkron_internal_mex_mex.mexw64</file>
+      <file location="./" name="ptest_mex.mexw64" optional="false">ptest_mex.mexw64</file>
     </build-deliverables>
     <workflow />
   </configuration>

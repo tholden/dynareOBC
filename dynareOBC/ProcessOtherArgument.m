@@ -36,8 +36,7 @@ function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
         error( 'dynareOBC:Arguments', [ Argument ' was found without a value. Please do not put a space between the equals sign and the value.' ] );
     end
         
-    TokenNames = regexp( Argument, '^\s*(?<Key>\w+)\s*\=\s*(?<Value>\d+)\s*$', 'names', 'once' );
-    
+    TokenNames = regexp( Argument, '^\s*(?<Key>\w+)\s*\=\s*(?<Value>\S+)\s*$', 'names', 'once' );
     if isempty( TokenNames )
         return;
     end
@@ -47,10 +46,25 @@ function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
         return;
     end
     
-    try
-        dynareOBC.( FieldNames{ MatchedOptionIndex } ) = str2double( TokenNames( 1 ).Value );
-        Matched = true;
-    catch
+    if isempty( regexp( TokenNames( 1 ).Value, '^[-+]?(\d+\.?\d*|\d*\.?\d+)([eE][-+]?\d+)?$', 'once' ) )
+        if ischar( dynareOBC.( FieldNames{ MatchedOptionIndex } ) )
+            dynareOBC.( FieldNames{ MatchedOptionIndex } ) = TokenNames( 1 ).Value;
+            Matched = true;
+        else
+            error( 'dynareOBC:NonNumericArgument', [ 'dynareOBC was expecting a numeric argument for ' FieldNames{ MatchedOptionIndex } '.' ] );
+        end
+    else
+        try
+            IsInteger = floor( dynareOBC.( FieldNames{ MatchedOptionIndex } ) ) == dynareOBC.( FieldNames{ MatchedOptionIndex } );
+            dynareOBC.( FieldNames{ MatchedOptionIndex } ) = str2double( TokenNames( 1 ).Value );
+            if IsInteger && ( floor( dynareOBC.( FieldNames{ MatchedOptionIndex } ) ) ~= dynareOBC.( FieldNames{ MatchedOptionIndex } ) )
+                error( 'dynareOBC:NonIntegerArgument', [ 'dynareOBC was expecting an integer argument for ' FieldNames{ MatchedOptionIndex } '.' ] );
+            end
+            Matched = true;
+        catch
+            error( 'dynareOBC:Arguments', [ 'Unexpected problem dealing with argument ' Argument '.' ] );
+        end
     end
+   
 end
 

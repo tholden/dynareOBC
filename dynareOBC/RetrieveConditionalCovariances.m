@@ -3,8 +3,7 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
     else
         T = dynareOBC.InternalIRFPeriods;
-        Ts = dynareOBC.TimeToEscapeBounds;
-        TsM2 = Ts - 2;
+        TsM2 = T - 2;
         ns = dynareOBC.NumberOfMax;
         
         LengthXi = dynareOBC.LengthXi;

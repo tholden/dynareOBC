@@ -48,7 +48,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
     
     p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Please wait for around ', '. Progress: ', 'Computing base path for average IRFs. Completed in ' );
     
-    WarningGenerated = 0;
+    WarningGenerated = false;
     parfor k = 1: Replications
         lastwarn( '' );
         WarningState = warning( 'off', 'all' );
@@ -79,7 +79,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
             rethrow( Error );
         end
         warning( WarningState );
-        WarningGenerated = max( WarningGenerated, ~isempty( lastwarn ) );
+        WarningGenerated = WarningGenerated | ~isempty( lastwarn );
         
         p.progress; %#ok<PFBNS>
     end

@@ -97,25 +97,23 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo_.dr, dynareOBC );
                 ReturnPath = ReturnStruct.total;        
 
-                pseudo_alpha = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
+                pseudo_y = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
                 for i = dynareOBC.VarIndices_ZeroLowerBounded
-                    ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * ( pseudo_alpha .* M.params( dynareOBC.ParameterIndices_Signs( : ) ) ) )';
+                    ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * pseudo_y )';
                 end
 
                 UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
 
-                [ alpha, ~, ConstrainedReturnPath ] = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
+                y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
                 [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
                 
                 if ~dynareOBC.NoCubature
-                    % tString = int2str( t );
-                     % [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral in period ' tString ' of ' SimulationLengthString '. Completed in ' ] );
-                    alpha = PerformCubature( alpha, UnconstrainedReturnPath, ConstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
+                    y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
                 end
                 
-                alpha = ( pseudo_alpha + alpha ) .* M.params( dynareOBC.ParameterIndices_Signs( : ) );
+                y = y + pseudo_y;
 
-                ShadowShockSequence( dynareOBC.VarExoIndices_DummyShadowShocks(:), t ) = alpha ./ sqrt( eps ); % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations_Slice(:) );
+                ShadowShockSequence( dynareOBC.VarExoIndices_DummyShadowShocks(:), t ) = y ./ sqrt( eps ); % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations_Slice(:) );
 
                 BoundOffsetDROrder = BoundOffsetDROrderNext + ghu( :, NewExoSelect ) * ShadowShockSequence( NewExoSelect, t );
                 BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
@@ -244,9 +242,9 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                             InnerSimulation = SimulateModel( InnerShockSequence, M, options, oo, dynareOBC, false, InnerInitialFullState, true );
                             InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
                             InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
-                            InnerMLVsWithBounds = dynareOBCtemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
+                            InnerMLVsWithBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
                             if dynareOBC.NumberOfMax > 0
-                                InnerMLVsWithoutBounds = dynareOBCtemp2_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
+                                InnerMLVsWithoutBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
                             else
                                 InnerMLVsWithoutBounds = InnerMLVsWithBounds;
                             end
@@ -274,9 +272,9 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                         Simulation.MLVsWithoutBounds.( MLVNames{i} )( t ) = MLVValuesWithoutBounds( i );
                     end
                else
-                    CurrentMLVsWithBounds = dynareOBCtemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                    CurrentMLVsWithBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
                     if dynareOBC.NumberOfMax > 0
-                        CurrentMLVsWithoutBounds = dynareOBCtemp2_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                        CurrentMLVsWithoutBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
                     else
                         CurrentMLVsWithoutBounds = CurrentMLVsWithBounds;
                     end

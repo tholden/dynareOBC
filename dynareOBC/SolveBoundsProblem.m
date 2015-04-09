@@ -1,77 +1,57 @@
-function [ alpha, exitflag, ReturnPath ] = SolveBoundsProblem( V, dynareOBC )
-    if all( V >= - dynareOBC.Tolerance )
-        alpha = dynareOBC.ZeroVecS;
-        exitflag = 1;
-        ReturnPath = V;
-        return
+function y = SolveBoundsProblem( q, dynareOBC )
+    Tolerance = dynareOBC.Tolerance;
+    if all( q >= -Tolerance )
+        y = dynareOBC.ZeroVecS;
+         return
     end
-    switch dynareOBC.Algorithm
-        case 2
-            [ alpha, exitflag, ReturnPath ] = SolveHomotopyProblem( V, dynareOBC );
-        case 3
-            [ alpha, exitflag, ReturnPath ] = SolveQCQPProblem( V, dynareOBC );
-        otherwise
-            if dynareOBC.CacheSize > 0
-                [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC );
-            else
-                [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC );
-            end
-    end
-end
-function [ alpha, exitflag, ReturnPath ] = SolveCachedQuadraticProgrammingProblem( V, dynareOBC )
-    persistent VHistory;
-    persistent alphaHistory;
-    persistent VMean;
-    persistent cholVCov;
-    persistent CacheElements;
-    persistent WritePosition;
-    nV = length( V );
-    if isempty( CacheElements ) || ( length( VMean ) ~= length( V ) )
-        CacheElements = 0;
-        WritePosition = 1;
-    end
-    if ( CacheElements == 0 )
-        VMean = V;
-        cholVCov = eye( nV );
-        VHistory = zeros( nV, 0 );
-        alphaHistory = zeros( dynareOBC.TimeToEscapeBounds, 0 );
-    else
-        if CacheElements >= dynareOBC.CacheSize
-            CacheElements = dynareOBC.CacheSize - 1;
+    
+    M = dynareOBC.MMatrix;
+    Ms = dynareOBC.MsMatrix;
+    omega = dynareOBC.Omega;
+
+    qs = q( dynareOBC.sIndices );
+    if dynareOBC.ParametricSolutionFound > 0
+        qss = qs( dynareOBC.ssIndices );
+        Norm_qss = max( abs( qss ) );
+        qss = qss ./ Norm_qss;
+        if dynareOBC.ParametricSolutionFound > 1
+            ys = dynareOBCTempSolution_mex( qss );
+        else
+            ys = dynareOBCTempSolution( qss );
         end
-        InvNewCacheElements = 1 / ( 1 + CacheElements );
-        VMean = CacheElements * InvNewCacheElements * VMean + InvNewCacheElements * V;
-        cholVCov = cholupdate( sqrt( CacheElements * InvNewCacheElements ) * cholVCov, sqrt( InvNewCacheElements ) * ( V - VMean ) );
+        ys = ys * Norm_qss;
+        if all( ys >= -Tolerance ) && all( isfinite( ys ) )
+            y = dynareOBC.ZeroVecS;
+            y( dynareOBC.ssIndices ) = ys;
+            w = q + M * y;
+            if all( w >= -Tolerance ) && all( abs( w( dynareOBC.sIndices ) .* y ) <= Tolerance )
+                return;
+            end
+        end
     end
-    LastWarn = lastwarn;
-    cholInvVCov = cholVCov' \ eye( nV );
-    lastwarn( LastWarn );
-    Distances = cholInvVCov * bsxfun( @minus, VHistory, V );
-    InvWeights = sum( Distances .* Distances );
-    ZeroInvWeights = InvWeights == 0;
-    if any( ZeroInvWeights )
-        alphaStart = mean( alphaHistory( :, ZeroInvWeights ), 2 );
-    else
-        Weights = 1 ./ InvWeights;
-        alphaStart = sum( bsxfun( @times, Weights, alphaHistory ), 2 ) / sum( Weights, 2 );
+    
+    Norm_qs = max( abs( qs ) );
+    qs = qs ./ Norm_qs;
+
+    Ts = dynareOBC.TimeToEscapeBounds;
+    ns = dynareOBC.NumberOfMax;
+
+    y = sdpvar( Ts * ns, 1 );
+    alpha = sdpvar( 1, 1 );
+    z = binvar( Ts * ns, 1 );
+
+    Constraints = [ 0 <= y, y <= z, 0 <= alpha * q + M * y, alpha * qs + Ms * y <= omega * ( 1 - z ) ]; %, dynareOBC.IntegerTolerance <= alpha, alpha * Norm_qs <= 1 + NormMs ];
+    Objective = -alpha;
+    diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
+    if diagnostics.problem ~= 0
+        error( 'dynareOBC:FailedToSolve', 'This should never happen. Try a different solver.' );
     end
-    if numel( alphaStart )
-        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC, max( 0, alphaStart ) );
-    else
-        exitflag = -1;
+    if abs( value( alpha ) ) < eps
+        error( 'dynareOBC:Infeasible', 'Infeasible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
     end
-    if exitflag < 0
-        [ alpha, exitflag, ReturnPath ] = SolveQuadraticProgrammingProblem( V, dynareOBC );
+    if value( z( end ) )
+        warning( 'dynareOBC:Inaccuracy', 'The constraint binds in the final period. This is indicative of TimeToEscapeBounds being too low.' );
     end
-    VHistory( :, WritePosition ) = V;
-    alphaHistory( :, WritePosition ) = alpha;
-    if any( ZeroInvWeights )
-        VHistory( :, ZeroInvWeights ) = V;
-        alphaHistory( :, ZeroInvWeights ) = alpha;
-    end
-    CacheElements = CacheElements + 1;
-    WritePosition = WritePosition + 1;
-    if WritePosition > dynareOBC.CacheSize
-        WritePosition = 1;
-    end
+    y = value( y ) * ( Norm_qs / value( alpha ) );
+    
 end

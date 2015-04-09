@@ -62,8 +62,6 @@ function dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC )
 	% Compute irfs
     simulation_first = zeros( M.endo_nbr, T );
     
-    SignsFlippedString = '';
-    
     for l = 1 : ns
         for k = 1 : Ts
             E = zeros( M.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
@@ -78,16 +76,6 @@ function dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC )
             end
             simulation_first = simulation_first( oo.dr.inv_order_var, : );
             
-            if simulation_first( dynareOBC.VarIndices_ZeroLowerBounded( l ), k ) < 0
-                M.params( dynareOBC.ParameterIndices_Signs( k, l ) ) = -M.params( dynareOBC.ParameterIndices_Signs( k, l ) );
-                SignsFlippedStringAddition = [ '( ' int2str( l ) ', ' int2str( k ) ' )' ];
-                if isempty( SignsFlippedString )
-                    SignsFlippedString = SignsFlippedStringAddition;
-                else
-                    SignsFlippedString = [ SignsFlippedString ', ' SignsFlippedStringAddition ]; %#ok<AGROW>
-                end
-            end
-            
             for j = 1 : ns % j and l here correspond to the notation in the paper
                 IRF = simulation_first( dynareOBC.VarIndices_ZeroLowerBounded( j ), : )';
                 MMatrix( ( (j-1)*T + 1 ):( j * T ), (l-1)*Ts + k ) = IRF;
@@ -98,27 +86,18 @@ function dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC )
             end
         end
     end
-    if isempty( SignsFlippedString )
-        %% Save the new matrices
-        dynareOBC.MSubMatrices = MSubMatrices;
-        dynareOBC.MMatrix = MMatrix;
+    %% Save the new matrices
+    dynareOBC.MSubMatrices = MSubMatrices;
+    dynareOBC.MMatrix = MMatrix;
 
-        SelectIndices = vec( bsxfun( @plus, (1:Ts)', 0:T:((ns-1)*T) ) )';
-        dynareOBC.SelectIndices = SelectIndices;
-        InverseSelectIndices = zeros( T, ns );
-        InverseSelectIndices( 1:Ts, : ) = reshape( 1 : ( Ts * ns ), Ts, ns );
-        InverseSelectIndices = vec( InverseSelectIndices );
-        dynareOBC.InverseSelectIndices = InverseSelectIndices;
-        % InverseSelectIndices( SelectIndices ) = 1 : ( Ts * ns )
+    sIndices = vec( bsxfun( @plus, (1:Ts)', 0:T:((ns-1)*T) ) )';
+    dynareOBC.sIndices = sIndices;
+    sInverseIndices = zeros( T, ns );
+    sInverseIndices( 1:Ts, : ) = reshape( 1 : ( Ts * ns ), Ts, ns );
+    sInverseIndices = vec( sInverseIndices );
+    dynareOBC.sInverseIndices = sInverseIndices;
 
-        MsMatrix = MMatrix( SelectIndices, : );
-        dynareOBC.MsMatrix = MsMatrix;
-
-        dynareOBC.MsMatrixSymmetric = MsMatrix + MsMatrix';
-        dynareOBC.NewM = [];
-    else
-        warning( 'dynareOBC:SignFlipped', 'Signs have been flipped for the shadow shocks: %s.\nThis may indicate a problem with your model.', SignsFlippedString );
-        dynareOBC.NewM = M;
-    end
+    dynareOBC.MsMatrix = MMatrix( sIndices, : );
+    dynareOBC.NormMsMatrix = norm( dynareOBC.MsMatrix, Inf );
     
 end
