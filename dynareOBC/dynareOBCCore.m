@@ -285,8 +285,16 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 		[ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationObjective( [ M_.params( dynareOBC.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], M_, options_, oo_, dynareOBC );
 		disp( 'Initial log-likelihood:' );
 		disp( -0.5 * TwoNLogLikelihood );
-        OptiProblem = opti( 'fun', @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, EndoSelectWithControls, EndoSelect ), 'bounds', [ LBTemp; zeros( NumObservables, 1 ) ], [ UBTemp; Inf( NumObservables, 1 ) ], 'x0', [ M_.params( dynareOBC.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ], 'options', dynareOBC.OptiOptions );
-        [ ResTemp, TwoNLogLikelihood ] = solve( OptiProblem );
+        OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, EndoSelectWithControls, EndoSelect );
+        OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
+        OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
+        OptiX0 = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ];
+        if dynareOBC.UseOptiFMinCon
+            OptiProblem = opti( 'fun', OptiFunction, 'bounds', OptiLB, OptiUB, 'x0', OptiX0, 'options', dynareOBC.FMinConOptions );
+            [ ResTemp, TwoNLogLikelihood ] = solve( OptiProblem );
+        else
+            [ ResTemp, TwoNLogLikelihood ] = fmincon( OptiFunction, OptiX0, [], [], [], [], OptiLB, OptiUB, [], dynareOBC.FMinConOptions );
+        end
 		disp( 'Final log-likelihood:' );
 		disp( -0.5 * TwoNLogLikelihood );
 		M_.params( dynareOBC.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );

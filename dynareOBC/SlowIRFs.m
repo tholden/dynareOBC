@@ -54,7 +54,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
         WarningState = warning( 'off', 'all' );
         try
             TempShockSequence = zeros( OriginalNumVarExo, T );
-            TempShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, T );
+            TempShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, T ) * ( Replications > 1 );
             ShockSequence( :, :, k ) = TempShockSequence( :, IRFIndices );
 
             Simulation = SimulateModel( TempShockSequence, M, options, oo, dynareOBC, false );

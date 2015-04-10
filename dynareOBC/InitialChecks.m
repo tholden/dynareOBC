@@ -6,7 +6,18 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ZeroVecS = sparse( Ts * ns, 1 );
 
     dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
-    dynareOBC = SetDefaultOption( dynareOBC, 'OptiOptions', optiset( 'display', 'off', 'maxiter', double( intmax ), 'maxfeval', double( intmax ), 'maxtime', double( intmax ) ) );
+    
+    try
+        optiver;
+        dynareOBC = SetDefaultOption( dynareOBC, 'UseOptiFMinCon', true );
+    catch
+        dynareOBC = SetDefaultOption( dynareOBC, 'UseOptiFMinCon', false );
+    end
+    if dynareOBC.UseOptiFMinCon;
+        dynareOBC = SetDefaultOption( dynareOBC, 'FMinConOptions', optiset( 'display', 'off', 'maxiter', double( intmax ), 'maxfeval', double( intmax ), 'maxtime', double( intmax ) ) );
+    else
+        dynareOBC = SetDefaultOption( dynareOBC, 'FMinConOptions', optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
+    end
     
     if ns == 0
         return

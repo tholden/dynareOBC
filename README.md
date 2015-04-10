@@ -8,6 +8,11 @@ Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone. Note that while dynareOBC should work on all platforms, it
    has been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
  * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
+ * At least one of:
+    * The MATLAB Optimization toolbox, or a fully compatible clone
+    * A compiled version of the OptiToolbox for your platform, from
+      http://www.i2c2.aut.ac.nz/Wiki/OPTI/index.php/DL/DownloadOPTI
+    * Microsoft Windows (for which platform the OptiToolbox is automatically downloaded by dynareOBC.
 
 Recommended additional installations:
  * MATLAB R2015a or later.
@@ -38,6 +43,7 @@ Note:
  * dynareOBC may produce strange results on models with an indeterminate steady-state, so caution should be taken when using
    the STEADY_STATE command. The initval or steady_state_model blocks should not be used to attempt to pin down a
    steady-state, since these will be ignored by dynareOBC in later steps of its solution procedure.
+ * dynareOBC defines the preprocessor constant "dynareOBC" during execution.
 
 OPTIONS (NOT CASE SENSITIVE!) include:
 

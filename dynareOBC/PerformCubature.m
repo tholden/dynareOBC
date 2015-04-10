@@ -74,9 +74,14 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
         else
             x_y = [ yOriginal yMatrix( :, 1:i ) ];
             OptiFunction = @( HP ) GetTwoNLogL( HP, x_y, dynareOBC.KappaPriorParameter );
-            % fmincon( @(HPG) fd(OptiFunction,HPG), HyperParams, [],[],[],[], [ -1; -1; 0 ], [ 1; 1; 1 ],[],optimset('disp','iter','DerivativeCheck','on','FinDiffType','forward','gradobj','on'));
-            OptiProblem = opti( 'fun', OptiFunction, 'grad', @( HPG ) cstepJac( OptiFunction, HPG, 1 ), 'bounds', [ -1+Tolerance; -1+Tolerance; Tolerance ], [ 1-Tolerance; 1-Tolerance; 1-Tolerance ], 'x0', HyperParams, 'options', dynareOBC.OptiOptions );
-            HyperParams = solve( OptiProblem );
+            OptiLB = [ -1+Tolerance; -1+Tolerance; Tolerance ];
+            OptiUB = [ 1-Tolerance; 1-Tolerance; 1-Tolerance ];
+            if dynareOBC.UseOptiFMinCon
+                OptiProblem = opti( 'fun', OptiFunction, 'grad', @( HPG ) cstepJac( OptiFunction, HPG, 1 ), 'bounds', OptiLB, OptiUB, 'x0', HyperParams, 'options', dynareOBC.FMinConOptions );
+                HyperParams = solve( OptiProblem );
+            else
+                HyperParams = fmincon( OptiFunction, HyperParams, [], [], [], [], OptiLB, OptiUB, [], dynareOBC.FMinConOptions );
+            end
             yNew = GetMu( HyperParams, x_y );
             yError = max( abs( y - yNew ) );
             y = yNew;
@@ -105,7 +110,7 @@ end
 %     ARCovMat = ( rho .^ abs( bsxfun( @minus, 0:(T-1), (0:(T-1))' ) ) ) * ( 1 / ( 1 - rho * rho ) );
 % end
 
-% function [f,d] = fd( fun, x )
+% function [ f, d ] = FunctionAndGradient( fun, x )
 %     f = fun( x );
 %     if nargout > 1
 %         d = cstepJac( fun, x, 1 );
