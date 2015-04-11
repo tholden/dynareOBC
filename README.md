@@ -7,12 +7,9 @@ Requirements
 Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone. Note that while dynareOBC should work on all platforms, it
    has been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
+ * The MATLAB Optimization toolbox, or an alternative non-linear minimisation routine. (To use an alternative routine, you
+   must set dynareOBC.FMinFunctor.)
  * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
- * At least one of:
-    * The MATLAB Optimization toolbox, or a fully compatible clone
-    * A compiled version of the OptiToolbox for your platform, from
-      http://www.i2c2.aut.ac.nz/Wiki/OPTI/index.php/DL/DownloadOPTI
-    * Microsoft Windows (for which platform the OptiToolbox is automatically downloaded by dynareOBC.
 
 Recommended additional installations:
  * MATLAB R2015a or later.

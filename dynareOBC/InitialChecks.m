@@ -6,18 +6,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ZeroVecS = sparse( Ts * ns, 1 );
 
     dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
-    
-    try
-        optiver;
-        dynareOBC = SetDefaultOption( dynareOBC, 'UseOptiFMinCon', true );
-    catch
-        dynareOBC = SetDefaultOption( dynareOBC, 'UseOptiFMinCon', false );
-    end
-    if dynareOBC.UseOptiFMinCon;
-        dynareOBC = SetDefaultOption( dynareOBC, 'FMinConOptions', optiset( 'display', 'off', 'maxiter', double( intmax ), 'maxfeval', double( intmax ), 'maxtime', double( intmax ) ) );
-    else
-        dynareOBC = SetDefaultOption( dynareOBC, 'FMinConOptions', optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) );
-    end
+    dynareOBC = SetDefaultOption( dynareOBC, 'FMinFunctor', @( OptiFunction, OptiX0, OptiLB, OptiUB ) fmincon( OptiFunction, OptiX0, [], [], [], [], OptiLB, OptiUB, [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', false, 'ObjectiveLimit', -Inf ) ) );
     
     if ns == 0
         return

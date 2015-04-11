@@ -76,12 +76,7 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
             OptiFunction = @( HP ) GetTwoNLogL( HP, x_y, dynareOBC.KappaPriorParameter );
             OptiLB = [ -1+Tolerance; -1+Tolerance; Tolerance ];
             OptiUB = [ 1-Tolerance; 1-Tolerance; 1-Tolerance ];
-            if dynareOBC.UseOptiFMinCon
-                OptiProblem = opti( 'fun', OptiFunction, 'grad', @( HPG ) cstepJac( OptiFunction, HPG, 1 ), 'bounds', OptiLB, OptiUB, 'x0', HyperParams, 'options', dynareOBC.FMinConOptions );
-                HyperParams = solve( OptiProblem );
-            else
-                HyperParams = fmincon( OptiFunction, HyperParams, [], [], [], [], OptiLB, OptiUB, [], dynareOBC.FMinConOptions );
-            end
+            HyperParams = dynareOBC.FMinFunctor( OptiFunction, HyperParams, OptiLB, OptiUB );
             yNew = GetMu( HyperParams, x_y );
             yError = max( abs( y - yNew ) );
             y = yNew;
