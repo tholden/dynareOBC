@@ -156,7 +156,7 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 		skipline( );
 		disp( 'Restarting MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
 		skipline( );
-		system( [ 'start matlab.exe -sd ' pwd( ) ' -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
+		system( [ 'start matlab.exe -sd "' pwd( ) '" -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
 		system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );     
 	end
 
@@ -280,7 +280,7 @@ function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPa
         skipline( );
         disp( [ 'Running ' ExePath '.' ] );
         skipline( );
-        system( [ 'start /wait ' dynareOBCPath '/dynareOBC/requirements/' ExePath ' /passive /norestart' ] );
+        system( [ 'start /wait "' dynareOBCPath '/dynareOBC/requirements/' ExePath '" /passive /norestart' ] );
         DLLInstalled = true;
     else
         DLLInstalled = false;
