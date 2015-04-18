@@ -98,12 +98,24 @@ function dynareOBC( InputFileName, varargin )
 	if strcmpi( InputFileName, 'TestSolvers' )
 		yalmiptest;
 		if ~isempty( dynareOBC_.QPSolver )
-			yalmiptest( dynareOBC_.QPSolver );
+            try
+                yalmiptest( dynareOBC_.QPSolver );
+            catch Error
+                warning( Error.message );
+            end
 		end
 		if ~isempty( dynareOBC_.MILPSolver )
-			yalmiptest( dynareOBC_.MILPSolver );
+            try
+                yalmiptest( dynareOBC_.MILPSolver );
+            catch Error
+                warning( Error.message );
+            end
 		end
-		opti_Install_Test;
+        try
+            opti_Install_Test;
+        catch Error
+            warning( Error.message );
+        end
         path( OriginalPath );
 		return;
     end
