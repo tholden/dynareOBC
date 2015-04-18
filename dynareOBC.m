@@ -93,31 +93,31 @@ function dynareOBC( InputFileName, varargin )
 
 	if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
 		dynareOBC_.NoCubature = true;
-	end
+    end
 
-	if strcmpi( InputFileName, 'TestSolvers' )
-		yalmiptest;
-		if ~isempty( dynareOBC_.QPSolver )
+    if strcmpi( InputFileName, 'TestSolvers' )
+        yalmiptest;
+        if ~isempty( dynareOBC_.QPSolver )
             try
                 yalmiptest( dynareOBC_.QPSolver );
             catch Error
                 warning( Error.message );
             end
-		end
-		if ~isempty( dynareOBC_.MILPSolver )
+        end
+        if ~isempty( dynareOBC_.MILPSolver )
             try
                 yalmiptest( dynareOBC_.MILPSolver );
             catch Error
                 warning( Error.message );
             end
-		end
+        end
         try
             opti_Install_Test;
         catch Error
             warning( Error.message );
         end
         path( OriginalPath );
-		return;
+        return;
     end
 
     dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_ );
