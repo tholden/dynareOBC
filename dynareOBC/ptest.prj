@@ -1,5 +1,5 @@
-<deployment-project plugin="plugin.matlabcoder" plugin-version="R2012a">
-  <configuration build-checksum="1627996248" file="ptest.prj" location=".\" name="ptest" target="target.matlab.coder" target-name="MEX, C, and C++ Code Generation">
+<deployment-project plugin="plugin.coder" plugin-version="R2015a">
+  <configuration build-checksum="330010943" file="Q:\SkyDrive\obc\revision\OBCToolkit\dynareOBC\ptest.prj" location="Q:\SkyDrive\obc\revision\OBCToolkit\dynareOBC" name="ptest" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -16,7 +16,7 @@
       <param.EnableVariableSizing>true</param.EnableVariableSizing>
       <param.DynamicMemoryAllocation>option.DynamicMemoryAllocation.Enabled</param.DynamicMemoryAllocation>
       <param.DynamicMemoryAllocationThreshold>65536</param.DynamicMemoryAllocationThreshold>
-      <param.StackUsageMax>200000</param.StackUsageMax>
+      <param.StackUsageMax>16777216</param.StackUsageMax>
       <param.FilePartitionMethod>option.FilePartitionMethod.MapMFileToCFile</param.FilePartitionMethod>
       <param.GenerateComments>true</param.GenerateComments>
       <param.MATLABSourceComments>true</param.MATLABSourceComments>
@@ -39,10 +39,10 @@
       <param.PostCodeGenCommand />
       <param.mex.GenCodeOnly>false</param.mex.GenCodeOnly>
       <param.ConstantFoldingTimeout>2147483647</param.ConstantFoldingTimeout>
-      <param.RecursionLimit>100</param.RecursionLimit>
+      <param.RecursionLimit>2147483647</param.RecursionLimit>
       <param.PreserveVariableNames>option.PreserveVariableNames.UserNames</param.PreserveVariableNames>
       <param.TargetLang>option.TargetLang.C</param.TargetLang>
-      <param.EchoExpressions>true</param.EchoExpressions>
+      <param.EchoExpressions>false</param.EchoExpressions>
       <param.InlineThreshold>2147483647</param.InlineThreshold>
       <param.InlineThresholdMax>2147483647</param.InlineThresholdMax>
       <param.InlineStackLimit>2147483647</param.InlineStackLimit>
@@ -62,7 +62,6 @@
         <param.EnableScreener />
         <param.DefaultTestFile />
         <param.MergeInstrumentationResults />
-        <param.RecursionLimit />
       </unset>
     </profile>
     <profile key="profile.c">
@@ -190,8 +189,8 @@
       <param.MemcpyThreshold />
       <param.EnableOpenMP />
       <param.InitFltsAndDblsToZero />
-      <param.PassStructByReference />
-      <param.UseECoderFeatures />
+      <param.PassStructByReference>false</param.PassStructByReference>
+      <param.UseECoderFeatures>true</param.UseECoderFeatures>
       <unset>
         <param.grt.GenCodeOnly />
         <param.WorkingFolder />
@@ -316,7 +315,6 @@
         <param.MemcpyThreshold />
         <param.EnableOpenMP />
         <param.InitFltsAndDblsToZero />
-        <param.PassStructByReference />
         <param.UseECoderFeatures />
       </unset>
     </profile>
@@ -661,7 +659,7 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>generateCode</param.WorkflowStep>
+    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
     <param.TestSnippets>
       <item>ptest(magic(4)*magic(4)')</item>
       <item>ptest_mex(magic(4)*magic(4)')</item>
@@ -794,8 +792,52 @@
     </fileset.entrypoints>
     <fileset.testbench />
     <build-deliverables>
-      <file location="./" name="ptest_mex.mexw64" optional="false">ptest_mex.mexw64</file>
+      <file location="Q:\SkyDrive\obc\revision\OBCToolkit\dynareOBC" name="ptest_mex.mexw64" optional="false">Q:\SkyDrive\obc\revision\OBCToolkit\dynareOBC\ptest_mex.mexw64</file>
     </build-deliverables>
     <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\MATLAB Production Server\R2015a</root>
+      <toolboxes>
+        <toolbox name="matlabhdlcoder" />
+        <toolbox name="fixedpoint" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="matlabcoder" />
+      </toolboxes>
+      <toolbox>
+        <matlabhdlcoder>
+          <enabled>true</enabled>
+        </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <fixedpoint>
+          <enabled>true</enabled>
+        </fixedpoint>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.2</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
   </configuration>
 </deployment-project>

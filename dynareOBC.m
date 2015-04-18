@@ -318,7 +318,7 @@ function CompileMEX
 			skipline( );
 			disp( 'Attempting to compile spkron.' );
 			skipline( );
-			coder -build spkron.prj;
+			build_spkron;
 			rehash path;
 			spkron_use_mex = 1;
 			if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
@@ -343,7 +343,7 @@ function CompileMEX
 			skipline( );
 			disp( 'Attempting to compile ptest.' );
 			skipline( );
-			coder -build ptest.prj;
+			build_ptest;
 			rehash path;
 			ptest_use_mex = 1;
 			if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
