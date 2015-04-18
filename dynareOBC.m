@@ -91,8 +91,8 @@ function dynareOBC( InputFileName, varargin )
 
 	basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
 
-	if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
-		dynareOBC_.NoCubature = true;
+    if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
+        dynareOBC_.NoCubature = true;
     end
 
     if strcmpi( InputFileName, 'TestSolvers' )
