@@ -34,13 +34,13 @@ function dynareOBC( InputFileName, varargin )
 
 	dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
 
-	if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
-		skipline( );
-		disp( fileread( [ dynareOBCPath '/README.md' ] ) );
+    if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
         skipline( );
-		return;
-	end
-
+        disp( fileread( [ dynareOBCPath '/README.md' ] ) );
+        skipline( );
+        return;
+    end
+    
 	OriginalPath = path;
 
 	WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
@@ -172,8 +172,9 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
     end
 	if DLLInstalled
 		skipline( );
-		disp( 'Restarting MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
+		disp( 'dynareOBC needs to restart MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
 		skipline( );
+        input( 'Press return to continue, or Ctrl+C to cancel.' );
 		system( [ 'start matlab.exe -sd "' pwd( ) '" -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
 		system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );     
 	end
@@ -218,7 +219,9 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 			rehash path;
 			opti_Install( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], false );
 		else
+			copyfile( [ dynareOBCPath '/dynareOBC/clobber/OptiToolbox/' ], [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'f' );
 			addpath( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+			rehash path;
 			opti_Install( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], true );
 		end
 	end
@@ -262,6 +265,11 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 	tbxmanager restorepath;
 
 	addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+    
+    if return_dynare_version( dynare_version ) < 4.4
+        error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
+    end
+    
 	addpath( [ dynareOBCPath '/dynareOBC/' ] );
 end
 
@@ -298,7 +306,7 @@ function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPa
         skipline( );
         disp( [ 'Running ' ExePath '.' ] );
         skipline( );
-        system( [ 'start /wait "' dynareOBCPath '/dynareOBC/requirements/' ExePath '" /passive /norestart' ] );
+        system( [ 'start "Installing dynareOBC requirement" /wait "' dynareOBCPath '/dynareOBC/requirements/' ExePath '" /passive /norestart' ] );
         DLLInstalled = true;
     else
         DLLInstalled = false;
