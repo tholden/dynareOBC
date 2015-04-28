@@ -1,6 +1,14 @@
 dynareOBC: A toolkit for handling occasionally binding constraints with Dynare, by Tom Holden.
 ==============================================================================================
 
+Installation
+------------
+
+First, clone the toolkit, by pressing the clone button on: https://github.com/tholden/dynareOBC GitHub will then download the
+toolkit and its dependencies. Note that **the "download ZIP" button will not give you these dependencies**.
+
+Then, add the toolkit to your MATLAB path.
+
 Requirements
 ------------
 
@@ -36,7 +44,7 @@ dynareOBC executes instruction included in the conventional dynare mod file, FIL
 Unlike dynare, dynareOBC can handle simulation of models containing non-differentiable functions.
 Note:
  * dynareOBC approximates the non-differentiable function in levels. Thus if r and pi are the endogenous variables of interest:
-   "r = max( 0, 0.005 + 1.5 * pi );" will be more accurate than: "exp(R) = max( 1, exp( 0.005 + 1.5 * pi ) );".
+   "r = max( 0, 0.005 + 1.5 * pi );" will be more accurate than: "exp(r) = max( 1, exp( 0.005 + 1.5 * pi ) );".
  * dynareOBC may produce strange results on models with an indeterminate steady-state, so caution should be taken when using the
    STEADY_STATE command. The initval or steady_state_model blocks should not be used to attempt to pin down a steady-state,
    since these will be ignored by dynareOBC in later steps of its solution procedure.
@@ -96,16 +104,12 @@ Note:
          approximation of the conditional covariance. This option specifies that a first order approximation should be used
          instead.
     * Global
-         DISABLED IN THIS VERSION.
          Without this, dynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
          bound, but they do not take into account the risk of hitting the bound in the far future. With the global option,
          dynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that this is
          significantly slower.
           * MaxIterations=INTEGER (default: 1000)
                The maximum number of iterations of the global fixed-point algorithm.
-          * FixedPointAcceleration
-               Enables an accelerated fixed-point algorithm, when using global. May only work for well behaved problems, and
-               when starting close to the solution.
           * Resume
                Resumes an interrupted solution iteration, when using global.
     * MLVSimulationMode=0|1|2|3 (default: 0)
