@@ -91,7 +91,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         skipline( );
     end
 
-    if dynareOBC.NumberOfMax > 0 || dynareOBC.FastIRFs || dynareOBC.Order2VarianceRequired
+    if dynareOBC.NumberOfMax > 0 || ( ~dynareOBC.SlowIRFs ) || dynareOBC.Order2VarianceRequired
         dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M, options, oo, dynareOBC );
     end
 

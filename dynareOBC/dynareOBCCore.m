@@ -325,10 +325,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 		disp( 'Simulating IRFs.' );
 		skipline( );
 
-		if dynareOBC.FastIRFs
-			[ oo_, dynareOBC ] = FastIRFs( M_, options_, oo_, dynareOBC );
-		else
+		if dynareOBC.SlowIRFs
 			[ oo_, dynareOBC ] = SlowIRFs( M_, options_, oo_, dynareOBC );
+		else
+			[ oo_, dynareOBC ] = FastIRFs( M_, options_, oo_, dynareOBC );
 		end
 	end
 

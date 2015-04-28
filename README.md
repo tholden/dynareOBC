@@ -130,9 +130,9 @@ Note:
          up dynareOBC. This option prevents dynareOBC from doing this.
 
  * **For controlling IRFs**
-    * FastIRFs
-         Calculates a fast approximation to IRFs without any Monte-Carlo simulation. Without this option, dynareOBC calculates
-         average IRFs.
+    * SlowIRFs
+         Calculates a more accurate approximation to expected IRFs using Monte-Carlo simulation. Without this option, dynareOBC
+         calculates expected IRFs via cubature (unless this is also disabled).
     * IRFsAroundZero
          By default, IRFs are centered around the risky steady state with the fastirfs option, or around the approximate mean
          without it. This option instead centers IRFs around 0.
