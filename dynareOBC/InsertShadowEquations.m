@@ -32,7 +32,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         PolynomialApproximationString = '';
         if dynareOBC.Global
             ShortRunBoundedVarName = [ 'dynareOBCZeroLowerBoundedShortRun' string_i ];
-            varString = [ varString ShortRunBoundedVarName ];
+            varString = [ varString ' ' ShortRunBoundedVarName ];
             CurrentNumVar = CurrentNumVar + 1;
             dynareOBC.VarIndices_ZeroLowerBoundedShortRun( i ) = CurrentNumVar;
             PolynomialApproximationString = '';
