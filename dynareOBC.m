@@ -271,6 +271,7 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
     end
     
 	addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    addpath( fileparts( which( 'dynare' ) ) );
 end
 
 function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPath, SavePath, UnzipPath )
