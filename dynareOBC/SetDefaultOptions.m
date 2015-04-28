@@ -8,7 +8,6 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'FastIRFs', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FirstOrderAroundRSS1OrMean2', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FirstOrderConditionalCovariance', false );
-    dynareOBC = SetDefaultOption( dynareOBC, 'FixedPointAcceleration', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Global', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'HomotopySteps', 10 );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
@@ -44,6 +43,10 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 16 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', sqrt( eps ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
+    
+    dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
+    dynareOBC = SetDefaultOption( dynareOBC, 'FMinFunctor', @( OptiFunction, OptiX0, OptiLB, OptiUB, varargin ) fmincon( OptiFunction, OptiX0, [], [], [], [], OptiLB, OptiUB, [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', true, 'ObjectiveLimit', -Inf, varargin{:} ) ) );   
+    dynareOBC = SetDefaultOption( dynareOBC, 'FSolveFunctor', @( OptiFunction, OptiX0, varargin ) fsolve( OptiFunction, OptiX0, optimset( 'algorithm', 'trust-region-dogleg', 'display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), varargin{:} ) ) );   
     
     dynareOBC = orderfields( dynareOBC );
 end
