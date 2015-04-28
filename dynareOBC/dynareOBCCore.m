@@ -171,11 +171,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 	   
 	% Other common set-up
 
-	if isoctave || user_has_matlab_license('optimization_toolbox')
-		SolveAlgo = 0;
-	else
-		SolveAlgo = 2;
+	if ~( isoctave || user_has_matlab_license( 'optimization_toolbox' ) )
+        error( 'dynareOBC:MissingOptimizationToolbox', 'The optimization toolbox is required.' );
 	end
+	SolveAlgo = 0;
 
 	if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
 		dynareOBC.ShadowOrder = 1;
@@ -198,11 +197,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 	%% Global polynomial approximation
 
 	if dynareOBC.Global
-		error( 'dynareOBC:UnsupportedGlobal', 'Global solution is temporarily disabled.' );
+        skipline( );
+        disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
+        skipline( );
 
-		dynareOBC = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, CurrentNumParams, CurrentNumVar, dynareOBC );
-		GlobalApproximationParameters = M_.params( dynareOBC.ParameterIndices_StateVariableAndShockCombinations );
-		
+        dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
+        GlobalApproximationParameters = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
 	else
 		dynareOBC.StateVariableAndShockCombinations = { };
 		GlobalApproximationParameters = [];
