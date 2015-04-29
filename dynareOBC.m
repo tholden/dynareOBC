@@ -198,16 +198,15 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 			skipline( );
 
 			if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-				OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip';
+				OptiURL = 'https://www.dropbox.com/s/p1gyhkql8kgfgb8/OptiToolbox_edu_v2.12.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
 			else
-				OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip';
+				OptiURL = 'https://www.dropbox.com/s/9fkc8qd892ojfhr/OptiToolbox_v2.12.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
 			end
 			skipline( );
 			disp( 'Downloading the OptiToolbox.' );
 			disp( 'This may take several minutes even on fast university connections.' );
-			disp( 'You may monitor progress by checking the size of the OptiToolbox.zip file within the dynareOBC\requirements folder.' );
 			skipline( );
-			urlwrite( OptiURL, [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
+            aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
 
 			skipline( );
 			disp( 'Extracting files from OptiToolbox.zip.' );
@@ -291,7 +290,7 @@ function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPa
             skipline( );
             disp( [ 'Downloading ' SavePath '.' ] );
             skipline( );
-            urlwrite( URL, [ dynareOBCPath '/dynareOBC/requirements/' SavePath ] );
+            aria_urlwrite( dynareOBCPath, URL, [ dynareOBCPath '/dynareOBC/requirements/' SavePath ] );
         end
         if nargin > 5
             if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' UnzipPath ], 'file' )
@@ -373,3 +372,25 @@ function CompileMEX( dynareOBCPath )
 	end
 	skipline( );
 end
+
+function aria_urlwrite( dynareOBCPath, URL, FilePath )
+    [ FolderName, DestinationName, Extension ] = fileparts( FilePath );
+    DestinationName = [ DestinationName Extension ];
+    SourceName = regexprep( regexprep( URL, '^.*/', '' ), '?.*$', '' );
+    
+    WarningState = warning( 'off', 'all' );
+    delete( [ FolderName '/' SourceName ], [ FolderName '/' DestinationName ] );
+    delete( [ FolderName '/' SourceName '.*' ], [ FolderName '/' DestinationName '.*' ] );
+    warning( WarningState );
+    
+    try
+        system( [ '"' dynareOBCPath '/dynareOBC/aria2/aria2c.exe" --file-allocation=falloc -x 4 -s 4 -d "' FolderName '" ' URL ], '-echo' );
+        if ~strcmp( SourceName, DestinationName )
+            movefile( [ FolderName '/' SourceName ], [ FolderName '/' DestinationName ] );
+        end
+    catch
+        disp( [ 'Using the fallback download method. You may monitor progress by examining the size of the file: '  FilePath ] );
+        urlwrite( URL, FilePath );
+    end
+end
+

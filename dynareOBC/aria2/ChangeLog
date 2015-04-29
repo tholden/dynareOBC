@@ -1,0 +1,88 @@
+commit e8d4af44f427d06e73869cf4b84e125b46869cac
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-23
+
+    Update NEWS
+
+commit 77e93b77109e0b6dff0fc0c65d96e7a397a29b26
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-23
+
+    Bump up version number to 1.18.10
+
+commit c1879586b78313171fecf44c02a626443ffbcafb
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-23
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-23
+
+    Add encoding specifier to Russian man page
+    
+    See GH-341
+
+commit 649c49dcc675a26dd2b7598c09fc3e3539b5ef88
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-21
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-21
+
+    Mingw: Use _wgetenv to get user's home directory
+    
+    Fixes GH-342
+
+commit ba0e32abaecedf3939905bd316336f313b3dd745
+Author:     Nils Maier <maierman@web.de>
+AuthorDate: 2015-02-06
+Commit:     Nils Maier <maierman@web.de>
+CommitDate: 2015-02-07
+
+    Handle linux getrandom returning EINTR on interrupts/signals
+    
+    Also handle ENOTSUP failures where aria2 was build with linux headers
+    newer than the actual running kernel.
+    
+    Fixes GH-336
+
+commit 9cbbe9f1bbb6d05b46fbf54b5c26cec62888ea79
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-08
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-08
+
+    Split UtilTest.cc into UtilTest1.cc and UtilTest2.cc
+
+commit 9d577b0ad700281549ca9f339b058df9fa7eff8e
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-07
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-07
+
+    Fix adjustAnnounceUri parameter is not passed
+
+commit 4cf0bb742f079dcd75f676391a4e0af1bb176bdd
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-07
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-07
+
+    Shuffle web-seeding URIs
+
+commit f910c6f782fe276a742a8b07b8c90d0c3ed31123
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-03
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-03
+
+    android: Build PIE
+
+commit 38447010853a77863631dd2f44245fc9257cce57
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2015-02-01
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2015-02-01
+
+    Add build config for android third party libraries
