@@ -106,10 +106,7 @@ Note:
     * Global
          Without this, dynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
          bound, but they do not take into account the risk of hitting the bound in the far future. With the global option,
-         dynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that this is
-         significantly slower.
-          * MaxIterations=INTEGER (default: 1000)
-               The maximum number of iterations of the global fixed-point algorithm.
+         dynareOBC assumes agents take into account the risk of hitting the bound at all horizons.
           * Resume
                Resumes an interrupted solution iteration, when using global.
     * MLVSimulationMode=0|1|2|3 (default: 0)
@@ -141,11 +138,15 @@ Note:
 
  * **For controlling estimation**
     * Estimation
-         Enables estimation of the model's parameters. (ALPHA code. Unsupported.)
+         Enables estimation of the model's parameters
           * EstimationDataFile=STRING (default: MOD-FILE-NAME.xlsx)
-               Specifies the spreadsheet containing the data to estimate.
+               Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The
+               first sheet should have a title row containing the names of the MLVs being observed, followed by one row per
+               observation. There should not be a column with dates. The second sheet should contain a title row with the names
+               of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as
+               minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
           * EstimationFixedPointMaxIterations=NUMBER (default: 100)
-               The maximum number of iterations used to evaluate the stationary distribution.
+               The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
 
  * **For debugging**
     * NoCleanup

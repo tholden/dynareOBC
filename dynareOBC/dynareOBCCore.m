@@ -92,15 +92,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 	skipline( );
 
 	steadystatemfilename = [ dynareOBC.BaseFileName '_steadystate.m' ];
-	if exist( steadystatemfilename, 'file' )
-		copyfile( steadystatemfilename, 'dynareOBCTemp2_steadystate.m', 'f' );
-	end
+    if exist( steadystatemfilename, 'file' )
+        copyfile( steadystatemfilename, 'dynareOBCTemp2_steadystate.m', 'f' );
+    end
 
+    global options_
+    options_.solve_tolf = eps;
 	dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
 
 	Generate_dynareOBCTemp2_GetMaxArgValues( dynareOBC.NumberOfMax );
 
-	global oo_ M_ options_
+	global oo_ M_
 	MaxArgValues = dynareOBCTemp2_GetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
 	if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
         keyboard;
@@ -241,6 +243,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 	disp( 'Making the final call to dynare, as a first step in solving the full model.' );
 	skipline( );
 
+    options_.solve_tolf = eps;
 	dynare( 'dynareOBCTemp3.mod', basevarargin{:} );
 
 	skipline( );

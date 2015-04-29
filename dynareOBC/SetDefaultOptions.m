@@ -14,7 +14,6 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'KappaPriorParameter', 1-eps );
     dynareOBC = SetDefaultOption( dynareOBC, 'MaxCubatureDegree', 3 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'MaxCubatureDimension', 100 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'MaxIterations', 1000 );
     dynareOBC = SetDefaultOption( dynareOBC, 'MILPSolver', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'MLVSimulationMode', 0 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'MLVSimulationSamples', 2000 );
@@ -46,7 +45,8 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     
     dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'FMinFunctor', @( OptiFunction, OptiX0, OptiLB, OptiUB, varargin ) fmincon( OptiFunction, OptiX0, [], [], [], [], OptiLB, OptiUB, [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', true, 'ObjectiveLimit', -Inf, varargin{:} ) ) );   
-    dynareOBC = SetDefaultOption( dynareOBC, 'FSolveFunctor', @( OptiFunction, OptiX0, varargin ) fsolve( OptiFunction, OptiX0, optimset( 'algorithm', 'trust-region-dogleg', 'display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), varargin{:} ) ) );   
+    % dynareOBC = SetDefaultOption( dynareOBC, 'FSolveFunctor', @( OptiFunction, OptiX0, varargin ) fsolve( OptiFunction, OptiX0, optimset( 'algorithm', 'trust-region-dogleg', 'display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), varargin{:} ) ) );   
+    dynareOBC = SetDefaultOption( dynareOBC, 'FSolveFunctor', @( OptiFunction, OptiX0, varargin ) lsqnonlin( OptiFunction, OptiX0, [], [], optimset( 'algorithm', 'trust-region-reflective', 'display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), varargin{:} ) ) );   
     
     dynareOBC = orderfields( dynareOBC );
 end
