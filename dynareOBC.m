@@ -97,13 +97,6 @@ function dynareOBC( InputFileName, varargin )
 
     if strcmpi( InputFileName, 'TestSolvers' )
         yalmiptest;
-        if ~isempty( dynareOBC_.QPSolver )
-            try
-                yalmiptest( dynareOBC_.QPSolver );
-            catch Error
-                warning( 'dynareOBC:TestSolversError', Error.message );
-            end
-        end
         if ~isempty( dynareOBC_.MILPSolver )
             try
                 yalmiptest( dynareOBC_.MILPSolver );
