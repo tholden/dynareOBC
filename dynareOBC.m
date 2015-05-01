@@ -253,7 +253,11 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 	disp( 'Ensuring key packages are up to date.' );
 	skipline( );
 
-    tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+    try
+        tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+    catch
+        tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+    end
 	tbxmanager restorepath;
 
 	addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
