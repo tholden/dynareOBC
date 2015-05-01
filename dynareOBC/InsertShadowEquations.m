@@ -7,6 +7,8 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
     dynareOBC.VarIndices_ZeroLowerBounded = zeros( 1, ns );
     if dynareOBC.Global
         dynareOBC.VarIndices_ZeroLowerBoundedShortRun = zeros( 1, ns );
+    else
+        dynareOBC.VarIndices_ZeroLowerBoundedShortRun = [];
     end
     dynareOBC.VarIndices_Sum = zeros( T, ns );
     dynareOBC.VarExoIndices_DummyShadowShocks  = zeros( T, ns );

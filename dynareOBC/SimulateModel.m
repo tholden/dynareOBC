@@ -66,6 +66,12 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
     NewExoSelect = (dynareOBC.OriginalNumVarExo+1) : dynareOBC.FullNumVarExo;
     
     if dynareOBC.NumberOfMax > 0
+        if dynareOBC.Global
+            TM2 = T - 2;
+            pM1 = ( -1 : TM2 )';
+            pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
+        end
+
         Shock = zeros( M.exo_nbr, 1 );
 
         OrderText = dynareOBC.OrderText;
@@ -98,19 +104,28 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 ReturnPath = ReturnStruct.total;        
 
                 pseudo_y = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
-                for i = dynareOBC.VarIndices_ZeroLowerBounded
+                for i = [ dynareOBC.VarIndices_ZeroLowerBounded dynareOBC.VarIndices_ZeroLowerBoundedShortRun ]
                     ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * pseudo_y )';
                 end
 
                 UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
+                if dynareOBC.Global
+                    NewUnconstrainedReturnPath = pWeight .* vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + ( 1 - pWeight ) .* UnconstrainedReturnPath;
+                    yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - UnconstrainedReturnPath );
+                    UnconstrainedReturnPath = NewUnconstrainedReturnPath;
+                end
 
                 y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
                 [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
-                
+
                 if ~dynareOBC.NoCubature
                     y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
                 end
                 
+                if dynareOBC.Global
+                    y = y + yExtra;
+                end
+
                 y = y + pseudo_y;
 
                 ShadowShockSequence( dynareOBC.VarExoIndices_DummyShadowShocks(:), t ) = y ./ sqrt( eps ); % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations_Slice(:) );

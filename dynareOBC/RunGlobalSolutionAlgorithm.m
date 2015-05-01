@@ -1,11 +1,5 @@
-function dynareOBC = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, CurrentNumParams, CurrentNumVar, dynareOBC )
-
-    skipline( );
-    disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
-    skipline( );
-    
-    dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
-   
+function GlobalApproximationParameters = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC )
+  
     skipline( );
     disp( 'Generating the intermediate mod file.' );
     skipline( );
@@ -22,7 +16,7 @@ function dynareOBC = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLi
     %Save the result
 
     FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
-    newmodfile = fopen( 'dynareOBCtempG.mod', 'w' );
+    newmodfile = fopen( 'dynareOBCTempG.mod', 'w' );
     fprintf( newmodfile, '%s', FileText );
     fclose( newmodfile );
     
@@ -30,8 +24,12 @@ function dynareOBC = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLi
     disp( 'Calling dynare on the intermediate mod file.' );
     skipline( );
 
-    dynare( 'dynareOBCtempG.mod', basevarargin{:} );   
+    global options_
+    options_.solve_tolf = eps;
+    dynare( 'dynareOBCTempG.mod', basevarargin{:} );
     
-    GlobalModelSolution;
+    global M_ oo_
+    options_.solve_tolf = eps;
+    GlobalApproximationParameters = GlobalModelSolution( M_, options_, oo_, dynareOBC );
     
 end
