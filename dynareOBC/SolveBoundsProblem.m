@@ -44,7 +44,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
     Objective = -alpha;
     diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
     if diagnostics.problem ~= 0
-        error( 'dynareOBC:FailedToSolve', 'This should never happen. Try a different solver.' );
+        error( 'dynareOBC:FailedToSolve', 'This should never happen. Double-check your dynareOBC install, or try a different solver.' );
     end
     if abs( value( alpha ) ) < eps
         error( 'dynareOBC:Infeasible', 'Infeasible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
