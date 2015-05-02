@@ -54,6 +54,8 @@ function x = GlobalModelSolution( M, options, oo, dynareOBC )
     catch
         warning( 'dynareOBC:PatchDynareSolve', 'Error patching dynare_solve to reenable output. We recommend you do this manually instead.' );
     end
+    
+    x = reshape( x, [ size( dynareOBC.StateVariableAndShockCombinations, 1 ), dynareOBC.NumberOfMax ] );
 end
 
 function Stop = SaveProgress( x, ParamNamesPI )

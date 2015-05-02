@@ -26,11 +26,13 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
         
         TempIRFs = TempIRFStruct.total - TempIRFOffsets;
         
-        UnconstrainedReturnPath = vec( TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
+        UnconstrainedReturnPath = TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBounded, : )';
         if dynareOBC.Global
-            NewUnconstrainedReturnPath = pWeight .* vec( TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + ( 1 - pWeight ) .* UnconstrainedReturnPath;
-            yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - UnconstrainedReturnPath );
+            NewUnconstrainedReturnPath = vec( bsxfun( @times, pWeight, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + bsxfun( @times, 1 - pWeight, UnconstrainedReturnPath ) );
+            yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - vec( UnconstrainedReturnPath ) );
             UnconstrainedReturnPath = NewUnconstrainedReturnPath;
+        else
+            UnconstrainedReturnPath = vec( UnconstrainedReturnPath );
         end
 
         y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );

@@ -108,11 +108,13 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * pseudo_y )';
                 end
 
-                UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
+                UnconstrainedReturnPath = ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )';
                 if dynareOBC.Global
-                    NewUnconstrainedReturnPath = pWeight .* vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + ( 1 - pWeight ) .* UnconstrainedReturnPath;
-                    yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - UnconstrainedReturnPath );
+                    NewUnconstrainedReturnPath = vec( bsxfun( @times, pWeight, ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + bsxfun( @times, 1 - pWeight, UnconstrainedReturnPath ) );
+                    yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - vec( UnconstrainedReturnPath ) );
                     UnconstrainedReturnPath = NewUnconstrainedReturnPath;
+                else
+                    UnconstrainedReturnPath = vec( UnconstrainedReturnPath );
                 end
 
                 y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
