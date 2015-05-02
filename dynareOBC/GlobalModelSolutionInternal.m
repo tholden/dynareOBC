@@ -56,7 +56,7 @@ function fx = GlobalModelSolutionInternal( x, M, options, oo, dynareOBC )
             Variance = moments.second_order.Gamma_y_obs{1};
         case 3
             moments = nlma_th_mom_third( moments, M, oo, options );
-            Mean = moments.third_order.mean;
+            Mean = moments.second_order.mean;
             Variance = moments.third_order.Gamma_y_obs{1};
         otherwise
             error( 'dynareOBC:UnsupportedOrder', 'Only orders 1 to 3 are supported at present.' );
