@@ -106,7 +106,9 @@ Note:
     * Global
          Without this, dynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
          bound, but they do not take into account the risk of hitting the bound in the far future. With the global option,
-         dynareOBC assumes agents take into account the risk of hitting the bound at all horizons.
+         dynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that under the global
+         solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the
+         response ignoring the bound entirely.
           * Resume
                Resumes an interrupted solution iteration, when using global.
     * MLVSimulationMode=0|1|2|3 (default: 0)
