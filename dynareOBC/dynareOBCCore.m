@@ -100,10 +100,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     options_.solve_tolf = eps;
 	dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
 
-	Generate_dynareOBCTemp2_GetMaxArgValues( dynareOBC.NumberOfMax );
+	Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTemp2_static' );
 
 	global oo_ M_
-	MaxArgValues = dynareOBCTemp2_GetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
+	MaxArgValues = dynareOBCTempGetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
 	if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
 		error( 'dynareOBC:JustBinding', 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
 	end
@@ -112,7 +112,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 		skipline( );
 		disp( 'Generating code to recover MLVs.' );
 		skipline( );
-		dynareOBC = Generate_dynareOBCTemp2_GetMLVs( M_, dynareOBC );
+		dynareOBC = Generate_dynareOBCTempGetMLVs( M_, dynareOBC, 'dynareOBCTemp2_dynamic' );
 		dynareOBC.OriginalLeadLagIncidence = M_.lead_lag_incidence;
 	else
 		dynareOBC.MLVNames = {};

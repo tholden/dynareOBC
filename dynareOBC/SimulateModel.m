@@ -259,9 +259,9 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                             InnerSimulation = SimulateModel( InnerShockSequence, M, options, oo, dynareOBC, false, InnerInitialFullState, true );
                             InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
                             InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
-                            InnerMLVsWithBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
+                            InnerMLVsWithBounds = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
                             if dynareOBC.NumberOfMax > 0
-                                InnerMLVsWithoutBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
+                                InnerMLVsWithoutBounds = dynareOBCTempGetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ], CurrentShock, ParamVec, SteadyState, 1 );
                             else
                                 InnerMLVsWithoutBounds = InnerMLVsWithBounds;
                             end
@@ -289,9 +289,9 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                         Simulation.MLVsWithoutBounds.( MLVNames{i} )( t ) = MLVValuesWithoutBounds( i );
                     end
                else
-                    CurrentMLVsWithBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                    CurrentMLVsWithBounds = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
                     if dynareOBC.NumberOfMax > 0
-                        CurrentMLVsWithoutBounds = dynareOBCTemp2_GetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                        CurrentMLVsWithoutBounds = dynareOBCTempGetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
                     else
                         CurrentMLVsWithoutBounds = CurrentMLVsWithBounds;
                     end

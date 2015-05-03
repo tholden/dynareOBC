@@ -1,10 +1,10 @@
-function dynareOBC = Generate_dynareOBCTemp2_GetMLVs( M, dynareOBC )
+function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     % read in the _dynamic.m file
-    FileText = fileread( 'dynareOBCTemp2_dynamic.m' );
+    FileText = fileread( [ FileName '.m' ] );
     % truncate the function after the last assignment to a MLV
     FileText = regexprep( FileText, '(?<=[\r\n]\s*)((?!(\w+__\s*=[^;]+;)).)*$', '' );
     % rename the function
-    FileText = regexprep( FileText, 'dynareOBCTemp2_dynamic', 'dynareOBCTemp2_GetMLVs' );
+    FileText = regexprep( FileText, FileName, 'dynareOBCTempGetMLVs' );
     % replace the function's return value with our MLV struct
     FileText = regexprep( FileText, '\[(\s*residual\s*)?(,)?(\s*g1\s*)?(,)?(\s*g2\s*)?(,)?(\s*g3\s*)?\]', 'MLVs' );
     % replace the initialisation of residual, with initialisation of our MLV struct
@@ -59,7 +59,7 @@ function dynareOBC = Generate_dynareOBCTemp2_GetMLVs( M, dynareOBC )
         end
     end
     % save the new file
-    newmfile = fopen( 'dynareOBCTemp2_GetMLVs.m', 'w' );
+    newmfile = fopen( 'dynareOBCTempGetMLVs.m', 'w' );
     fprintf( newmfile, '%s', strjoin( FileLines, '\n' ) );
     fclose( newmfile );
     rehash;

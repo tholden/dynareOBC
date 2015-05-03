@@ -42,7 +42,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
             Simulation = GetFullStateStruct( MeasurementCubaturePoints( 1:Nmc, i ), NEndo, EndoSelectWithControls, FullMean, dynareOBC.Order, dynareOBC.Constant );
             CurrentValuesWithBounds = Simulation.total_with_bounds( OriginalVarSelect );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
-            MLVs = dynareOBCTemp2_GetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, M.params, oo.dr.ys, 1 );
+            MLVs = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, M.params, oo.dr.ys, 1 );
             for j = 1 : No
                 NewMeasurementPoints( j, i ) = MLVs.( dynareOBC.VarList{ Observed( j ) } );
             end
