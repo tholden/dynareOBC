@@ -12,7 +12,7 @@ function FileText = ProcessModFileText( FileText )
     FileText = regexprep( FileText, '\s+', ' ' );
     FileText = regexprep( FileText, '[ ]*;+[ ]*', ';\n' );
     % remove some unnecessary space
-    FileText = regexprep( FileText, '[ ]*([\(\)\+\-\*\/\^\>\<\=\!\,\[\]]+)[ ]*', '$1' );
+    FileText = regexprep( FileText, '[ ]*([\(\)\+\-\*\/\^\>\<\=\!\,\[\]\#]+)[ ]*', '$1' );
     FileText = regexprep( FileText, '^ | $', '', 'lineanchors' );
     FileText = regexprep( FileText, '[\n\r]+', '\n' );
     FileText = regexprep( FileText, '(^\s+|\s+$)', '' );
