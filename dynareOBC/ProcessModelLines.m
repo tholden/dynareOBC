@@ -3,10 +3,10 @@ function [ FileLines, TempCounter, MaxCounter, write_i ] = ProcessModelLines( li
     % imperfect support: sign, <, >, <=, >=
     % no support: ==, !=
     if ~isempty( strfind( line, '==' ) )
-        error( 'Error processing line:\n%s\ndynareOBC does not support ==.', line );
+        error( 'dynareOBC:UnsupportedComparison', 'Error processing line:\n%s\ndynareOBC does not support ==.', line );
     end
     if ~isempty( strfind( line, '!=' ) )
-        error( 'Error processing line:\n%s\ndynareOBC does not support !=.', line );
+        error( 'dynareOBC:UnsupportedComparison', 'Error processing line:\n%s\ndynareOBC does not support !=.', line );
     end
     [ tagstart, tagend ] = regexp( line, '^\[.*?\]', 'once' );
     tag = '';
@@ -25,7 +25,7 @@ function [ FileLines, TempCounter, MaxCounter, write_i ] = ProcessModelLines( li
         % convert inequalities into the sign function
         [ ineqindex, ineqindexend ] = regexp( side, '(\<|\>)\=?', 'once' );
         while ~isempty( ineqindex )
-            warning( 'Inequalities are only poorly supported. There is no difference between < and <= or > and >= as we assume they never hold exactly. Furthermore, they are implemented using the sign function, which is inaccurate, see later warnings for further details.' );
+            warning( 'dynareOBC:LimitedInequalitySupport', 'Inequalities are only poorly supported. There is no difference between < and <= or > and >= as we assume they never hold exactly. Furthermore, they are implemented using the sign function, which is inaccurate, see later warnings for further details.' );
             [ left, right ] = GetScope( side, ineqindex );
             if side( ineqindex ) == '>'
                 signs = '+-';
@@ -39,7 +39,7 @@ function [ FileLines, TempCounter, MaxCounter, write_i ] = ProcessModelLines( li
         % convert the sign function into the abs function
         funcindex = regexp( side, '(?<!\w)sign(?!\w)', 'once' );
         while ~isempty( funcindex )
-            warning( 'The sign function is poorly supported. It is implemented as x/abs(x), where abs(x) is accurately implemented via our algorithm. However, a low-dynareOBC_.Order perturbation approximation to x/y will generally be quite inaccurate away from steady-state, which means that our approximation to sign(x) will also be quite inaccurate.' );
+            warning( 'dynareOBC:LimitedSignSupport', 'The sign function is poorly supported. It is implemented as x/abs(x), where abs(x) is accurately implemented via our algorithm. However, a low-order perturbation approximation to x/y will generally be quite inaccurate away from steady-state, which means that our approximation to sign(x) will also be quite inaccurate.' );
             startindex = funcindex + 5;
             endindex = ScopeSearch( side, startindex, 1 );
             FileLines = [ FileLines(1:write_i), FileLines(write_i:end) ];
