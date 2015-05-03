@@ -1,4 +1,4 @@
-function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
+function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, EnforceRequirementsAndGeneratePathFunctor )
 	%% Dynare pre-processing
 
 	skipline( );
@@ -124,6 +124,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 	end
 
 	%% Preparation for the final runs
+    
+    if dynareOBC.NumberOfMax > 0
+        EnforceRequirementsAndGeneratePathFunctor( );
+        dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
+    end
+    dynareOBC = orderfields( dynareOBC );
 
 	% Find the state variables, endo variables and shocks
 	dynareOBC.StateVariables = { };
@@ -198,6 +204,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC )
 
 	%% Global polynomial approximation
 
+    if dynareOBC.NumberOfMax <= 0
+        dynareOBC.Global = false;
+    end
 	if dynareOBC.Global
         skipline( );
         disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );

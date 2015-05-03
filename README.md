@@ -151,6 +151,8 @@ Note:
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
 
  * **For debugging**
+    * Bypass
+         Ignores all non-differentiabilities in the model.
     * NoCleanup
          Prevents the deletion of dynareOBC's temporary files. Useful for debugging.
 

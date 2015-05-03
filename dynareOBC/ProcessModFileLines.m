@@ -85,6 +85,10 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLi
             i = i + 1;
         end
     end
+    if dynareOBC.Bypass
+        dynareOBC.NumberOfMax = 0;
+        dynareOBC.MaxFuncIndices = [];
+    end
 
     if Indices.ModelStart == 0
         error( 'dynareOBC:MissingBlock', 'Start of model block was not found.' );

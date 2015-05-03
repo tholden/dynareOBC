@@ -51,11 +51,19 @@ function dynareOBC( InputFileName, varargin )
 		return;
 	end
 
-	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
+	addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+    
+    if return_dynare_version( dynare_version ) < 4.4
+        error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
+    end
+    
+	addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    addpath( fileparts( which( 'dynare' ) ) );
 
-	CompileMEX( dynareOBCPath );
+    CompileMEX( dynareOBCPath );
 
 	if strcmpi( InputFileName, 'addpath' )
+    	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
 		return;
 	end
 
@@ -96,6 +104,7 @@ function dynareOBC( InputFileName, varargin )
     end
 
     if strcmpi( InputFileName, 'TestSolvers' )
+    	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
         yalmiptest;
         if ~isempty( dynareOBC_.MILPSolver )
             try
@@ -113,7 +122,7 @@ function dynareOBC( InputFileName, varargin )
         return;
     end
 
-    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_ );
+    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} ) );
     
 	%% Cleaning up
 
