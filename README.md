@@ -114,7 +114,8 @@ Note:
     * MLVSimulationMode=0|1|2|3 (default: 0)
          If MLVSimulationMode=0, dynareOBC does not attempt to simulate the path of model local variables.
          If MLVSimulationMode>0, dynareOBC generates simulated paths and average impulse responses for each model local variable
-         (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking.
+         (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note that to
+         generate impulse responses, you must enable the SlowIRFs option.
          If MLVSimulationMode>1, dynareOBC additionally generates simulated paths and average impulse responses for each
          non-constant MLV, used in the model, containing forward looking terms.
          If MLVSimulationMode=2, then dynareOBC takes the expectation of each forward looking MLV using sparse cubature.
