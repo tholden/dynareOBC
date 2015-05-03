@@ -105,7 +105,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 	global oo_ M_
 	MaxArgValues = dynareOBCTemp2_GetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
 	if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
-        keyboard;
 		error( 'dynareOBC:JustBinding', 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
 	end
 
