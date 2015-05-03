@@ -1,4 +1,4 @@
-function fx = GlobalModelSolutionInternal( x, M, options, oo, dynareOBC )
+function [ fx, M, oo ] = GlobalModelSolutionInternal( x, M, options, oo, dynareOBC )
 
     if any( ~isfinite( x ) )
         error( 'dynareOBC:GlobalBadParameters', 'Non-finite parameters were passed to GlobalModelSolutionInternal.' );

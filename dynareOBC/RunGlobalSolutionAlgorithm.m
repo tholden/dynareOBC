@@ -1,4 +1,4 @@
-function GlobalApproximationParameters = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC )
+function [ GlobalApproximationParameters, MaxArgValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC )
   
     skipline( );
     disp( 'Generating the intermediate mod file.' );
@@ -29,7 +29,21 @@ function GlobalApproximationParameters = RunGlobalSolutionAlgorithm( basevarargi
     dynare( 'dynareOBCTempG.mod', basevarargin{:} );
     
     global M_ oo_
+    MaxArgPattern = MaxArgValues( :, 1 ) < MaxArgValues( :, 2 );
+    
     options_.solve_tolf = eps;
-    GlobalApproximationParameters = GlobalModelSolution( M_, options_, oo_, dynareOBC );
+    [ GlobalApproximationParameters, M, oo ] = GlobalModelSolution( M_, options_, oo_, dynareOBC );
+    
+    Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTempG_static' );
+    MaxArgValues = dynareOBCTempGetMaxArgValues( oo.steady_state, [ oo.exo_steady_state; oo.exo_det_steady_state ], M.params );
+    if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
+        error( 'dynareOBC:JustBinding', 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
+    end
+    
+    NewMaxArgPattern = MaxArgValues( :, 1 ) < MaxArgValues( :, 2 );
+    if any( NewMaxArgPattern ~= MaxArgPattern )
+        error( 'dynareOBC:UnhandledCase', 'Please e-mail your .mod file to thomas.holden@gmail.com and I will write the code to handle this case.' );
+        keyboard;
+    end
     
 end

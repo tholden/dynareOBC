@@ -1,4 +1,4 @@
-function x = GlobalModelSolution( M, options, oo, dynareOBC )
+function [ x, M, oo ] = GlobalModelSolution( M, options, oo, dynareOBC )
 
     skipline( );
     disp( 'Beginning to solve the fixed point problem.' );
@@ -53,6 +53,24 @@ function x = GlobalModelSolution( M, options, oo, dynareOBC )
         rehash;
     catch
         warning( 'dynareOBC:PatchDynareSolve', 'Error patching dynare_solve to reenable output. We recommend you do this manually instead.' );
+    end
+    
+    if any( ~isfinite( x ) )
+        error( 'dynareOBC:GlobalBadParameters', 'Non-finite parameters were returned from the solution procedure.' );
+    end
+    
+    M.params( PI ) = x;
+    
+    Info = -1;
+    try
+        [ dr, Info, M, ~, oo ] = resol( 0, M, options, oo );
+        oo.dr = dr;
+        oo.steady_state = oo.dr.ys;
+    catch
+    end
+    
+    if Info ~= 0
+        error( 'dynareOBC:GlobalBadFinalPoint', 'Failed to solve the model at the final point.' );
     end
     
     x = reshape( x, [ size( dynareOBC.StateVariableAndShockCombinations, 1 ), dynareOBC.NumberOfMax ] );
