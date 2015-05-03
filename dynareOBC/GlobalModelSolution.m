@@ -29,7 +29,7 @@ function x = GlobalModelSolution( M, options, oo, dynareOBC )
         dynare_solve_file = fopen( dynare_solve_path, 'w' );
         fprintf( dynare_solve_file, '%s', dynare_solve_txt );
         fclose( dynare_solve_file );
-        rehash path;
+        rehash;
     catch
         warning( 'dynareOBC:PatchDynareSolve', 'Error patching dynare_solve to disable output. We recommend you do this manually instead.' );
     end
@@ -50,7 +50,7 @@ function x = GlobalModelSolution( M, options, oo, dynareOBC )
         dynare_solve_file = fopen( dynare_solve_path, 'w' );
         fprintf( dynare_solve_file, '%s', dynare_solve_txt );
         fclose( dynare_solve_file );
-        rehash path;
+        rehash;
     catch
         warning( 'dynareOBC:PatchDynareSolve', 'Error patching dynare_solve to reenable output. We recommend you do this manually instead.' );
     end

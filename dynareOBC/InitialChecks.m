@@ -92,7 +92,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                     end
                 end
             end
-            rehash path;
+            rehash;
         catch
         end
     end
