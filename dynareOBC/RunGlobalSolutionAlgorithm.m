@@ -1,7 +1,7 @@
 function [ GlobalApproximationParameters, MaxArgValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC )
   
-    RunLoop = true;
-    while RunLoop
+    global M_ oo_ options_
+    while true
         skipline( );
         disp( 'Generating the intermediate mod file.' );
         skipline( );
@@ -26,11 +26,9 @@ function [ GlobalApproximationParameters, MaxArgValues ] = RunGlobalSolutionAlgo
         disp( 'Calling dynare on the intermediate mod file.' );
         skipline( );
 
-        global options_
         options_.solve_tolf = eps;
         dynare( 'dynareOBCTempG.mod', basevarargin{:} );
 
-        global M_ oo_
         MaxArgPattern = MaxArgValues( :, 1 ) < MaxArgValues( :, 2 );
 
         options_.solve_tolf = eps;
@@ -49,7 +47,7 @@ function [ GlobalApproximationParameters, MaxArgValues ] = RunGlobalSolutionAlgo
             PI = dynareOBC.ParameterIndices_StateVariableAndShockCombinations(:);
             M.params( PI ) = GlobalApproximationParameters(:);
         else
-            RunLoop = false;
+            break;
         end
     end
     
