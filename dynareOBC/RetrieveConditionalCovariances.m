@@ -3,7 +3,8 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
     else
         T = dynareOBC.InternalIRFPeriods;
-        TM2 = T - 2;
+        Ts = dynareOBC.TimeToEscapeBounds;
+        TsM2 = Ts - 2;
         ns = dynareOBC.NumberOfMax;
         
         LengthXi = dynareOBC.LengthXi;
@@ -21,13 +22,13 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
         [ Ci, Cj, Cs ] = find( dynareOBC.VarianceXiSkeleton );
             
-        BCovXiB = cell( TM2, 1 );
+        BCovXiB = cell( TsM2, 1 );
         
         VarianceY1State = dynareOBC.VarianceY1State;
         B2 = dynareOBC.B2;
         
         OpenPool;
-        parfor i = 1 : TM2
+        parfor i = 1 : TsM2
             % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
             % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
             % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
@@ -49,8 +50,8 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         A2Powers = dynareOBC.A2Powers;
         LengthZ2 = size( A2Powers{1}, 1 );
         
-        VarianceZ2 = cell( TM2, 1 );
-        parfor k = 1 : TM2
+        VarianceZ2 = cell( TsM2, 1 );
+        parfor k = 1 : TsM2
             VarianceZ2{ k } = sparse( LengthZ2, LengthZ2 );
             for i = 1 : k
                 CurrentVariance = A2Powers{ k - i + 1 } * BCovXiB{ i } * A2Powers{ k - i + 1 }'; %#ok<PFBNS>
@@ -65,24 +66,24 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         inv_order_var = oo.dr.inv_order_var;
         VarIndices_ZeroLowerBounded = dynareOBC.VarIndices_ZeroLowerBounded;
         
-        LengthConditionalCovarianceTemp = 0.5 * TM2 * ( TM2 + 1 );
+        LengthConditionalCovarianceTemp = 0.5 * TsM2 * ( TsM2 + 1 );
         ConditionalCovarianceTemp = cell( LengthConditionalCovarianceTemp, 1 );
         
         parfor i = 1 : LengthConditionalCovarianceTemp
             p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
             q = i - 0.5 * p * ( p - 1 );
-            pWeight = 0.5 * ( 1 + cos( pi * ( p - 1 ) / TM2 ) );
-            qWeight = 0.5 * ( 1 + cos( pi * ( q - 1 ) / TM2 ) );
+            pWeight = 0.5 * ( 1 + cos( pi * ( p - 1 ) / TsM2 ) );
+            qWeight = 0.5 * ( 1 + cos( pi * ( q - 1 ) / TsM2 ) );
             CurrentCov = A2Powers{ p - q + 1 } * VarianceZ2{ q }; %#ok<PFBNS>
             ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
             ConditionalCovarianceTemp{i} = ( pWeight * qWeight * 0.5 ) * ( ReducedCov + ReducedCov' );
         end
-        for p = 1 : TM2
+        for p = 1 : TsM2
             for q = 1 : p
                 i = 0.5 * p * ( p - 1 ) + q;
                 ConditionalCovariance( 1 + p + StepIndices, 1 + q + StepIndices ) = ConditionalCovarianceTemp{i};
             end
-            for q = (p+1) : TM2
+            for q = (p+1) : TsM2
                 i = 0.5 * q * ( q - 1 ) + p;
                 ConditionalCovariance( 1 + p + StepIndices, 1 + q + StepIndices ) = ConditionalCovarianceTemp{i}';
             end
