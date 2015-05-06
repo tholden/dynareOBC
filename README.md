@@ -58,10 +58,11 @@ Note:
          increasing the speed of long simulations, or those involving integration.
     * TimeToEscapeBounds=INTEGER (default: 8)
          The number of periods following a shock after which the model is expected to be away from any occasionally binding
-         constraints. This also controls the number of periods of uncertainty over which we integrate.
+         constraints.
     * TimeToReturnToSteadyState=INTEGER (default: 16)
          The number of periods in which to verify that the constraints are not being violated. If this is lower than the
-         requested number of IRF periods, then that value will be used instead.
+         requested number of IRF periods, then that value will be used instead. This also controls the number of periods of
+         uncertainty over which we integrate.
     * Omega=FLOAT (default: 2)
          The tightness of the constraint on the shadow shocks. If this is large, solutions with shadow shocks close to zero will
          be returned when there are multiple solutions.

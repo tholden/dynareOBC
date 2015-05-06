@@ -67,10 +67,9 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
     
     if dynareOBC.NumberOfMax > 0
         if dynareOBC.Global
-            Tss = dynareOBC.TimeToEscapeBounds;
-            TssM2 = Tss - 2;
-            pM1 = ( -1 : ( T - 2 ) )';
-            pWeight = 0.5 * ( 1 + cos( pi * max( 0, min( TssM2, pM1 ) ) / TssM2 ) );
+            TM2 = T - 2;
+            pM1 = ( -1 : TM2 )';
+            pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
         end
 
         Shock = zeros( M.exo_nbr, 1 );
@@ -112,11 +111,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 UnconstrainedReturnPath = ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )';
                 if dynareOBC.Global
                     NewUnconstrainedReturnPath = vec( bsxfun( @times, pWeight, ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + bsxfun( @times, 1 - pWeight, UnconstrainedReturnPath ) );
-                    UnconstrainedReturnPathDifference = ( NewUnconstrainedReturnPath - vec( UnconstrainedReturnPath ) );
-                    yExtra = dynareOBC.MMatrix \ UnconstrainedReturnPathDifference;
-                    if max( abs( dynareOBC.MMatrix * yExtra - UnconstrainedReturnPathDifference ) ) > sqrt( sqrt( eps ) )
-                        error( 'dynareOBC:PathMappingFailure', 'Failure mapping the short run unconstrained path to the long run one.' );
-                    end
+                    yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - vec( UnconstrainedReturnPath ) );
                     UnconstrainedReturnPath = NewUnconstrainedReturnPath;
                 else
                     UnconstrainedReturnPath = vec( UnconstrainedReturnPath );
