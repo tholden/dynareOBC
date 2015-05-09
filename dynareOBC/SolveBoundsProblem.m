@@ -42,12 +42,12 @@ function y = SolveBoundsProblem( q, dynareOBC )
 
     Constraints = [ 0 <= y, y <= z, 0 <= alpha * q + M * y, alpha * qs + Ms * y <= omega * ( 1 - z ) ]; %, dynareOBC.IntegerTolerance <= alpha, alpha * Norm_qs <= 1 + NormMs ];
     Objective = -alpha;
-    diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
-    if diagnostics.problem ~= 0
-        error( 'dynareOBC:FailedToSolve', 'This should never happen. Double-check your dynareOBC install, or try a different solver.' );
+    Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
+    if Diagnostics.problem ~= 0
+        error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     if abs( value( alpha ) ) < eps
-        error( 'dynareOBC:Infeasible', 'Infeasible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
+        error( 'dynareOBC:InfeasibleMILPProblem', 'Infeasible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
     end
     if value( z( end ) )
         warning( 'dynareOBC:Inaccuracy', 'The constraint binds in the final period. This is indicative of TimeToEscapeBounds being too low.' );

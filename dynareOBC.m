@@ -56,6 +56,10 @@ function dynareOBC( InputFileName, varargin )
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
+
+	if ~ismember( 'noclearall', varargin )
+		evalin( 'base', 'clear all;' );
+	end
     
 	addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
@@ -65,10 +69,6 @@ function dynareOBC( InputFileName, varargin )
 	if strcmpi( InputFileName, 'addpath' )
     	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
 		return;
-	end
-
-	if ~ismember( 'noclearall', varargin )
-		evalin( 'base', 'clear all;' );
 	end
 
 	global dynareOBC_;
@@ -109,6 +109,13 @@ function dynareOBC( InputFileName, varargin )
         if ~isempty( dynareOBC_.MILPSolver )
             try
                 yalmiptest( dynareOBC_.MILPSolver );
+            catch Error
+                warning( 'dynareOBC:TestSolversError', Error.message );
+            end
+        end
+        if ~isempty( dynareOBC_.LPSolver )
+            try
+                yalmiptest( dynareOBC_.LPSolver );
             catch Error
                 warning( 'dynareOBC:TestSolversError', Error.message );
             end
@@ -274,7 +281,7 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
-    
+        
 	addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
 end

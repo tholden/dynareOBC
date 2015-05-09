@@ -26,7 +26,7 @@ function [ fx, M, oo ] = GlobalModelSolutionInternal( x, M, options, oo, dynareO
     nboth = M.nboth;
     nfwrd = M.nfwrd;
     
-    select_obs = [ dynareOBC.VarIndices_StateVariableAndShockCombinations; dynareOBC.VarIndices_RawZeroLowerBounded' ];
+    select_obs = [ dynareOBC.VarIndices_StateVariableAndShockCombinations; dynareOBC.VarIndices_ZeroLowerBounded' ];
     select_obs = oo.dr.inv_order_var( select_obs ); 
     
 	select_state = ( nstatic + 1 ):( nstatic + nspred );

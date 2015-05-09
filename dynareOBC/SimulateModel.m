@@ -70,6 +70,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
             TM2 = T - 2;
             pM1 = ( -1 : TM2 )';
             pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
+            ErrorWeight = repmat( 1 - pWeight, 1, dynareOBC.NumberOfMax );
         end
 
         Shock = zeros( M.exo_nbr, 1 );
@@ -104,18 +105,11 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 ReturnPath = ReturnStruct.total;        
 
                 pseudo_y = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
-                for i = [ dynareOBC.VarIndices_ZeroLowerBounded dynareOBC.VarIndices_ZeroLowerBoundedShortRun ]
+                for i = [ dynareOBC.VarIndices_ZeroLowerBounded dynareOBC.VarIndices_ZeroLowerBoundedLongRun ]
                     ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * pseudo_y )';
                 end
 
-                UnconstrainedReturnPath = ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )';
-                if dynareOBC.Global
-                    NewUnconstrainedReturnPath = vec( bsxfun( @times, pWeight, ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedShortRun, : )' ) + bsxfun( @times, 1 - pWeight, UnconstrainedReturnPath ) );
-                    yExtra = ( dynareOBC.MMatrix ) \ ( NewUnconstrainedReturnPath - vec( UnconstrainedReturnPath ) );
-                    UnconstrainedReturnPath = NewUnconstrainedReturnPath;
-                else
-                    UnconstrainedReturnPath = vec( UnconstrainedReturnPath );
-                end
+                UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
 
                 y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
                 [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
@@ -123,9 +117,10 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 if ~dynareOBC.NoCubature
                     y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
                 end
-                
+
+                % TODO
                 if dynareOBC.Global
-                    y = y + yExtra;
+                    y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
                 end
 
                 y = y + pseudo_y;

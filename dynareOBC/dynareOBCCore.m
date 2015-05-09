@@ -127,6 +127,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if dynareOBC.NumberOfMax > 0
         EnforceRequirementsAndGeneratePathFunctor( );
         dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
+        dynareOBC = SetDefaultOption( dynareOBC, 'LPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.LPSolver ) );
     end
     dynareOBC = orderfields( dynareOBC );
 
@@ -223,8 +224,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 	skipline( );
 	disp( 'Generating the final mod file.' );
 	skipline( );
-
+    
 	dynareOBC.InternalIRFPeriods = max( [ dynareOBC.IRFPeriods, dynareOBC.TimeToEscapeBounds, dynareOBC.TimeToReturnToSteadyState ] );
+    
+    if dynareOBC.Global
+        dynareOBC.OriginalTimeToEscapeBounds = dynareOBC.TimeToEscapeBounds;
+        dynareOBC.TimeToEscapeBounds = dynareOBC.InternalIRFPeriods;
+    end
+
 	dynareOBC = orderfields( dynareOBC );
 
 	% Insert new variables and equations etc.

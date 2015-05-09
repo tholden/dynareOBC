@@ -4,8 +4,9 @@ dynareOBC: A toolkit for handling occasionally binding constraints with Dynare, 
 Installation
 ------------
 
-First, clone the toolkit, by pressing the clone button on: https://github.com/tholden/dynareOBC GitHub will then download the
-toolkit and its dependencies. Note that **the "download ZIP" button will not give you these dependencies**.
+First, clone the toolkit, by pressing the clone button on: https://github.com/tholden/dynareOBC
+GitHub will then download the toolkit and its dependencies. Note that **the "download ZIP" button will not give you these
+dependencies**.
 
 Then, add the toolkit to your MATLAB path.
 
@@ -58,7 +59,8 @@ Note:
          increasing the speed of long simulations, or those involving integration.
     * TimeToEscapeBounds=INTEGER (default: 8)
          The number of periods following a shock after which the model is expected to be away from any occasionally binding
-         constraints.
+         constraints. Note that when a global solution is requested, this value is ignored, and the maximum of the requested
+         number of IRF periods, and the value of TimeToReturnToSteadyState, is used instead.
     * TimeToReturnToSteadyState=INTEGER (default: 16)
          The number of periods in which to verify that the constraints are not being violated. If this is lower than the
          requested number of IRF periods, then that value will be used instead. This also controls the number of periods of
@@ -111,6 +113,8 @@ Note:
          response ignoring the bound entirely.
           * Resume
                Resumes an interrupted solution iteration, when using global.
+          * LPSolver
+               Specifies the solver to use for the linear programming problem that is solved by the global algorithm.
     * MLVSimulationMode=0|1|2|3 (default: 0)
          If MLVSimulationMode=0, dynareOBC does not attempt to simulate the path of model local variables.
          If MLVSimulationMode>0, dynareOBC generates simulated paths and average impulse responses for each model local variable

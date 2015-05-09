@@ -6,9 +6,9 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
     
     dynareOBC.VarIndices_ZeroLowerBounded = zeros( 1, ns );
     if dynareOBC.Global
-        dynareOBC.VarIndices_ZeroLowerBoundedShortRun = zeros( 1, ns );
+        dynareOBC.VarIndices_ZeroLowerBoundedLongRun = zeros( 1, ns );
     else
-        dynareOBC.VarIndices_ZeroLowerBoundedShortRun = [];
+        dynareOBC.VarIndices_ZeroLowerBoundedLongRun = [];
     end
     dynareOBC.VarIndices_Sum = zeros( T, ns );
     dynareOBC.VarExoIndices_DummyShadowShocks  = zeros( T, ns );
@@ -31,12 +31,14 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         CurrentNumVar = CurrentNumVar + 1;
         dynareOBC.VarIndices_ZeroLowerBounded( i ) = CurrentNumVar;
         
-        PolynomialApproximationString = '';
+        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
+        ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', BoundedVarName, SteadyStateBoundedVar );
+
         if dynareOBC.Global
-            ShortRunBoundedVarName = [ 'dynareOBCZeroLowerBoundedShortRun' string_i ];
-            varString = [ varString ' ' ShortRunBoundedVarName ];
+            LongRunBoundedVarName = [ 'dynareOBCZeroLowerBoundedLongRun' string_i ];
+            varString = [ varString ' ' LongRunBoundedVarName ];
             CurrentNumVar = CurrentNumVar + 1;
-            dynareOBC.VarIndices_ZeroLowerBoundedShortRun( i ) = CurrentNumVar;
+            dynareOBC.VarIndices_ZeroLowerBoundedLongRun( i ) = CurrentNumVar;
             PolynomialApproximationString = '';
             for k = 1 : size( dynareOBC.StateVariableAndShockCombinations, 1 )
                 StateVariableAndShockCombination = dynareOBC.StateVariableAndShockCombinations( k, : );
@@ -50,13 +52,16 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
                     end
                 end
             end
-            ToInsertInModelAtEnd{ end + 1 } = [ ShortRunBoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
+            ToInsertInModelAtEnd{ end + 1 } = [ LongRunBoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i PolynomialApproximationString '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
+            ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e%s;', LongRunBoundedVarName, SteadyStateBoundedVar, regexprep( PolynomialApproximationString, '\([+-]?\d+\)', '' ) );
+        end
+       
+        if dynareOBC.Global
+            BoundedVarName = LongRunBoundedVarName;
         end
         
-        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i PolynomialApproximationString '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
         FileLines{ dynareOBC.MaxFuncIndices( i ) } = [ '#dynareOBCMaxFunc' string_i '=dynareOBCMaxArg' MinLetter string_i '+' BoundedVarName ';' ];
-        ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', BoundedVarName, SteadyStateBoundedVar );
-
+ 
         for j = 0 : ( T - 1 )
             string_j = int2str( j );
             varName = [ 'dynareOBCSum' string_i '_' string_j ];

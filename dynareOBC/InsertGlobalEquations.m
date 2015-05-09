@@ -5,8 +5,8 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
     
     dynareOBC.ParameterIndices_StateVariableAndShockCombinations = zeros( nSVASC, ns );
 
+    dynareOBC.VarIndices_ZeroLowerBoundedLongRun = zeros( 1, ns );
     dynareOBC.VarIndices_ZeroLowerBounded = zeros( 1, ns );
-    dynareOBC.VarIndices_RawZeroLowerBounded = zeros( 1, ns );
     dynareOBC.VarIndices_StateVariableAndShockCombinations = zeros( nSVASC, 1 );
     
     CombinationNames = cell( nSVASC, 1 );
@@ -50,15 +50,15 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
             SteadyStateBoundedVar = MaxArgValues( i, 2 ) - MaxArgValues( i, 1 );
         end
         
+        LongRunBoundedVarName = [ 'dynareOBCZeroLowerBoundedLongRun' string_i ];
+        CurrentNumVar = CurrentNumVar + 1;
+        dynareOBC.VarIndices_ZeroLowerBoundedLongRun( i ) = CurrentNumVar;
+        
         BoundedVarName = [ 'dynareOBCZeroLowerBounded' string_i ];
         CurrentNumVar = CurrentNumVar + 1;
         dynareOBC.VarIndices_ZeroLowerBounded( i ) = CurrentNumVar;
-        
-        RawBoundedVarName = [ 'dynareOBCRawZeroLowerBounded' string_i ];
-        CurrentNumVar = CurrentNumVar + 1;
-        dynareOBC.VarIndices_RawZeroLowerBounded( i ) = CurrentNumVar;
 
-        ZLBEquation = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ];
+        ZLBEquation = [ LongRunBoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ];
 
         for k = 1 : nSVASC
             parameterName = [ 'dynareOBCGlobalParam' string_i '_' CombinationNames{k} ];
@@ -70,12 +70,12 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         end
         
         ToInsertInModelAtEnd{ end + 1 } = [ ZLBEquation ';' ]; %#ok<*AGROW>
-        ToInsertInModelAtEnd{ end + 1 } = [ RawBoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ';' ]; %#ok<*AGROW>
-        FileLines{ dynareOBC.MaxFuncIndices( i ) } = [ '#dynareOBCMaxFunc' string_i '=dynareOBCMaxArg' MinLetter string_i '+' BoundedVarName ';' ];
+        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ';' ]; %#ok<*AGROW>
+        FileLines{ dynareOBC.MaxFuncIndices( i ) } = [ '#dynareOBCMaxFunc' string_i '=dynareOBCMaxArg' MinLetter string_i '+' LongRunBoundedVarName ';' ];
+        ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', LongRunBoundedVarName, SteadyStateBoundedVar );
         ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', BoundedVarName, SteadyStateBoundedVar );
-        ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', RawBoundedVarName, SteadyStateBoundedVar );
 
-        varString = [ 'var ' BoundedVarName ' ' RawBoundedVarName ';' ];
+        varString = [ 'var ' LongRunBoundedVarName ' ' BoundedVarName ';' ];
         if isempty( parametersString )
             ToInsertBeforeModel = [ ToInsertBeforeModel { varString } ];
         else

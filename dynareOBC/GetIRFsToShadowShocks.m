@@ -58,9 +58,15 @@ function dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC )
     end
     
     MMatrix = zeros( ns * T, ns * Ts );
+    MMatrixLongRun = zeros( ns * T, ns * Ts );
     
 	% Compute irfs
     simulation_first = zeros( M.endo_nbr, T );
+    
+    if dynareOBC.Global
+        VarIndicesLongRun = dynareOBC.VarIndices_ZeroLowerBoundedLongRun;
+    end
+    VarIndices = dynareOBC.VarIndices_ZeroLowerBounded;
     
     for l = 1 : ns
         for k = 1 : Ts
@@ -77,8 +83,14 @@ function dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC )
             simulation_first = simulation_first( oo.dr.inv_order_var, : );
             
             for j = 1 : ns % j and l here correspond to the notation in the paper
-                IRF = simulation_first( dynareOBC.VarIndices_ZeroLowerBounded( j ), : )';
+                IRF = simulation_first( VarIndices( j ), : )';
                 MMatrix( ( (j-1)*T + 1 ):( j * T ), (l-1)*Ts + k ) = IRF;
+            end
+            if dynareOBC.Global
+                for j = 1 : ns % j and l here correspond to the notation in the paper
+                    IRFLongRun = simulation_first( VarIndicesLongRun( j ), : )';
+                    MMatrixLongRun( ( (j-1)*T + 1 ):( j * T ), (l-1)*Ts + k ) = IRFLongRun;
+                end
             end
             for j = 1 : M.endo_nbr % j and l here correspond to the notation in the paper
                 IRF = simulation_first( j, : )';
@@ -89,6 +101,9 @@ function dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC )
     %% Save the new matrices
     dynareOBC.MSubMatrices = MSubMatrices;
     dynareOBC.MMatrix = MMatrix;
+    if dynareOBC.Global
+        dynareOBC.MMatrixLongRun = MMatrixLongRun;
+    end
 
     sIndices = vec( bsxfun( @plus, (1:Ts)', 0:T:((ns-1)*T) ) )';
     dynareOBC.sIndices = sIndices;

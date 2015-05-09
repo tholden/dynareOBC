@@ -28,7 +28,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                     ptestVal = -1;
                 end
             else
-                disp( 'Testing whether M is a P-matrix without using the non-MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
+                disp( 'Testing whether M is a P-matrix using the non-MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
                 if ptest( Ms )
                     ptestVal = 1;
                 else
