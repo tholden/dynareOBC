@@ -1,13 +1,13 @@
 function y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, ErrorWeight, dynareOBC )
     DesiredReturnPath = UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * y;
     DesiredReturnPath = vec( bsxfun( @times, pWeight, reshape( DesiredReturnPath, size( UnconstrainedReturnPathLongRun ) ) ) + bsxfun( @times, 1 - pWeight, UnconstrainedReturnPathLongRun ) );
-    y = sdpvar( size( y, 1 ), size( y, 2 ) );
+    y = sdpvar( length( y ), 1 );
     ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
     ConstrainedReturnPathShortRun = UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * y;
     Error = ConstrainedReturnPathLongRun - DesiredReturnPath;
     Error = reshape( Error, size( UnconstrainedReturnPathLongRun ) );
-    lambdas = sdpvar( size( Error, 1 ), size( Error, 2 ) );
-    kappas = sdpvar( size( y, 1 ), size( y, 2 ) );
+    lambdas = sdpvar( size( Error, 1 ), size( Error, 2 ), 'full' );
+    kappas = sdpvar( length( y ), 1 );
     mus = sdpvar( size( ConstrainedReturnPathLongRun, 1 ), 1 );
     Constraints = [ 0 <= lambdas, 0 <= kappas, 0 <= mus, Error <= lambdas .* ErrorWeight, -Error <= lambdas .* ErrorWeight, ConstrainedReturnPathLongRun >= -mus, y >= ConstrainedReturnPathShortRun - ConstrainedReturnPathLongRun - kappas ];
     Diagnostics = optimize( Constraints, sum( lambdas(:) ) + sum( kappas(:) ), dynareOBC.LPOptions );
