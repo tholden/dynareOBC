@@ -15,6 +15,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
         pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
         ErrorWeight = repmat( 1 - pWeight, 1, dynareOBC.NumberOfMax );
     else
+        ErrorWeight = [];
         pWeight = [];
     end
     
