@@ -14,11 +14,13 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
         pM1 = ( -1 : TM2 )';
         pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
         ErrorWeight = repmat( 1 - pWeight, 1, dynareOBC.NumberOfMax );
+    else
+        pWeight = [];
     end
     
     if dynareOBC.Global
         Shock = zeros( M.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
-        yGlobal = FastIRFsInternal( Shock, 'global-offset',  pWeight, ErrorWeight, M, options, oo, dynareOBC, [] );
+        yGlobal = FastIRFsInternal( Shock, 'global-offset', pWeight, ErrorWeight, M, options, oo, dynareOBC, [] );
         GlobalOffset = dynareOBC.MMatrixLongRun * yGlobal;
     else
         GlobalOffset = [];
@@ -28,7 +30,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
         Shock = zeros( M.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
         Shock(:,1) = dynareOBC.ShockScale * cs( M.exo_names_orig_ord, i );
         
-        [ y, TempIRFStruct ] = FastIRFsInternal( Shock, dynareOBC.Shocks{i},  pWeight, ErrorWeight, M, options, oo, dynareOBC, GlobalOffset );
+        [ y, TempIRFStruct ] = FastIRFsInternal( Shock, dynareOBC.Shocks{i}, pWeight, ErrorWeight, M, options, oo, dynareOBC, GlobalOffset );
         
         TempIRFOffsets = repmat( dynareOBC.Mean, 1, T );
         
