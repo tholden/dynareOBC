@@ -48,9 +48,11 @@ function [ GlobalApproximationParameters, MaxArgValues, MaxArgPattern, PI ] = Ru
         MaxArgPattern = MaxArgValues( :, 1 ) < MaxArgValues( :, 2 );
 
         options_.solve_tolf = eps;
+        [ GlobalApproximationParameters, M, oo ] = GlobalModelSolution( M_, options_, oo_, dynareOBC );
         old_M_ = M_;
         old_oo_ = oo_;
-        [ GlobalApproximationParameters, M_, oo_ ] = GlobalModelSolution( M_, options_, oo_, dynareOBC ); %#ok<ASGLU>
+        M_ = M; %#ok<NASGU>
+        oo_ = oo; %#ok<NASGU>
         save_params_and_steady_state( 'dynareOBCSteady.txt' );
         M_ = old_M_;
         oo_ = old_oo_;
