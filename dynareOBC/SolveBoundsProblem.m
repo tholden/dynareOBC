@@ -32,6 +32,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
     
     Norm_qs = max( abs( qs ) );
     qs = qs ./ Norm_qs;
+    q = q ./ Norm_qs;
 
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
@@ -40,7 +41,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
     alpha = sdpvar( 1, 1 );
     z = binvar( Ts * ns, 1 );
 
-    Constraints = [ 0 <= y, y <= z, 0 <= alpha * q + M * y, alpha * qs + Ms * y <= omega * ( 1 - z ) ]; %, dynareOBC.IntegerTolerance <= alpha, alpha * Norm_qs <= 1 + NormMs ];
+    Constraints = [ 0 <= y, y <= z, 0 <= alpha, 0 <= alpha * q + M * y, alpha * qs + Ms * y <= omega * ( 1 - z ) ]; %, dynareOBC.IntegerTolerance <= alpha, alpha * Norm_qs <= 1 + NormMs ];
     Objective = -alpha;
     Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
     if Diagnostics.problem ~= 0
