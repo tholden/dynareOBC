@@ -98,6 +98,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     global options_
     options_.solve_tolf = eps;
+    options_.solve_tolx = eps;
 	dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
 	global oo_ M_
 
@@ -213,10 +214,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         skipline( );
 
         dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
-        [ GlobalApproximationParameters, MaxArgValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
+        [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
 	else
 		dynareOBC.StateVariableAndShockCombinations = { };
 		GlobalApproximationParameters = [];
+        AmpValues = ones( dynareOBC.NumberOfMax, 1 );
 	end
 
 	%% Generating the final mod file
@@ -237,7 +239,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 	% Insert new variables and equations etc.
 
 	[ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = ...
-		InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumVar, CurrentNumVarExo, dynareOBC, GlobalApproximationParameters );
+		InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumVar, CurrentNumVarExo, dynareOBC, GlobalApproximationParameters, AmpValues );
 
 	[ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
 	[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
@@ -259,6 +261,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 	skipline( );
 
     options_.solve_tolf = eps;
+    options_.solve_tolx = eps;
 	dynare( 'dynareOBCTemp3.mod', basevarargin{:} );
 
 	skipline( );
