@@ -99,11 +99,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     global options_
     options_.solve_tolf = eps;
 	dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
-    save_params_and_steady_state( 'dynareOBCSteady.txt' );
+	global oo_ M_
 
 	Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTemp2_static' );
 
-	global oo_ M_
 	MaxArgValues = dynareOBCTempGetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
 	if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
 		error( 'dynareOBC:JustBinding', 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
@@ -244,7 +243,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 	[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
 	[ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
 	[ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
-	[ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;', 'load_params_and_steady_state( ''dynareOBCSteady.txt'' );' } ], Indices.ModelEnd + 1, FileLines, Indices );
+	[ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
 
 	%Save the result
 
@@ -261,7 +260,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     options_.solve_tolf = eps;
 	dynare( 'dynareOBCTemp3.mod', basevarargin{:} );
-    save_params_and_steady_state( 'dynareOBCSteady.txt' );
 
 	skipline( );
 	disp( 'Beginning to solve the model.' );

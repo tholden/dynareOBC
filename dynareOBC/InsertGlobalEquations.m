@@ -1,4 +1,4 @@
-function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC )
+function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, MaxArgPattern, CurrentNumParams, CurrentNumVar, dynareOBC )
     
     ns = dynareOBC.NumberOfMax;
     nSVASC = size( dynareOBC.StateVariableAndShockCombinations, 1 );
@@ -40,14 +40,23 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         string_i = int2str( i );
         parametersString = '';
         parameterValues = { };
-        if MaxArgValues( i, 1 ) > MaxArgValues( i, 2 )
+        Offset = 0;
+        if MaxArgPattern( i )
             MaxLetter = 'A';
             MinLetter = 'B';
             SteadyStateBoundedVar = MaxArgValues( i, 1 ) - MaxArgValues( i, 2 );
+            if MaxArgValues( i, 1 ) < MaxArgValues( i, 2 )
+                Offset = -SteadyStateBoundedVar;
+                SteadyStateBoundedVar = 0;
+            end
         else
             MaxLetter = 'B';
             MinLetter = 'A';
             SteadyStateBoundedVar = MaxArgValues( i, 2 ) - MaxArgValues( i, 1 );
+            if MaxArgValues( i, 1 ) > MaxArgValues( i, 2 )
+                Offset = -SteadyStateBoundedVar;
+                SteadyStateBoundedVar = 0;
+            end
         end
         
         LongRunBoundedVarName = [ 'dynareOBCZeroLowerBoundedLongRun' string_i ];
@@ -65,7 +74,11 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
             parametersString = [ parametersString ' ' parameterName ];
             CurrentNumParams = CurrentNumParams + 1;
             dynareOBC.ParameterIndices_StateVariableAndShockCombinations( k, i ) = CurrentNumParams;
-            parameterValues{ end + 1 } = [ parameterName '=0;' ];
+            if k > 1
+                parameterValues{ end + 1 } = sprintf( '%s=0;', parameterName );
+            else
+                parameterValues{ end + 1 } = sprintf( '%s=%.17e;', parameterName, Offset );
+            end
             ZLBEquation = [ ZLBEquation '+' parameterName '*dynareOBCSVASC_' CombinationNames{k} ];
         end
         
