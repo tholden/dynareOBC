@@ -40,6 +40,8 @@ function y = SolveBoundsProblem( q, dynareOBC )
     y = sdpvar( Ts * ns, 1 );
     alpha = sdpvar( 1, 1 );
     z = binvar( Ts * ns, 1 );
+    
+    % ROSEN, J.B.: 'Minimum norm solution to the linear complementarity problem', in L.J. LEIFMAN (ed.): Functional Analysis, Optimization and Mathematical Economics, Oxford Univ. Press, 1990, pp. 208-216
 
     Constraints = [ 0 <= y, y <= z, 0 <= alpha, 0 <= alpha * q + M * y, alpha * qs + Ms * y <= omega * ( 1 - z ) ]; %, dynareOBC.IntegerTolerance <= alpha, alpha * Norm_qs <= 1 + NormMs ];
     Objective = -alpha;
