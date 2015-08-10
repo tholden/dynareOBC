@@ -40,9 +40,9 @@ function dynareOBC = InitialChecks( dynareOBC )
         ptestVal = -1;
     end
     if ptestVal > 0
-        disp( 'M is a P-matrix. There is at most one solution to the model.' );
+        disp( 'M is a P-matrix. There is at most one fundamental solution to the model.' );
     elseif ptestVal < 0
-        disp( 'M is not a P-matrix. There are multiple solutions to the model in at least some states of the world.' );
+        disp( 'M is not a P-matrix. There are multiple fundamental solutions to the model in at least some states of the world.' );
         disp( 'The one returned will depend on the chosen value of omega.' );
     end
     skipline();
