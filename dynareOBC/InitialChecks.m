@@ -18,7 +18,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     if all( AbsArguments < pi - pi / size( Ms, 1 ) )
         disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
         if dynareOBC.NoPTest
-            disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple solutions.' );
+            disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple fundamental solutions.' );
         else
             if ptest_use_mex
                 disp( 'Testing whether M is a P-matrix using the MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
