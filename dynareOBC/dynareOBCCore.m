@@ -23,6 +23,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
 	[ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLines( FileLines, dynareOBC );
 
+    if dynareOBC.NumberOfMax == 0
+        dynareOBC.NoCubature = true;
+    end
+    
 	[ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
 
 	dynareOBC = orderfields( dynareOBC );
