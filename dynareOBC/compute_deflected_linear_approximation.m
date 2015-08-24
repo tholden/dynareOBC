@@ -30,7 +30,7 @@ if options.order>=2
     if isempty(options.qz_criterium)==1
         options.qz_criterium=1.000001;
     end
-    state_var =  lyapunov_symm(oo.dr.ghx(nstatic+1:nstatic+nspred,:),oo.dr.ghu(nstatic+1:nstatic+nspred,:)*M.Sigma_e*oo.dr.ghu(nstatic+1:nstatic+nspred,:)',2-options.qz_criterium,options.lyapunov_complex_threshold);
+    state_var =  lyapunov_symm(oo.dr.ghx(nstatic+1:nstatic+nspred,:),oo.dr.ghu(nstatic+1:nstatic+nspred,:)*M.Sigma_e*oo.dr.ghu(nstatic+1:nstatic+nspred,:)',2-options.qz_criterium,options.lyapunov_complex_threshold,0);
 end
 
 if options.order>=1
