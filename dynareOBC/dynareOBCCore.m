@@ -28,6 +28,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
     
 	[ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
+    if dynareOBC.OrderOverride > 0
+        dynareOBC.Order = dynareOBC.OrderOverride;
+    end
 
 	dynareOBC = orderfields( dynareOBC );
 

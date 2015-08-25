@@ -33,6 +33,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'NoStatisticalCubature', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Omega', 2-eps );
     dynareOBC = SetDefaultOption( dynareOBC, 'Order', 2 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'OrderOverride', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Replications', 50 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Resume', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SaveMacro', false );
