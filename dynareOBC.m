@@ -65,9 +65,10 @@ function dynareOBC( InputFileName, varargin )
     addpath( fileparts( which( 'dynare' ) ) );
 
     CompileMEX( dynareOBCPath );
-
+    
 	if strcmpi( InputFileName, 'addpath' )
     	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
+        dynare_config;
 		return;
 	end
 
