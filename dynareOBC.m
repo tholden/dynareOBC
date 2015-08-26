@@ -208,9 +208,9 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 			skipline( );
 
 			if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-				OptiURL = 'https://www.dropbox.com/s/p1gyhkql8kgfgb8/OptiToolbox_edu_v2.12.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
+				OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
 			else
-				OptiURL = 'https://www.dropbox.com/s/9fkc8qd892ojfhr/OptiToolbox_v2.12.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
+				OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
 			end
 			skipline( );
 			disp( 'Downloading the OptiToolbox.' );
