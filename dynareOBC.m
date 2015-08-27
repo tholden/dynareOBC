@@ -193,45 +193,57 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 	addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
 
 	if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
-		[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+		OptiString = 'OptiToolbox216';
+		
+		[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
 		if ~MKDirStatus
 			error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
 		end
 
-		if ~exist( [ dynareOBCPath '/dynareOBC/OptiToolbox/opti_Install.m' ], 'file' )
-			skipline( );
-			disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
-			disp( 'SCIP is an efficient solver which should speed up dynareOBC. However, SCIP is available under the ZLIB Academic License.' );
-			disp( 'Thus you are only allowed to retrieve SCIP for research purposes as a memor of a non-commercial and academic institution.' );
-			skipline( );
-			SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
-			skipline( );
+		% cleanup old versions
+		if exist( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'file' )
+			rmdir( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 's' );
+		end
+		if exist( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ], 'file' )
+			delete( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
+		end
+		
+		if ~exist( [ dynareOBCPath '/dynareOBC/' OptiString '/opti_Install.m' ], 'file' )
+			if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' )
+				skipline( );
+				disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
+				disp( 'SCIP is an efficient solver which should speed up dynareOBC. However, SCIP is available under the ZLIB Academic License.' );
+				disp( 'Thus you are only allowed to retrieve SCIP for research purposes as a memor of a non-commercial and academic institution.' );
+				skipline( );
+				SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
+				skipline( );
 
-			if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-				OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
-			else
-				OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
+				if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
+					OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
+				else
+					OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
+				end
+				skipline( );
+				disp( 'Downloading the OptiToolbox.' );
+				disp( 'This may take several minutes even on fast university connections.' );
+				skipline( );
+				aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
 			end
-			skipline( );
-			disp( 'Downloading the OptiToolbox.' );
-			disp( 'This may take several minutes even on fast university connections.' );
-			skipline( );
-            aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
 
 			skipline( );
-			disp( 'Extracting files from OptiToolbox.zip.' );
+			disp( [ 'Extracting files from ' OptiString '.zip.' ] );
 			skipline( );
-			unzip( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ], [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+			unzip( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
 
-			copyfile( [ dynareOBCPath '/dynareOBC/clobber/OptiToolbox/' ], [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'f' );
-			addpath( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+			copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
+			addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
 			rehash path;
-			opti_Install( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], false );
+			opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], false );
 		else
-			copyfile( [ dynareOBCPath '/dynareOBC/clobber/OptiToolbox/' ], [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'f' );
-			addpath( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ] );
+			copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
+			addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
 			rehash path;
-			opti_Install( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], true );
+			opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], true );
 		end
 	end
 
