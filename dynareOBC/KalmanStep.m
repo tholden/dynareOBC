@@ -1,4 +1,8 @@
 function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
+	Mean = [];
+	RootCovariance = [];
+	TwoNLogObservationLikelihood = NaN;
+	
     NEndo = M.endo_nbr;
     NExo = dynareOBC.OriginalNumVarExo;
     Nm = length( OldMean );
@@ -26,6 +30,9 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
             TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound ];
         end
         NewStatePoints( :, i ) = TempNewStatePoints( EndoSelectWithControls ); % TempNewStatePoints( EndoSelect );
+		if any( ~isfinite( NewStatePoints( :, i ) ) )
+			return
+		end
     end
     PredictedState = mean( NewStatePoints, 2 );
     RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
@@ -46,6 +53,9 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
             for j = 1 : No
                 NewMeasurementPoints( j, i ) = MLVs.( dynareOBC.VarList{ Observed( j ) } );
             end
+			if any( ~isfinite( NewMeasurementPoints( :, i ) ) )
+				return
+			end
         end
         PredictedMeasurements = mean( NewMeasurementPoints, 2 );
         CurlyY = 1 / sqrt( Mxc ) * bsxfun( @minus, NewMeasurementPoints, PredictedMeasurements );

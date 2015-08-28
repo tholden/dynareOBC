@@ -52,6 +52,9 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     AllEndoSelect = true( size( OldMean ) );
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, AllEndoSelect, OldMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+		if isempty( Mean )
+			return;
+		end
         Error = max( max( abs( Mean - OldMean ) ), max( max( abs( RootCovariance * RootCovariance' - OldRootCovariance * OldRootCovariance' ) ) ) );
         OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
         OldRootCovariance = RootCovariance; % 0.5 * RootCovariance + 0.5 * OldRootCovariance;
@@ -79,6 +82,9 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), EndoSelectWithControls, EndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+		if isempty( Mean )
+			return;
+		end
         Error = max( max( abs( Mean - OldMean ) ), max( max( abs( RootCovariance * RootCovariance' - OldRootCovariance * OldRootCovariance' ) ) ) );
         OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
         OldRootCovariance = RootCovariance; % 0.5 * RootCovariance + 0.5 * OldRootCovariance;
@@ -90,6 +96,9 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     TwoNLogLikelihood = 0;
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), EndoSelectWithControls, EndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+		if isempty( Mean )
+			return;
+		end
         OldMean = Mean;
         OldRootCovariance = RootCovariance;
         TwoNLogLikelihood = TwoNLogLikelihood + TwoNLogObservationLikelihood;
