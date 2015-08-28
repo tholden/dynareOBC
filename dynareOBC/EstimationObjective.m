@@ -64,7 +64,14 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
 
     if nargin < 6
         EndoSelectWithControls = ( diag( OldRootCovariance * OldRootCovariance' ) > sqrt( eps ) );
-        EndoSelect = EndoSelectWithControls & repmat( ismember( (1:NEndo)', oo.dr.state_var ), NEndoMult, 1 );
+		dr = oo.dr;
+		if isfield( dr, 'state_var' )
+			state_var = dr.state_var;
+		else
+			klag = dr.kstate( dr.kstate(:,2) <= M.maximum_lag+1, [1 2] );
+			state_var = dr.order_var( klag(:,1) );
+		end
+        EndoSelect = EndoSelectWithControls & repmat( ismember( (1:NEndo)', state_var ), NEndoMult, 1 );
     end
 
     CurrentFullMean = OldMean;
