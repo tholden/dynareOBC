@@ -64,7 +64,6 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
 
     if nargin < 6
         EndoSelectWithControls = ( diag( OldRootCovariance * OldRootCovariance' ) > sqrt( eps ) );
-		dr = oo.dr;
 		if isfield( dr, 'state_var' )
 			state_var = dr.state_var;
 		else
