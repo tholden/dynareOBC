@@ -25,7 +25,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     CurrentIndices = dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0;
     LeadIndices = dynareOBC.OriginalLeadLagIncidence( 3, : ) > 0;
     FutureValues = nan( sum( LeadIndices ), 1 );
-    NanShock = nan( NExo, 1 );
+    NanShock = nan( 1, NExo );
 
     persistent FullMean;
     persistent FullRootCovariance;
