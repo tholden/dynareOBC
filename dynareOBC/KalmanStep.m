@@ -15,7 +15,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     NewStatePoints = zeros( Nmc, Mx );
            
     % actual augmented state contains shock(+1), but we treat the shock(+1) component separately
-    parfor i = 1 : Mx
+    for i = 1 : Mx
         InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), M, options, oo, dynareOBC, false, InitialFullState, true );
         if dynareOBC.Order == 1
@@ -38,7 +38,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         InitialFullState = GetFullStateStruct( OldMean, NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant );
         LagValuesWithBounds = InitialFullState.total_with_bounds( OriginalVarSelect );
         LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
-        parfor i = 1 : Mxc
+        for i = 1 : Mxc
             Simulation = GetFullStateStruct( MeasurementCubaturePoints( 1:Nmc, i ), NEndo, EndoSelectWithControls, FullMean, dynareOBC.Order, dynareOBC.Constant );
             CurrentValuesWithBounds = Simulation.total_with_bounds( OriginalVarSelect );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
