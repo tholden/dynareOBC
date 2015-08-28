@@ -6,10 +6,10 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
     
     global oo_
     oo_ = oo;
-    if nargin < 6
+	if nargin < 6
         DisplayProgress = true;
-    end
-    if nargin < 7
+	end
+	if nargin < 7
         EndoZeroVec = zeros( M.endo_nbr, 1 );
         InitialFullState = struct;
         InitialFullState.first = EndoZeroVec;
@@ -23,49 +23,58 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
         InitialFullState.bound = EndoZeroVec;
         InitialFullState.total = EndoZeroVec;
         InitialFullState.total_with_bounds = EndoZeroVec;
-    else
+	else
         DisplayProgress = false;
-    end
-    if nargin < 8
+	end
+	if nargin < 8
         SkipMLVSimulation = false;
-    end
-    if DisplayProgress
-        p = TimedProgressBar( SimulationLength * dynareOBC.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
-    else
-        p = [];
-    end
-    if isempty( p )
-        call_back = @( x ) x;
-        call_back_arg = 0;
-    else
-        call_back = @( x ) x.progress;
-        call_back_arg = p;
-    end
-    try
-        Simulation = pruning_abounds( M, options, ShockSequence, SimulationLength, dynareOBC.Order, 'lan_meyer-gohde', 1, InitialFullState, call_back, call_back_arg );
-    catch
-        Simulation = pruning_abounds( M, options, ShockSequence, SimulationLength, dynareOBC.Order, 'lan_meyer-gohde', 1, InitialFullState );
-    end
-    if ~isempty( p )
-        p.stop;
-    end
-    StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
+	end
+	try
+		if dynareOBC.NoSparse
+			Simulation = dynareOBCTempPruningAbounds( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
+		else
+			Simulation = dynareOBCTempPruningAbounds( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+		end
+	catch
+		if DisplayProgress
+			p = TimedProgressBar( SimulationLength * dynareOBC.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
+		else
+			p = [];
+		end
+		if isempty( p )
+			call_back = @( x ) x;
+			call_back_arg = 0;
+		else
+			call_back = @( x ) x.progress;
+			call_back_arg = p;
+		end
+		try
+			Simulation = pruning_abounds( M, options, ShockSequence, SimulationLength, dynareOBC.Order, 'lan_meyer-gohde', 1, InitialFullState, call_back, call_back_arg );
+		catch
+			Simulation = pruning_abounds( M, options, ShockSequence, SimulationLength, dynareOBC.Order, 'lan_meyer-gohde', 1, InitialFullState );
+		end
+		if ~isempty( p )
+			p.stop;
+		end
+	end
+    % StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
+	StructFieldNames = fieldnames( Simulation );
     
     ghx = dynareOBC.HighestOrder_ghx;
     ghu = dynareOBC.HighestOrder_ghu;
     SelectState = dynareOBC.SelectState;
-    
-    BoundOffsetOriginalOrder = InitialFullState.bound;
-    BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
-    BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
-    BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
-    
+        
     Simulation.bound = zeros( M.endo_nbr, SimulationLength );
     
     ShadowShockSequence = zeros( dynareOBC.FullNumVarExo, SimulationLength );
     NewExoSelect = (dynareOBC.OriginalNumVarExo+1) : dynareOBC.FullNumVarExo;
     
     if dynareOBC.NumberOfMax > 0
+		BoundOffsetOriginalOrder = InitialFullState.bound;
+		BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
+		BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
+		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
+		
         if dynareOBC.Global
             TM2 = T - 2;
             pM1 = ( -1 : TM2 )';
@@ -97,7 +106,10 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 Shock( :, 1 ) = ShockSequence( :, t );
 
                 for i = 1 : length( StructFieldNames )
-                    CurrentStateWithoutBound.( StructFieldNames{ i } ) = Simulation.( StructFieldNames{ i } )( :, t );
+					CurrentFieldName = StructFieldNames{ i };
+					if ~strcmp( CurrentFieldName, 'constant' )
+						CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
+					end
                 end
                 CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
 
@@ -240,8 +252,10 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     
                     InnerInitialFullState = struct;
                     for i = 1 : length( SimulationFieldNames )
-                        SimulationFieldName = SimulationFieldNames{i};
-                        InnerInitialFullState.( SimulationFieldName ) = Simulation.( SimulationFieldName )( :, t );
+                        CurrentFieldName = SimulationFieldNames{i};
+						if ~strcmp( CurrentFieldName, 'constant' )
+							InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
+						end
                     end
                     MLVValuesWithBounds = zeros( nMLV, 1 );
                     MLVValuesWithoutBounds = zeros( nMLV, 1 );

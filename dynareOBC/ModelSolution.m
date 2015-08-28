@@ -76,6 +76,16 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     EmptySimulation = pruning_abounds( M, options, [], 0, dynareOBC.Order, 'lan_meyer-gohde', 0 );
     oo = oo_;
     dynareOBC.Constant = EmptySimulation.constant;
+	
+	if ~exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' )
+        skipline( );
+        disp( 'Attemtping to build a custom version of pruning_abounds.' );
+        skipline( );
+		try
+			Build_pruning_abounds_stripped( M, oo, dynareOBC );
+		catch
+		end
+	end
 
     if Display
         skipline( );

@@ -17,7 +17,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     NEndoMult = ( 2 .^ ( dynareOBC.Order - 1 ) ) + 1;
     Nm = NEndoMult * NEndo;
 
-    RootQ = sparse( chol( M.Sigma_e( 1:NExo, 1:NExo ), 'lower' ) );
+    RootQ = chol( M.Sigma_e( 1:NExo, 1:NExo ), 'lower' ); % sparse
 
     OriginalVarSelect = false( NEndo );
     OriginalVarSelect( 1:dynareOBC.OriginalNumVar ) = true;

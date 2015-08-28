@@ -1,6 +1,10 @@
 function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, EnforceRequirementsAndGeneratePathFunctor )
 	%% Dynare pre-processing
 
+	if exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' )
+		delete( [ 'dynareOBCTempPruningAbounds.' mexext ] );
+	end
+	
 	skipline( );
 	disp( 'Performing first dynare run to perform pre-processing.' );
 	skipline( );
@@ -68,6 +72,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 			warning( 'dynareOBC:UnsupportedMLVSimulationModeWithEstimation', 'With estimation, MLV simulation modes greater than 1 are not currently supported.' );
 		end
 		dynareOBC.MLVSimulationMode = 1;
+		dynareOBC.NoSparse = true;
 	end
 
 	if dynareOBC.MLVSimulationMode > 0 && isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
