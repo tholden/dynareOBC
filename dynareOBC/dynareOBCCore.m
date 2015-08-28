@@ -317,7 +317,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
         OptiX0 = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.01 * ones( NumObservables, 1 ) ];
-        [ ResTemp, TwoNLogLikelihood ] = dynareOBC.FMinFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
+        [ ResTemp, TwoNLogLikelihood ] = dynareOBC.FMinEstimateFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
 		disp( 'Final log-likelihood:' );
 		disp( -0.5 * TwoNLogLikelihood );
 		M_.params( dynareOBC.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
