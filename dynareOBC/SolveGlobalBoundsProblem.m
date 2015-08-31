@@ -15,7 +15,7 @@ function y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPathShortRun, Uncon
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     if max( value( lambdas(:) ) ) > sqrt( eps )
-        warning( 'dynareOBC:GlobalInaccuracy', 'Inaccruacy in generating news shocks in the global solution. Try increasing TimeToReturnToSteadyState.' );
+        warning( 'dynareOBC:GlobalInaccuracy', 'Inaccuracy in generating news shocks in the global solution. Try increasing TimeToReturnToSteadyState.' );
     end
     if max( value( kappas(:) ) ) > sqrt( eps )
         warning( 'dynareOBC:GlobalViolationSeverity1', 'The returned global solution appears to violate a condition of the form max{0,x} >= x.' );
