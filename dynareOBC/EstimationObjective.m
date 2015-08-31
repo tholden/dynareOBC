@@ -97,6 +97,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), EndoSelectWithControls, EndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
 		if isempty( Mean )
+			TwoNLogLikelihood = Inf;
 			return;
 		end
         OldMean = Mean;
