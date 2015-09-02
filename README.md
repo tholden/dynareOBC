@@ -158,6 +158,8 @@ Note:
  * **Advanced options**
     * CompileSimulationCode
          Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
+    * OrderOverride=1|2|3
+		 Overrides the order of approximation set within the call to stoch_simul.
     * Bypass
          Ignores all non-differentiabilities in the model. Useful for debugging.
     * NoCleanup
