@@ -43,16 +43,18 @@ ARGS{1}{5} = coder.typeof(0,[M.exo_nbr Inf],[0 1]);
 ARGS{1}{6} = coder.typeof(int32(0));
 ARGS{1}{7} = coder.Constant(int32(dynareOBC.Order));
 ARGS{1}{8} = struct;
+ARGS{1}{8}.bound = coder.typeof(dynareOBC.Constant);
 ARGS{1}{8}.first = coder.typeof(dynareOBC.Constant);
-ARGS{1}{8}.total = coder.typeof(dynareOBC.Constant);
+if dynareOBC.Order >= 3
+	 ARGS{1}{8}.first_sigma_2 = coder.typeof(dynareOBC.Constant);
+end
 if dynareOBC.Order >= 2
 	ARGS{1}{8}.second = coder.typeof(dynareOBC.Constant);
 	if dynareOBC.Order >= 3
 		 ARGS{1}{8}.third = coder.typeof(dynareOBC.Constant);
-		 ARGS{1}{8}.first_sigma_2 = coder.typeof(dynareOBC.Constant);
 	end
 end
-ARGS{1}{8}.bound = coder.typeof(dynareOBC.Constant);
+ARGS{1}{8}.total = coder.typeof(dynareOBC.Constant);
 ARGS{1}{8}.total_with_bounds = coder.typeof(dynareOBC.Constant); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.

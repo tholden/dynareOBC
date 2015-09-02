@@ -83,22 +83,23 @@ end
 function FullStateStruct = GetFullStateStruct( PartialState, NEndo, EndoSelect, FullMean, Order, Constant )
     CurrentState = FullMean;
     CurrentState( EndoSelect ) = PartialState;
-    FullStateStruct = struct;
+    FullStateStruct = struct( 'bound', [] );
     FullStateStruct.first = CurrentState( 1:NEndo );
-    FullStateStruct.total = FullStateStruct.first + Constant;
-    if Order >= 2
+    total = FullStateStruct.first + Constant;
+	if Order >= 2
         FullStateStruct.second = CurrentState( (NEndo+1):(2*NEndo) );
-        FullStateStruct.total = FullStateStruct.second + FullStateStruct.second;
+        total = total + FullStateStruct.second;
         if Order >= 3
             FullStateStruct.third = CurrentState( (2*NEndo+1):(3*NEndo) );
             FullStateStruct.first_sigma_2 = CurrentState( (3*NEndo+1):(4*NEndo) );
-            FullStateStruct.total = FullStateStruct.total + FullStateStruct.third + FullStateStruct.first_sigma_2;
+            total = total + FullStateStruct.third + FullStateStruct.first_sigma_2;
             FullStateStruct.bound = CurrentState( (4*NEndo+1):end );
         else
             FullStateStruct.bound = CurrentState( (2*NEndo+1):end );
         end
     else
         FullStateStruct.bound = CurrentState( (NEndo+1):end );
-    end
+	end
+	FullStateStruct.total = total;
     FullStateStruct.total_with_bounds = FullStateStruct.total + FullStateStruct.bound;
 end

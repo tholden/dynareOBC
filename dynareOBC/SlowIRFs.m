@@ -70,9 +70,13 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
                 end
             end
 
-            SimulationFieldNames = setdiff( fieldnames( Simulation ), { 'constant', 'MLVsWithBounds', 'MLVsWithoutBounds' } );
+            SimulationFieldNames = fieldnames( Simulation );
             for l = 1 : length( SimulationFieldNames )
-                StatePreShock( k ).( SimulationFieldNames{l} ) = Simulation.( SimulationFieldNames{l} )( :, Drop );
+				SimulationFieldName = SimulationFieldNames{l};
+				if strcmp( SimulationFieldName, 'constant' ) || strcmp( SimulationFieldName, 'MLVsWithBounds' ) || strcmp( SimulationFieldName, 'MLVsWithoutBounds' )
+					continue;
+				end
+                StatePreShock( k ).( SimulationFieldName ) = Simulation.( SimulationFieldName )( :, Drop );
             end
         catch Error
             warning( WarningState );

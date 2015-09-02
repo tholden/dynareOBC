@@ -12,19 +12,22 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 	if nargin < 7
         EndoZeroVec = zeros( M.endo_nbr, 1 );
         InitialFullState = struct;
+        InitialFullState.bound = EndoZeroVec;
         InitialFullState.first = EndoZeroVec;
+		if dynareOBC.Order >= 3
+			InitialFullState.first_sigma_2 = EndoZeroVec;
+		end
         if dynareOBC.Order >= 2
             InitialFullState.second = EndoZeroVec;
             if dynareOBC.Order >= 3
                 InitialFullState.third = EndoZeroVec;
-                InitialFullState.first_sigma_2 = EndoZeroVec;
             end
         end
-        InitialFullState.bound = EndoZeroVec;
         InitialFullState.total = EndoZeroVec;
         InitialFullState.total_with_bounds = EndoZeroVec;
 	else
         DisplayProgress = false;
+		InitialFullState = orderfields( InitialFullState );
 	end
 	if nargin < 8
         SkipMLVSimulation = false;
