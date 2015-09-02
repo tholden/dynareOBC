@@ -29,13 +29,29 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 	if nargin < 8
         SkipMLVSimulation = false;
 	end
-	try
-		if dynareOBC.NoSparse
-			Simulation = dynareOBCTempPruningAbounds( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
-		else
-			Simulation = dynareOBCTempPruningAbounds( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+	if dynareOBC.UseSimulationCode && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+		try
+			if dynareOBC.Estimation
+				if dynareOBC.NoSparse
+					Simulation = dynareOBCTempPruningAbounds( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
+				else
+					Simulation = dynareOBCTempPruningAbounds( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+				end
+			else
+				if dynareOBC.NoSparse
+					Simulation = dynareOBCTempPruningAbounds( ShockSequence, int32( SimulationLength ), InitialFullState );
+				else
+					Simulation = dynareOBCTempPruningAbounds( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+				end
+			end
+		catch Error
+			warning( 'dynareOBC:ErrorInCompiledPruningAbounds',  [ 'Not using the compiled version of pruning abounds due to the error: ' Error.message ] );
+			Simulation = [];
 		end
-	catch
+	else
+		Simulation = [];
+	end
+	if isempty( Simulation )
 		if DisplayProgress
 			p = TimedProgressBar( SimulationLength * dynareOBC.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
 		else

@@ -155,9 +155,11 @@ Note:
           * EstimationFixedPointMaxIterations=NUMBER (default: 100)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
 
- * **For debugging**
+ * **Advanced options**
+    * CompileSimulationCode
+         Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
     * Bypass
-         Ignores all non-differentiabilities in the model.
+         Ignores all non-differentiabilities in the model. Useful for debugging.
     * NoCleanup
          Prevents the deletion of dynareOBC's temporary files. Useful for debugging.
 

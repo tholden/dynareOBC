@@ -2,7 +2,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 	%% Dynare pre-processing
 
 	if exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' )
-		delete( [ 'dynareOBCTempPruningAbounds.' mexext ] );
+		try
+			delete( [ 'dynareOBCTempPruningAbounds.' mexext ] );
+		catch
+			warning( 'dynareOBC:CouldNotDeletePruningAbounds', [ 'Could not delete dynareOBCTempPruningAbounds.' mexext '. Disabling use of simulation code.' ] );
+			dynareOBC.CompileSimulationCode = false;
+			dynareOBC.UseSimulationCode = false;
+		end
 	end
 	
 	skipline( );

@@ -77,16 +77,6 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     oo = oo_;
     dynareOBC.Constant = EmptySimulation.constant;
 	
-	if ~exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' )
-        skipline( );
-        disp( 'Attemtping to build a custom version of pruning_abounds.' );
-        skipline( );
-		try
-			Build_pruning_abounds_stripped( M, oo, dynareOBC );
-		catch
-		end
-	end
-
     if Display
         skipline( );
         disp( 'Retrieving IRFs to shadow shocks.' );
@@ -115,6 +105,18 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     end
 
     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
+
+	if ~exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+        skipline( );
+        disp( 'Attemtping to build a custom version of pruning_abounds.' );
+        skipline( );
+		try
+			Build_pruning_abounds_stripped( M, oo, dynareOBC, dynareOBC.Estimation );
+		catch Error
+			warning( 'dynareOBC:FailedCompilingPruningAbounds', [ 'Failed to compile a custom version of pruning abounds, due to the error: ' Error.message ] );
+			dynareOBC.UseSimulationCode = false;
+		end
+	end
 
     if Display
         skipline( );

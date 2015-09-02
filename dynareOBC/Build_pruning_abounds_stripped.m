@@ -1,4 +1,4 @@
-function Build_pruning_abounds_stripped( M, oo, dynareOBC )
+function Build_pruning_abounds_stripped( M, oo, dynareOBC, VaryingDR )
 % BUILD_PRUNING_ABOUNDS_STRIPPED   Generate MEX-function
 %  pruning_abounds_stripped_mex from pruning_abounds_stripped.
 % 
@@ -7,6 +7,7 @@ function Build_pruning_abounds_stripped( M, oo, dynareOBC )
 % See also CODER, CODER.CONFIG, CODER.TYPEOF, CODEGEN.
 
 %% Create configuration object of class 'coder.MexCodeConfig'.
+
 cfg = coder.config('mex');
 cfg.EnableMemcpy = false;
 cfg.InitFltsAndDblsToZero = false;
@@ -33,7 +34,11 @@ ARGS{1} = cell(8,1);
 ARGS{1}{1} = coder.Constant(int32(M.nstatic));
 ARGS{1}{2} = coder.Constant(int32(M.nspred));
 ARGS{1}{3} = coder.Constant(int32(M.endo_nbr));
-ARGS{1}{4} = coder.typeof(MakeFull(oo.dr));
+if VaryingDR
+	ARGS{1}{4} = coder.typeof(MakeFull(oo.dr));
+else
+	ARGS{1}{4} = coder.Constant(MakeFull(oo.dr));
+end
 ARGS{1}{5} = coder.typeof(0,[M.exo_nbr Inf],[0 1]);
 ARGS{1}{6} = coder.typeof(int32(0));
 ARGS{1}{7} = coder.Constant(int32(dynareOBC.Order));

@@ -1,6 +1,7 @@
 function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'Bypass', false );    
-    dynareOBC = SetDefaultOption( dynareOBC, 'CalculateTheoreticalVariance', false );    
+    dynareOBC = SetDefaultOption( dynareOBC, 'CalculateTheoreticalVariance', false );
+	dynareOBC = SetDefaultOption( dynareOBC, 'CompileSimulationCode', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureTolerance', 1e-6 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'Estimation', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
@@ -48,6 +49,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToEscapeBounds', 8 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 16 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', sqrt( eps ) );
+	dynareOBC = SetDefaultOption( dynareOBC, 'UseSimulationCode', true );
     dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
     
     dynareOBC = orderfields( dynareOBC );
