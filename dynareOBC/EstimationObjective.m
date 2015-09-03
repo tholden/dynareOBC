@@ -57,9 +57,13 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     FullRootCovariance = [];
     AllEndoSelect = true( size( OldMean ) );
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
-        [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, AllEndoSelect, OldMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        try
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, AllEndoSelect, OldMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        catch
+            Mean = [];
+        end
 		if isempty( Mean )
-			return;
+			break;
 		end
         Error = max( max( abs( Mean - OldMean ) ), max( max( abs( RootCovariance * RootCovariance' - OldRootCovariance * OldRootCovariance' ) ) ) );
         OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
@@ -69,6 +73,9 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
             FullRootCovariance = OldRootCovariance;
             break;
         end
+    end
+    if isempty( OldMean ) || isempty( OldRootCovariance );
+        return;
     end
 
     if SlowMode
