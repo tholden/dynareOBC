@@ -10,6 +10,8 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
 	
 	if nargin < 6
 		SlowMode = true;
+    else
+        SlowMode = false;
 	end
 	
     [ Info, M, options, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, SlowMode );
