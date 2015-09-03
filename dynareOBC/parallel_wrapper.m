@@ -9,7 +9,7 @@ function RV = parallel_wrapper( objective_function, XV, varargin )
         catch
         end
         warning( WarningState );
-        if isempty( R ) || ~isfinite( R( 1 ) ) || ( imag( R( 1 ) ) ~= 0 ) || ( real( R( 1 ) ) == 0 )
+        if isempty( R ) || ~isfinite( R( 1 ) ) || ( imag( R( 1 ) ) ~= 0 ) % || ( real( R( 1 ) ) == 0 )
             R = NaN;
         end
         RV( i ) = real( R( 1 ) );
