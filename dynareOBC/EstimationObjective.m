@@ -1,4 +1,4 @@
-function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationObjective( p, M, options, oo, dynareOBC, EndoSelectWithControls, EndoSelect, SlowMode )
+function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationObjective( p, M, options, oo, dynareOBC, EndoSelectWithControls, EndoSelect )
     TwoNLogLikelihood = Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
        
@@ -7,10 +7,16 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     % temporary work around for warning in dates object.
     options.initial_period = [];
     options.dataset = [];
+	
+	if nargin < 6
+		SlowMode = true;
+	end
+	
     [ Info, M, options, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, SlowMode );
     if Info ~= 0
         return
     end
+	
     
     NEndo = M.endo_nbr;
     NExo = dynareOBC.OriginalNumVarExo;
@@ -30,7 +36,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     persistent FullMean;
     persistent FullRootCovariance;
     
-    if nargin < 6 || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || any( size( FullRootCovariance ) ~= [ Nm Nm ] ) || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) )
+    if SlowMode || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || any( size( FullRootCovariance ) ~= [ Nm Nm ] ) || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) )
         OldMean = zeros( Nm, 1 );
         dr = oo.dr;
         if dynareOBC.Order == 1
@@ -65,7 +71,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
         end
     end
 
-    if nargin < 6
+    if SlowMode
         EndoSelectWithControls = ( diag( OldRootCovariance * OldRootCovariance' ) > sqrt( eps ) );
 		if isfield( dr, 'state_var' )
 			state_var = dr.state_var;
