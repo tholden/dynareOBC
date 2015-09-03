@@ -79,6 +79,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 		end
 		dynareOBC.MLVSimulationMode = 1;
 		dynareOBC.NoSparse = true;
+		dynareOBC.NoPTest = true;
+		dynareOBC.TimeToSolveParametrically = 0;
 	end
 
 	if dynareOBC.MLVSimulationMode > 0 && isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
