@@ -3,8 +3,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     
-    dynareOBC.ZeroVecS = sparse( Ts * ns, 1 );
-
     if ns == 0
         return
     end
@@ -61,8 +59,6 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
 
-    dynareOBC.ParametricSolutionFound = 0;
-    
     if Tss > 0
         dynareOBC.ssIndices = ssIndices;
 
@@ -99,7 +95,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     CompVec = false( T * ns, 1 );
     GuaranteedHorizon = 0;
-    dynareOBC = SetDefaultOption( dynareOBC, 'AlphaStart', dynareOBC.ZeroVecS );
 
     Tolerance = dynareOBC.Tolerance;
     for GH = 1 : T

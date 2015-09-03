@@ -1,10 +1,10 @@
-function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, options, oo, dynareOBC, Display )
+function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, options, oo, dynareOBC, SlowMode )
 
     if nargin < 6
-        Display = true;
+        SlowMode = true;
     end
 
-    if Display
+    if SlowMode
         skipline( );
         disp( 'Solving the model for specific parameters.' );
         skipline( );
@@ -22,7 +22,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
         if ~dynareOBC.NoSparse
-            if Display
+            if SlowMode
                 skipline( );
                 disp( 'Converting to sparse matrices.' );
                 skipline( );
@@ -34,7 +34,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
             M.Sigma_e = spsparse( M.Sigma_e );
         end
 
-        if Display
+        if SlowMode
             skipline( );
             disp( 'Computing the first order approximation around the selected non-steady-state point.' );
             skipline( );
@@ -54,7 +54,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     oo.steady_state = oo.dr.ys;
 
     if ~dynareOBC.NoSparse
-        if Display
+        if SlowMode
             skipline( );
             disp( 'Converting to sparse matrices.' );
             skipline( );
@@ -66,7 +66,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         M.Sigma_e = spsparse( M.Sigma_e );
     end
 
-    if Display
+    if SlowMode
         skipline( );
         disp( 'Saving NLMA parameters.' );
         skipline( );
@@ -77,7 +77,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     oo = oo_;
     dynareOBC.Constant = EmptySimulation.constant;
 	
-    if Display
+    if SlowMode
         skipline( );
         disp( 'Retrieving IRFs to shadow shocks.' );
         skipline( );
@@ -85,7 +85,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC );
 
-    if Display
+    if SlowMode
         skipline( );
         disp( 'Pre-calculating the augmented state transition matrices and possibly conditional covariances.' );
         skipline( );
@@ -98,7 +98,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     dynareOBC.FullNumVarExo = M.exo_nbr;
 
-    if Display
+    if SlowMode
         skipline( );
         disp( 'Reducing the size of decision matrices.' );
         skipline( );
@@ -106,24 +106,31 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
 
-	if ~exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
-        skipline( );
-        disp( 'Attemtping to build a custom version of pruning_abounds.' );
-        skipline( );
-		try
-			Build_pruning_abounds_stripped( M, oo, dynareOBC, dynareOBC.Estimation );
-		catch Error
-			warning( 'dynareOBC:FailedCompilingPruningAbounds', [ 'Failed to compile a custom version of pruning abounds, due to the error: ' Error.message ] );
-			dynareOBC.UseSimulationCode = false;
+    dynareOBC.ZeroVecS = sparse( Ts * ns, 1 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'AlphaStart', dynareOBC.ZeroVecS );
+    dynareOBC.ParametricSolutionFound = 0;
+    dynareOBC.GuaranteedHorizon = 0;
+
+	if SlowMode
+		if ~exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+			if SlowMode
+				skipline( );
+				disp( 'Attemtping to build a custom version of pruning_abounds.' );
+				skipline( );
+			end
+			try
+				Build_pruning_abounds_stripped( M, oo, dynareOBC, dynareOBC.Estimation );
+			catch Error
+				warning( 'dynareOBC:FailedCompilingPruningAbounds', [ 'Failed to compile a custom version of pruning abounds, due to the error: ' Error.message ] );
+				dynareOBC.UseSimulationCode = false;
+			end
 		end
+
+		skipline( );
+		disp( 'Performing initial checks on the model.' );
+		skipline( );
+		
+		dynareOBC = InitialChecks( dynareOBC );
 	end
-
-    if Display
-        skipline( );
-        disp( 'Performing initial checks on the model.' );
-        skipline( );
-    end
-
-    dynareOBC = InitialChecks( dynareOBC );
         
 end
