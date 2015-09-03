@@ -106,7 +106,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
 
-    dynareOBC.ZeroVecS = sparse( Ts * ns, 1 );
+    dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
     dynareOBC = SetDefaultOption( dynareOBC, 'AlphaStart', dynareOBC.ZeroVecS );
     dynareOBC.ParametricSolutionFound = 0;
     dynareOBC.GuaranteedHorizon = 0;
