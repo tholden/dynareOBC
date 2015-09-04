@@ -157,6 +157,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 catch Error
                     if dynareOBC.Estimation || dynareOBC.IgnoreBoundFailures
                         y = -pseudo_y;
+                        warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to Estimation or IgnoreBoundFailures option.' ] );
                     else
                         rethrow( Error );
                     end
