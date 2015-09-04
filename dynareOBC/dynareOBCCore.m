@@ -1,11 +1,11 @@
 function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, EnforceRequirementsAndGeneratePathFunctor )
 	%% Dynare pre-processing
 
-	if exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' )
+	if exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' )
 		try
-			delete( [ 'dynareOBCTempPruningAbounds.' mexext ] );
+			delete( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ] );
 		catch
-			warning( 'dynareOBC:CouldNotDeletePruningAbounds', [ 'Could not delete dynareOBCTempPruningAbounds.' mexext '. Disabling use of simulation code.' ] );
+			warning( 'dynareOBC:CouldNotDeleteCustomLanMeyerGohdePrunedSimulation', [ 'Could not delete dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext '. Disabling use of simulation code.' ] );
 			dynareOBC.CompileSimulationCode = false;
 			dynareOBC.UseSimulationCode = false;
 		end

@@ -71,10 +71,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         disp( 'Saving NLMA parameters.' );
         skipline( );
     end
-    global oo_
-    oo_ = oo;
-    EmptySimulation = pruning_abounds( M, options, [], 0, dynareOBC.Order, 'lan_meyer-gohde', 0 );
-    oo = oo_;
+    EmptySimulation = LanMeyerGohdePrunedSimulation( M, options, oo, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
 	
     if SlowMode
@@ -112,16 +109,16 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     dynareOBC.GuaranteedHorizon = 0;
 
 	if SlowMode
-		if ~exist( [ 'dynareOBCTempPruningAbounds.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+		if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
 			if SlowMode
 				skipline( );
-				disp( 'Attemtping to build a custom version of pruning_abounds.' );
+				disp( 'Attemtping to build a custom version of the simulation code.' );
 				skipline( );
 			end
 			try
-				Build_pruning_abounds_stripped( M, oo, dynareOBC, dynareOBC.Estimation );
+				BuildCustomLanMeyerGohdePrunedSimulation( M, oo, dynareOBC, dynareOBC.Estimation );
 			catch Error
-				warning( 'dynareOBC:FailedCompilingPruningAbounds', [ 'Failed to compile a custom version of pruning abounds, due to the error: ' Error.message ] );
+				warning( 'dynareOBC:FailedCompilingCustomLanMeyerGohdePrunedSimulation', [ 'Failed to compile a custom version of the simulation code, due to the error: ' Error.message ] );
 				dynareOBC.UseSimulationCode = false;
 			end
 		end

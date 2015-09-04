@@ -38,7 +38,8 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     persistent FullMean;
     persistent FullRootCovariance;
     
-    if SlowMode || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || any( size( FullRootCovariance ) ~= [ Nm Nm ] ) || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) )
+    UpdateSelect = SlowMode || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || any( size( FullRootCovariance ) ~= [ Nm Nm ] ) || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
+    if UpdateSelect
         OldMean = zeros( Nm, 1 );
         dr = oo.dr;
         if dynareOBC.Order == 1
@@ -55,39 +56,59 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
         OldRootCovariance = FullRootCovariance;
     end
     
-    FullMean = [];
-    FullRootCovariance = [];
     AllEndoSelect = true( size( OldMean ) );
-    for t = 1:dynareOBC.EstimationFixedPointMaxIterations
-        try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, AllEndoSelect, OldMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
-        catch
-            Mean = [];
-        end
-		if isempty( Mean )
-			break;
-		end
-        Error = max( max( abs( Mean - OldMean ) ), max( max( abs( RootCovariance * RootCovariance' - OldRootCovariance * OldRootCovariance' ) ) ) );
-        OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
-        OldRootCovariance = RootCovariance; % 0.5 * RootCovariance + 0.5 * OldRootCovariance;
-        if Error < 1e-4
-            FullMean = OldMean;
-            FullRootCovariance = OldRootCovariance;
-            break;
-        end
-    end
-    if isempty( OldMean ) || isempty( OldRootCovariance );
-        return;
-    end
-
-    if SlowMode
-        EndoSelectWithControls = ( diag( OldRootCovariance * OldRootCovariance' ) > sqrt( eps ) );
+    
+    if UpdateSelect
 		if isfield( dr, 'state_var' )
 			state_var = dr.state_var;
 		else
 			klag = dr.kstate( dr.kstate(:,2) <= M.maximum_lag+1, [1 2] );
 			state_var = dr.order_var( klag(:,1) );
 		end
+    end
+    
+    for t = 1:dynareOBC.EstimationFixedPointMaxIterations
+        if UpdateSelect
+            EndoSelectWithControls = ( diag( OldRootCovariance * OldRootCovariance' ) > sqrt( eps ) );
+            EndoSelect = EndoSelectWithControls & repmat( ismember( (1:NEndo)', state_var ), NEndoMult, 1 );
+        end
+
+        try
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, EndoSelect, AllEndoSelect, OldMean, OldMean( EndoSelect ), OldRootCovariance( EndoSelect, EndoSelect ), RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        catch
+            Mean = [];
+        end
+        if isempty( Mean )
+ 			break;
+        end
+        CompNew = RootCovariance * RootCovariance';
+        CompNew = [ CompNew(:); Mean ];
+        CompOld = OldRootCovariance * OldRootCovariance';
+        CompOld = [ CompOld(:); OldMean ];
+
+        OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
+        RCSize = size( RootCovariance );
+        OldRootCovariance = [ RootCovariance, zeros( RCSize(1), RCSize(1) - RCSize(2) ) ]; % 0.5 * RootCovariance + 0.5 * OldRootCovariance;
+        
+        LCompNew = log( abs( CompNew ) );
+        SCompNew = isfinite( LCompNew );
+        LCompOld = log( abs( CompOld ) );
+        SCompOld = isfinite( LCompOld );
+        if all( SCompNew == SCompOld )
+            Error = max( max( abs( CompNew - CompOld ) ), max( abs( LCompNew( SCompNew ) - LCompOld( SCompOld ) ) ) );
+            if Error < 1e-4
+                FullMean = OldMean;
+                FullRootCovariance = OldRootCovariance;
+                break;
+            end
+        end
+    end
+    if isempty( OldMean ) || isempty( OldRootCovariance );
+        return;
+    end
+
+    if UpdateSelect
+        EndoSelectWithControls = ( diag( OldRootCovariance * OldRootCovariance' ) > sqrt( eps ) );
         EndoSelect = EndoSelectWithControls & repmat( ismember( (1:NEndo)', state_var ), NEndoMult, 1 );
     end
 
@@ -95,22 +116,40 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     OldMean = OldMean( EndoSelect );
     OldRootCovariance = OldRootCovariance( EndoSelect, EndoSelect );
     
+    SubEndoSelect = EndoSelect( EndoSelectWithControls );
+    
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
-        [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), EndoSelectWithControls, EndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        try
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), EndoSelectWithControls, EndoSelect, SubEndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        catch
+            Mean = [];
+        end
 		if isempty( Mean )
-			return;
+			break;
 		end
-        Error = max( max( abs( Mean - OldMean ) ), max( max( abs( RootCovariance * RootCovariance' - OldRootCovariance * OldRootCovariance' ) ) ) );
+        CompNew = RootCovariance * RootCovariance';
+        CompNew = [ CompNew(:); Mean ];
+        CompOld = OldRootCovariance * OldRootCovariance';
+        CompOld = [ CompOld(:); OldMean ];
+
         OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
         OldRootCovariance = RootCovariance; % 0.5 * RootCovariance + 0.5 * OldRootCovariance;
-        if Error < 1e-4
-            break;
+        
+        LCompNew = log( abs( CompNew ) );
+        SCompNew = isfinite( LCompNew );
+        LCompOld = log( abs( CompOld ) );
+        SCompOld = isfinite( LCompOld );
+        if all( SCompNew == SCompOld )
+            Error = max( max( abs( CompNew - CompOld ) ), max( abs( LCompNew( SCompNew ) - LCompOld( SCompOld ) ) ) );
+            if Error < 1e-4
+                break;
+            end
         end
     end
-    
+
     TwoNLogLikelihood = 0;
     for t = 1:T
-        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), EndoSelectWithControls, EndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), EndoSelectWithControls, EndoSelect, SubEndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
 		if isempty( Mean )
 			TwoNLogLikelihood = Inf;
 			return;

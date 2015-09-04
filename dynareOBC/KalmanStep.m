@@ -1,4 +1,4 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, SubEndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
 	Mean = [];
 	RootCovariance = [];
 	TwoNLogObservationLikelihood = NaN;
@@ -36,8 +36,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     end
     PredictedState = mean( NewStatePoints, 2 );
     RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
-    
-    SubEndoSelect = EndoSelect( EndoSelectWithControls );
+        
     if No > 0
         MeasurementCubaturePoints = [ bsxfun( @plus, [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( Nxc ), PredictedState ), repmat( PredictedState, 1, 2 * NExo ); zeros( NExo, 2 * min( Nmc, Mx ) ),  [ RootQ -RootQ ] * sqrt( Nxc ) ];
         NewMeasurementPoints = zeros( No, Mxc );

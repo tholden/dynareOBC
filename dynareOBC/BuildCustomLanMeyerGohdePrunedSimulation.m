@@ -1,8 +1,8 @@
-function Build_pruning_abounds_stripped( M, oo, dynareOBC, VaryingDR )
-% BUILD_PRUNING_ABOUNDS_STRIPPED   Generate MEX-function
-%  pruning_abounds_stripped_mex from pruning_abounds_stripped.
+function BuildCustomLanMeyerGohdePrunedSimulation( M, oo, dynareOBC, VaryingDR )
+% BUILD_CustomLanMeyerGohdePrunedSimulation   Generate MEX-function
+%  CustomLanMeyerGohdePrunedSimulation_mex from CustomLanMeyerGohdePrunedSimulation.
 % 
-% Script generated from project 'pruning_abounds_stripped.prj' on 27-Aug-2015.
+% Script generated from project 'CustomLanMeyerGohdePrunedSimulation.prj' on 27-Aug-2015.
 % 
 % See also CODER, CODER.CONFIG, CODER.TYPEOF, CODEGEN.
 
@@ -28,7 +28,7 @@ cfg.ResponsivenessChecks = false;
 cfg.ExtrinsicCalls = false;
 cfg.GlobalDataSyncMethod = 'NoSync';
 
-%% Define argument types for entry-point 'pruning_abounds_stripped'.
+%% Define argument types for entry-point 'CustomLanMeyerGohdePrunedSimulation'.
 ARGS = cell(1,1);
 ARGS{1} = cell(8,1);
 ARGS{1}{1} = coder.Constant(int32(M.nstatic));
@@ -58,4 +58,4 @@ ARGS{1}{8}.total = coder.typeof(dynareOBC.Constant);
 ARGS{1}{8}.total_with_bounds = coder.typeof(dynareOBC.Constant); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
-codegen -config cfg pruning_abounds_stripped -args ARGS{1} -o dynareOBCTempPruningAbounds
+codegen -config cfg CustomLanMeyerGohdePrunedSimulation -args ARGS{1} -o dynareOBCTempCustomLanMeyerGohdePrunedSimulation

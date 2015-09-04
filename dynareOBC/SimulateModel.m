@@ -4,8 +4,6 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
     
     SimulationLength = size( ShockSequence, 2 );
     
-    global oo_
-    oo_ = oo;
 	if nargin < 6
         DisplayProgress = true;
 	end
@@ -36,19 +34,19 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 		try
 			if dynareOBC.Estimation
 				if dynareOBC.NoSparse
-					Simulation = dynareOBCTempPruningAbounds( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
+					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
 				else
-					Simulation = dynareOBCTempPruningAbounds( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
 				end
 			else
 				if dynareOBC.NoSparse
-					Simulation = dynareOBCTempPruningAbounds( ShockSequence, int32( SimulationLength ), InitialFullState );
+					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
 				else
-					Simulation = dynareOBCTempPruningAbounds( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
 				end
 			end
 		catch Error
-			warning( 'dynareOBC:ErrorInCompiledPruningAbounds',  [ 'Not using the compiled version of pruning abounds due to the error: ' Error.message ] );
+			warning( 'dynareOBC:ErrorInCompiledCustomLanMeyerGohdePrunedSimulation',  [ 'Not using the compiled version of the simulation code due to the error: ' Error.message ] );
 			Simulation = [];
 		end
 	else
@@ -67,11 +65,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 			call_back = @( x ) x.progress;
 			call_back_arg = p;
 		end
-		try
-			Simulation = pruning_abounds( M, options, ShockSequence, SimulationLength, dynareOBC.Order, 'lan_meyer-gohde', 1, InitialFullState, call_back, call_back_arg );
-		catch
-			Simulation = pruning_abounds( M, options, ShockSequence, SimulationLength, dynareOBC.Order, 'lan_meyer-gohde', 1, InitialFullState );
-		end
+        Simulation = LanMeyerGohdePrunedSimulation( M, options, oo, ShockSequence, SimulationLength, dynareOBC.Order, 1, InitialFullState, call_back, call_back_arg );
 		if ~isempty( p )
 			p.stop;
 		end

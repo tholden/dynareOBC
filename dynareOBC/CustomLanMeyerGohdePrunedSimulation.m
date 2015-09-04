@@ -1,4 +1,4 @@
-function simulations = pruning_abounds_stripped( nstatic, nspred, endo_nbr, dr, shock_sequence, simul_length, pruning_order, initial_state )
+function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, endo_nbr, dr, shock_sequence, simul_length, pruning_order, initial_state )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % pruning_abounds.m

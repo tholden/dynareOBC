@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2015a">
-  <configuration file="C:\dynare\dynareOBC\dynareOBC\pruning_abounds_stripped.prj" location="C:\dynare\dynareOBC\dynareOBC" name="pruning_abounds_stripped" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration file="C:\dynare\dynareOBC\dynareOBC\CustomLanMeyerGohdePrunedSimulation.prj" location="C:\dynare\dynareOBC\dynareOBC" name="CustomLanMeyerGohdePrunedSimulation" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex />
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -685,7 +685,7 @@
     <param.TestSnippets />
     <param.DefaultImportExportVariable />
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
-    <param.outputfile>${PROJECT_ROOT}\pruning_abounds_stripped_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\CustomLanMeyerGohdePrunedSimulation_mex.mexw64</param.outputfile>
     <param.version />
     <param.HasECoderFeatures />
     <param.mex.mainhtml />
@@ -704,10 +704,10 @@
     <var.redirectedInputTypeData />
     <var.DismissScreener>true</var.DismissScreener>
     <param.unifiedParamStorage />
-    <param.mex.outputfile>pruning_abounds_stripped_mex</param.mex.outputfile>
-    <param.grt.outputfile>pruning_abounds_stripped</param.grt.outputfile>
+    <param.mex.outputfile>CustomLanMeyerGohdePrunedSimulation_mex</param.mex.outputfile>
+    <param.grt.outputfile>CustomLanMeyerGohdePrunedSimulation</param.grt.outputfile>
     <param.artifact>option.target.artifact.mex</param.artifact>
-    <param.outputfile>${PROJECT_ROOT}\pruning_abounds_stripped_mex.mexw64</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}\CustomLanMeyerGohdePrunedSimulation_mex.mexw64</param.outputfile>
     <param.EnableAutoExtrinsicCalls>false</param.EnableAutoExtrinsicCalls>
     <param.UsePreconditions>false</param.UsePreconditions>
     <param.FeatureFlags />
@@ -799,8 +799,8 @@
       <param.FixedPointTypeProposalMode />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\pruning_abounds_stripped.m">
-        <Inputs fileName="pruning_abounds_stripped.m" functionName="pruning_abounds_stripped">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\CustomLanMeyerGohdePrunedSimulation.m">
+        <Inputs fileName="CustomLanMeyerGohdePrunedSimulation.m" functionName="CustomLanMeyerGohdePrunedSimulation">
           <Input Name="nstatic">
             <Class>double</Class>
             <Size>1 x 1</Size>
@@ -1088,7 +1088,7 @@
     </fileset.entrypoints>
     <fileset.testbench />
     <build-deliverables>
-      <file location="C:\dynare\dynareOBC\dynareOBC" name="pruning_abounds_stripped_mex.mexw64" optional="false">C:\dynare\dynareOBC\dynareOBC\pruning_abounds_stripped_mex.mexw64</file>
+      <file location="C:\dynare\dynareOBC\dynareOBC" name="CustomLanMeyerGohdePrunedSimulation_mex.mexw64" optional="false">C:\dynare\dynareOBC\dynareOBC\CustomLanMeyerGohdePrunedSimulation_mex.mexw64</file>
     </build-deliverables>
     <workflow />
     <matlab>
