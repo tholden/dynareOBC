@@ -158,7 +158,7 @@ function simulations = LanMeyerGohdePrunedSimulation( M, options, oo, shock_sequ
 % 3. Simulate third order pruned solutions
 %--------------------------------------------------------------------------
   if pruning_order==3
-     assert( options.pruning, 'This function requires options_.pruning = true.' );
+     assert( options.pruning ~= 0, 'This function requires options_.pruning = true.' );
      
            if use_cached_nlma_values
                ghs2_nlma = oo.dr.ghs2_nlma;
