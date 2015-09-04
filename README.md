@@ -72,6 +72,9 @@ Note:
          dynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's
          solver. To find out what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by
          YALMIP.
+    * IgnoreBoundFailures
+         Makes dynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability.
+         This will severely compromise accuracy.
 
  * **For controlling cubature**
     * FastCubature

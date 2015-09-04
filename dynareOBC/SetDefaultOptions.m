@@ -15,6 +15,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     % dynareOBC = SetDefaultOption( dynareOBC, 'FSolveFunctor', @( OptiFunction, OptiX0, varargin ) fsolve( OptiFunction, OptiX0, optimset( 'algorithm', 'trust-region-dogleg', 'display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), varargin{:} ) ) );   
     dynareOBC = SetDefaultOption( dynareOBC, 'FSolveFunctor', @( OptiFunction, OptiX0, varargin ) lsqnonlin( OptiFunction, OptiX0, [], [], optimset( 'algorithm', 'trust-region-reflective', 'display', 'iter', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), varargin{:} ) ) );   
     dynareOBC = SetDefaultOption( dynareOBC, 'Global', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'IgnoreBoundFailures', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFsAroundZero', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'KappaPriorParameter', 1-eps );

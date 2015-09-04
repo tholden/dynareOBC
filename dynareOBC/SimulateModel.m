@@ -142,16 +142,24 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 
                 UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
 
-                y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
-                [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
+                try
+                    y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
+                    [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
 
-                if ~dynareOBC.NoCubature
-                    y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
-                end
+                    if ~dynareOBC.NoCubature
+                        y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
+                    end
 
-                % TODO
-                if dynareOBC.Global
-                    y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
+                    % TODO
+                    if dynareOBC.Global
+                        y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
+                    end
+                catch Error
+                    if dynareOBC.Estimation || dynareOBC.IgnoreBoundFailures
+                        y = -pseudo_y;
+                    else
+                        rethrow( Error );
+                    end
                 end
 
                 y = y + pseudo_y;
