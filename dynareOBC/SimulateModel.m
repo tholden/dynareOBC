@@ -65,7 +65,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 			call_back = @( x ) x.progress;
 			call_back_arg = p;
 		end
-        Simulation = LanMeyerGohdePrunedSimulation( M, options, dr, ShockSequence, SimulationLength, dynareOBC.Order, 1, InitialFullState, call_back, call_back_arg );
+        Simulation = LanMeyerGohdePrunedSimulation( M, options, oo.dr, ShockSequence, SimulationLength, dynareOBC.Order, 1, InitialFullState, call_back, call_back_arg );
 		if ~isempty( p )
 			p.stop;
 		end
