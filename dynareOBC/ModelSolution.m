@@ -71,7 +71,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         disp( 'Saving NLMA parameters.' );
         skipline( );
     end
-    EmptySimulation = LanMeyerGohdePrunedSimulation( M, options, oo, [], 0, dynareOBC.Order, 0 );
+    [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, options, oo.dr, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
 	
     if SlowMode

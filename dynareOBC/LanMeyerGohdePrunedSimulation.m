@@ -1,4 +1,4 @@
-function simulations = LanMeyerGohdePrunedSimulation( M, options, oo, shock_sequence, simul_length, pruning_order, use_cached_nlma_values, initial_state, call_back, call_back_arg )
+function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, options, dr, shock_sequence, simul_length, pruning_order, use_cached_nlma_values, initial_state, call_back, call_back_arg )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % pruning_abounds.m
@@ -91,12 +91,12 @@ function simulations = LanMeyerGohdePrunedSimulation( M, options, oo, shock_sequ
         use_cached_nlma_values = 0;
     end
     if nargin >= 8
-        simulation_first( :, 1 ) = initial_state.first( oo.dr.order_var );
+        simulation_first( :, 1 ) = initial_state.first( dr.order_var );
         if pruning_order >= 2
-            simulation_second( :, 1 ) = initial_state.second( oo.dr.order_var );
+            simulation_second( :, 1 ) = initial_state.second( dr.order_var );
             if pruning_order >= 3
-                simulation_third( :, 1 ) = initial_state.third( oo.dr.order_var );
-                simulation_first_sigma_2( :, 1 ) = initial_state.first_sigma_2( oo.dr.order_var );
+                simulation_third( :, 1 ) = initial_state.third( dr.order_var );
+                simulation_first_sigma_2( :, 1 ) = initial_state.first_sigma_2( dr.order_var );
             end
         end
     end
@@ -107,13 +107,13 @@ function simulations = LanMeyerGohdePrunedSimulation( M, options, oo, shock_sequ
   if pruning_order == 1
     E = shock_sequence;
     for t=2:simul_length_p1
-      simulation_first(:,t)=oo.dr.ghx*simulation_first(select_state,t-1)+oo.dr.ghu*E(:,t-1);
+      simulation_first(:,t)=dr.ghx*simulation_first(select_state,t-1)+dr.ghu*E(:,t-1);
        if nargin >= 10
           call_back(call_back_arg);
        end
     end
-    simulations.first=simulation_first(oo.dr.inv_order_var,2:simul_length_p1);
-    simulations.constant=oo.dr.ys;
+    simulations.first=simulation_first(dr.inv_order_var,2:simul_length_p1);
+    simulations.constant=dr.ys;
     simulations.total=simulations.first+repmat(simulations.constant,[1 simul_length]);    
   end
 
@@ -123,33 +123,35 @@ function simulations = LanMeyerGohdePrunedSimulation( M, options, oo, shock_sequ
   if pruning_order == 2
     
             if use_cached_nlma_values
-                ghs2_nlma = oo.dr.ghs2_nlma;
+                ghs2_nlma = dr.ghs2_nlma;
             else
               % Compute nlma's y_sigma^2
-                ghs2_state_nlma = (eye(nspred)-oo.dr.ghx(nstatic+1:nstatic+nspred,:))\(oo.dr.ghs2(nstatic+1:nstatic+nspred,:));
-                ghs2_nlma = [ oo.dr.ghx(1:nstatic,:)*ghs2_state_nlma+oo.dr.ghs2(1:nstatic,:)
+                ghs2_state_nlma = (eye(nspred)-dr.ghx(nstatic+1:nstatic+nspred,:))\(dr.ghs2(nstatic+1:nstatic+nspred,:));
+                ghs2_nlma = [ dr.ghx(1:nstatic,:)*ghs2_state_nlma+dr.ghs2(1:nstatic,:)
                               ghs2_state_nlma
-                              oo.dr.ghx(nstatic+nspred+1:M.endo_nbr,:)*ghs2_state_nlma+oo.dr.ghs2(nstatic+nspred+1:M.endo_nbr,:)]; 
+                              dr.ghx(nstatic+nspred+1:M.endo_nbr,:)*ghs2_state_nlma+dr.ghs2(nstatic+nspred+1:M.endo_nbr,:)]; 
               % Save results
-                oo.dr.ghs2_state_nlma = ghs2_state_nlma;
-                oo.dr.ghs2_nlma = ghs2_nlma;
+              if nargout > 1
+                dr.ghs2_state_nlma = ghs2_state_nlma;
+                dr.ghs2_nlma = ghs2_nlma;
+              end
             end
           % Simulation
             E = shock_sequence;
             for t = 2:simul_length_p1
-                simulation_first(:,t)=oo.dr.ghx*simulation_first(select_state,t-1)+oo.dr.ghu*E(:,t-1);
+                simulation_first(:,t)=dr.ghx*simulation_first(select_state,t-1)+dr.ghu*E(:,t-1);
                 exe = alt_kron(E(:,t-1),E(:,t-1));
                 sxe = alt_kron(simulation_first(select_state,t-1),E(:,t-1));
                 sxs = alt_kron(simulation_first(select_state,t-1),simulation_first(select_state,t-1));
-                simulation_second(:,t) = oo.dr.ghx*simulation_second(select_state,t-1)...
-                                         +(1/2)*( oo.dr.ghxx*sxs+2*oo.dr.ghxu*sxe+oo.dr.ghuu*exe );
+                simulation_second(:,t) = dr.ghx*simulation_second(select_state,t-1)...
+                                         +(1/2)*( dr.ghxx*sxs+2*dr.ghxu*sxe+dr.ghuu*exe );
                if nargin >= 9
                   call_back(call_back_arg);
                end
             end
-            simulations.first = simulation_first(oo.dr.inv_order_var,2:simul_length_p1);
-            simulations.second = simulation_second(oo.dr.inv_order_var,2:simul_length_p1);
-            simulations.constant = oo.dr.ys + 0.5*ghs2_nlma(oo.dr.inv_order_var,:);
+            simulations.first = simulation_first(dr.inv_order_var,2:simul_length_p1);
+            simulations.second = simulation_second(dr.inv_order_var,2:simul_length_p1);
+            simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
             simulations.total = simulations.second + simulations.first...
                                  +repmat( simulations.constant,[1 simul_length] );
   end
@@ -161,51 +163,53 @@ function simulations = LanMeyerGohdePrunedSimulation( M, options, oo, shock_sequ
      assert( options.pruning ~= 0, 'This function requires options_.pruning = true.' );
      
            if use_cached_nlma_values
-               ghs2_nlma = oo.dr.ghs2_nlma;
-               ghuss_nlma = oo.dr.ghuss_nlma;
-               ghxss_nlma = oo.dr.ghxss_nlma;
+               ghs2_nlma = dr.ghs2_nlma;
+               ghuss_nlma = dr.ghuss_nlma;
+               ghxss_nlma = dr.ghxss_nlma;
            else
              % Compute nlma's y_sigma^2
-               ghs2_state_nlma = (eye(nspred)-oo.dr.ghx(nstatic+1:nstatic+nspred,:))\(oo.dr.ghs2(nstatic+1:nstatic+nspred,:));
-               ghs2_nlma = [ oo.dr.ghx(1:nstatic,:)*ghs2_state_nlma+oo.dr.ghs2(1:nstatic,:)
+               ghs2_state_nlma = (eye(nspred)-dr.ghx(nstatic+1:nstatic+nspred,:))\(dr.ghs2(nstatic+1:nstatic+nspred,:));
+               ghs2_nlma = [ dr.ghx(1:nstatic,:)*ghs2_state_nlma+dr.ghs2(1:nstatic,:)
                              ghs2_state_nlma
-                             oo.dr.ghx(nstatic+nspred+1:M.endo_nbr,:)*ghs2_state_nlma+oo.dr.ghs2(nstatic+nspred+1:M.endo_nbr,:)]; 
+                             dr.ghx(nstatic+nspred+1:M.endo_nbr,:)*ghs2_state_nlma+dr.ghs2(nstatic+nspred+1:M.endo_nbr,:)]; 
              % Compute nlma's y_sigma^2e and y_sigma^2y^state
                % y_sigma^2e           
-                 ghuss_nlma = oo.dr.ghuss + oo.dr.ghxu*alt_kron(ghs2_state_nlma,eye(M.exo_nbr));
+                 ghuss_nlma = dr.ghuss + dr.ghxu*alt_kron(ghs2_state_nlma,eye(M.exo_nbr));
                % y_sigma^2y^state
-                 ghxss_nlma = oo.dr.ghxss + oo.dr.ghxx*alt_kron(ghs2_state_nlma,eye(nspred));
+                 ghxss_nlma = dr.ghxss + dr.ghxx*alt_kron(ghs2_state_nlma,eye(nspred));
              % Save results
-               oo.dr.ghs2_state_nlma = ghs2_state_nlma;
-               oo.dr.ghs2_nlma = ghs2_nlma;
-               oo.dr.ghuss_nlma = ghuss_nlma;
-               oo.dr.ghxss_nlma = ghxss_nlma;
+             if nargout > 1
+               dr.ghs2_state_nlma = ghs2_state_nlma;
+               dr.ghs2_nlma = ghs2_nlma;
+               dr.ghuss_nlma = ghuss_nlma;
+               dr.ghxss_nlma = ghxss_nlma;
+             end
            end
          % Simulation
            E = shock_sequence;
            for t = 2:simul_length_p1
-               simulation_first(:,t)=oo.dr.ghx*simulation_first(select_state,t-1)+oo.dr.ghu*E(:,t-1);
+               simulation_first(:,t)=dr.ghx*simulation_first(select_state,t-1)+dr.ghu*E(:,t-1);
                exe = alt_kron(E(:,t-1),E(:,t-1));
                sxe = alt_kron(simulation_first(select_state,t-1),E(:,t-1));
                sxs = alt_kron(simulation_first(select_state,t-1),simulation_first(select_state,t-1));
-               simulation_second(:,t) = oo.dr.ghx*simulation_second(select_state,t-1)...
-                                        +(1/2)*( oo.dr.ghxx*sxs+2*oo.dr.ghxu*sxe+oo.dr.ghuu*exe );
-               simulation_first_sigma_2(:,t) = oo.dr.ghx*simulation_first_sigma_2(select_state,t-1)...
+               simulation_second(:,t) = dr.ghx*simulation_second(select_state,t-1)...
+                                        +(1/2)*( dr.ghxx*sxs+2*dr.ghxu*sxe+dr.ghuu*exe );
+               simulation_first_sigma_2(:,t) = dr.ghx*simulation_first_sigma_2(select_state,t-1)...
                                               +(1/2)*(ghuss_nlma*E(:,t-1)+ghxss_nlma*simulation_first(select_state,t-1));
-               simulation_third(:,t) = oo.dr.ghx*simulation_third(select_state,t-1)...
-                                       +(1/6)*(oo.dr.ghxxx*alt_kron(simulation_first(select_state,t-1),sxs)+oo.dr.ghuuu*alt_kron(E(:,t-1),exe))...
-                                       +(1/2)*(oo.dr.ghxxu*alt_kron(sxs,E(:,t-1))+oo.dr.ghxuu*alt_kron(simulation_first(select_state,t-1),exe))...
-                                       +oo.dr.ghxx*alt_kron(simulation_second(select_state,t-1),simulation_first(select_state,t-1))...
-                                       +oo.dr.ghxu*alt_kron(simulation_second(select_state,t-1),E(:,t-1));
+               simulation_third(:,t) = dr.ghx*simulation_third(select_state,t-1)...
+                                       +(1/6)*(dr.ghxxx*alt_kron(simulation_first(select_state,t-1),sxs)+dr.ghuuu*alt_kron(E(:,t-1),exe))...
+                                       +(1/2)*(dr.ghxxu*alt_kron(sxs,E(:,t-1))+dr.ghxuu*alt_kron(simulation_first(select_state,t-1),exe))...
+                                       +dr.ghxx*alt_kron(simulation_second(select_state,t-1),simulation_first(select_state,t-1))...
+                                       +dr.ghxu*alt_kron(simulation_second(select_state,t-1),E(:,t-1));
                if nargin >= 9
                   call_back(call_back_arg);
                end
            end
-           simulations.first = simulation_first(oo.dr.inv_order_var,2:simul_length_p1);
-           simulations.second = simulation_second(oo.dr.inv_order_var,2:simul_length_p1);      
-           simulations.first_sigma_2 = simulation_first_sigma_2(oo.dr.inv_order_var,2:simul_length_p1);
-           simulations.third = simulation_third(oo.dr.inv_order_var,2:simul_length_p1);
-           simulations.constant = oo.dr.ys + 0.5*ghs2_nlma(oo.dr.inv_order_var,:);
+           simulations.first = simulation_first(dr.inv_order_var,2:simul_length_p1);
+           simulations.second = simulation_second(dr.inv_order_var,2:simul_length_p1);      
+           simulations.first_sigma_2 = simulation_first_sigma_2(dr.inv_order_var,2:simul_length_p1);
+           simulations.third = simulation_third(dr.inv_order_var,2:simul_length_p1);
+           simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
            simulations.total = simulations.third +simulations.first_sigma_2 + simulations.second + simulations.first...
                                +repmat( simulations.constant,[1 simul_length] );
   end
