@@ -132,7 +132,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 end
                 CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
 
-                ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo_.dr, dynareOBC );
+                ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo.dr, dynareOBC );
                 ReturnPath = ReturnStruct.total;        
 
                 pseudo_y = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
