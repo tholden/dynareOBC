@@ -4,6 +4,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
 	dynareOBC = SetDefaultOption( dynareOBC, 'CompileSimulationCode', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureTolerance', 1e-6 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'Estimation', false );
+	dynareOBC = SetDefaultOption( dynareOBC, 'EstimationAlternativeCubature', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedPointMaxIterations', 100 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FastCubature', false );

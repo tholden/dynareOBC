@@ -10,16 +10,19 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     Observed = find( isfinite( Measurement ) );
     FiniteMeasurements = Measurement( Observed )';
     No = length( Observed );
-    Mx = 2 * Nx;
     Nmc = sum( EndoSelectWithControls );
-    Nxc = min( Nmc, Mx ) + NExo;
-    Mxc = 2 * Nxc;
     
-    StateCubaturePoints = [ bsxfun( @plus, [ OldRootCovariance, -OldRootCovariance ] * sqrt( Nx ), OldMean ), repmat( OldMean, 1, 2 * NExo ); zeros( NExo, 2 * Nm ),  [ RootQ -RootQ ] * sqrt( Nx ) ];
+	if dynareOBC.EstimationAlternativeCubature
+		[ Weights, pTmp, Mx ] = fwtpts( Nx, 2 );
+		StateCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( Nm, NExo ); zeros( NExo, Nm ), RootQ ] * pTmp, [ OldMean; zeros( NExo, 1 ) ] );
+	else
+		Mx = 2 * Nx;
+		StateCubaturePoints = [ bsxfun( @plus, [ OldRootCovariance, -OldRootCovariance ] * sqrt( Nx ), OldMean ), repmat( OldMean, 1, 2 * NExo ); zeros( NExo, 2 * Nm ),  [ RootQ -RootQ ] * sqrt( Nx ) ];
+	end
     NewStatePoints = zeros( Nmc, Mx );
            
     % actual augmented state contains shock(+1), but we treat the shock(+1) component separately
-    for i = 1 : Mx
+	for i = 1 : Mx
         InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), M, options, oo, dynareOBC, false, InitialFullState, true );
         if dynareOBC.Order == 1
@@ -33,11 +36,19 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
 		if any( ~isfinite( NewStatePoints( :, i ) ) )
 			return
 		end
-    end
-    PredictedState = mean( NewStatePoints, 2 );
-    RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
+	end
+	if dynareOBC.EstimationAlternativeCubature
+		PredictedState = NewStatePoints * Weights';
+		RootPredictedErrorCovariance = Tria( bsxfun( @times, bsxfun( @minus, NewStatePoints, PredictedState ), sqrt( Weights ) ) );
+	else
+		PredictedState = mean( NewStatePoints, 2 );
+		RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
+	end
         
-    if No > 0
+    Nxc = min( Nmc, Mx ) + NExo;
+    Mxc = 2 * Nxc;
+
+	if No > 0
         MeasurementCubaturePoints = [ bsxfun( @plus, [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( Nxc ), PredictedState ), repmat( PredictedState, 1, 2 * NExo ); zeros( NExo, 2 * min( Nmc, Mx ) ),  [ RootQ -RootQ ] * sqrt( Nxc ) ];
         NewMeasurementPoints = zeros( No, Mxc );
 
@@ -66,11 +77,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         KalmanGain = ( CrossCovariance / RootPredictedInnovationCovariance' ) / RootPredictedInnovationCovariance;
         Mean = PredictedState( SubEndoSelect ) + KalmanGain * ( FiniteMeasurements - PredictedMeasurements );
         RootCovariance = Tria( [ CurlyX - KalmanGain * CurlyY, KalmanGain * diag( RootMEVar ) ] );
-    else
+	else
         Mean = PredictedState( SubEndoSelect );
         RootCovariance = Tria( RootPredictedErrorCovariance( SubEndoSelect, : ) );
         TwoNLogObservationLikelihood = 0;
-    end
+	end
 end
 
 function S = Tria( A )
