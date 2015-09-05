@@ -39,7 +39,8 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
 	end
 	if dynareOBC.EstimationAlternativeCubature
 		PredictedState = NewStatePoints * Weights';
-		RootPredictedErrorCovariance = Tria( bsxfun( @times, bsxfun( @minus, NewStatePoints, PredictedState ), sqrt( Weights ) ) );
+		RootPredictedErrorCovariance = bsxfun( @minus, NewStatePoints, PredictedState );
+		RootPredictedErrorCovariance = chol( bsxfun( @times, RootPredictedErrorCovariance, Weights ) * RootPredictedErrorCovariance', 'lower' );
 	else
 		PredictedState = mean( NewStatePoints, 2 );
 		RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
