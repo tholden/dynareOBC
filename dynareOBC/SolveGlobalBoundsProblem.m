@@ -10,7 +10,7 @@ function y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPathShortRun, Uncon
     kappas = sdpvar( length( y ), 1 );
     mus = sdpvar( size( ConstrainedReturnPathLongRun, 1 ), 1 );
     Constraints = [ 0 <= lambdas, 0 <= kappas, 0 <= mus, Error <= lambdas .* ErrorWeight, -Error <= lambdas .* ErrorWeight, ConstrainedReturnPathLongRun >= -mus, y >= ConstrainedReturnPathShortRun - ConstrainedReturnPathLongRun - kappas ];
-    Diagnostics = optimize( Constraints, sum( lambdas(:) ) + sum( kappas(:) ), dynareOBC.LPOptions );
+    Diagnostics = optimize( Constraints, sum( lambdas(:) ) + sum( kappas(:) ) + sum( mus(:) ), dynareOBC.LPOptions );
     if Diagnostics.problem ~= 0
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
