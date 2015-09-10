@@ -13,7 +13,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     Nmc = sum( EndoSelectWithControls );
     
 	if dynareOBC.EstimationAlternativeCubature
-		[ Weights, pTmp, Mx ] = fwtpts( Nx, 2 );
+		[ Weights, pTmp, Mx ] = fwtpts( Nx, 1 );
 		StateCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( Nm, NExo ); zeros( NExo, Nm ), RootQ ] * pTmp, [ OldMean; zeros( NExo, 1 ) ] );
 	else
 		Mx = 2 * Nx;
