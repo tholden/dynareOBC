@@ -157,6 +157,10 @@ Note:
                minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
           * EstimationFixedPointMaxIterations=NUMBER (default: 100)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
+          * EstimationAlternativeCubature
+		       Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
+		       additional central point. While this requires solving the model less far from the steady-state, it also requires
+		       a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
 
  * **Advanced options**
     * CompileSimulationCode
