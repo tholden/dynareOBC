@@ -58,7 +58,12 @@ function dynareOBC( InputFileName, varargin )
     end
 
 	if ~ismember( 'noclearall', varargin )
-		evalin( 'base', 'clear all;' );
+		WarningState = warning( 'off', 'all' );
+		try
+			evalin( 'base', 'clear all;' );
+		catch
+		end
+		warning( WarningState );
 	end
     
 	addpath( [ dynareOBCPath '/dynareOBC/' ] );
