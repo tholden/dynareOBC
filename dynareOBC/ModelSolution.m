@@ -80,7 +80,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         skipline( );
     end
 
-    dynareOBC = GetIRFsToShadowShocks( M, options, oo, dynareOBC );
+    dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC );
 
     if SlowMode
         skipline( );

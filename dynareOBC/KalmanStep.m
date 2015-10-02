@@ -26,11 +26,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), M, options, oo, dynareOBC, false, InitialFullState, true );
         if dynareOBC.Order == 1
-            TempNewStatePoints = [ Simulation.first; Simulation.bound ];
+            TempNewStatePoints = [ Simulation.first; Simulation.bound_offset; Simulation.bound ];
         elseif dynareOBC.Order == 2
-            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.bound ];
+            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.bound_offset; Simulation.bound ];
         else
-            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound ];
+            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound_offset; Simulation.bound ];
         end
         NewStatePoints( :, i ) = TempNewStatePoints( EndoSelectWithControls ); % TempNewStatePoints( EndoSelect );
 		if any( ~isfinite( NewStatePoints( :, i ) ) )
@@ -106,13 +106,16 @@ function FullStateStruct = GetFullStateStruct( PartialState, NEndo, EndoSelect, 
             FullStateStruct.third = CurrentState( (2*NEndo+1):(3*NEndo) );
             FullStateStruct.first_sigma_2 = CurrentState( (3*NEndo+1):(4*NEndo) );
             total = total + FullStateStruct.third + FullStateStruct.first_sigma_2;
-            FullStateStruct.bound = CurrentState( (4*NEndo+1):end );
+            FullStateStruct.bound_offset = CurrentState( (4*NEndo+1):(5*NEndo) );
+            FullStateStruct.bound = CurrentState( (5*NEndo+1):end );
         else
-            FullStateStruct.bound = CurrentState( (2*NEndo+1):end );
+            FullStateStruct.bound_offset = CurrentState( (2*NEndo+1):(3*NEndo) );
+            FullStateStruct.bound = CurrentState( (3*NEndo+1):end );
         end
     else
-        FullStateStruct.bound = CurrentState( (NEndo+1):end );
+        FullStateStruct.bound_offset = CurrentState( (NEndo+1):(2*NEndo) );
+            FullStateStruct.bound = CurrentState( (2*NEndo+1):end );
 	end
 	FullStateStruct.total = total;
-    FullStateStruct.total_with_bounds = FullStateStruct.total + FullStateStruct.bound;
+    FullStateStruct.total_with_bounds = FullStateStruct.total + FullStateStruct.bound_offset;
 end

@@ -1,7 +1,9 @@
 function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, DisplayProgress, InitialFullState, SkipMLVSimulation )
 
     T = dynareOBC.InternalIRFPeriods;
-    
+    Ts = dynareOBC.TimeToEscapeBounds;
+    ns = dynareOBC.NumberOfMax;
+   
     SimulationLength = size( ShockSequence, 2 );
     
 	if nargin < 6
@@ -10,7 +12,8 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 	if nargin < 7
         EndoZeroVec = zeros( M.endo_nbr, 1 );
         InitialFullState = struct;
-        InitialFullState.bound = EndoZeroVec;
+        InitialFullState.bound = zeros( Ts * ns, 1 );
+        InitialFullState.bound_offset = EndoZeroVec;
         InitialFullState.first = EndoZeroVec;
 		if dynareOBC.Order >= 3
 			InitialFullState.first_sigma_2 = EndoZeroVec;
@@ -73,26 +76,33 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
     % StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
 	StructFieldNames = fieldnames( Simulation );
     
-    ghx = dynareOBC.HighestOrder_ghx;
-    ghu = dynareOBC.HighestOrder_ghu;
     SelectState = dynareOBC.SelectState;
         
-    Simulation.bound = zeros( M.endo_nbr, SimulationLength );
+    Simulation.bound = zeros( Ts * ns, SimulationLength );
+    Simulation.bound_offset = zeros( M.endo_nbr, SimulationLength );
     
     ShadowShockSequence = zeros( dynareOBC.FullNumVarExo, SimulationLength );
     NewExoSelect = (dynareOBC.OriginalNumVarExo+1) : dynareOBC.FullNumVarExo;
     
+	ghx = oo.dr.ghx;
+	pMat = dynareOBC.pMat;
+	
     if dynareOBC.NumberOfMax > 0
-		BoundOffsetOriginalOrder = InitialFullState.bound;
+		Bound = InitialFullState.bound;
+		BoundOffsetOriginalOrder = InitialFullState.bound_offset;
 		BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
-		BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
+		BoundOffsetDROrderNext = pMat * Bound + ghx * BoundOffsetDROrder( SelectState );
 		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
+		ReshapedBound = reshape( Bound, Ts, ns );
+		BoundNext = [ ReshapedBound( 2:end, : ); zeros( 1, ns ) ];
+		BoundNext = BoundNext(:);
+		% TODO what is the impact of the shock hitting in boundoffsetdrordernext??
 		
         if dynareOBC.Global
             TM2 = T - 2;
             pM1 = ( -1 : TM2 )';
             pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
-            ErrorWeight = repmat( 1 - pWeight, 1, dynareOBC.NumberOfMax );
+            ErrorWeight = repmat( 1 - pWeight, 1, ns );
         end
 
         Shock = zeros( M.exo_nbr, 1 );
@@ -129,7 +139,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo.dr, dynareOBC );
                 ReturnPath = ReturnStruct.total;        
 
-                pseudo_y = -ReturnPath( dynareOBC.VarIndices_Sum(:), 1 );
+                pseudo_y = -Bound;
                 for i = [ dynareOBC.VarIndices_ZeroLowerBounded dynareOBC.VarIndices_ZeroLowerBoundedLongRun ]
                     ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * pseudo_y )';
                 end
@@ -144,7 +154,6 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                         y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
                     end
 
-                    % TODO
                     if dynareOBC.Global
                         y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
                     end
@@ -157,12 +166,12 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     end
                 end
 
+				% orig_y = y;
                 y = y + pseudo_y;
 
-                ShadowShockSequence( dynareOBC.VarExoIndices_DummyShadowShocks(:), t ) = y ./ sqrt( eps ); % M_.params( dynareOBC_.ParameterIndices_ShadowShockCombinations_Slice(:) );
-
-                BoundOffsetDROrder = BoundOffsetDROrderNext + ghu( :, NewExoSelect ) * ShadowShockSequence( NewExoSelect, t );
-                BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
+                BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * y;
+                % BoundOffsetDROrder = ghx * BoundOffsetDROrder( SelectState ) + pMat * orig_y;
+                BoundOffsetDROrderNext = pMat * Bound + ghx * BoundOffsetDROrder( SelectState );
                 BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
                 BoundOffsetOriginalOrder = BoundOffsetDROrder( oo.dr.inv_order_var, : );
                 Simulation.bound( :, t ) = BoundOffsetOriginalOrder;
@@ -198,8 +207,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
         end
     end
     
-    Simulation.total_with_bounds = Simulation.total + Simulation.bound;
-    Simulation.shadow_shocks = ShadowShockSequence( NewExoSelect, : );
+    Simulation.total_with_bounds = Simulation.total + Simulation.bound_offset;
     
     if dynareOBC.MLVSimulationMode > 0 && ( ~SkipMLVSimulation )
         MLVNames = dynareOBC.MLVNames;

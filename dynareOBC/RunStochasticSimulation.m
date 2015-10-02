@@ -11,7 +11,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     
     Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, true );
     
-    oo.exo_simul = [ ShockSequence; Simulation.shadow_shocks ]';
+    oo.exo_simul = ShockSequence';
     oo.endo_simul = Simulation.total_with_bounds;
     dynareOBC.SimulationsWithoutBounds = Simulation.total;
     if dynareOBC.MLVSimulationMode > 0
