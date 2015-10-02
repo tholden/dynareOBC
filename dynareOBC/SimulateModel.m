@@ -33,16 +33,16 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 	if dynareOBC.UseSimulationCode && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
 		try
 			if dynareOBC.Estimation
-				if dynareOBC.NoSparse
-					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
-				else
+				if dynareOBC.Sparse
 					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+				else
+					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
 				end
 			else
-				if dynareOBC.NoSparse
-					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
-				else
+				if dynareOBC.Sparse
 					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+				else
+					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
 				end
 			end
 		catch Error

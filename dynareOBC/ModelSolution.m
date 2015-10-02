@@ -21,7 +21,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     end
 
     if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
-        if ~dynareOBC.NoSparse
+        if dynareOBC.Sparse
             if SlowMode
                 skipline( );
                 disp( 'Converting to sparse matrices.' );
@@ -53,7 +53,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     oo.steady_state = oo.dr.ys;
 
-    if ~dynareOBC.NoSparse
+    if dynareOBC.Sparse
         if SlowMode
             skipline( );
             disp( 'Converting to sparse matrices.' );
@@ -95,16 +95,15 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     dynareOBC.FullNumVarExo = M.exo_nbr;
 
-    if SlowMode
-        skipline( );
-        disp( 'Reducing the size of decision matrices.' );
-        skipline( );
-    end
-
-    [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
+%     if SlowMode
+%         skipline( );
+%         disp( 'Reducing the size of decision matrices.' );
+%         skipline( );
+%     end
+% 
+%     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
 
     dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'AlphaStart', dynareOBC.ZeroVecS );
     dynareOBC.ParametricSolutionFound = 0;
     dynareOBC.GuaranteedHorizon = 0;
 

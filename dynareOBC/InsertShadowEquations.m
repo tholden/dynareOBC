@@ -1,5 +1,5 @@
-function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumVar, CurrentNumVarExo, dynareOBC, GlobalApproximationParameters, AmpValues )
-    seps_string = sprintf( '%.17e', sqrt( eps ) );
+function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumVar, dynareOBC, GlobalApproximationParameters, AmpValues )
+    % seps_string = sprintf( '%.17e', sqrt( eps ) );
 
     T = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
@@ -15,7 +15,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
     
     for i = 1 : ns
         string_i = int2str( i );
-        varexoString = 'varexo';
+        % varexoString = 'varexo';
         if MaxArgValues( i, 1 ) > MaxArgValues( i, 2 )
             MaxLetter = 'A';
             MinLetter = 'B';
@@ -31,7 +31,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         CurrentNumVar = CurrentNumVar + 1;
         dynareOBC.VarIndices_ZeroLowerBounded( i ) = CurrentNumVar;
         
-        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
+        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ';' ]; %#ok<*AGROW> % '+dynareOBCSum' string_i '_0;'
         ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', BoundedVarName, SteadyStateBoundedVar );
 
         if dynareOBC.Global
@@ -62,28 +62,28 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         
         FileLines{ dynareOBC.MaxFuncIndices( i ) } = [ '#dynareOBCMaxFunc' string_i '=dynareOBCMaxArg' MinLetter string_i '+' BoundedVarName ';' ];
  
-        for j = 0 : ( T - 1 )
-            string_j = int2str( j );
-            varName = [ 'dynareOBCSum' string_i '_' string_j ];
-            varString = [ varString ' ' varName ];
-            CurrentNumVar = CurrentNumVar + 1;
-            dynareOBC.VarIndices_Sum( j + 1, i ) = CurrentNumVar;
-            ToInsertInInitVal{ end + 1 } = [ varName '=0;' ];
-            NewEq = [ varName '=0' ];
-            if j < T - 1
-                NewEq = [ NewEq '+dynareOBCSum' string_i '_' int2str( j+1 ) '(-1)' ];
-            end
-            varexoName = [ 'dynareOBCEps' string_i '_' string_j ];
-            varexoString = [ varexoString ' ' varexoName ];
-            CurrentNumVarExo = CurrentNumVarExo + 1;
-            dynareOBC.VarExoIndices_DummyShadowShocks( j + 1, i ) = CurrentNumVarExo;
-            ToInsertInShocks{ end + 1 } = [ 'var ' varexoName '=1;' ];
-            ToInsertInInitVal{ end + 1 } = [ varexoName '=0;' ];
-            NewEq = [ NewEq '+' seps_string '*(' varexoName '^' int2str( dynareOBC.ShadowOrder ) ');' ];
-            ToInsertInModelAtEnd{ end + 1 } = NewEq;
-        end
-        varexoString = [ varexoString ';' ];
+%         for j = 0 : ( T - 1 )
+%             string_j = int2str( j );
+%             varName = [ 'dynareOBCSum' string_i '_' string_j ];
+%             varString = [ varString ' ' varName ];
+%             CurrentNumVar = CurrentNumVar + 1;
+%             dynareOBC.VarIndices_Sum( j + 1, i ) = CurrentNumVar;
+%             ToInsertInInitVal{ end + 1 } = [ varName '=0;' ];
+%             NewEq = [ varName '=0' ];
+%             if j < T - 1
+%                 NewEq = [ NewEq '+dynareOBCSum' string_i '_' int2str( j+1 ) '(-1)' ];
+%             end
+%             varexoName = [ 'dynareOBCEps' string_i '_' string_j ];
+%             varexoString = [ varexoString ' ' varexoName ];
+%             CurrentNumVarExo = CurrentNumVarExo + 1;
+%             dynareOBC.VarExoIndices_DummyShadowShocks( j + 1, i ) = CurrentNumVarExo;
+%             ToInsertInShocks{ end + 1 } = [ 'var ' varexoName '=1;' ];
+%             ToInsertInInitVal{ end + 1 } = [ varexoName '=0;' ];
+%             NewEq = [ NewEq '+' seps_string '*(' varexoName '^' int2str( dynareOBC.ShadowOrder ) ');' ];
+%             ToInsertInModelAtEnd{ end + 1 } = NewEq;
+%         end
+        % varexoString = [ varexoString ';' ];
         varString = [ varString ';' ];
-        ToInsertBeforeModel = [ ToInsertBeforeModel { varexoString, varString } ];
+        ToInsertBeforeModel = [ ToInsertBeforeModel { varString } ];
     end
 end

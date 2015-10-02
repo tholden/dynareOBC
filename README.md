@@ -132,9 +132,8 @@ Note:
                Values above 51 are treated as equal to 51.
           * MLVSimulationSamples=INTEGER (default: 2000)
                Specifies the number of samples to use for Monte Carlo integration, when MLVSimulationMode=3.
-    * NoSparse
-         By default, dynareOBC replaces all of the elements of the decision rules by sparse matrices, as this generally speeds
-         up dynareOBC. This option prevents dynareOBC from doing this.
+    * Sparse
+         Causes dynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up dynareOBC.
 
  * **For controlling IRFs**
     * SlowIRFs
