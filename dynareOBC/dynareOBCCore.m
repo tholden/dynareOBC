@@ -211,6 +211,15 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 		dynareOBC.ShadowOrder = dynareOBC.Order;
 	end
 
+	switch dynareOBC.Order
+		case 1
+			dynareOBC.OrderText = 'first';
+		case 2
+			dynareOBC.OrderText = 'second';
+		case 3
+			dynareOBC.OrderText = 'third';
+	end
+	
 	CurrentNumParams = M_.param_nbr;
 	CurrentNumVar = M_.endo_nbr;
 	CurrentNumVarExo = M_.exo_nbr;

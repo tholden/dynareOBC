@@ -81,21 +81,19 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
     Simulation.bound = zeros( Ts * ns, SimulationLength );
     Simulation.bound_offset = zeros( M.endo_nbr, SimulationLength );
     
-    ShadowShockSequence = zeros( dynareOBC.FullNumVarExo, SimulationLength );
-    NewExoSelect = (dynareOBC.OriginalNumVarExo+1) : dynareOBC.FullNumVarExo;
-    
 	ghx = oo.dr.ghx;
 	pMat = dynareOBC.pMat;
 	
     if dynareOBC.NumberOfMax > 0
 		Bound = InitialFullState.bound;
-		BoundOffsetOriginalOrder = InitialFullState.bound_offset;
-		BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
-		BoundOffsetDROrderNext = pMat * Bound + ghx * BoundOffsetDROrder( SelectState );
-		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
 		ReshapedBound = reshape( Bound, Ts, ns );
 		BoundNext = [ ReshapedBound( 2:end, : ); zeros( 1, ns ) ];
 		BoundNext = BoundNext(:);
+		
+		BoundOffsetOriginalOrder = InitialFullState.bound_offset;
+		BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
+		BoundOffsetDROrderNext = pMat * BoundNext + ghx * BoundOffsetDROrder( SelectState );
+		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
 		% TODO what is the impact of the shock hitting in boundoffsetdrordernext??
 		
         if dynareOBC.Global
@@ -139,42 +137,43 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo.dr, dynareOBC );
                 ReturnPath = ReturnStruct.total;        
 
-                pseudo_y = -Bound;
                 for i = [ dynareOBC.VarIndices_ZeroLowerBounded dynareOBC.VarIndices_ZeroLowerBoundedLongRun ]
-                    ReturnPath( i, : ) = ReturnPath( i, : ) + ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * pseudo_y )';
+                    ReturnPath( i, : ) = ReturnPath( i, : ) - ( dynareOBC.MSubMatrices{ i }( 1:T, : ) * BoundNext )';
                 end
 
                 UnconstrainedReturnPath = vec( ReturnPath( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
 
                 try
-                    y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
+                    Bound = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
                     [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
 
                     if ~dynareOBC.NoCubature
-                        y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
+                        Bound = PerformCubature( Bound, UnconstrainedReturnPath, options, oo, dynareOBC, ReturnStruct.first );
                     end
 
                     if dynareOBC.Global
-                        y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
+                        Bound = SolveGlobalBoundsProblem( Bound, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
                     end
                 catch Error
                     if dynareOBC.Estimation || dynareOBC.IgnoreBoundFailures
-                        y = -pseudo_y;
+                        Bound = BoundNext;
                         warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to Estimation or IgnoreBoundFailures option.' ] );
                     else
                         rethrow( Error );
                     end
                 end
 
-				% orig_y = y;
-                y = y + pseudo_y;
-
-                BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * y;
-                % BoundOffsetDROrder = ghx * BoundOffsetDROrder( SelectState ) + pMat * orig_y;
-                BoundOffsetDROrderNext = pMat * Bound + ghx * BoundOffsetDROrder( SelectState );
+				ReshapedBound = reshape( Bound, Ts, ns );
+				BoundNext = [ ReshapedBound( 2:end, : ); zeros( 1, ns ) ];
+				BoundNext = BoundNext(:);
+		
+                BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( Bound - BoundNext );
+                BoundOffsetDROrderNext = pMat * BoundNext + ghx * BoundOffsetDROrder( SelectState );
                 BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
                 BoundOffsetOriginalOrder = BoundOffsetDROrder( oo.dr.inv_order_var, : );
-                Simulation.bound( :, t ) = BoundOffsetOriginalOrder;
+                
+				Simulation.bound( :, t ) = Bound;
+                Simulation.bound_offset( :, t ) = BoundOffsetOriginalOrder;
             catch Error
                 warning( WarningState );
                 rethrow( Error );
