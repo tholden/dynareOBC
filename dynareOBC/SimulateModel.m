@@ -86,12 +86,14 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 	
     if dynareOBC.NumberOfMax > 0
 		y = InitialFullState.bound;
-		ReshapedBound = reshape( y, Ts, ns );
-		yNext = [ ReshapedBound( 2:end, : ); zeros( 1, ns ) ];
-		yNext = yNext(:);
 		
 		BoundOffsetOriginalOrder = InitialFullState.bound_offset;
 		BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
+		
+		Reshaped_y = reshape( y, Ts, ns );
+		yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
+		yNext = yNext(:);
+				
 		BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
 		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
 		% TODO what is the impact of the shock hitting in boundoffsetdrordernext??
@@ -163,14 +165,15 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     end
                 end
 
-				ReshapedBound = reshape( y, Ts, ns );
-				yNext = [ ReshapedBound( 2:end, : ); zeros( 1, ns ) ];
+                BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( y - yNext );
+                BoundOffsetOriginalOrder = BoundOffsetDROrder( oo.dr.inv_order_var, : );
+
+				Reshaped_y = reshape( y, Ts, ns );
+				yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
 				yNext = yNext(:);
 		
-                BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( y - yNext );
                 BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
                 BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
-                BoundOffsetOriginalOrder = BoundOffsetDROrder( oo.dr.inv_order_var, : );
                 
 				Simulation.bound( :, t ) = y;
                 Simulation.bound_offset( :, t ) = BoundOffsetOriginalOrder;
