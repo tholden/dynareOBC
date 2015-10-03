@@ -96,7 +96,6 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 				
 		BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
 		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
-		% TODO what is the impact of the shock hitting in boundoffsetdrordernext??
 		
         if dynareOBC.Global
             TM2 = T - 2;
@@ -130,11 +129,12 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
 
                 for i = 1 : length( StructFieldNames )
 					CurrentFieldName = StructFieldNames{ i };
-					if ~strcmp( CurrentFieldName, 'constant' )
+					if ~strcmp( CurrentFieldName, 'constant' ) && ~strcmp( CurrentFieldName, 'bound' )
 						CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
 					end
                 end
                 CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
+				CurrentStateWithoutBound.bound = yNext;
 
                 ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo.dr, dynareOBC );
                 ReturnPath = ReturnStruct.total;        

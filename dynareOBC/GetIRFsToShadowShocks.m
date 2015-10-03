@@ -74,6 +74,11 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
 		end
 	end
 	
+	% dynareOBC.pMat = cell( Ts, 1 );
+	% for t = 1 : Ts
+	% 	dynareOBC.pMat{ t } = cell2mat( p( t, : ) );
+	% end
+
 	dynareOBC.pMat = cell2mat( p( 1, : ) );
 	
     MSubMatrices = cell( endo_nbr, 1 );

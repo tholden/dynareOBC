@@ -2,30 +2,42 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M, dr, dynareOBC )
 
     SelectState = dynareOBC.SelectState;
     T = dynareOBC.InternalIRFPeriods;
-    
+	Ts = dynareOBC.TimeToEscapeBounds;
+    nEndo = M.endo_nbr;
+	ns = dynareOBC.NumberOfMax;
+	
     if isstruct( InitialStateOrShock )
         % then we are being called from SimulateModel and InitialStateOrModel is the InitialState
         InitialState = InitialStateOrShock;
         y1 = InitialState.first( dr.order_var );   
-        if dynareOBC.Order > 1
+		HighestIndices = 1:nEndo;
+		if dynareOBC.Order > 1
             y1s = y1( SelectState );
             y2 = InitialState.second( dr.order_var );
             y1s2 = spkron( y1s, y1s );
             z2 = [ y1; y2; y1s2 ];
+			HighestIndices = HighestIndices + nEndo;
             if dynareOBC.Order > 2
                 z = [ z2; InitialState.first_sigma_2( dr.order_var ); InitialState.third( dr.order_var ); spkron( y2( SelectState ), y1s ); spkron( y1s2, y1s ) ];
+				HighestIndices = HighestIndices + length( z2 );
             else
                 z = z2;
             end
         else
             z = y1;
-        end
+		end
+		if any( abs( InitialState.bound ) > 1e-12 )
+			Bound = InitialState.bound;
+		else
+			Bound = [];
+		end
     else
         % then we are being called from FastIRFs and InitialStateOrShock is the Shock
+		Bound = [];
+		
         Shock = InitialStateOrShock;
         z = dynareOBC.Mean_z;
         
-        nEndo = M.endo_nbr;
         nState = length( SelectState );
         
         % derived from pruning_abounds.m
@@ -112,10 +124,18 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M, dr, dynareOBC )
     c = dynareOBC.c;
     A = dynareOBC.A;
     
-    for i = 2 : T
+	pMat = dynareOBC.pMat;
+    	
+    for t = 2 : T
         % z( (i6+1):end ) = 0;
         z = c + A * z;
-        zPath( :, i ) = z;
+		if ( t <= Ts ) && ~isempty( Bound )
+			Bound = reshape( Bound, Ts, ns );
+			Bound = [ Bound( 2:end, : ); zeros( 1, ns ) ];
+			Bound = Bound(:);
+			z( HighestIndices ) = z( HighestIndices ) + pMat * Bound;
+		end
+        zPath( :, t ) = z;
     end
     
     ReturnStruct = struct;
