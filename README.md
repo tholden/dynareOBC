@@ -24,8 +24,9 @@ Recommended additional installations:
  * MATLAB R2015a or later.
  * The MATLAB Parallel toolbox, or a fully compatible clone.
  * The MATLAB Optimization toolbox, or a fully compatible clone.
- * A working compiler for MEX, ideally supporting OpenMP. On Windows, a free compiler meeting these requirements is available
-   from: https://www.visualstudio.com/en-us/products/visual-studio-community-vs.aspx
+ * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, with MATLAB r2015b,
+   a free compiler meeting these requirements is available by clicking on "Add-Ons" in the MATLAB toolbar, then searching for
+   MinGW. Be sure to untick the "check for updated files" in the installer that opens.
  * MATLAB Coder, or a fully compatible clone (only used with MATLAB R2015a or later).
  * A competitive mixed integer linear programming solver, such as one of the below, each of which is available for free to
    academics:
