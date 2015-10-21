@@ -7,35 +7,62 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
 
     Ms = dynareOBC.MsMatrix;
-    AbsArguments = abs( angle( eig( Ms ) ) );
+	
+	LPOptions = optimoptions( @linprog, 'Algorithm', 'Dual-Simplex', 'Display', 'off', 'MaxIter', Inf, 'TolFun', 1e-9, 'TolCon', 1e-9 );
 
-    global ptest_use_mex
-    
-    ptestVal = 0;
-    if all( AbsArguments < pi - pi / size( Ms, 1 ) )
-        disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
-        if dynareOBC.NoPTest
-            disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple solutions.' );
-        else
-            if ptest_use_mex
-                disp( 'Testing whether M is a P-matrix using the MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
-                if ptest_mex( Ms )
-                    ptestVal = 1;
-                else
-                    ptestVal = -1;
-                end
-            else
-                disp( 'Testing whether M is a P-matrix using the non-MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
-                if ptest( Ms )
-                    ptestVal = 1;
-                else
-                    ptestVal = -1;
-                end
-            end
-        end
-    else
-        ptestVal = -1;
-    end
+	V0 = zeros( Ts, 1 );
+	V1 = ones( Ts, 1 );
+	f = [ V0; -1 ];
+	LB = [ V0; -Inf ];
+	UB = [ V1; Inf ];
+	X0 = [ V0; 0 ];
+	[ ~, MinusS, Flag ] = linprog( f, [ -Ms, V1 ], V0, [], [], LB, UB, X0, LPOptions );
+	ptestVal = 0;
+	if Flag ~= 1
+		warning( 'dynareOBC:InitialChecksLinProgFail', 'Failed to solve the linear programming problem used to test if M is an S matrix. This should never happen.' );
+	else
+		if -MinusS >= 1e-8
+			skipline( );
+			disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
+			skipline( );
+		else
+			skipline( );
+			disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
+			skipline( );
+			ptestVal = -1;
+		end
+	end	
+	
+	global ptest_use_mex
+
+	if ptestVal >= 0
+		AbsArguments = abs( angle( eig( Ms ) ) );
+
+		if all( AbsArguments < pi - pi / size( Ms, 1 ) )
+			disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
+			if dynareOBC.NoPTest
+				disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple solutions.' );
+			else
+				if ptest_use_mex
+					disp( 'Testing whether M is a P-matrix using the MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
+					if ptest_mex( Ms )
+						ptestVal = 1;
+					else
+						ptestVal = -1;
+					end
+				else
+					disp( 'Testing whether M is a P-matrix using the non-MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
+					if ptest( Ms )
+						ptestVal = 1;
+					else
+						ptestVal = -1;
+					end
+				end
+			end
+		else
+			ptestVal = -1;
+		end
+	end
     if ptestVal > 0
         disp( 'M is a P-matrix. There is at most one solution to the model.' );
     elseif ptestVal < 0
