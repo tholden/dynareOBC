@@ -1,5 +1,4 @@
 function dynareOBC = InitialChecks( dynareOBC )
-    T = dynareOBC.InternalIRFPeriods;
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     
@@ -16,7 +15,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     if all( AbsArguments < pi - pi / size( Ms, 1 ) )
         disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
         if dynareOBC.NoPTest
-            disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple fundamental solutions.' );
+            disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple solutions.' );
         else
             if ptest_use_mex
                 disp( 'Testing whether M is a P-matrix using the MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
@@ -38,12 +37,36 @@ function dynareOBC = InitialChecks( dynareOBC )
         ptestVal = -1;
     end
     if ptestVal > 0
-        disp( 'M is a P-matrix. There is at most one fundamental solution to the model.' );
+        disp( 'M is a P-matrix. There is at most one solution to the model.' );
     elseif ptestVal < 0
-        disp( 'M is not a P-matrix. There are multiple fundamental solutions to the model in at least some states of the world.' );
+        disp( 'M is not a P-matrix. There are multiple solutions to the model in at least some states of the world.' );
         disp( 'The one returned will depend on the chosen value of omega.' );
     end
     skipline();
+    
+    if dynareOBC.FullTest > 0
+        FTS = int2str( dynareOBC.FullTest );
+        MFTS = [ 'M( 1:' FTS ', 1:' FTS ' )' ];
+        skipline();
+        disp( [ 'Running full test to see if ' MFTS ' is a P and/or (strictly) semi-monotone matrix.' ] );
+        skipline();
+        [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
+        if MinimumDeterminant >= 1e-8
+            disp( [ MFTS ' is a P-matrix.' ] );
+        else
+            disp( [ MFTS ' is not a P-matrix.' ] );
+        end
+        if MinimumS >= 1e-8
+            disp( [ MFTS ' is a strictly semi-monotone matrix.' ] );
+        else
+            disp( [ MFTS ' is not a strictly semi-monotone matrix.' ] );
+        end
+        if MinimumS0 >= 1e-8
+            disp( [ MFTS ' is a semi-monotone matrix.' ] );
+        else
+            disp( [ MFTS ' is not a semi-monotone matrix.' ] );
+        end        
+    end
     
     for Tss = dynareOBC.TimeToSolveParametrically : -1 : 0
         ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
@@ -92,28 +115,4 @@ function dynareOBC = InitialChecks( dynareOBC )
         catch
         end
     end
-    
-    CompVec = false( T * ns, 1 );
-    GuaranteedHorizon = 0;
-
-    Tolerance = dynareOBC.Tolerance;
-    for GH = 1 : T
-        CompVec( GH + ( 0:(ns-1) ) * T ) = true;
-        y = dynareOBC.ZeroVecS;
-        WarningState = warning( 'off', 'all' );
-        try
-            y = SolveBoundsProblem( -double( CompVec ), dynareOBC );
-        catch
-        end
-        warning( WarningState );
-        if ( min( dynareOBC.MMatrix( CompVec, : ) * y ) < 1-Tolerance ) || ( min( dynareOBC.MMatrix * y ) < -Tolerance )
-            warning( 'dynareOBC:GuaranteedHorizon', [ 'There is only a guaranteed solution to the linear complementarity problem when the constraint(s) bind(s) for at most ' int2str( GuaranteedHorizon ) ' periods.' ] );
-            break;
-        else
-            GuaranteedHorizon = GH;
-        end
-    end
-    
-    dynareOBC.GuaranteedHorizon = GuaranteedHorizon;
 end
-

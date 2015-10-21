@@ -67,12 +67,16 @@ Note:
          requested number of IRF periods, then that value will be used instead. This also controls the number of periods of
          uncertainty over which we integrate.
     * Omega=FLOAT (default: 2)
-         The tightness of the constraint on the shadow shocks. If this is large, solutions with shadow shocks close to zero will
-         be returned when there are multiple solutions.
+         The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be
+         returned when there are multiple solutions.
     * MILPSolver=STRING (default: automatically selected based on the detected solvers)
          dynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's
          solver. To find out what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by
          YALMIP.
+    * NoPositiveShortcut
+         By default, dynareOBC skips solving the bounds problem when the constraint is not violated. This is harmless when M is
+         a semi-monotone or P matrix, but otherwise it may result in the solution procedure missing times when the model should
+         have jumped to the bound. This option forces dynareOBC to solve the bounds problem in all cases.
     * IgnoreBoundFailures
          Makes dynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability.
          This will severely compromise accuracy.
@@ -171,6 +175,10 @@ Note:
          Ignores all non-differentiabilities in the model. Useful for debugging.
     * NoCleanup
          Prevents the deletion of dynareOBC's temporary files. Useful for debugging.
+    * NoPTest
+         Skips testing if M is a P matrix.
+    * FullTest=NUMBER (default: 0)
+         Runs very slow tests to see if the top NUMBERxNUMBER submatrix of M is a P and/or (strictly) semi-monotone matrix.
 
 See the dynare reference manual for other available options.
 

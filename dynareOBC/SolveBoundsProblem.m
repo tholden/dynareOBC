@@ -1,8 +1,8 @@
 function y = SolveBoundsProblem( q, dynareOBC )
     Tolerance = dynareOBC.Tolerance;
-    if all( q >= -Tolerance )
+    if all( q >= -Tolerance ) && ~dynareOBC.NoPositiveShortcut
         y = dynareOBC.ZeroVecS;
-         return
+        return
     end
     
     M = dynareOBC.MMatrix;

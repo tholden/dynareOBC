@@ -105,7 +105,6 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
     dynareOBC.ParametricSolutionFound = 0;
-    dynareOBC.GuaranteedHorizon = 0;
 
 	if SlowMode
 		if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
