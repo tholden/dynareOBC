@@ -98,15 +98,9 @@ function dynareOBC = InitialChecks( dynareOBC )
     for Tss = dynareOBC.TimeToSolveParametrically : -1 : 0
         ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
         Mss = Ms( ssIndices, ssIndices );
-        if ptest_use_mex
-            if ptest_mex( Mss )
-                break;
-            end
-        else
-            if ptest( Mss )
-                break;
-            end
-        end
+		if min( eig( Mss + Mss' ) ) > sqrt( eps )
+			break;
+		end
     end
 
     if Tss > 0
