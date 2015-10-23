@@ -24,9 +24,11 @@ Recommended additional installations:
  * MATLAB R2015a or later.
  * The MATLAB Parallel toolbox, or a fully compatible clone.
  * The MATLAB Optimization toolbox, or a fully compatible clone.
- * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, with MATLAB r2015b,
-   a free compiler meeting these requirements is available by clicking on "Add-Ons" in the MATLAB toolbar, then searching for
-   MinGW. Be sure to untick the "check for updated files" in the installer that opens.
+ * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, a free compiler meeting
+   these requirements is available from: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx . Alternatively, on
+   Windows, with MATLAB r2015b, another free compiler meeting these requirements (which uses much less disk space) is available
+   by clicking on "Add-Ons" in the MATLAB toolbar, then searching for MinGW. Be sure to untick the "check for updated files" in
+   the installer that opens.
  * MATLAB Coder, or a fully compatible clone (only used with MATLAB R2015a or later).
  * A competitive mixed integer linear programming solver, such as one of the below, each of which is available for free to
    academics:
@@ -83,19 +85,22 @@ Note:
 
  * **For controlling cubature**
     * FastCubature
-         Causes dynareOBC to ignore the value specified in maxcubaturedegree, and to instead use a degree 3 rule without
-         negative weights, but involving evaluations further from the origin.
+         Causes dynareOBC to ignore the value specified in MaxCubatureDegree and QuasiMonteCarlo, and to instead use a degree 3
+         monomial cubature rule without negative weights, but involving evaluations further from the origin.
+    * QuasiMonteCarloLevel=INTEGER (default: 0)
+         If this is non-zero, then Gaussian cubature is not used (so the MaxCubatureDegree option is ignored). Instead, quasi-
+         Monte Carlo integration with at most 2^(1+INTEGER) - 1 samples is used.
     * MaxCubatureDegree=INTEGER (default: 7)
          Specifies the degree of polynomial which will be integrated exactly in the highest degree, cubature performed.
          Values above 51 are treated as equal to 51.
-          * CubatureTolerance=FLOAT (default: 1e-6)
-               Specifies that the maximum acceptable change in the integrals is the given value.
           * KappaPriorParameter=FLOAT (default: 1)
                With statistical cubature, the rate of decay of the standard deviation of the error is given a Frechet
                distributed prior with shape parameter given by this setting. Setting this to 0 disables the prior on kappa.
           * NoStatisticalCubature
                Disables the statistical improvement to the cubature algorithm, which aggregates results of cubature at different
                degrees. Will generally reduce accuracy, but increase speed.
+    * CubatureTolerance=FLOAT (default: 1e-6)
+	     Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
     * MaxCubatureDimension=INTEGER (default: 100)
          The maximum dimension over which to integrate.
     * NoCubature
@@ -159,7 +164,7 @@ Note:
                observation. There should not be a column with dates. The second sheet should contain a title row with the names
                of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as
                minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
-          * EstimationFixedPointMaxIterations=NUMBER (default: 100)
+          * EstimationFixedPointMaxIterations=INTEGER (default: 100)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * EstimationAlternativeCubature
 		       Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
@@ -177,8 +182,8 @@ Note:
          Prevents the deletion of dynareOBC's temporary files. Useful for debugging.
     * NoPTest
          Skips testing if M is a P matrix.
-    * FullTest=NUMBER (default: 0)
-         Runs very slow tests to see if the top NUMBERxNUMBER submatrix of M is a P and/or (strictly) semi-monotone matrix.
+    * FullTest=INTEGER (default: 0)
+         Runs very slow tests to see if the top INTEGERxINTEGER submatrix of M is a P and/or (strictly) semi-monotone matrix.
 
 See the dynare reference manual for other available options.
 
@@ -225,7 +230,7 @@ dynareOBC incorporates code:
  * for nested Gaussian cubature that is copyright Alan Genz and Bradley Keister, 1996,
  * for LDL decompositions that is copyright Brian Borchers, 2002,
  * for displaying a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014,
- * for linear programming, from GLPKMEX, copyright Andrew Makhorin, Benoît Legat and others, 2015,
+ * for (mixed-integer) linear programming, from GLPKMEX, copyright Andrew Makhorin, Benoît Legat and others, 2015,
  * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014.
  
 Additionally, dynareOBC automatically downloads:
