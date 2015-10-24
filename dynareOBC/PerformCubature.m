@@ -165,6 +165,6 @@ function TwoNLogL = GetTwoNLogL( HyperParams, x, KappaPriorParameter )
     TwoNLogL = I * ( T * ( T - 1 ) * log_kappa - log( 1 - rho ) - log( 1 + rho ) ) + T * ( 2 * OI.' * log( sigma ) - log( 1 - phi ) - log( 1 + phi ) ) + Error.' * kron( diagKappaInvRhoInvdiagKappaInv, diag_sigmaInv * PhiInv * diag_sigmaInv ) * Error;
     if KappaPriorParameter > 0
         OPKappaPriorParameter = 1 + KappaPriorParameter;
-        TwoNLogL = TwoNLogL + KappaPriorParameter * ( kappa ^ ( -KappaPriorParameter ) * OPKappaPriorParameter + KappaPriorParameter * OPKappaPriorParameter * log_kappa );
+        TwoNLogL = TwoNLogL + OPKappaPriorParameter * ( log_kappa + kappa ^ ( -KappaPriorParameter ) ./ KappaPriorParameter );
     end
 end

@@ -94,8 +94,8 @@ Note:
          Specifies the degree of polynomial which will be integrated exactly in the highest degree, cubature performed.
          Values above 51 are treated as equal to 51.
           * KappaPriorParameter=FLOAT (default: 1)
-               With statistical cubature, the rate of decay of the standard deviation of the error is given a Frechet
-               distributed prior with shape parameter given by this setting. Setting this to 0 disables the prior on kappa.
+               With statistical cubature, the rate of decay of the standard deviation of the error is given a truncated mode 1
+               Frechet distributed prior with shape parameter given by this setting. Setting this to 0 disables the prior on kappa.
           * NoStatisticalCubature
                Disables the statistical improvement to the cubature algorithm, which aggregates results of cubature at different
                degrees. Will generally reduce accuracy, but increase speed.
