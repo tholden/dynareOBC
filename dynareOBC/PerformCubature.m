@@ -81,7 +81,7 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
             y = yNew;
         else
             x_y = [ yOriginal yMatrix( :, 1:i ) ];
-            OptiFunction = @( HP ) GetTwoNLogL( HP, x_y, dynareOBC.KappaPriorParameter );
+            OptiFunction = @( HP ) GetTwoNLogL( HP, x_y, dynareOBC.KappaPriorParameterA, dynareOBC.KappaPriorParameterB );
             OptiLB = [ -1+Tolerance; -1+Tolerance; Tolerance ];
             OptiUB = [ 1-Tolerance; 1-Tolerance; 1-Tolerance ];
             HyperParams = dynareOBC.FMinFunctor( OptiFunction, HyperParams, OptiLB, OptiUB, 'UseParallel', false );
@@ -152,7 +152,7 @@ function [ mu, sigma, PhiInv, diagKappaInvRhoInvdiagKappaInv, Error ] = GetMu( H
     sigma = sqrt( eps + max( 0, 1 / D * Temp.' * kron( RhoInv, PhiInv ) * Temp * OT ) );
 end
 
-function TwoNLogL = GetTwoNLogL( HyperParams, x, KappaPriorParameter )
+function TwoNLogL = GetTwoNLogL( HyperParams, x, KappaPriorParameterA, KappaPriorParameterB )
     rho = HyperParams( 1 );
     phi = HyperParams( 2 );
     kappa = HyperParams( 3 );
@@ -161,10 +161,8 @@ function TwoNLogL = GetTwoNLogL( HyperParams, x, KappaPriorParameter )
     D = size( x, 2 );
     OT = ones( T, 1 );
     diag_sigmaInv = diag( 1 ./ sigma );
-    log_kappa = log( kappa );
-    TwoNLogL = T * ( D * ( D - 1 ) * log_kappa - log( 1 - rho ) - log( 1 + rho ) ) + D * ( 2 * OT.' * log( sigma ) - log( 1 - phi ) - log( 1 + phi ) ) + Error.' * kron( diagKappaInvRhoInvdiagKappaInv, diag_sigmaInv * PhiInv * diag_sigmaInv ) * Error;
-    if KappaPriorParameter > 0
-        OPKappaPriorParameter = 1 + KappaPriorParameter;
-        TwoNLogL = TwoNLogL + OPKappaPriorParameter * ( log_kappa + kappa ^ ( -KappaPriorParameter ) ./ KappaPriorParameter );
+    TwoNLogL = T * ( D * ( D - 1 ) * log( kappa ) - log( 1 - rho ) - log( 1 + rho ) ) + D * ( 2 * OT.' * log( sigma ) - log( 1 - phi ) - log( 1 + phi ) ) + Error.' * kron( diagKappaInvRhoInvdiagKappaInv, diag_sigmaInv * PhiInv * diag_sigmaInv ) * Error;
+    if KappaPriorParameterA > 0 && KappaPriorParameterB > 0
+        TwoNLogL = TwoNLogL - 2 * log( 1 - ( 1 - kappa ^ KappaPriorParameterA ) ^ KappaPriorParameterB );
     end
 end
