@@ -50,7 +50,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
         error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     if abs( value( alpha ) ) < eps
-        error( 'dynareOBC:InfeasibleMILPProblem', 'Infeasible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
+        error( 'dynareOBC:InfeasibleMILPProblem', 'Impossible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
     end
     if value( z( end ) )
         warning( 'dynareOBC:Inaccuracy', 'The constraint binds in the final period. This is indicative of TimeToEscapeBounds being too low.' );
