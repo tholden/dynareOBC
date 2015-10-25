@@ -63,6 +63,14 @@ function dynareOBC( InputFileName, varargin )
 			evalin( 'base', 'clear all;' );
 		catch
 		end
+		try
+			evalin( 'base', 'clear global;' );
+		catch
+		end
+		try
+			evalin( 'base', 'clearvars;' );
+		catch
+		end
 		warning( WarningState );
 	end
     
