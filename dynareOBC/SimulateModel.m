@@ -101,7 +101,6 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
             TM2 = T - 2;
             pM1 = ( -1 : TM2 )';
             pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
-            ErrorWeight = repmat( 1 - pWeight, 1, ns );
         end
 
         Shock = zeros( M.exo_nbr, 1 );
@@ -154,7 +153,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     end
 
                     if dynareOBC.Global
-                        y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, ErrorWeight, dynareOBC );
+                        y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
                     end
                 catch Error
                     if dynareOBC.Estimation || dynareOBC.IgnoreBoundFailures
