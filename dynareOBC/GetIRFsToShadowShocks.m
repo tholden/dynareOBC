@@ -67,7 +67,11 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
 	
 	for l = 1 : ns
 		pVal = zeros( endo_nbr, Ts );
-		ZLBEquationSelect = Iendo_nbr( :, endo_nbr - ns + l );
+		if dynareOBC.Global
+			ZLBEquationSelect = sum( Iendo_nbr( :, ( endo_nbr - 2 * ns + 2 * l - 1 ) : ( endo_nbr - 2 * ns + 2 * l ) ), 2 );
+		else
+			ZLBEquationSelect = Iendo_nbr( :, endo_nbr - ns + l );
+		end
 		for t = Ts : -1 : 1
 			pVal = - V * ( C * pVal - ZLBEquationSelect * ITs( t, : ) );
 			p{ t, l } = pVal;
