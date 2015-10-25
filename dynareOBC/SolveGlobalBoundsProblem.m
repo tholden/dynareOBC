@@ -1,6 +1,6 @@
 function y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, ErrorWeight, dynareOBC )
     DesiredReturnPath = max( 0, UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * max( 0, y ) );
-    DesiredReturnPath = vec( bsxfun( @times, pWeight, reshape( DesiredReturnPath, size( UnconstrainedReturnPathLongRun ) ) ) + bsxfun( @times, 1 - pWeight, UnconstrainedReturnPathLongRun ) );
+    DesiredReturnPath = vec( bsxfun( @times, pWeight, reshape( DesiredReturnPath, size( UnconstrainedReturnPathLongRun ) ) ) + bsxfun( @times, 1 - pWeight, max( 0, UnconstrainedReturnPathLongRun ) ) );
     y = sdpvar( length( y ), 1 );
     ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
     ConstrainedReturnPathShortRun = UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * y;
