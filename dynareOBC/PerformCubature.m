@@ -75,7 +75,7 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
             end
         end
 		
-        if dynareOBC.FastCubature || dynareOBC.NoStatisticalCubature || dynareOBC.QuasiMonteCarloLevel > 0 || ( i == 1 && dynareOBC.KappaPriorParameter == 0 )
+        if dynareOBC.FastCubature || dynareOBC.NoStatisticalCubature || dynareOBC.QuasiMonteCarloLevel > 0 || ( i == 1 && ( dynareOBC.KappaPriorParameterA == 0 ||  dynareOBC.KappaPriorParameterB == 0 ) )
             yNew = yMatrix( :, i );
             yError = max( abs( y - yNew ) );
             y = yNew;
