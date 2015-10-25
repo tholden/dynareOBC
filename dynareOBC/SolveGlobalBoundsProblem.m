@@ -4,12 +4,12 @@ function y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPathShortRun, Uncon
     y = sdpvar( length( y ), 1 );
     ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
     ConstrainedReturnPathShortRun = UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * y;
-    Error = ConstrainedReturnPathLongRun - DesiredReturnPath;
+    Error = 1000 * ( ConstrainedReturnPathLongRun - DesiredReturnPath );
     Error = reshape( Error, size( UnconstrainedReturnPathLongRun ) );
     lambdas = sdpvar( size( Error, 1 ), size( Error, 2 ), 'full' );
     kappas = sdpvar( length( y ), 1 );
     mus = sdpvar( size( ConstrainedReturnPathLongRun, 1 ), 1 );
-    Constraints = [ 0 <= lambdas, 0 <= kappas, 0 <= mus, Error <= lambdas .* ErrorWeight, -Error <= lambdas .* ErrorWeight, ConstrainedReturnPathLongRun >= -mus, y >= ConstrainedReturnPathShortRun - ConstrainedReturnPathLongRun - kappas ];
+    Constraints = [ 0 <= lambdas, 0 <= kappas, 0 <= mus, Error <= lambdas .* ErrorWeight, -Error <= lambdas .* ErrorWeight, 1000 * ConstrainedReturnPathLongRun >= -mus, 1000 * ( y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun ) >= -kappas ];
     Diagnostics = optimize( Constraints, sum( lambdas(:) ) + sum( kappas(:) ) + sum( mus(:) ), dynareOBC.LPOptions );
     if Diagnostics.problem ~= 0
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
