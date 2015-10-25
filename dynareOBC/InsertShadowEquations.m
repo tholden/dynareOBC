@@ -1,6 +1,6 @@
 function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumVar, dynareOBC, GlobalApproximationParameters, AmpValues )
 
-    T = dynareOBC.TimeToEscapeBounds;
+    %T = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     
     dynareOBC.VarIndices_ZeroLowerBounded = zeros( 1, ns );
@@ -48,7 +48,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
                     end
                 end
             end
-            ToInsertInModelAtEnd{ end + 1 } = [ LongRunBoundedVarName '=' int2str( AmpValues( i ) ) '*(dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ')' PolynomialApproximationString '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
+            ToInsertInModelAtEnd{ end + 1 } = [ LongRunBoundedVarName '=' int2str( AmpValues( i ) ) '*(dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ')' PolynomialApproximationString ';' ];% '+dynareOBCSum' string_i '_0;' ]; %#ok<*AGROW>
             ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e%s;', LongRunBoundedVarName, SteadyStateBoundedVar, regexprep( PolynomialApproximationString, '\([+-]?\d+\)', '' ) );
         end
        
