@@ -130,6 +130,9 @@ Note:
          DynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that under the global
          solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the
          response ignoring the bound entirely.
+          * GlobalConstraintStrength=FLOAT (default: 1)
+               Specifies the weight on the squared deviation of the equality constraint in the global objective problem. Larger values
+               imply that the long-run path is very close to the short-run one, but can produce excess volatility in simulations. 
           * Resume
                Resumes an interrupted solution iteration, when using global.
           * LPSolver

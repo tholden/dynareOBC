@@ -1,26 +1,23 @@
-function y = SolveGlobalBoundsProblem( y, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, dynareOBC )
+function y = SolveGlobalBoundsProblem( y, Ey, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, dynareOBC )
+
     DesiredReturnPath = max( 0, UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * max( 0, y ) );
+	
+	W1 = repmat( pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
+	W2 = repmat( 1 - pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
+	
     y = sdpvar( length( y ), 1 );
-    ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
+
+	ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
     ConstrainedReturnPathShortRun = UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * y;
-    DesiredReturnPath = vec( bsxfun( @times, pWeight, reshape( DesiredReturnPath, size( UnconstrainedReturnPathLongRun ) ) ) + repmat( 1 - pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) ) .* reshape( ConstrainedReturnPathLongRun, size( UnconstrainedReturnPathLongRun ) ) );
-    Error = ( ConstrainedReturnPathLongRun - DesiredReturnPath );
-    lambdas = sdpvar( size( Error, 1 ), size( Error, 2 ), 'full' );
-    kappas = sdpvar( length( y ), 1 );
-    mus = sdpvar( size( ConstrainedReturnPathLongRun, 1 ), 1 );
-    Constraints = [ 0 <= lambdas, 0 <= kappas, 0 <= mus, Error <= lambdas, -Error <= lambdas, ConstrainedReturnPathLongRun >= -mus, ( y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun ) >= -kappas ];
-    Diagnostics = optimize( Constraints, sum( lambdas(:) ) + sum( kappas(:) ) + sum( mus(:) ), dynareOBC.LPOptions );
-    if Diagnostics.problem ~= 0
-        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-    end
-    if max( value( lambdas(:) ) ) > sqrt( eps )
-        warning( 'dynareOBC:GlobalInaccuracy', 'Inaccuracy in generating news shocks in the global solution. Try increasing TimeToReturnToSteadyState.' );
-    end
-    if max( value( kappas(:) ) ) > sqrt( eps )
-        warning( 'dynareOBC:GlobalViolationSeverity1', 'The returned global solution appears to violate a condition of the form max{0,x} >= x.' );
-    end
-    if max( value( mus(:) ) ) > sqrt( eps )
-        warning( 'dynareOBC:GlobalViolationSeverity2', 'The returned global solution appears to violate a condition of the form max{0,x} >= 0.' );
-    end
+	
+	yResiduals = y - Ey;
+    ConstraintResiduals = sdpvar( length( y ), 1 );
+	
+    Constraints = [ 0 == W1 .* ( DesiredReturnPath - ConstrainedReturnPathLongRun ) + W2 .* ConstraintResiduals, ConstrainedReturnPathLongRun >= 0, y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun >= 0 ];
+    Diagnostics = optimize( Constraints, ( ConstraintResiduals' * ConstraintResiduals ) * dynareOBC.GlobalConstraintStrength + yResiduals' * yResiduals, dynareOBC.LPOptions );
+	if Diagnostics.problem ~= 0
+        error( 'dynareOBC:FailedToSolveGlobalBoundsProblem', [ 'An apparently impossible quadratic progrmaming problem was encountered when solving the global bounds problem. Internal message: ' Diagnostics.info ] );
+	end
     y = value( y );
+
 end
