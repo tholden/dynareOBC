@@ -226,8 +226,10 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 			if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' )
 				skipline( );
 				disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
-				disp( 'SCIP is an efficient solver which should speed up dynareOBC. However, SCIP is available under the ZLIB Academic License.' );
-				disp( 'Thus you are only allowed to retrieve SCIP for research purposes as a memor of a non-commercial and academic institution.' );
+				disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
+				disp( 'However, SCIP is only available under the ZLIB Academic License.' );
+				disp( 'Thus, you are only allowed to retrieve SCIP for research purposes,' );
+				disp( 'as a member of a non-commercial and academic institution.' );
 				skipline( );
 				SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
 				skipline( );
