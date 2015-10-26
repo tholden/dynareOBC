@@ -30,9 +30,9 @@ function dynareOBC( InputFileName, varargin )
 % You should have received a copy of the GNU General Public License
 % along with dynareOBC. If not, see <http://www.gnu.org/licenses/>.
 
-	%% Initialization
+    %% Initialization
 
-	dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
+    dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
 
     if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
         skipline( );
@@ -41,84 +41,84 @@ function dynareOBC( InputFileName, varargin )
         return;
     end
     
-	OriginalPath = path;
+    OriginalPath = path;
 
-	WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
-	rmpath( genpath( [ dynareOBCPath '/dynareOBC/' ] ) );
-	warning( WarningState );
+    WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
+    rmpath( genpath( [ dynareOBCPath '/dynareOBC/' ] ) );
+    warning( WarningState );
 
-	if strcmpi( InputFileName, 'rmpath' )
-		return;
-	end
+    if strcmpi( InputFileName, 'rmpath' )
+        return;
+    end
 
-	addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
 
-	if ~ismember( 'noclearall', varargin )
-		WarningState = warning( 'off', 'all' );
-		try
-			evalin( 'base', 'clear all;' );
-		catch
-		end
-		try
-			evalin( 'base', 'clear global;' );
-		catch
-		end
-		try
-			evalin( 'base', 'clearvars;' );
-		catch
-		end
-		warning( WarningState );
-	end
+    if ~ismember( 'noclearall', varargin )
+        WarningState = warning( 'off', 'all' );
+        try
+            evalin( 'base', 'clear all;' );
+        catch
+        end
+        try
+            evalin( 'base', 'clear global;' );
+        catch
+        end
+        try
+            evalin( 'base', 'clearvars;' );
+        catch
+        end
+        warning( WarningState );
+    end
     
-	addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
 
     CompileMEX( dynareOBCPath );
     
-	if strcmpi( InputFileName, 'addpath' )
-    	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
+    if strcmpi( InputFileName, 'addpath' )
+        EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
         dynare_config;
-		return;
-	end
+        return;
+    end
 
-	global dynareOBC_;
-	if isempty( dynareOBC_ )
-		dynareOBC_ = struct;
-	end
+    global dynareOBC_;
+    if isempty( dynareOBC_ )
+        dynareOBC_ = struct;
+    end
 
-	FNameDots = strfind( InputFileName, '.' );
-	if isempty( FNameDots )
-		dynareOBC_.BaseFileName = InputFileName;
-	else
-		dynareOBC_.BaseFileName = InputFileName( 1:(FNameDots(end)-1) );
-	end
+    FNameDots = strfind( InputFileName, '.' );
+    if isempty( FNameDots )
+        dynareOBC_.BaseFileName = InputFileName;
+    else
+        dynareOBC_.BaseFileName = InputFileName( 1:(FNameDots(end)-1) );
+    end
 
-	dynareOBC_ = SetDefaultOptions( dynareOBC_ );
+    dynareOBC_ = SetDefaultOptions( dynareOBC_ );
 
-	basevarargin = cell( 1, 0 );
-	for i = 1:length( varargin )
-		[ basevarargin, dynareOBC_ ] = ProcessArgument( varargin{ i }, basevarargin, dynareOBC_ );
-	end
+    basevarargin = cell( 1, 0 );
+    for i = 1:length( varargin )
+        [ basevarargin, dynareOBC_ ] = ProcessArgument( varargin{ i }, basevarargin, dynareOBC_ );
+    end
 
-	if dynareOBC_.TimeToEscapeBounds <= 0
-		error( 'dynareOBC:Arguments', 'TimeToEscapeBounds must be strictly positive.' );
-	end
-	if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 2
-		error( 'dynareOBC:Arguments', 'You cannot select both FirstOrderAroundRSS and FirstOrderAroundMean.' );
-	end
+    if dynareOBC_.TimeToEscapeBounds <= 0
+        error( 'dynareOBC:Arguments', 'TimeToEscapeBounds must be strictly positive.' );
+    end
+    if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 2
+        error( 'dynareOBC:Arguments', 'You cannot select both FirstOrderAroundRSS and FirstOrderAroundMean.' );
+    end
 
-	basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
+    basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
 
     if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
         dynareOBC_.NoCubature = true;
     end
 
     if strcmpi( InputFileName, 'TestSolvers' )
-    	EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
+        EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
         yalmiptest;
         if ~isempty( dynareOBC_.MILPSolver )
             try
@@ -145,37 +145,37 @@ function dynareOBC( InputFileName, varargin )
 
     dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} ) );
     
-	%% Cleaning up
+    %% Cleaning up
 
-	if dynareOBC_.SaveMacro && ~isempty( dynareOBC_.SaveMacroName )
-		copyfile( 'dynareOBCTemp1.mod', dynareOBC_.SaveMacroName, 'f' );
-	end
-	if ~dynareOBC_.NoCleanUp
-		dynareOBCCleanUp;
-	end
+    if dynareOBC_.SaveMacro && ~isempty( dynareOBC_.SaveMacroName )
+        copyfile( 'dynareOBCTemp1.mod', dynareOBC_.SaveMacroName, 'f' );
+    end
+    if ~dynareOBC_.NoCleanUp
+        dynareOBCCleanUp;
+    end
 
-	evalin( 'base', 'global dynareOBC_' );
+    evalin( 'base', 'global dynareOBC_' );
 
-	path( OriginalPath );
+    path( OriginalPath );
 
 end
 
 function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin )
-	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/' ] );
-	if ~MKDirStatus
-		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
-	end
-	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2012/' ] );
-	if ~MKDirStatus
-		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
-	end
-	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2013/' ] );
-	if ~MKDirStatus
-		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
-	end
+    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/' ] );
+    if ~MKDirStatus
+        error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+    end
+    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2012/' ] );
+    if ~MKDirStatus
+        error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+    end
+    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2013/' ] );
+    if ~MKDirStatus
+        error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+    end
 
-	DLLInstalled = false;
-	Architecture = computer;
+    DLLInstalled = false;
+    Architecture = computer;
     try
         if strcmp( Architecture, 'PCWIN' )
             DLLInstalled = CheckRequirement( 'BD95A8CD-1D9F-35AD-981A-3E7925026EBB', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe', dynareOBCPath, '2012/vcredist_x86.exe' ) || DLLInstalled;
@@ -193,125 +193,125 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
         DLLInstalled = false;
         Architecture = 'FAILURE';
     end
-	if DLLInstalled
-		skipline( );
-		disp( 'dynareOBC needs to restart MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
-		skipline( );
+    if DLLInstalled
+        skipline( );
+        disp( 'dynareOBC needs to restart MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
+        skipline( );
         input( 'Press return to continue, or Ctrl+C to cancel.' );
-		system( [ 'start matlab.exe -sd "' pwd( ) '" -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
-		system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );     
-	end
+        system( [ 'start matlab.exe -sd "' pwd( ) '" -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
+        system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );     
+    end
 
-	addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
-	addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
-	addpath( [ dynareOBCPath '/dynareOBC/qpc/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/qpc/' ] );
 
-	if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
-		OptiString = 'OptiToolbox216';
-		
-		[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
-		if ~MKDirStatus
-			error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
-		end
+    if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
+        OptiString = 'OptiToolbox216';
+        
+        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+        if ~MKDirStatus
+            error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+        end
 
-		% cleanup old versions
-		if exist( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'file' )
-			rmdir( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 's' );
-		end
-		if exist( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ], 'file' )
-			delete( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
-		end
-		
-		if ~exist( [ dynareOBCPath '/dynareOBC/' OptiString '/opti_Install.m' ], 'file' )
-			if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' )
-				skipline( );
-				disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
-				disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
-				disp( 'However, SCIP is only available under the ZLIB Academic License.' );
-				disp( 'Thus, you are only allowed to retrieve SCIP for research purposes,' );
-				disp( 'as a member of a non-commercial and academic institution.' );
-				skipline( );
-				SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
-				skipline( );
+        % cleanup old versions
+        if exist( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'file' )
+            rmdir( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 's' );
+        end
+        if exist( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ], 'file' )
+            delete( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
+        end
+        
+        if ~exist( [ dynareOBCPath '/dynareOBC/' OptiString '/opti_Install.m' ], 'file' )
+            if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' )
+                skipline( );
+                disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
+                disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
+                disp( 'However, SCIP is only available under the ZLIB Academic License.' );
+                disp( 'Thus, you are only allowed to retrieve SCIP for research purposes,' );
+                disp( 'as a member of a non-commercial and academic institution.' );
+                skipline( );
+                SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
+                skipline( );
 
-				if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-					OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
-				else
-					OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
-				end
-				skipline( );
-				disp( 'Downloading the OptiToolbox.' );
-				disp( 'This may take several minutes even on fast university connections.' );
-				skipline( );
-				aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
-			end
+                if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
+                    OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
+                else
+                    OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
+                end
+                skipline( );
+                disp( 'Downloading the OptiToolbox.' );
+                disp( 'This may take several minutes even on fast university connections.' );
+                skipline( );
+                aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
+            end
 
-			skipline( );
-			disp( [ 'Extracting files from ' OptiString '.zip.' ] );
-			skipline( );
-			unzip( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+            skipline( );
+            disp( [ 'Extracting files from ' OptiString '.zip.' ] );
+            skipline( );
+            unzip( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
 
-			copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
-			addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
-			rehash path;
-			opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], false );
-		else
-			copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
-			addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
-			rehash path;
-			opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], true );
-		end
-	end
+            copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
+            addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+            rehash path;
+            opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], false );
+        else
+            copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
+            addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+            rehash path;
+            opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], true );
+        end
+    end
 
-	[ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
-	if ~MKDirStatus
-		error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
-	end
+    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
+    if ~MKDirStatus
+        error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+    end
 
-	TBXManagerDetails = dir( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ] );
-	if ~isempty( TBXManagerDetails )
-		CurrentDate = now;
-		TBXManagerDate = TBXManagerDetails.datenum;
-		if CurrentDate - TBXManagerDate > 7
-			TBXManagerDetails = [];
-		end
-	end
+    TBXManagerDetails = dir( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ] );
+    if ~isempty( TBXManagerDetails )
+        CurrentDate = now;
+        TBXManagerDate = TBXManagerDetails.datenum;
+        if CurrentDate - TBXManagerDate > 7
+            TBXManagerDetails = [];
+        end
+    end
 
-	if isempty( TBXManagerDetails )
-		skipline( );
-		disp( 'Downloading the latest version of tbxmanager.' );
-		skipline( );
-		[ NewTBXManagerContents, URLReadStatus ] = urlread( 'http://www.tbxmanager.com/tbxmanager.m' );
-		if URLReadStatus
-			NewTBXManagerContents = regexprep( NewTBXManagerContents, '^\s*(\w*)\s*=\s*input\s*\(\s*\w*\s*,\s*''s''\s*\)\s*;$', '$1=''y'';\nfprintf(''Agreed automatically. Please delete this folder if you do not agree.\\n\\n'');', 'lineanchors' );
-			NewTBXManagerFile = fopen( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ], 'w' );
-			fprintf( NewTBXManagerFile, '%s', NewTBXManagerContents );
-			fclose( NewTBXManagerFile );    
-		else
-			warning( 'dynareOBC:URLRead', 'Failed to download the latest MATLAB toolkit manager (tbxmanager).' );
-		end
-	end
+    if isempty( TBXManagerDetails )
+        skipline( );
+        disp( 'Downloading the latest version of tbxmanager.' );
+        skipline( );
+        [ NewTBXManagerContents, URLReadStatus ] = urlread( 'http://www.tbxmanager.com/tbxmanager.m' );
+        if URLReadStatus
+            NewTBXManagerContents = regexprep( NewTBXManagerContents, '^\s*(\w*)\s*=\s*input\s*\(\s*\w*\s*,\s*''s''\s*\)\s*;$', '$1=''y'';\nfprintf(''Agreed automatically. Please delete this folder if you do not agree.\\n\\n'');', 'lineanchors' );
+            NewTBXManagerFile = fopen( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ], 'w' );
+            fprintf( NewTBXManagerFile, '%s', NewTBXManagerContents );
+            fclose( NewTBXManagerFile );    
+        else
+            warning( 'dynareOBC:URLRead', 'Failed to download the latest MATLAB toolkit manager (tbxmanager).' );
+        end
+    end
 
-	addpath( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
 
-	skipline( );
-	disp( 'Ensuring key packages are up to date.' );
-	skipline( );
+    skipline( );
+    disp( 'Ensuring key packages are up to date.' );
+    skipline( );
 
     try
         tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
     catch
         tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
     end
-	tbxmanager restorepath;
+    tbxmanager restorepath;
 
-	addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
         
-	addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
 end
 
@@ -356,63 +356,63 @@ function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPa
 end
 
 function CompileMEX( dynareOBCPath )
-	skipline( );
-	global spkron_use_mex ptest_use_mex;
-	try
-		spkron_use_mex = 1;
-		if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
-			spkron_use_mex = [];
-		end
+    skipline( );
+    global spkron_use_mex ptest_use_mex;
+    try
+        spkron_use_mex = 1;
+        if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
+            spkron_use_mex = [];
+        end
     catch 
-		try
-			skipline( );
-			disp( 'Attempting to compile spkron.' );
-			skipline( );
-			build_spkron;
-			rehash path;
+        try
+            skipline( );
+            disp( 'Attempting to compile spkron.' );
+            skipline( );
+            build_spkron;
+            rehash path;
             movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/dynareOBC/' ], 'f' );
             rehash path;
-			spkron_use_mex = 1;
-			if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
-				spkron_use_mex = [];
-			end
+            spkron_use_mex = 1;
+            if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
+                spkron_use_mex = [];
+            end
         catch
-			spkron_use_mex = [];
-		end
-	end
-	if ~isempty( spkron_use_mex )
-		disp( 'Using the mex version of spkron.' );
-	else
-		disp( 'Not using the mex version of spkron.' );
-	end
-	try
-		ptest_use_mex = 1;
-		if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
-			ptest_use_mex = [];
-		end
-	catch
-		try
-			skipline( );
-			disp( 'Attempting to compile ptest.' );
-			skipline( );
-			build_ptest;
-			rehash path;
+            spkron_use_mex = [];
+        end
+    end
+    if ~isempty( spkron_use_mex )
+        disp( 'Using the mex version of spkron.' );
+    else
+        disp( 'Not using the mex version of spkron.' );
+    end
+    try
+        ptest_use_mex = 1;
+        if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
+            ptest_use_mex = [];
+        end
+    catch
+        try
+            skipline( );
+            disp( 'Attempting to compile ptest.' );
+            skipline( );
+            build_ptest;
+            rehash path;
             movefile( which( 'ptest_mex' ), [ dynareOBCPath '/dynareOBC/' ], 'f' );
             rehash path;
-			ptest_use_mex = 1;
-			if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
-				ptest_use_mex = [];
-			end
-		catch
-			ptest_use_mex = [];
-		end
-	end
-	if ~isempty( ptest_use_mex )
-		disp( 'Using the mex version of ptest.' );
-	else
-		disp( 'Not using the mex version of ptest.' );
-	end
-	skipline( );
+            ptest_use_mex = 1;
+            if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
+                ptest_use_mex = [];
+            end
+        catch
+            ptest_use_mex = [];
+        end
+    end
+    if ~isempty( ptest_use_mex )
+        disp( 'Using the mex version of ptest.' );
+    else
+        disp( 'Not using the mex version of ptest.' );
+    end
+    skipline( );
 end
 
 function aria_urlwrite( dynareOBCPath, URL, FilePath )
