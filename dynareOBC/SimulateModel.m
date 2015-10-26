@@ -228,7 +228,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
             PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) == 0 ) );
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
             CholSigma_e = chol( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
-            SimulationFieldNames = [ StructFieldNames; { 'bound'; 'total_with_bounds' } ];
+            SimulationFieldNames = [ StructFieldNames; { 'bound'; 'bound_offset'; 'total_with_bounds' } ];
             % temporary work around for warning in dates object.
             options.initial_period = [];
             options.dataset = [];
