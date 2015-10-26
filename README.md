@@ -106,7 +106,7 @@ Note:
                Disables the statistical improvement to the cubature algorithm, which aggregates results of cubature at different
                degrees. Will generally reduce accuracy, but increase speed.
     * CubatureTolerance=FLOAT (default: 1e-6)
-	     Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
+         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
     * MaxCubatureDimension=INTEGER (default: 100)
          The maximum dimension over which to integrate.
     * NoCubature
@@ -176,15 +176,15 @@ Note:
           * EstimationFixedPointMaxIterations=INTEGER (default: 100)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * EstimationAlternativeCubature
-		       Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
-		       additional central point. While this requires solving the model less far from the steady-state, it also requires
-		       a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
+               Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
+               additional central point. While this requires solving the model less far from the steady-state, it also requires
+               a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
 
  * **Advanced options**
     * CompileSimulationCode
          Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
     * OrderOverride=1|2|3
-		 Overrides the order of approximation set within the call to stoch_simul.
+         Overrides the order of approximation set within the call to stoch_simul.
     * Bypass
          Ignores all non-differentiabilities in the model. Useful for debugging.
     * NoCleanup
