@@ -73,7 +73,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     end
     [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, options, oo.dr, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
-	
+    
     if SlowMode
         skipline( );
         disp( 'Retrieving IRFs to shadow shocks.' );
@@ -106,26 +106,26 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
     dynareOBC.ParametricSolutionFound = 0;
 
-	if SlowMode
-		if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
-			if SlowMode
-				skipline( );
-				disp( 'Attemtping to build a custom version of the simulation code.' );
-				skipline( );
-			end
-			try
-				BuildCustomLanMeyerGohdePrunedSimulation( M, oo, dynareOBC, dynareOBC.Estimation );
-			catch Error
-				warning( 'dynareOBC:FailedCompilingCustomLanMeyerGohdePrunedSimulation', [ 'Failed to compile a custom version of the simulation code, due to the error: ' Error.message ] );
-				dynareOBC.UseSimulationCode = false;
-			end
-		end
+    if SlowMode
+        if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+            if SlowMode
+                skipline( );
+                disp( 'Attemtping to build a custom version of the simulation code.' );
+                skipline( );
+            end
+            try
+                BuildCustomLanMeyerGohdePrunedSimulation( M, oo, dynareOBC, dynareOBC.Estimation );
+            catch Error
+                warning( 'dynareOBC:FailedCompilingCustomLanMeyerGohdePrunedSimulation', [ 'Failed to compile a custom version of the simulation code, due to the error: ' Error.message ] );
+                dynareOBC.UseSimulationCode = false;
+            end
+        end
 
-		skipline( );
-		disp( 'Performing initial checks on the model.' );
-		skipline( );
-		
-		dynareOBC = InitialChecks( dynareOBC );
-	end
+        skipline( );
+        disp( 'Performing initial checks on the model.' );
+        skipline( );
+        
+        dynareOBC = InitialChecks( dynareOBC );
+    end
         
 end

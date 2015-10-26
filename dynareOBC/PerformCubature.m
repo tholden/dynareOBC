@@ -12,14 +12,14 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
         wTemp = 0.5 * sqrt( 2 * NumPoints );
         CubaturePoints = [ zeros( d, 1 ), eye( d ) * wTemp, eye( d ) * (-wTemp) ];
         CubatureOrder = 1;
-	elseif dynareOBC.QuasiMonteCarloLevel > 0
+    elseif dynareOBC.QuasiMonteCarloLevel > 0
         CubatureOrder = dynareOBC.QuasiMonteCarloLevel;
         NumPoints = 2 .^ ( 2 : ( 1 + CubatureOrder ) ) - 1;
         CubaturePoints = SobolSequence( d, NumPoints( end ) );
         CubatureWeights = zeros( NumPoints( end ), CubatureOrder );
-		for i = 1 : CubatureOrder
-			CubatureWeights( 1:NumPoints( i ), i ) = 1 ./ NumPoints( i );
-		end
+        for i = 1 : CubatureOrder
+            CubatureWeights( 1:NumPoints( i ), i ) = 1 ./ NumPoints( i );
+        end
     else
         CubatureOrder = ceil( 0.5 * ( dynareOBC.MaxCubatureDegree - 1 ) );
         [ CubatureWeightsCurrent, CubaturePoints, NumPointsCurrent ] = fwtpts( d, CubatureOrder );
@@ -74,7 +74,7 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
                 p.progress;
             end
         end
-		
+        
         if dynareOBC.FastCubature || dynareOBC.NoStatisticalCubature || dynareOBC.QuasiMonteCarloLevel > 0 || ( i == 1 && ( dynareOBC.KappaPriorParameterA == 0 ||  dynareOBC.KappaPriorParameterB == 0 ) )
             yNew = yMatrix( :, i );
             yError = max( abs( y - yNew ) );

@@ -1,10 +1,10 @@
 function [xmin, ...      % minimum search point of last iteration
-	  fmin, ...      % function value of xmin
-	  counteval, ... % number of function evaluations done
-	  stopflag, ...  % stop criterion reached
-	  out, ...     % struct with various histories and solutions
-	  bestever ... % struct containing overall best solution (for convenience)
-	 ] = cmaes( ...
+      fmin, ...      % function value of xmin
+      counteval, ... % number of function evaluations done
+      stopflag, ...  % stop criterion reached
+      out, ...     % struct with various histories and solutions
+      bestever ... % struct containing overall best solution (for convenience)
+     ] = cmaes( ...
     fitfun, ...    % name of objective/fitness function
     xstart, ...    % objective variables initial point, determines N
     insigma, ...   % initial coordinate wise standard deviation(s)
@@ -332,7 +332,7 @@ if nargin < 3
 end
 if isa(insigma, 'struct')
   error(['Third argument SIGMA must be (or eval to) a scalar '...
-	   'or a column vector of size(X0,1)']);
+       'or a column vector of size(X0,1)']);
 end
 input.sigma = insigma;
 if isempty(insigma)
@@ -496,19 +496,19 @@ if flgresume % resume is on
   end
   if counteval >= stopMaxFunEvals 
     error(['MaxFunEvals exceeded, use StopFunEvals as stopping ' ...
-	  'criterion before resume']);
+      'criterion before resume']);
   end
   if countiter >= stopMaxIter 
     error(['MaxIter exceeded, use StopIter as stopping criterion ' ...
-	  'before resume']);
+      'before resume']);
   end
   
 else % flgresume
   % xmean = mean(myeval(xstart), 2); % evaluate xstart again, because of irun
   maxdx = myeval(opts.DiffMaxChange); % maximal sensible variable change
   mindx = myeval(opts.DiffMinChange); % minimal sensible variable change 
-				      % can both also be defined as Nx1 vectors
-  lbounds = myeval(opts.LBounds);		     
+                      % can both also be defined as Nx1 vectors
+  lbounds = myeval(opts.LBounds);            
   ubounds = myeval(opts.UBounds);
   if length(lbounds) == 1
     lbounds = repmat(lbounds, N, 1);
@@ -519,7 +519,7 @@ else % flgresume
   if isempty(insigma) % last chance to set insigma
     if all(lbounds > -Inf) && all(ubounds < Inf)
       if any(lbounds>=ubounds)
-	error('upper bound must be greater than lower bound');
+    error('upper bound must be greater than lower bound');
       end
       insigma = 0.3*(ubounds-lbounds);
       stopTolX = myeval(opts.TolX);  % reevaluate these
@@ -532,28 +532,28 @@ else % flgresume
   % Check all vector sizes
   if size(xmean, 2) > 1 || size(xmean,1) ~= N
     error(['intial search point should be a column vector of size ' ...
-	   num2str(N)]);
+       num2str(N)]);
   elseif ~(all(size(insigma) == [1 1]) || all(size(insigma) == [N 1]))
     error(['input parameter SIGMA should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   elseif size(stopTolX, 2) > 1 || ~ismember(size(stopTolX, 1), [1 N])
     error(['option TolX should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   elseif size(stopTolUpX, 2) > 1 || ~ismember(size(stopTolUpX, 1), [1 N])
     error(['option TolUpX should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   elseif size(maxdx, 2) > 1 || ~ismember(size(maxdx, 1), [1 N])
     error(['option DiffMaxChange should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   elseif size(mindx, 2) > 1 || ~ismember(size(mindx, 1), [1 N])
     error(['option DiffMinChange should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   elseif size(lbounds, 2) > 1 || ~ismember(size(lbounds, 1), [1 N])
     error(['option lbounds should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   elseif size(ubounds, 2) > 1 || ~ismember(size(ubounds, 1), [1 N])
     error(['option ubounds should be (or eval to) a scalar '...
-	   'or a column vector of size ' num2str(N)] );
+       'or a column vector of size ' num2str(N)] );
   end
   
   % Initialize dynamic internal state parameters
@@ -615,19 +615,19 @@ else % flgresume
       fac = min(maxdx ./ sqrt(diagC))/sigma;
       sigma = min(maxdx ./ sqrt(diagC));
       warning(['Initial SIGMA multiplied by the factor ' num2str(fac) ...
-	       ', because it was larger than half' ...
-	       ' of one of the boundary intervals']);
+           ', because it was larger than half' ...
+           ' of one of the boundary intervals']);
     end
     idx = (lbounds > -Inf) & (ubounds < Inf);
     dd = diagC;
     if any(5*sigma*sqrt(dd(idx)) < ubounds(idx) - lbounds(idx))
       warning(['Initial SIGMA is, in at least one coordinate, ' ...
-	       'much smaller than the '...
-	       'given boundary intervals. For reasonable ' ...
-	       'global search performance SIGMA should be ' ...
-	       'between 0.2 and 0.5 of the bounded interval in ' ...
-	       'each coordinate. If all coordinates have ' ... 
-	       'lower and upper bounds SIGMA can be empty']);
+           'much smaller than the '...
+           'given boundary intervals. For reasonable ' ...
+           'global search performance SIGMA should be ' ...
+           'between 0.2 and 0.5 of the bounded interval in ' ...
+           'each coordinate. If all coordinates have ' ... 
+           'lower and upper bounds SIGMA can be empty']);
     end
     bnd.dfithist = 1;              % delta fit for setting weights
     bnd.aridxpoints = [];          % remember complete outside points
@@ -648,10 +648,10 @@ else % flgresume
     fitness.histsel(1)=fitness.hist(1);
     counteval = counteval + 1;
     if fitness.hist(1) < out.solutions.bestever.f 
-	out.solutions.bestever.x = xmean;
-	out.solutions.bestever.f = fitness.hist(1);
-	out.solutions.bestever.evals = counteval;
-	bestever = out.solutions.bestever;
+    out.solutions.bestever.x = xmean;
+    out.solutions.bestever.f = fitness.hist(1);
+    out.solutions.bestever.evals = counteval;
+    bestever = out.solutions.bestever;
     end
   else
     fitness.hist(1)=NaN; 
@@ -672,7 +672,7 @@ else % flgresume
 
   % Initialize further constants
   chiN=N^0.5*(1-1/(4*N)+1/(21*N^2));  % expectation of 
-				      %   ||N(0,I)|| == norm(randn(N,1))
+                      %   ||N(0,I)|| == norm(randn(N,1))
   
   countiter = 0;
   % Initialize records and output
@@ -699,50 +699,50 @@ else % flgresume
       for namecell = filenames(:)'
         name = namecell{:};
 
-	[fid, err] = fopen(['./' filenameprefix name '.dat'], 'w');
-	if fid < 1 % err ~= 0 
-	  warning(['could not open ' filenameprefix name '.dat']);
-	  filenames(find(strcmp(filenames,name))) = [];
-	else
-%	  fprintf(fid, '%s\n', ...
-%	      ['<CMAES-OUTPUT version="' cmaVersion '">']);
-%	  fprintf(fid, ['  <NAME>' name '</NAME>\n']);
-%	  fprintf(fid, ['  <DATE>' date() '</DATE>\n']);
-%	  fprintf(fid, '  <PARAMETERS>\n');
-%	  fprintf(fid, ['    dimension=' num2str(N) '\n']);
-%	  fprintf(fid, '  </PARAMETERS>\n');
-	  % different cases for DATA columns annotations here
-%	  fprintf(fid, '  <DATA');
-	  if strcmp(name, 'axlen')
-	     fprintf(fid, ['%%  columns="iteration, evaluation, sigma, ' ...
-		 'max axis length, min axis length, ' ...
-		 'all principal axes lengths (sorted square roots ' ...
+    [fid, err] = fopen(['./' filenameprefix name '.dat'], 'w');
+    if fid < 1 % err ~= 0 
+      warning(['could not open ' filenameprefix name '.dat']);
+      filenames(find(strcmp(filenames,name))) = [];
+    else
+%     fprintf(fid, '%s\n', ...
+%         ['<CMAES-OUTPUT version="' cmaVersion '">']);
+%     fprintf(fid, ['  <NAME>' name '</NAME>\n']);
+%     fprintf(fid, ['  <DATE>' date() '</DATE>\n']);
+%     fprintf(fid, '  <PARAMETERS>\n');
+%     fprintf(fid, ['    dimension=' num2str(N) '\n']);
+%     fprintf(fid, '  </PARAMETERS>\n');
+      % different cases for DATA columns annotations here
+%     fprintf(fid, '  <DATA');
+      if strcmp(name, 'axlen')
+         fprintf(fid, ['%%  columns="iteration, evaluation, sigma, ' ...
+         'max axis length, min axis length, ' ...
+         'all principal axes lengths (sorted square roots ' ...
                   'of eigenvalues of C)"' str]);
-	  elseif strcmp(name, 'fit')
-	    fprintf(fid, ['%%  columns="iteration, evaluation, sigma, axis ratio, bestever,' ...
-		' best, median, worst fitness function value,' ...
-		' further objective values of best"' str]);
-	  elseif strcmp(name, 'stddev')
-	    fprintf(fid, ['%%  columns=["iteration, evaluation, sigma, void, void, ' ...
-		'stds==sigma*sqrt(diag(C))"' str]);
-	  elseif strcmp(name, 'xmean')
-	    fprintf(fid, ['%%  columns="iteration, evaluation, void, ' ...
+      elseif strcmp(name, 'fit')
+        fprintf(fid, ['%%  columns="iteration, evaluation, sigma, axis ratio, bestever,' ...
+        ' best, median, worst fitness function value,' ...
+        ' further objective values of best"' str]);
+      elseif strcmp(name, 'stddev')
+        fprintf(fid, ['%%  columns=["iteration, evaluation, sigma, void, void, ' ...
+        'stds==sigma*sqrt(diag(C))"' str]);
+      elseif strcmp(name, 'xmean')
+        fprintf(fid, ['%%  columns="iteration, evaluation, void, ' ...
                           'void, void, xmean"' str]);
-	  elseif strcmp(name, 'xrecentbest')
-	    fprintf(fid, ['%%  columns="iteration, evaluation, fitness, ' ...
+      elseif strcmp(name, 'xrecentbest')
+        fprintf(fid, ['%%  columns="iteration, evaluation, fitness, ' ...
                           'void, void, xrecentbest"' str]);
-	  end
-	  fprintf(fid, '\n'); % DATA
-	  if strcmp(name, 'xmean')
-	    fprintf(fid, '%ld %ld 0 0 0 ', 0, counteval); 
-	    % fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
-%qqq	    fprintf(fid, msprintf('%e ', genophenotransform(out.genopheno, xmean)) + '\n'); 
-	    fprintf(fid, '%e ', xmean);
+      end
+      fprintf(fid, '\n'); % DATA
+      if strcmp(name, 'xmean')
+        fprintf(fid, '%ld %ld 0 0 0 ', 0, counteval); 
+        % fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
+%qqq        fprintf(fid, msprintf('%e ', genophenotransform(out.genopheno, xmean)) + '\n'); 
+        fprintf(fid, '%e ', xmean);
             fprintf(fid, '\n'); 
-	  end
-	  fclose(fid); 
+      end
+      fclose(fid); 
           clear fid; % preventing 
-	end
+    end
       end % for files
     end % savemodulo
   end % irun == 1
@@ -969,7 +969,7 @@ while isempty(stopflag)
       end
       for k=current_kvec
           if isnan(fitness.raw(k))
-          	  countevalNaN = countevalNaN + 1;
+              countevalNaN = countevalNaN + 1;
           else
               counteval = counteval + 1; % retries due to NaN are not counted
           end
@@ -1010,15 +1010,15 @@ while isempty(stopflag)
     if bnd.iniphase 
       if any(ti) 
         bnd.weights(find(bnd.isbounded)) = 2.0002 * median(bnd.dfithist);
-	if bnd.flgscale == 0 % scale only initial weights then
-	  dd = diagC; 
-	  idx = find(bnd.isbounded); 
-	  dd = dd(idx) / mean(dd); %  remove mean scaling
-	  bnd.weights(idx) = bnd.weights(idx) ./ dd; 
-	end
-	if bnd.validfitval && countiter > 2
+    if bnd.flgscale == 0 % scale only initial weights then
+      dd = diagC; 
+      idx = find(bnd.isbounded); 
+      dd = dd(idx) / mean(dd); %  remove mean scaling
+      bnd.weights(idx) = bnd.weights(idx) ./ dd; 
+    end
+    if bnd.validfitval && countiter > 2
           bnd.iniphase = 0;
-	end
+    end
       end
     end
 
@@ -1027,7 +1027,7 @@ while isempty(stopflag)
       % judge distance of xmean to boundary
       tx = xmean - tx;
       idx = (ti ~= 0 & abs(tx) > 3*max(1,sqrt(N)/mueff) ... 
-	     * sigma*sqrt(diagC)) ;
+         * sigma*sqrt(diagC)) ;
       % only increase if xmean is moving away
       idx = idx & (sign(tx) == sign(xmean - xold));
       if ~isempty(idx) % increase
@@ -1285,35 +1285,35 @@ while isempty(stopflag)
       clear idx; % prevents error under octave 
       save(['tmp' opts.SaveFilename]);
       error(['function eig returned non-finited eigenvalues, cond(C)=' ...
-	     num2str(cond(C)) ]);
+         num2str(cond(C)) ]);
     end
     if any(any(~isfinite(B)))
       clear idx; % prevents error under octave
       save(['tmp' opts.SaveFilename]);
       error(['function eig returned non-finited eigenvectors, cond(C)=' ...
-	     num2str(cond(C)) ]);
+         num2str(cond(C)) ]);
     end
 
     % limit condition of C to 1e14 + 1
     if min(diagD) <= 0
-	if stopOnWarnings
-	  stopflag(end+1) = {'warnconditioncov'};
-	else
-	  warning(['Iteration ' num2str(countiter) ...
-		   ': Eigenvalue (smaller) zero']);
-	  diagD(diagD<0) = 0;
-	  tmp = max(diagD)/1e14;
-	  C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
-	end
+    if stopOnWarnings
+      stopflag(end+1) = {'warnconditioncov'};
+    else
+      warning(['Iteration ' num2str(countiter) ...
+           ': Eigenvalue (smaller) zero']);
+      diagD(diagD<0) = 0;
+      tmp = max(diagD)/1e14;
+      C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
+    end
     end
     if max(diagD) > 1e14*min(diagD) 
-	if stopOnWarnings
-	  stopflag(end+1) = {'warnconditioncov'};
-	else
-	  % warning(['Iteration ' num2str(countiter) ': condition of C at upper limit' ]);
-	  tmp = max(diagD)/1e14 - min(diagD);
-	  C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
-	end
+    if stopOnWarnings
+      stopflag(end+1) = {'warnconditioncov'};
+    else
+      % warning(['Iteration ' num2str(countiter) ': condition of C at upper limit' ]);
+      tmp = max(diagD)/1e14 - min(diagD);
+      C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
+    end
     end
 
     diagC = diag(C); 
@@ -1427,11 +1427,11 @@ while isempty(stopflag)
   if all(xmean == xmean + tmp)
     i = 1+floor(mod(countiter,N));
     if stopOnWarnings
-	stopflag(end+1) = {'warnnoeffectaxis'};
+    stopflag(end+1) = {'warnnoeffectaxis'};
     else
       warning(['Iteration ' num2str(countiter) ...
-	       ': main axis standard deviation ' ...
-	       num2str(sigma*diagD(i)) ' has no effect' ]);
+           ': main axis standard deviation ' ...
+           num2str(sigma*diagD(i)) ' has no effect' ]);
       sigma = sigma * exp(0.2+cs/damps); 
     end
   end
@@ -1448,8 +1448,8 @@ while isempty(stopflag)
     else
       if flgWarnOnEqualFunctionValues
         warning(['Iteration ' num2str(countiter) ...
-		 ': equal function values f=' num2str(fitness.sel(1)) ...
-		 ' at maximal main axis sigma ' ...
+         ': equal function values f=' num2str(fitness.sel(1)) ...
+         ' at maximal main axis sigma ' ...
         num2str(sigma*max(diagD))]);
       end
       sigma = sigma * exp(0.2+cs/damps); 
@@ -1458,11 +1458,11 @@ while isempty(stopflag)
   % Adjust step size in case of equal function values
   if countiter > 2 && myrange([fitness.hist fitness.sel(1)]) == 0  
     if stopOnWarnings
-	stopflag(end+1) = {'warnequalfunvalhist'};
+    stopflag(end+1) = {'warnequalfunvalhist'};
     else
       warning(['Iteration ' num2str(countiter) ...
-	       ': equal function values in history at maximal main ' ...
-	       'axis sigma ' num2str(sigma*max(diagD))]);
+           ': equal function values in history at maximal main ' ...
+           'axis sigma ' num2str(sigma*max(diagD))]);
       sigma = sigma * exp(0.2+cs/damps); 
     end
   end
@@ -1557,28 +1557,28 @@ while isempty(stopflag)
   if verbosemodulo > 0 && isfinite(verbosemodulo)
     if countiter == 1 || mod(countiter, 10*verbosemodulo) < 1 
       disp(['Iterat, #Fevals:   Function Value    (median,worst) ' ...
-	    '|Axis Ratio|' ...
-	    'idx:Min SD idx:Max SD']); 
+        '|Axis Ratio|' ...
+        'idx:Min SD idx:Max SD']); 
     end
     if mod(countiter, verbosemodulo) < 1 ...
-	  || (verbosemodulo > 0 && isfinite(verbosemodulo) && ...
-	      (countiter < 3 || ~isempty(stopflag)))
+      || (verbosemodulo > 0 && isfinite(verbosemodulo) && ...
+          (countiter < 3 || ~isempty(stopflag)))
       [minstd minstdidx] = min(sigma*sqrt(diagC));
       [maxstd maxstdidx] = max(sigma*sqrt(diagC));
       % format display nicely
       disp([repmat(' ',1,4-floor(log10(countiter))) ...
-	    num2str(countiter) ' , ' ...
-	    repmat(' ',1,5-floor(log10(counteval))) ...
-	    num2str(counteval) ' : ' ...
+        num2str(countiter) ' , ' ...
+        repmat(' ',1,5-floor(log10(counteval))) ...
+        num2str(counteval) ' : ' ...
             num2str(fitness.hist(1), '%.13e') ...
-	    ' +(' num2str(median(fitness.raw)-fitness.hist(1), '%.0e ') ...
-	    ',' num2str(max(fitness.raw)-fitness.hist(1), '%.0e ') ...
-	    ') | ' ...
-	    num2str(max(diagD)/min(diagD), '%4.2e') ' | ' ...
-	    repmat(' ',1,1-floor(log10(minstdidx))) num2str(minstdidx) ':' ...
-	    num2str(minstd, ' %.1e') ' ' ...
-	    repmat(' ',1,1-floor(log10(maxstdidx))) num2str(maxstdidx) ':' ...
-	    num2str(maxstd, ' %.1e')]);
+        ' +(' num2str(median(fitness.raw)-fitness.hist(1), '%.0e ') ...
+        ',' num2str(max(fitness.raw)-fitness.hist(1), '%.0e ') ...
+        ') | ' ...
+        num2str(max(diagD)/min(diagD), '%4.2e') ' | ' ...
+        repmat(' ',1,1-floor(log10(minstdidx))) num2str(minstdidx) ':' ...
+        num2str(minstd, ' %.1e') ' ' ...
+        repmat(' ',1,1-floor(log10(maxstdidx))) num2str(maxstdidx) ':' ...
+        num2str(maxstd, ' %.1e')]);
     end
   end
 
@@ -1606,51 +1606,51 @@ while isempty(stopflag)
   
   % record output data, concerning time issues
   if savemodulo && savetime && (countiter < 1e2 || ~isempty(stopflag) || ...
-	countiter >= outiter + savemodulo)
+    countiter >= outiter + savemodulo)
     outiter = countiter; 
       % Save output data to files  
       for namecell = filenames(:)'
         name = namecell{:};
 
-	[fid, err] = fopen(['./' filenameprefix name '.dat'], 'a');
-	if fid < 1 % err ~= 0 
-	  warning(['could not open ' filenameprefix name '.dat']);
-	else
-	  if strcmp(name, 'axlen')
-	    fprintf(fid, '%d %d %e %e %e ', countiter, counteval, sigma, ...
-		max(diagD), min(diagD)); 
+    [fid, err] = fopen(['./' filenameprefix name '.dat'], 'a');
+    if fid < 1 % err ~= 0 
+      warning(['could not open ' filenameprefix name '.dat']);
+    else
+      if strcmp(name, 'axlen')
+        fprintf(fid, '%d %d %e %e %e ', countiter, counteval, sigma, ...
+        max(diagD), min(diagD)); 
             fprintf(fid, '%e ', sort(diagD)); 
             fprintf(fid, '\n');
-	  elseif strcmp(name, 'disp') % TODO
-	  elseif strcmp(name, 'fit')
-	    fprintf(fid, '%ld %ld %e %e %25.18e %25.18e %25.18e %25.18e', ...
+      elseif strcmp(name, 'disp') % TODO
+      elseif strcmp(name, 'fit')
+        fprintf(fid, '%ld %ld %e %e %25.18e %25.18e %25.18e %25.18e', ...
                     countiter, counteval, sigma, max(diagD)/min(diagD), ...
                     out.solutions.bestever.f, ...
                     fitness.raw(1), median(fitness.raw), fitness.raw(end)); 
             if ~isempty(varargin) && length(varargin{1}) == 1 && isnumeric(varargin{1}) && varargin{1} ~= 0
               fprintf(fid, ' %f', varargin{1});
             end                    
-	    fprintf(fid, '\n');
-	  elseif strcmp(name, 'stddev')
-	    fprintf(fid, '%ld %ld %e 0 0 ', countiter, counteval, sigma); 
-	    fprintf(fid, '%e ', sigma*sqrt(diagC)); 
+        fprintf(fid, '\n');
+      elseif strcmp(name, 'stddev')
+        fprintf(fid, '%ld %ld %e 0 0 ', countiter, counteval, sigma); 
+        fprintf(fid, '%e ', sigma*sqrt(diagC)); 
             fprintf(fid, '\n');
-	  elseif strcmp(name, 'xmean')
-	    if isnan(fmean)
-	      fprintf(fid, '%ld %ld 0 0 0 ', countiter, counteval); 
-	    else
-	      fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
-	    end
-	    fprintf(fid, '%e ', xmean); 
+      elseif strcmp(name, 'xmean')
+        if isnan(fmean)
+          fprintf(fid, '%ld %ld 0 0 0 ', countiter, counteval); 
+        else
+          fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
+        end
+        fprintf(fid, '%e ', xmean); 
             fprintf(fid, '\n');
-	  elseif strcmp(name, 'xrecentbest')
+      elseif strcmp(name, 'xrecentbest')
             % TODO: fitness is inconsistent with x-value
-	    fprintf(fid, '%ld %ld %25.18e 0 0 ', countiter, counteval, fitness.raw(1)); 
-	    fprintf(fid, '%e ', arx(:,fitness.idx(1))); 
+        fprintf(fid, '%ld %ld %25.18e 0 0 ', countiter, counteval, fitness.raw(1)); 
+        fprintf(fid, '%e ', arx(:,fitness.idx(1))); 
             fprintf(fid, '\n');
-	  end
-	  fclose(fid); 
-	end
+      end
+      fclose(fid); 
+    end
   end
 
     % get average time for recording data
@@ -1677,7 +1677,7 @@ while isempty(stopflag)
     end
     if countiter > 100 + 20 && savemodulo && ...
           time.recording * countiter > 0.1 && ...  % absolute time larger 0.1 second
-	  time.recording > savetime * (time.nonoutput+time.recording) / 100 
+      time.recording > savetime * (time.nonoutput+time.recording) / 100 
       savemodulo = floor(1.02 * savemodulo) + 1;
       % disp(['++savemodulo == ' num2str(savemodulo) ' at ' num2str(countiter)]); %qqq
     end
@@ -1692,9 +1692,9 @@ while isempty(stopflag)
       clear idx; % prevents error under octave
       % -v6 : non-compressed non-unicode for version 6 and earlier
       if ~isempty(strsaving) && ~isoctave
-	save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart	
+    save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart   
       else 
-	save('-mat', opts.SaveFilename); % for inspection and possible restart
+    save('-mat', opts.SaveFilename); % for inspection and possible restart
       end
       time.saving = time.saving + time.c * max(0,etime(clock, time.t3)); 
     end
@@ -1730,7 +1730,7 @@ end
 if flgsavingfinal
   clear idx; % prevents error under octave
   if ~isempty(strsaving) && ~isoctave
-    save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart	
+    save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart   
   else 
     save('-mat', opts.SaveFilename);    % for inspection and possible restart
   end
@@ -1751,7 +1751,7 @@ if flgdisplay
   disp([repmat(' ',1,6-floor(log10(counteval))) ...
         num2str(counteval, '%6.0f') ': ' num2str(fmin, '%.11e') ' | ' ...
         num2str(out.solutions.bestever.f, '%.11e') ' | ' ...
-	strstop{1:end}]);
+    strstop{1:end}]);
   if N < 102
      disp(['mean solution:' sprintf(' %+.1e', xmean)]);
      disp(['std deviation:' sprintf('  %.1e', sigma*sqrt(diagC))]);
@@ -1764,9 +1764,9 @@ end
 
   out.arstopflags{irun} = stopflag;
   if any(strcmp(stopflag, 'fitness')) ...
-	|| any(strcmp(stopflag, 'maxfunevals')) ...
-	|| any(strcmp(stopflag, 'stoptoresume')) ...
-	|| any(strcmp(stopflag, 'manual'))
+    || any(strcmp(stopflag, 'maxfunevals')) ...
+    || any(strcmp(stopflag, 'stoptoresume')) ...
+    || any(strcmp(stopflag, 'manual'))
     break; 
   end
 end % while irun <= Restarts
@@ -1885,39 +1885,39 @@ end
         idx(i) = strncmpi(defnames(i), name, length(name));
       end
     else
-	idx = strncmpi(defnames, name, length(name));
+    idx = strncmpi(defnames, name, length(name));
     end
     if sum(idx) > 1
       error(['option "' name '" is not an unambigous abbreviation. ' ...
-	     'Use opts=RMFIELD(opts, ''' name, ...
-	     ''') to remove the field from the struct.']);
+         'Use opts=RMFIELD(opts, ''' name, ...
+         ''') to remove the field from the struct.']);
     end
     if sum(idx) == 1
       defname  = defnames{find(idx)}; 
       if ismember(find(idx), idxmatched)
-	error(['input options match more than ones with "' ...
-	       defname '". ' ...
-	       'Use opts=RMFIELD(opts, ''' name, ...
-	       ''') to remove the field from the struct.']);
+    error(['input options match more than ones with "' ...
+           defname '". ' ...
+           'Use opts=RMFIELD(opts, ''' name, ...
+           ''') to remove the field from the struct.']);
       end
       idxmatched = [idxmatched find(idx)];
       val = getfield(inopts, name);
       % next line can replace previous line from MATLAB version 6.5.0 on and in octave
       % val = inopts.(name);
       if isstruct(val) % valid syntax only from version 6.5.0
-	opts = setfield(opts, defname, ...
-	    getoptions(val, getfield(defopts, defname))); 
+    opts = setfield(opts, defname, ...
+        getoptions(val, getfield(defopts, defname))); 
       elseif isstruct(getfield(defopts, defname)) 
       % next three lines can replace previous three lines from MATLAB 
       % version 6.5.0 on
       %   opts.(defname) = ...
       %      getoptions(val, defopts.(defname)); 
       % elseif isstruct(defopts.(defname)) 
-	warning(['option "' name '" disregarded (must be struct)']); 
+    warning(['option "' name '" disregarded (must be struct)']); 
       elseif ~isempty(val) % empty value: do nothing, i.e. stick to default
-	opts = setfield(opts, defnames{find(idx)}, val);
-	% next line can replace previous line from MATLAB version 6.5.0 on
-	% opts.(defname) = inopts.(name); 
+    opts = setfield(opts, defnames{find(idx)}, val);
+    % next line can replace previous line from MATLAB version 6.5.0 on
+    % opts.(defname) = inopts.(name); 
       end
     else
       warning(['option "' name '" disregarded (unknown field name)']);
@@ -1940,17 +1940,17 @@ function res=myevalbool(s)
     res = s;
   else % evaluation string s
     if strncmpi(s, 'yes', 3) || strncmpi(s, 'on', 2) ...
-	  || strncmpi(s, 'true', 4) || strncmp(s, '1 ', 2)
+      || strncmpi(s, 'true', 4) || strncmp(s, '1 ', 2)
       res = 1;
     elseif strncmpi(s, 'no', 2) || strncmpi(s, 'off', 3) ...
-	  || strncmpi(s, 'false', 5) || strncmp(s, '0 ', 2)
+      || strncmpi(s, 'false', 5) || strncmp(s, '0 ', 2)
       res = 0;
     else
       try res = evalin('caller', s); catch
-	error(['String value "' s '" cannot be evaluated']);
+    error(['String value "' s '" cannot be evaluated']);
       end
       try res ~= 0; catch
-	error(['String value "' s '" cannot be evaluated reasonably']);
+    error(['String value "' s '" cannot be evaluated reasonably']);
       end
     end
   end
@@ -2024,8 +2024,8 @@ for p = perc
     i = max(find(p > availablepercentiles));
     % interpolate linearly
     res(end+1) = sar(i) ...
-	+ (sar(i+1)-sar(i))*(p - availablepercentiles(i)) ...
-	/ (availablepercentiles(i+1) - availablepercentiles(i));
+    + (sar(i+1)-sar(i))*(p - availablepercentiles(i)) ...
+    / (availablepercentiles(i+1) - availablepercentiles(i));
 
   end
 end
@@ -2632,8 +2632,8 @@ function f=fellirot(x)
   N = size(x,1);
   global ORTHOGONALCOORSYSTEM_G
   if isempty(ORTHOGONALCOORSYSTEM_G) ...
-	|| length(ORTHOGONALCOORSYSTEM_G) < N ...
-	|| isempty(ORTHOGONALCOORSYSTEM_G{N})
+    || length(ORTHOGONALCOORSYSTEM_G) < N ...
+    || isempty(ORTHOGONALCOORSYSTEM_G{N})
     coordinatesystem(N);
   end
   f = felli(ORTHOGONALCOORSYSTEM_G{N}*x);
@@ -2642,8 +2642,8 @@ function f=frot(x, fun, varargin)
   N = size(x,1);
   global ORTHOGONALCOORSYSTEM_G
   if isempty(ORTHOGONALCOORSYSTEM_G) ...
-	|| length(ORTHOGONALCOORSYSTEM_G) < N ...
-	|| isempty(ORTHOGONALCOORSYSTEM_G{N})
+    || length(ORTHOGONALCOORSYSTEM_G) < N ...
+    || isempty(ORTHOGONALCOORSYSTEM_G{N})
     coordinatesystem(N);
   end
   f = feval(fun, ORTHOGONALCOORSYSTEM_G{N}*x, varargin{:});
@@ -2660,7 +2660,7 @@ function coordinatesystem(N)
     ar = randn(N,N);
     for i = 1:N 
       for j = 1:i-1
-	ar(:,i) = ar(:,i) - ar(:,i)'*ar(:,j) * ar(:,j);
+    ar(:,i) = ar(:,i) - ar(:,i)'*ar(:,j) * ar(:,j);
       end
       ar(:,i) = ar(:,i) / norm(ar(:,i));
     end
@@ -2703,8 +2703,8 @@ function f=frosenrot(x)
   N = size(x,1);
   global ORTHOGONALCOORSYSTEM_G
   if isempty(ORTHOGONALCOORSYSTEM_G) ...
-	|| length(ORTHOGONALCOORSYSTEM_G) < N ...
-	|| isempty(ORTHOGONALCOORSYSTEM_G{N})
+    || length(ORTHOGONALCOORSYSTEM_G) < N ...
+    || isempty(ORTHOGONALCOORSYSTEM_G{N})
     coordinatesystem(N);
   end
   f = frosen(ORTHOGONALCOORSYSTEM_G{N}*x);
@@ -2761,7 +2761,7 @@ function f=fackley(x)
 function f = fbohachevsky(x)
  % -15..15
   f = sum(x(1:end-1).^2 + 2 * x(2:end).^2 - 0.3 * cos(3*pi*x(1:end-1)) ...
-	  - 0.4 * cos(4*pi*x(2:end)) + 0.7);
+      - 0.4 * cos(4*pi*x(2:end)) + 0.7);
   
 function f=fconcentric(x)
   % in  +-600

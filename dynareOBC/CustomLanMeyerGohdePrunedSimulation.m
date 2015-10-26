@@ -66,12 +66,12 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
 %--------------------------------------------------------------------------
   % Starting in Dynare 4.4.0, the following fields are no longer in dr, 
   % they can be found in M_
-	% nstatic = M_.nstatic;
-	% nspred = M_.nspred; % note M_.nspred = M_.npred+M_.nboth;
-	% nboth = M_.nboth;
-	% nfwrd = M_.nfwrd;
+    % nstatic = M_.nstatic;
+    % nspred = M_.nspred; % note M_.nspred = M_.npred+M_.nboth;
+    % nboth = M_.nboth;
+    % nfwrd = M_.nfwrd;
 
-	% Build state variable selector
+    % Build state variable selector
     select_state = nstatic+1:nstatic+nspred;
 
 %--------------------------------------------------------------------------
@@ -89,14 +89,14 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
         end
     end
     
-	simulation_first( :, 1 ) = initial_state.first( dr.order_var );
-	if pruning_order >= 2
-		simulation_second( :, 1 ) = initial_state.second( dr.order_var );
-		if pruning_order >= 3
-			simulation_third( :, 1 ) = initial_state.third( dr.order_var );
-			simulation_first_sigma_2( :, 1 ) = initial_state.first_sigma_2( dr.order_var );
-		end
-	end
+    simulation_first( :, 1 ) = initial_state.first( dr.order_var );
+    if pruning_order >= 2
+        simulation_second( :, 1 ) = initial_state.second( dr.order_var );
+        if pruning_order >= 3
+            simulation_third( :, 1 ) = initial_state.third( dr.order_var );
+            simulation_first_sigma_2( :, 1 ) = initial_state.first_sigma_2( dr.order_var );
+        end
+    end
      
 %--------------------------------------------------------------------------
 % 1. Simulate first order solution for all the algorithms
@@ -108,9 +108,9 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
     end
     simulations.first=simulation_first(dr.inv_order_var,2:simul_length_p1);
     simulations.constant=dr.ys;
-	simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
+    simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
     simulations.total=simulations.first+repmat(simulations.constant,[1 simul_length]);
-	return;
+    return;
   end
 
 %--------------------------------------------------------------------------
@@ -118,7 +118,7 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
 %--------------------------------------------------------------------------
   if pruning_order == 2
     
-			ghs2_nlma = dr.ghs2_nlma;
+            ghs2_nlma = dr.ghs2_nlma;
           % Simulation
             E = shock_sequence;
             for t = 2:simul_length_p1
@@ -132,11 +132,11 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
             simulations.first = simulation_first(dr.inv_order_var,2:simul_length_p1);
             simulations.second = simulation_second(dr.inv_order_var,2:simul_length_p1);
             simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
-		    simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
+            simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
             simulations.total = simulations.second + simulations.first...
                                  +repmat( simulations.constant,[1 simul_length] );
-							 
-							 return;
+                             
+                             return;
   end
 
 %--------------------------------------------------------------------------
@@ -169,10 +169,10 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
            simulations.first_sigma_2 = simulation_first_sigma_2(dr.inv_order_var,2:simul_length_p1);
            simulations.third = simulation_third(dr.inv_order_var,2:simul_length_p1);
            simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
-		   simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
+           simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
            simulations.total = simulations.third +simulations.first_sigma_2 + simulations.second + simulations.first...
                                +repmat( simulations.constant,[1 simul_length] );
-						   
-						   return;
+                           
+                           return;
       
   end

@@ -1,23 +1,23 @@
 function y = SolveGlobalBoundsProblem( y, Ey, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, dynareOBC )
 
     DesiredReturnPath = max( 0, UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * max( 0, y ) );
-	
-	W1 = repmat( pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
-	W2 = repmat( 1 - pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
-	
+    
+    W1 = repmat( pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
+    W2 = repmat( 1 - pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
+    
     y = sdpvar( length( y ), 1 );
 
-	ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
+    ConstrainedReturnPathLongRun = UnconstrainedReturnPathLongRun(:) + dynareOBC.MMatrixLongRun * y;
     ConstrainedReturnPathShortRun = UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * y;
-	
-	yResiduals = y - Ey;
+    
+    yResiduals = y - Ey;
     ConstraintResiduals = sdpvar( length( y ), 1 );
-	
+    
     Constraints = [ 0 == W1 .* ( DesiredReturnPath - ConstrainedReturnPathLongRun ) + W2 .* ConstraintResiduals, ConstrainedReturnPathLongRun >= 0, y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun >= 0 ];
     Diagnostics = optimize( Constraints, ( ConstraintResiduals' * ConstraintResiduals ) * dynareOBC.GlobalConstraintStrength + yResiduals' * yResiduals, dynareOBC.LPOptions );
-	if Diagnostics.problem ~= 0
+    if Diagnostics.problem ~= 0
         error( 'dynareOBC:FailedToSolveGlobalBoundsProblem', [ 'An apparently impossible quadratic progrmaming problem was encountered when solving the global bounds problem. Internal message: ' Diagnostics.info ] );
-	end
+    end
     y = value( y );
 
 end

@@ -6,18 +6,18 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
    
     SimulationLength = size( ShockSequence, 2 );
     
-	if nargin < 6
+    if nargin < 6
         DisplayProgress = true;
-	end
-	if nargin < 7
+    end
+    if nargin < 7
         EndoZeroVec = zeros( M.endo_nbr, 1 );
         InitialFullState = struct;
         InitialFullState.bound = zeros( Ts * ns, 1 );
         InitialFullState.bound_offset = EndoZeroVec;
         InitialFullState.first = EndoZeroVec;
-		if dynareOBC.Order >= 3
-			InitialFullState.first_sigma_2 = EndoZeroVec;
-		end
+        if dynareOBC.Order >= 3
+            InitialFullState.first_sigma_2 = EndoZeroVec;
+        end
         if dynareOBC.Order >= 2
             InitialFullState.second = EndoZeroVec;
             if dynareOBC.Order >= 3
@@ -26,77 +26,77 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
         end
         InitialFullState.total = EndoZeroVec;
         InitialFullState.total_with_bounds = EndoZeroVec;
-	else
+    else
         DisplayProgress = false;
-		InitialFullState = orderfields( InitialFullState );
-	end
-	if nargin < 8
+        InitialFullState = orderfields( InitialFullState );
+    end
+    if nargin < 8
         SkipMLVSimulation = false;
-	end
-	if dynareOBC.UseSimulationCode && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
-		try
-			if dynareOBC.Estimation
-				if dynareOBC.Sparse
-					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
-				else
-					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
-				end
-			else
-				if dynareOBC.Sparse
-					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
-				else
-					Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
-				end
-			end
-		catch Error
-			warning( 'dynareOBC:ErrorInCompiledCustomLanMeyerGohdePrunedSimulation',  [ 'Not using the compiled version of the simulation code due to the error: ' Error.message ] );
-			Simulation = [];
-		end
-	else
-		Simulation = [];
-	end
-	if isempty( Simulation )
-		if DisplayProgress
-			p = TimedProgressBar( SimulationLength * dynareOBC.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
-		else
-			p = [];
-		end
-		if isempty( p )
-			call_back = @( x ) x;
-			call_back_arg = 0;
-		else
-			call_back = @( x ) x.progress;
-			call_back_arg = p;
-		end
+    end
+    if dynareOBC.UseSimulationCode && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+        try
+            if dynareOBC.Estimation
+                if dynareOBC.Sparse
+                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+                else
+                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
+                end
+            else
+                if dynareOBC.Sparse
+                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+                else
+                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
+                end
+            end
+        catch Error
+            warning( 'dynareOBC:ErrorInCompiledCustomLanMeyerGohdePrunedSimulation',  [ 'Not using the compiled version of the simulation code due to the error: ' Error.message ] );
+            Simulation = [];
+        end
+    else
+        Simulation = [];
+    end
+    if isempty( Simulation )
+        if DisplayProgress
+            p = TimedProgressBar( SimulationLength * dynareOBC.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
+        else
+            p = [];
+        end
+        if isempty( p )
+            call_back = @( x ) x;
+            call_back_arg = 0;
+        else
+            call_back = @( x ) x.progress;
+            call_back_arg = p;
+        end
         Simulation = LanMeyerGohdePrunedSimulation( M, options, oo.dr, ShockSequence, SimulationLength, dynareOBC.Order, 1, InitialFullState, call_back, call_back_arg );
-		if ~isempty( p )
-			p.stop;
-		end
-	end
+        if ~isempty( p )
+            p.stop;
+        end
+    end
     % StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
-	StructFieldNames = fieldnames( Simulation );
+    StructFieldNames = fieldnames( Simulation );
     
     SelectState = dynareOBC.SelectState;
         
     Simulation.bound = zeros( Ts * ns, SimulationLength );
     Simulation.bound_offset = zeros( M.endo_nbr, SimulationLength );
     
-	ghx = oo.dr.ghx;
-	pMat = dynareOBC.pMat;
-	
+    ghx = oo.dr.ghx;
+    pMat = dynareOBC.pMat;
+    
     if dynareOBC.NumberOfMax > 0
-		y = InitialFullState.bound;
-		
-		BoundOffsetOriginalOrder = InitialFullState.bound_offset;
-		BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
-		
-		Reshaped_y = reshape( y, Ts, ns );
-		yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
-		yNext = yNext(:);
-				
-		BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
-		BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
-		
+        y = InitialFullState.bound;
+        
+        BoundOffsetOriginalOrder = InitialFullState.bound_offset;
+        BoundOffsetDROrder = BoundOffsetOriginalOrder( oo.dr.order_var );
+        
+        Reshaped_y = reshape( y, Ts, ns );
+        yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
+        yNext = yNext(:);
+                
+        BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
+        BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
+        
         if dynareOBC.Global
             TM2 = T - 2;
             pM1 = ( -1 : TM2 )';
@@ -127,13 +127,13 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 Shock( :, 1 ) = ShockSequence( :, t );
 
                 for i = 1 : length( StructFieldNames )
-					CurrentFieldName = StructFieldNames{ i };
-					if ~strcmp( CurrentFieldName, 'constant' ) && ~strcmp( CurrentFieldName, 'bound' )
-						CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
-					end
+                    CurrentFieldName = StructFieldNames{ i };
+                    if ~strcmp( CurrentFieldName, 'constant' ) && ~strcmp( CurrentFieldName, 'bound' )
+                        CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
+                    end
                 end
                 CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
-				CurrentStateWithoutBound.bound = yNext;
+                CurrentStateWithoutBound.bound = yNext;
 
                 ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M, oo.dr, dynareOBC );
                 ReturnPath = ReturnStruct.total;        
@@ -167,14 +167,14 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( y - yNext );
                 BoundOffsetOriginalOrder = BoundOffsetDROrder( oo.dr.inv_order_var, : );
 
-				Reshaped_y = reshape( y, Ts, ns );
-				yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
-				yNext = yNext(:);
-		
+                Reshaped_y = reshape( y, Ts, ns );
+                yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
+                yNext = yNext(:);
+        
                 BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
                 BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo.dr.inv_order_var );
                 
-				Simulation.bound( :, t ) = y;
+                Simulation.bound( :, t ) = y;
                 Simulation.bound_offset( :, t ) = BoundOffsetOriginalOrder;
             catch Error
                 warning( WarningState );
@@ -245,7 +245,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
             if DisplayProgress
                 fprintf( '\nCalculating cubature points and weights.\n' );
             end
-        	[ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC.MLVSimulationAccuracy - 1 ) ) ) );
+            [ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC.MLVSimulationAccuracy - 1 ) ) ) );
             if DisplayProgress
                 fprintf( 'Found a cubature rule with %d points.\n', NumPoints );
             end
@@ -284,9 +284,9 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     InnerInitialFullState = struct;
                     for i = 1 : length( SimulationFieldNames )
                         CurrentFieldName = SimulationFieldNames{i};
-						if ~strcmp( CurrentFieldName, 'constant' )
-							InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
-						end
+                        if ~strcmp( CurrentFieldName, 'constant' )
+                            InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
+                        end
                     end
                     MLVValuesWithBounds = zeros( nMLV, 1 );
                     MLVValuesWithoutBounds = zeros( nMLV, 1 );

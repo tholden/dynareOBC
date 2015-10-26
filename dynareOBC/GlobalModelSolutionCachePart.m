@@ -29,7 +29,7 @@ function beta = GlobalModelSolutionCachePart( x, M, options, oo, dynareOBC )
     select_obs = [ dynareOBC.VarIndices_StateVariableAndShockCombinations( SelectSVASC ); dynareOBC.VarIndices_ZeroLowerBounded' ];
     select_obs = oo.dr.inv_order_var( select_obs ); 
     
-	select_state = ( nstatic + 1 ):( nstatic + nspred );
+    select_state = ( nstatic + 1 ):( nstatic + nspred );
 
     moments.nstatic = nstatic;
     moments.npred   = nspred;

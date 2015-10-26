@@ -1,8 +1,8 @@
 function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, SubEndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
-	Mean = [];
-	RootCovariance = [];
-	TwoNLogObservationLikelihood = NaN;
-	
+    Mean = [];
+    RootCovariance = [];
+    TwoNLogObservationLikelihood = NaN;
+    
     NEndo = M.endo_nbr;
     NExo = dynareOBC.OriginalNumVarExo;
     Nm = length( OldMean );
@@ -12,17 +12,17 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     No = length( Observed );
     Nmc = sum( EndoSelectWithControls );
     
-	if dynareOBC.EstimationAlternativeCubature
-		[ Weights, pTmp, Mx ] = fwtpts( Nx, 1 );
-		StateCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( Nm, NExo ); zeros( NExo, Nm ), RootQ ] * pTmp, [ OldMean; zeros( NExo, 1 ) ] );
-	else
-		Mx = 2 * Nx;
-		StateCubaturePoints = [ bsxfun( @plus, [ OldRootCovariance, -OldRootCovariance ] * sqrt( Nx ), OldMean ), repmat( OldMean, 1, 2 * NExo ); zeros( NExo, 2 * Nm ),  [ RootQ -RootQ ] * sqrt( Nx ) ];
-	end
+    if dynareOBC.EstimationAlternativeCubature
+        [ Weights, pTmp, Mx ] = fwtpts( Nx, 1 );
+        StateCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( Nm, NExo ); zeros( NExo, Nm ), RootQ ] * pTmp, [ OldMean; zeros( NExo, 1 ) ] );
+    else
+        Mx = 2 * Nx;
+        StateCubaturePoints = [ bsxfun( @plus, [ OldRootCovariance, -OldRootCovariance ] * sqrt( Nx ), OldMean ), repmat( OldMean, 1, 2 * NExo ); zeros( NExo, 2 * Nm ),  [ RootQ -RootQ ] * sqrt( Nx ) ];
+    end
     NewStatePoints = zeros( Nmc, Mx );
            
     % actual augmented state contains shock(+1), but we treat the shock(+1) component separately
-	for i = 1 : Mx
+    for i = 1 : Mx
         InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), M, options, oo, dynareOBC, false, InitialFullState, true );
         if dynareOBC.Order == 1
@@ -33,25 +33,25 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
             TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound_offset; Simulation.bound ];
         end
         NewStatePoints( :, i ) = TempNewStatePoints( EndoSelectWithControls ); % TempNewStatePoints( EndoSelect );
-		if any( ~isfinite( NewStatePoints( :, i ) ) )
-			return
-		end
-	end
-	if dynareOBC.EstimationAlternativeCubature
-		PredictedState = NewStatePoints * Weights';
-		RootPredictedErrorCovariance = bsxfun( @minus, NewStatePoints, PredictedState );
-		RootPredictedErrorCovariance = bsxfun( @times, RootPredictedErrorCovariance, Weights ) * RootPredictedErrorCovariance';
-		[L,D] = mchol( RootPredictedErrorCovariance );
-		RootPredictedErrorCovariance = L * diag( sqrt( max( 0, diag( D ) ) ) );
-	else
-		PredictedState = mean( NewStatePoints, 2 );
-		RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
-	end
+        if any( ~isfinite( NewStatePoints( :, i ) ) )
+            return
+        end
+    end
+    if dynareOBC.EstimationAlternativeCubature
+        PredictedState = NewStatePoints * Weights';
+        RootPredictedErrorCovariance = bsxfun( @minus, NewStatePoints, PredictedState );
+        RootPredictedErrorCovariance = bsxfun( @times, RootPredictedErrorCovariance, Weights ) * RootPredictedErrorCovariance';
+        [L,D] = mchol( RootPredictedErrorCovariance );
+        RootPredictedErrorCovariance = L * diag( sqrt( max( 0, diag( D ) ) ) );
+    else
+        PredictedState = mean( NewStatePoints, 2 );
+        RootPredictedErrorCovariance = Tria( 1 / sqrt( Mx ) * bsxfun( @minus, NewStatePoints, PredictedState ) );
+    end
         
     Nxc = min( Nmc, Mx ) + NExo;
     Mxc = 2 * Nxc;
 
-	if No > 0
+    if No > 0
         MeasurementCubaturePoints = [ bsxfun( @plus, [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( Nxc ), PredictedState ), repmat( PredictedState, 1, 2 * NExo ); zeros( NExo, 2 * min( Nmc, Mx ) ),  [ RootQ -RootQ ] * sqrt( Nxc ) ];
         NewMeasurementPoints = zeros( No, Mxc );
 
@@ -66,9 +66,9 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
             for j = 1 : No
                 NewMeasurementPoints( j, i ) = MLVs.( dynareOBC.VarList{ Observed( j ) } );
             end
-			if any( ~isfinite( NewMeasurementPoints( :, i ) ) )
-				return
-			end
+            if any( ~isfinite( NewMeasurementPoints( :, i ) ) )
+                return
+            end
         end
         PredictedMeasurements = mean( NewMeasurementPoints, 2 );
         CurlyY = 1 / sqrt( Mxc ) * bsxfun( @minus, NewMeasurementPoints, PredictedMeasurements );
@@ -80,11 +80,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         KalmanGain = ( CrossCovariance / RootPredictedInnovationCovariance' ) / RootPredictedInnovationCovariance;
         Mean = PredictedState( SubEndoSelect ) + KalmanGain * ( FiniteMeasurements - PredictedMeasurements );
         RootCovariance = Tria( [ CurlyX - KalmanGain * CurlyY, KalmanGain * diag( RootMEVar ) ] );
-	else
+    else
         Mean = PredictedState( SubEndoSelect );
         RootCovariance = Tria( RootPredictedErrorCovariance( SubEndoSelect, : ) );
         TwoNLogObservationLikelihood = 0;
-	end
+    end
 end
 
 function S = Tria( A )
@@ -99,7 +99,7 @@ function FullStateStruct = GetFullStateStruct( PartialState, NEndo, EndoSelect, 
     FullStateStruct = struct( 'bound', [] );
     FullStateStruct.first = CurrentState( 1:NEndo );
     total = FullStateStruct.first + Constant;
-	if Order >= 2
+    if Order >= 2
         FullStateStruct.second = CurrentState( (NEndo+1):(2*NEndo) );
         total = total + FullStateStruct.second;
         if Order >= 3
@@ -115,7 +115,7 @@ function FullStateStruct = GetFullStateStruct( PartialState, NEndo, EndoSelect, 
     else
         FullStateStruct.bound_offset = CurrentState( (NEndo+1):(2*NEndo) );
             FullStateStruct.bound = CurrentState( (2*NEndo+1):end );
-	end
-	FullStateStruct.total = total;
+    end
+    FullStateStruct.total = total;
     FullStateStruct.total_with_bounds = FullStateStruct.total + FullStateStruct.bound_offset;
 end
