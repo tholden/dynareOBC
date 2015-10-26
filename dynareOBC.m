@@ -297,6 +297,7 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 	skipline( );
 
     try
+        tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
     catch
         tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
     end
