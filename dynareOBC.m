@@ -204,6 +204,7 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 
 	addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
 	addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
+	addpath( [ dynareOBCPath '/dynareOBC/qpc/' ] );
 
 	if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
 		OptiString = 'OptiToolbox216';
@@ -296,9 +297,8 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 	skipline( );
 
     try
-        tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
     catch
-        tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+        tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
     end
 	tbxmanager restorepath;
 

@@ -240,11 +240,13 @@ DynareOBC incorporates code:
  * for LDL decompositions that is copyright Brian Borchers, 2002,
  * for displaying a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014,
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Andrew Makhorin, Benoît Legat and others, 2015,
+ * for quadratic programming, from qpOASES, copyright Ferreau, Kirches, Potschka, Bock, Diehl, 2014,
  * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014.
  
 Additionally, DynareOBC automatically downloads:
  * YALMIP, copyright Johan Löfberg, 2015,
  * the Opti Toolbox, copyright Jonathan Currie, and others, 2015,
+ * QPC, copyright Adrian Wills, 2009,
  * and MPT, with its dependencies, copyright Martin Herceg and others, 2015.
 
 The original portions of DynareOBC are copyright Tom Holden, 2015.
