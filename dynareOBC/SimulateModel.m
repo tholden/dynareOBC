@@ -245,13 +245,13 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
             if DisplayProgress
                 fprintf( '\nCalculating cubature points and weights.\n' );
             end
-        	[ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC.MLVSimulationCubatureDegree - 1 ) ) ) );
+        	[ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC.MLVSimulationAccuracy - 1 ) ) ) );
             if DisplayProgress
                 fprintf( 'Found a cubature rule with %d points.\n', NumPoints );
             end
             FutureShocks = CholSigma_e' * Points;
         else
-            NumPoints = dynareOBC.MLVSimulationSamples;
+            NumPoints = 2^(1+dynareOBC.MLVSimulationAccuracy)-1;
             Weights = ones( 1, NumPoints ) * ( 1 / NumPoints );
         end
         
@@ -277,7 +277,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                 CurrentValuesWithoutBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
                 if dynareOBC.MLVSimulationMode > 1
                     if dynareOBC.MLVSimulationMode == 3
-                        Points = randn( NumberOfPositiveVarianceShocks, NumPoints );
+                        Points = SobolSequence( NumberOfPositiveVarianceShocks, NumPoints );
                         FutureShocks = CholSigma_e' * Points;
                     end
                     

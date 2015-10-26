@@ -145,12 +145,12 @@ Note:
          If MLVSimulationMode>1, DynareOBC additionally generates simulated paths and average impulse responses for each
          non-constant MLV, used in the model, containing forward looking terms.
          If MLVSimulationMode=2, then DynareOBC takes the expectation of each forward looking MLV using sparse cubature.
-         If MLVSimulationMode=3, then DynareOBC takes the expectation of each forward looking MLV using Monte Carlo integration.
-          * MLVSimulationCubatureDegree=INTEGER (default: 9)
-               Specifies the degree of polynomial which should be integrated exactly, when MLVSimulationMode=2.
-               Values above 51 are treated as equal to 51.
-          * MLVSimulationSamples=INTEGER (default: 2000)
-               Specifies the number of samples to use for Monte Carlo integration, when MLVSimulationMode=3.
+         If MLVSimulationMode=3, then DynareOBC takes the expectation of each forward looking MLV using quasi-Monte Carlo
+         integration.
+          * MLVSimulationAccuracy=INTEGER (default: 10)
+               When MLVSimulationMode=2, this specifies the degree of polynomial which should be integrated exactly. In this case,
+               values above 51 are treated as equal to 51. When MLVSimulationMode=3, 2^(1+INTEGER) - 1 is the number of points
+               used for quasi-Monte Carlo integration.
     * Sparse
          Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC.
 
