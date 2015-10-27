@@ -132,7 +132,10 @@ Note:
          response ignoring the bound entirely.
           * GlobalConstraintStrength=FLOAT (default: 1)
                Specifies the weight on the squared deviation of the equality constraint in the global objective problem. Larger values
-               imply that the long-run path is very close to the short-run one, but can produce excess volatility in simulations. 
+               imply that the long-run path is very close to the short-run one, but can produce excess volatility in simulations.
+          * GlobalViolationStrength=FLOAT (default: 1)
+               Specifies the weight on the squared violations of the inequality constraints in the global objective problem. Larger
+               values reduce violations, but can produce bias or excess volatility in simulations.
           * Resume
                Resumes an interrupted solution iteration, when using global.
           * LPSolver

@@ -18,6 +18,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'FullTest', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Global', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'GlobalConstraintStrength', 1-eps );
+    dynareOBC = SetDefaultOption( dynareOBC, 'GlobalViolationStrength', 1-eps );
     dynareOBC = SetDefaultOption( dynareOBC, 'IgnoreBoundFailures', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFsAroundZero', false );
