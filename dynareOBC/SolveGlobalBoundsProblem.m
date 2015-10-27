@@ -15,7 +15,7 @@ function y = SolveGlobalBoundsProblem( y, Ey, UnconstrainedReturnPathShortRun, U
     Violations_0 = sdpvar( length( y ), 1 );
     Violations_x = sdpvar( length( y ), 1 );
     
-    Constraints = [ -dynareOBC.Tolerance < W1 .* ( DesiredReturnPath - ConstrainedReturnPathLongRun ) + W2 .* ConstraintResiduals < dynareOBC.Tolerance, ConstrainedReturnPathLongRun >= -Violations_0, Violations_0 >= 0, y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun >= -Violations_x, Violations_x >= 0 ];
+    Constraints = [ -dynareOBC.Tolerance <= W1 .* ( DesiredReturnPath - ConstrainedReturnPathLongRun ) + W2 .* ConstraintResiduals <= dynareOBC.Tolerance, ConstrainedReturnPathLongRun >= -Violations_0, Violations_0 >= 0, y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun >= -Violations_x, Violations_x >= 0 ];
     Diagnostics = optimize( Constraints, ( ConstraintResiduals' * ConstraintResiduals ) * dynareOBC.GlobalConstraintStrength + yResiduals' * yResiduals + ( Violations_0' * Violations_0 + Violations_x' * Violations_x ) * dynareOBC.GlobalViolationStrength, dynareOBC.QPOptions );
 
     if Diagnostics.problem ~= 0
