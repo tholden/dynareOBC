@@ -127,9 +127,9 @@ function dynareOBC( InputFileName, varargin )
                 warning( 'dynareOBC:TestSolversError', Error.message );
             end
         end
-        if ~isempty( dynareOBC_.LPSolver )
+        if ~isempty( dynareOBC_.QPSolver )
             try
-                yalmiptest( dynareOBC_.LPSolver );
+                yalmiptest( dynareOBC_.QPSolver );
             catch Error
                 warning( 'dynareOBC:TestSolversError', Error.message );
             end
