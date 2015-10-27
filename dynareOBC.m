@@ -204,7 +204,6 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
 
     addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
     addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
-    addpath( [ dynareOBCPath '/dynareOBC/qpc/' ] );
 
     if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
         OptiString = 'OptiToolbox216';
