@@ -235,7 +235,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
         end
         
         ParamVec = M.params;
-        SteadyState = oo.dr.ys;
+        SteadyState = oo.dr.ys( 1:dynareOBC.OriginalNumVar );
         
         WarningMessages = { };
         WarningIDs = { };

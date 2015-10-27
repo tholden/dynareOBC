@@ -63,5 +63,12 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     fprintf( newmfile, '%s', strjoin( FileLines, '\n' ) );
     fclose( newmfile );
     rehash;
+    try
+        BuildMLVSimulationCode( M, dynareOBC );
+        rehash;
+    catch Error
+        warning( 'dynareOBC:FailedCompilingMLVSimulationCode', [ 'Failed to compile the MLV simulation code, due to the error: ' Error.message ] );
+    end
+    
 end
 
