@@ -18,7 +18,7 @@ function y = SolveGlobalBoundsProblem( y, Ey, UnconstrainedReturnPathShortRun, U
     NumericalErrors = sdpvar( length( y ), 1 );
     
     Constraints = [ 0 == W1 .* ( DesiredReturnPath - ConstrainedReturnPathLongRun ) + W2 .* ConstraintResiduals + NumericalErrors, ConstrainedReturnPathLongRun >= -Violations_0, Violations_0 >= 0, y + ConstrainedReturnPathLongRun - ConstrainedReturnPathShortRun >= -Violations_x, Violations_x >= 0 ];
-    Diagnostics = optimize( Constraints, ( ConstraintResiduals' * ConstraintResiduals ) * dynareOBC.GlobalConstraintStrength + yResiduals' * yResiduals + ( Violations_0' * Violations_0 + Violations_x' * Violations_x ) * dynareOBC.GlobalViolationStrength + ( NumericalErrors' * NumericalErrors ) * 1e16, dynareOBC.LPOptions );
+    Diagnostics = optimize( Constraints, ( ConstraintResiduals' * ConstraintResiduals ) * dynareOBC.GlobalConstraintStrength + yResiduals' * yResiduals + ( Violations_0' * Violations_0 + Violations_x' * Violations_x ) * dynareOBC.GlobalViolationStrength + ( NumericalErrors' * NumericalErrors ) * 1e16, dynareOBC.QPOptions );
     if Diagnostics.problem ~= 0
         error( 'dynareOBC:FailedToSolveGlobalBoundsProblem', [ 'An apparently impossible quadratic progrmaming problem was encountered when solving the global bounds problem. Internal message: ' Diagnostics.info ] );
     end
