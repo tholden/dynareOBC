@@ -1,6 +1,11 @@
 DynareOBC: A toolkit for handling occasionally binding constraints with Dynare, by Tom Holden.
 ==============================================================================================
 
+Background
+----------
+Please read the paper here: https://github.com/tholden/dynareOBC/raw/master/paper.pdf
+Or the slides here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
+
 Installation
 ------------
 
@@ -242,12 +247,12 @@ DynareOBC incorporates code:
  * for nested Gaussian cubature that is copyright Alan Genz and Bradley Keister, 1996,
  * for LDL decompositions that is copyright Brian Borchers, 2002,
  * for displaying a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014,
- * for (mixed-integer) linear programming, from GLPKMEX, copyright Andrew Makhorin, Benoît Legat and others, 2015,
+ * for (mixed-integer) linear programming, from GLPKMEX, copyright Andrew Makhorin, BenoÃ®t Legat and others, 2015,
  * for quadratic programming, from qpOASES, copyright Ferreau, Kirches, Potschka, Bock, Diehl, 2014,
  * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014.
  
 Additionally, DynareOBC automatically downloads:
- * YALMIP, copyright Johan Löfberg, 2015,
+ * YALMIP, copyright Johan LÃ¶fberg, 2015,
  * the Opti Toolbox, copyright Jonathan Currie, and others, 2015,
  * QPC, copyright Adrian Wills, 2009,
  * and MPT, with its dependencies, copyright Martin Herceg and others, 2015.
