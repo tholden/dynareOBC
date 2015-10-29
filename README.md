@@ -4,7 +4,8 @@ DynareOBC: A toolkit for handling occasionally binding constraints with Dynare, 
 Background
 ----------
 Please read the paper here: https://github.com/tholden/dynareOBC/raw/master/paper.pdf
-Or the slides here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
+
+Or read the slides here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
 
 Installation
 ------------
