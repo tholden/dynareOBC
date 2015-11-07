@@ -1,9 +1,16 @@
 function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
 
-    T = int64( min( TM, dynareOBC.TimeToEscapeBounds ) );
+    Ts = int64( dynareOBC.TimeToEscapeBounds );
+    ns = int64( dynareOBC.NumberOfMax );
+    TM = int64( TM );
+    
+    T = min( TM, Ts );
     O = int64( 1 );
-    Indices = O:T;
+    Indices = bsxfun( @plus, (O:T)', int64( 0 ):Ts:((ns-O)*Ts ) );
+    Indices = Indices(:);
     M = dynareOBC.MMatrix( Indices, Indices );
+    
+    nsT = ns * T;
     
     MinimumDeterminant = Inf;
     MinimumS = Inf;
@@ -13,12 +20,12 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     
     LPOptions = optimoptions( @linprog, 'Algorithm', 'Dual-Simplex', 'Display', 'off', 'MaxIter', Inf, 'TolFun', 1e-9, 'TolCon', 1e-9 );
 
-    for SetSize = Indices
+    for SetSize = O:nsT
         
         disp( [ 'Starting set size ' int2str( SetSize ) '.' ] );
         
         Set = O:SetSize;
-        EndSet = Set + T - SetSize;
+        EndSet = Set + nsT - SetSize;
         
         f = [ zeros( SetSize, O ); -1 ];
         V0 = zeros( SetSize, O );
@@ -33,7 +40,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
         
             % Test Set
             
-            MSub = M( Set, Set );
+            MSub = M( Indices( Set ), Indices( Set ) );
             
             MDet = det( MSub );
             MinimumDeterminant = min( MinimumDeterminant, MDet );

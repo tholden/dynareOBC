@@ -10,8 +10,8 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     LPOptions = optimoptions( @linprog, 'Algorithm', 'Dual-Simplex', 'Display', 'off', 'MaxIter', Inf, 'TolFun', 1e-9, 'TolCon', 1e-9 );
 
-    V0 = zeros( Ts, 1 );
-    V1 = ones( Ts, 1 );
+    V0 = zeros( Ts * ns, 1 );
+    V1 = ones( Ts * ns, 1 );
     f = [ V0; -1 ];
     LB = [ V0; -Inf ];
     UB = [ V1; Inf ];
