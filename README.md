@@ -144,8 +144,9 @@ Note:
                values reduce violations, but can produce bias or excess volatility in simulations.
           * Resume
                Resumes an interrupted solution iteration, when using global.
-          * LPSolver
-               Specifies the solver to use for the linear programming problem that is solved by the global algorithm.
+          * QPSolver=STRING (default: automatically selected based on the detected solvers)
+               Specifies the solver to use for the quadratic programming problem that is solved by the global algorithm. To find out
+               what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by YALMIP. 
     * MLVSimulationMode=0|1|2|3 (default: 0)
          If MLVSimulationMode=0, DynareOBC does not attempt to simulate the path of model local variables.
          If MLVSimulationMode>0, DynareOBC generates simulated paths and average impulse responses for each model local variable
@@ -162,6 +163,15 @@ Note:
                used for quasi-Monte Carlo integration.
     * Sparse
          Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC.
+
+ * **For controlling and performing model diagnostics**
+    * NoPTest
+         Skips testing if M is a P matrix.
+    * FullTest=INTEGER (default: 0)
+         Runs very slow tests to see if the top INTEGERxINTEGER submatrix of M is a P and/or (strictly) semi-monotone matrix.
+    * LPSolver=STRING (default: automatically selected based on the detected solvers)
+         Specifies the solver to use for the linear programming problem that is solved when checking whether matrices are S/S_0.
+         To find out what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by YALMIP. 
 
  * **For controlling IRFs**
     * SlowIRFs
@@ -198,10 +208,6 @@ Note:
          Ignores all non-differentiabilities in the model. Useful for debugging.
     * NoCleanup
          Prevents the deletion of DynareOBC's temporary files. Useful for debugging.
-    * NoPTest
-         Skips testing if M is a P matrix.
-    * FullTest=INTEGER (default: 0)
-         Runs very slow tests to see if the top INTEGERxINTEGER submatrix of M is a P and/or (strictly) semi-monotone matrix.
 
 See the dynare reference manual for other available options.
 
