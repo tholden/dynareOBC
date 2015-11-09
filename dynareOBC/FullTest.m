@@ -17,8 +17,8 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     MinimumS0 = Inf;
     
     BreakFlag = false;
-    
-    LPOptions = optimoptions( @linprog, 'Algorithm', 'Dual-Simplex', 'Display', 'off', 'MaxIter', Inf, 'TolFun', 1e-9, 'TolCon', 1e-9 );
+
+    varsigma = sdpvar( 1, 1 );
 
     for SetSize = O:nsT
         
@@ -27,14 +27,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
         Set = O:SetSize;
         EndSet = Set + nsT - SetSize;
         
-        f = [ zeros( SetSize, O ); -1 ];
-        V0 = zeros( SetSize, O );
-        V1 = ones( SetSize, O );
-        LB = [ V0; -Inf ];
-        UB = [ V1; Inf ];
-        X0 = [ V0; 0 ];
-        
-        f0 = -V1;
+        y = sdpvar( double( SetSize ), 1 );
                 
         while true
         
@@ -45,17 +38,25 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             MDet = det( MSub );
             MinimumDeterminant = min( MinimumDeterminant, MDet );
             
-            [ ~, MS, Flag ] = linprog( f, [ -MSub, V1 ], V0, [], [], LB, UB, X0, LPOptions );
-            if Flag ~= 1
-                warning( 'dynareOBC:FullTestLinProgFail', 'Failed to solve one of the linear programming problems. This should never happen.' );
+            Constraints = [ 0 <= y, y <= 1, varsigma <= MSub * y ];
+            Objective = -varsigma;
+            Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
+
+            if Diagnostics.problem ~= 0
+                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
-            MinimumS = min( MinimumS, -MS );
+
+            MinimumS = min( MinimumS, value( varsigma ) );
             
-            [ ~, MS0, Flag ] = linprog( f0, -MSub, V0, [], [], V0, V1, V0, LPOptions );
-            if Flag ~= 1
-                warning( 'dynareOBC:FullTestLinProgFail', 'Failed to solve one of the linear programming problems. This should never happen.' );
+            Constraints = [ 0 <= y, y <= 1, 0 <= MSub * y ];
+            Objective = -sum( y );
+            Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
+
+            if Diagnostics.problem ~= 0
+                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
-            MinimumS0 = min( MinimumS0, -MS0 );
+
+            MinimumS0 = min( MinimumS0, -value( Objective ) );
 
             % Early Exit
             

@@ -8,30 +8,28 @@ function dynareOBC = InitialChecks( dynareOBC )
 
     Ms = dynareOBC.MsMatrix;
     
-    LPOptions = optimoptions( @linprog, 'Algorithm', 'Dual-Simplex', 'Display', 'off', 'MaxIter', Inf, 'TolFun', 1e-9, 'TolCon', 1e-9 );
+    varsigma = sdpvar( 1, 1 );
+    y = sdpvar( Ts * ns, 1 );
+    
+    Constraints = [ 0 <= y, y <= 1, varsigma <= Ms * y ];
+    Objective = -varsigma;
+    Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
 
-    V0 = zeros( Ts * ns, 1 );
-    V1 = ones( Ts * ns, 1 );
-    f = [ V0; -1 ];
-    LB = [ V0; -Inf ];
-    UB = [ V1; Inf ];
-    X0 = [ V0; 0 ];
-    [ ~, MinusS, Flag ] = linprog( f, [ -Ms, V1 ], V0, [], [], LB, UB, X0, LPOptions );
     ptestVal = 0;
-    if Flag ~= 1
-        warning( 'dynareOBC:InitialChecksLinProgFail', 'Failed to solve the linear programming problem used to test if M is an S matrix. This should never happen.' );
+    if Diagnostics.problem ~= 0
+        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+    end
+    
+    if value( varsigma ) >= 1e-8
+        skipline( );
+        disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
+        skipline( );
     else
-        if -MinusS >= 1e-8
-            skipline( );
-            disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
-            skipline( );
-        else
-            skipline( );
-            disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
-            skipline( );
-            ptestVal = -1;
-        end
-    end 
+        skipline( );
+        disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
+        skipline( );
+        ptestVal = -1;
+    end
     
     global ptest_use_mex
 

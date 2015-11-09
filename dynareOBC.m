@@ -120,6 +120,13 @@ function dynareOBC( InputFileName, varargin )
     if strcmpi( InputFileName, 'TestSolvers' )
         EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varargin{:} );
         yalmiptest;
+        if ~isempty( dynareOBC_.LPSolver )
+            try
+                yalmiptest( dynareOBC_.LPSolver );
+            catch Error
+                warning( 'dynareOBC:TestSolversError', Error.message );
+            end
+        end
         if ~isempty( dynareOBC_.MILPSolver )
             try
                 yalmiptest( dynareOBC_.MILPSolver );
