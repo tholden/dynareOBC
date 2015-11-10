@@ -92,7 +92,9 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     end
     
     MMatrix = zeros( ns * T, ns * Ts );
-    MMatrixLongRun = zeros( ns * T, ns * Ts );
+    if dynareOBC.Global
+        MMatrixLongRun = zeros( ns * T, ns * Ts );
+    end
     
     % Compute irfs
     simulation = zeros( endo_nbr, T );
