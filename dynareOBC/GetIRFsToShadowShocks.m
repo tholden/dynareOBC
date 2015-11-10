@@ -57,8 +57,8 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         VarIndicesLongRun = dynareOBC.VarIndices_ZeroLowerBoundedLongRun;
     end
     
-    Q = kalman_transition_matrix(oo.dr,(1:endo_nbr)',nstatic+(1:nspred)',exo_nbr);
-    V = inv( B + C * Q );
+    F = kalman_transition_matrix(oo.dr,(1:endo_nbr)',nstatic+(1:nspred)',exo_nbr);
+    V = inv( B + C * F );
     
     ITs = eye( Ts );
     Iendo_nbr = eye( endo_nbr );
@@ -102,10 +102,10 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
             y = ITs( :, k );
             simulation(:,1) = p{ 1, l } * y;
             for t = 2 : Ts
-              simulation(:,t) = p{ t, l } * y + Q * simulation( :, t-1 );
+              simulation(:,t) = p{ t, l } * y + F * simulation( :, t-1 );
             end
             for t = ( Ts + 1 ) : T
-              simulation(:,t) = Q * simulation( :, t-1 );
+              simulation(:,t) = F * simulation( :, t-1 );
             end
             simulation = simulation( oo.dr.inv_order_var, : );
             
