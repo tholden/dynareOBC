@@ -16,6 +16,7 @@ $RECYCLE.BIN/
 .DS_Store
 
 *.asv
+*.mex*
 
 dynareOBC/codegen/
 dynareOBC/tbxmanager/
