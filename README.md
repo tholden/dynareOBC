@@ -112,7 +112,8 @@ Note:
                Disables the statistical improvement to the cubature algorithm, which aggregates results of cubature at different
                degrees. Will generally reduce accuracy, but increase speed.
     * CubatureTolerance=FLOAT (default: 1e-6)
-         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
+         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature. Setting
+         this to zero disables adaptive cubature.
     * MaxCubatureDimension=INTEGER (default: 100)
          The maximum dimension over which to integrate.
     * NoCubature
