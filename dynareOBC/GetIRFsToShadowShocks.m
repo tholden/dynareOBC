@@ -146,8 +146,12 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     
     if TimeReversedSolutionError
         dynareOBC.d0 = [];
+        dynareOBC.dP = [];
+        dynareOBC.dN = [];
     else
         dynareOBC.d0 = d0;
+        dynareOBC.dP = dP;
+        dynareOBC.dN = dN;
     end
     
     % dynareOBC.pMat = cell( Ts, 1 );
