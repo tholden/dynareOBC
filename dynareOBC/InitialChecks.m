@@ -1,4 +1,5 @@
 function dynareOBC = InitialChecks( dynareOBC )
+    T = dynareOBC.InternalIRFPeriods;
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     
@@ -25,19 +26,97 @@ function dynareOBC = InitialChecks( dynareOBC )
         skipline( );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
         skipline( );
-        if isempty( dynareOBC.d0 )
-            disp( 'Skipping tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
-        else
-            disp( 'Performing tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
-            disp( 'TODO' );
-        end
-        skipline( );
     else
         skipline( );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
         skipline( );
         ptestVal = -1;
     end
+
+    if isempty( dynareOBC.d0s )
+        disp( 'Skipping tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+    else
+        disp( 'Performing tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+
+        NormInvIMinusF = dynareOBC.NormInvIMinusF;
+        Norm_d0 = dynareOBC.Norm_d0;
+        InvIMinusHd0s = dynareOBC.InvIMinusHd0s;
+        InvIMinusHdPs = dynareOBC.InvIMinusHdPs;
+        InvIMinusFdNs = dynareOBC.InvIMinusFdNs;
+        dNs = dynareOBC.dNs;
+
+        rhoF = dynareOBC.rhoF;
+        rhoG = dynareOBC.rhoG;
+        CF = dynareOBC.CF;
+        K = dynareOBC.K;
+
+        yInf = sdpvar( ns, 1 );
+
+        Constraints0 = [ 0 <= y, y <= 1, 0 <= yInf, yInf <= 1 ];
+
+        tmp = ones( 1, ns ) * Ts;
+        CellMs = mat2cell( Ms, tmp, tmp );
+        
+        InfiniteSCondition = false;
+
+        for TdaggerIndex = 1 : T
+            rhoFC = rhoF( TdaggerIndex );
+            rhoGC = rhoG( TdaggerIndex );
+            CFC = CF( TdaggerIndex );
+            KC = K( TdaggerIndex );
+            
+            rhoFCv = rhoFC .^ ( ( 1:Ts )' );
+            rhoGCv = rhoGC .^ ( ( 1:Ts )' );
+            
+            dSumIndices = bsxfun( @plus, ( 1:Ts )', (Ts-1):-1:0 );
+            
+            DenomFG_G = 1 ./ ( ( 1 - rhoFC * rhoGC ) .* ( 1 - rhoGC ) );
+            DenomFG = 1 ./ ( 1 - rhoFC * rhoGC );
+            DenomF = 1 ./ ( 1 - rhoFC );
+
+            Constraints = Constraints0;
+            for ConVar = 1 : ns % row index
+                Minimand1 = zeros( Ts, 1 );
+                Minimand2 = zeros( Ts, 1 );
+                Minimand3 = 0;
+                for ConShock = 1 : ns % column index
+                    yC = y( ( 1:Ts ) + ( ConShock - 1 ) * Ts );
+                    yInfC = yInf( ConShock );
+                    Norm_d0C = Norm_d0( ConShock );
+                    InvIMinusHd0sC = InvIMinusHd0s( ConVar, ConShock );
+                    InvIMinusHdPsC = squeeze( InvIMinusHdPs( ConVar, ConShock, : ) );
+                    InvIMinusFdNsC = squeeze( InvIMinusFdNs( ConVar, ConShock, : ) );
+                    dNsC = squeeze( dNs( ConVar, ConShock, : ) );
+
+                    Minimand1 = Minimand1 + CellMs{ ConVar, ConShock } * yC + InvIMinusHdPsC( Ts:-1:1 ) * yInfC - KC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
+                    Minimand2 = Minimand2 + ( dNsC( dSumIndices ) - KC / DenomFG * rhoFCv( end ) * rhoFCv * rhoGCv' ) * yC + ( InvIMinusFdNsC( 1 ) - InvIMinusFdNsC( 1:Ts ) ) * yInfC + InvIMinusHd0sC * yInfC - KC * rhoFCv * rhoFCv( end ) * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
+                    Minimand3 = Minimand3 - CFC * DenomF * rhoFC * rhoFCv( end ) * ( 1 - rhoFCv( end ) ) * Norm_d0C - CFC * rhoFC * rhoFCv( end ) * NormInvIMinusF * Norm_d0C * yInfC + InvIMinusFdNsC( 1 ) * yInfC + InvIMinusHd0sC * yInfC - KC * rhoFC * rhoFCv( end ) * rhoFCv( end ) * rhoGC * DenomFG_G;
+                end
+                Constraints = [ Constraints, varsigma <= Minimand1, varsigma <= Minimand2, varsigma <= Minimand3 ]; %#ok<AGROW>
+            end
+            Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
+
+            if Diagnostics.problem ~= 0
+                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+            end
+
+            if value( varsigma ) >= seps
+                skipline( );
+                disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T. This is a necessary condition for there to always be a solution.' );
+                skipline( );
+                InfiniteSCondition = true;
+                break;
+            end
+        end
+
+        if ~InfiniteSCondition
+            skipline( );
+            disp( 'M did not pass the sufficient condition to be an S matrix for all sufficiently large T, so even for large T, the LCP may not be feasible, so there may not be a solution.' );
+            skipline( );
+        end
+    end
+    skipline( );
+    
     
     global ptest_use_mex
 
