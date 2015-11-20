@@ -135,19 +135,19 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         end
         if ~TimeReversedSolutionError
             d0t = ( A*H + B + C*F ) \ ZLBEquationSelect; % sign of ZLBEquationSelect flipped relative to paper because dynare defines things on the opposite side of the equals sign
-            d0( l, : ) = d0t( IOV );
-            d0s( l, : ) = d0t( IOVVarIndices );
+            d0( :, l ) = d0t( IOV );
+            d0s( :, l ) = d0t( IOVVarIndices );
             dPt = d0t;
             dNt = d0t;
             for t = 1 : ( 2 * Ts - 1 )
                 dPt = H * dPt;
                 dNt = F * dNt;
                 tmp = InvIMinusH * dPt; %#ok<MINV>
-                InvIMinusHdPs( l, :, t ) = tmp( IOVVarIndices );
+                InvIMinusHdPs( :, l, t ) = tmp( IOVVarIndices );
                 tmp = InvIMinusF * dNt; %#ok<MINV>
-                InvIMinusFdNs( l, :, t ) = tmp( IOVVarIndices );
-                dPs( l, :, t ) = dPt( IOVVarIndices );
-                dNs( l, :, t ) = dNt( IOVVarIndices );
+                InvIMinusFdNs( :, l, t ) = tmp( IOVVarIndices );
+                dPs( :, l, t ) = dPt( IOVVarIndices );
+                dNs( :, l, t ) = dNt( IOVVarIndices );
             end
         end
         for t = Ts : -1 : 1
@@ -168,14 +168,14 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         dynareOBC.InvIMinusFdNs = [];
     else
         dynareOBC.NormInvIMinusF = norm( InvIMinusF, Inf );
-        dynareOBC.Norm_d0 = norm( d0, Inf );
+        dynareOBC.Norm_d0 = max( abs( d0 ) );
         dynareOBC.d0s = d0s;
         dynareOBC.dPs = dPs;
         dynareOBC.dNs = dNs;
         tmp = InvIMinusH * d0; %#ok<MINV>
-        dynareOBC.InvIMinusHd0s = tmp( IOVVarIndices );
+        dynareOBC.InvIMinusHd0s = tmp( IOVVarIndices, : );
         tmp = InvIMinusF * d0; %#ok<MINV>
-        dynareOBC.InvIMinusFd0s = tmp( IOVVarIndices );
+        dynareOBC.InvIMinusFd0s = tmp( IOVVarIndices, : );
         dynareOBC.InvIMinusHdPs = InvIMinusHdPs;
         dynareOBC.InvIMinusFdNs = InvIMinusFdNs;
     end
@@ -218,7 +218,14 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
             end
         end
         K = CF .* CG .* norm( V, Inf );
-   end
+        
+        dynareOBC.Tdaggers = Tdaggers;
+        dynareOBC.rhoF = rhoF;
+        dynareOBC.rhoG = rhoG;
+        dynareOBC.CF = CF;
+        dynareOBC.CG = CG;
+        dynareOBC.K = K;
+    end
     
     MSubMatrices = cell( endo_nbr, 1 );
     
