@@ -3,6 +3,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'CalculateTheoreticalVariance', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'CompileSimulationCode', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureTolerance', 1e-6 );    
+    dynareOBC = SetDefaultOption( dynareOBC, 'Debug', false );    
     dynareOBC = SetDefaultOption( dynareOBC, 'Estimation', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationAlternativeCubature', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );

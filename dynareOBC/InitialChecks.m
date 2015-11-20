@@ -62,7 +62,14 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
     if ptestVal > 0
-        disp( 'M is a P-matrix. There is at most one solution to the model.' );
+        disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for less than ' int2str( dynareOBC.TimeToEscapeBounds ) ' periods.' ] );
+        if dynareOBC.d0 > 0
+            disp( 'A weak necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds) is satisfied.' );
+        else
+            disp( 'A weak necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds) is not satisfied.' );
+            disp( 'Thus, for sufficiently large T, M is not a P matrix. There are multiple solutions to the model in at least some states of the world.' );
+            disp( 'However, due to your low choice of TimeToEscapeBounds, DynareOBC will only ever find one of these multiple solutions.' );
+        end
     elseif ptestVal < 0
         disp( 'M is not a P-matrix. There are multiple solutions to the model in at least some states of the world.' );
         disp( 'The one returned will depend on the chosen value of omega.' );
