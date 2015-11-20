@@ -112,11 +112,18 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     p = cell( Ts, ns );
     
     if ~TimeReversedSolutionError
-        d0 = zeros( ns, ns );
-        dP = zeros( ns, ns, 2 * Ts - 1 );
-        dN = zeros( ns, ns, 2 * Ts - 1 );
+        d0 = zeros( endo_nbr, endo_nbr );
+        InvIMinusHdPs = zeros( ns, ns, 2 * Ts - 1 );
+        InvIMinusFdNs = zeros( ns, ns, 2 * Ts - 1 );
+        d0s = zeros( ns, ns );
+        dPs = zeros( ns, ns, 2 * Ts - 1 );
+        dNs = zeros( ns, ns, 2 * Ts - 1 );
+        
+        InvIMinusF = inv( Iendo_nbr - F );
+        InvIMinusH = inv( Iendo_nbr - H );
 
-        IOVVarIndices = oo.dr.inv_order_var( VarIndices );
+        IOV = oo.dr.inv_order_var;
+        IOVVarIndices = IOV( VarIndices );
     end
     
     for l = 1 : ns
@@ -128,14 +135,19 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         end
         if ~TimeReversedSolutionError
             d0t = ( A*H + B + C*F ) \ ZLBEquationSelect; % sign of ZLBEquationSelect flipped relative to paper because dynare defines things on the opposite side of the equals sign
-            d0( l, : ) = d0t( IOVVarIndices );
+            d0( l, : ) = d0t( IOV );
+            d0s( l, : ) = d0t( IOVVarIndices );
             dPt = d0t;
             dNt = d0t;
             for t = 1 : ( 2 * Ts - 1 )
                 dPt = H * dPt;
                 dNt = F * dNt;
-                dP( l, :, t ) = dPt( IOVVarIndices );
-                dN( l, :, t ) = dNt( IOVVarIndices );
+                tmp = InvIMinusH * dPt; %#ok<MINV>
+                InvIMinusHdPs( l, :, t ) = tmp( IOVVarIndices );
+                tmp = InvIMinusF * dNt; %#ok<MINV>
+                InvIMinusFdNs( l, :, t ) = tmp( IOVVarIndices );
+                dPs( l, :, t ) = dPt( IOVVarIndices );
+                dNs( l, :, t ) = dNt( IOVVarIndices );
             end
         end
         for t = Ts : -1 : 1
@@ -145,13 +157,27 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     end
     
     if TimeReversedSolutionError
-        dynareOBC.d0 = [];
-        dynareOBC.dP = [];
-        dynareOBC.dN = [];
+        dynareOBC.NormInvIMinusF = [];
+        dynareOBC.Norm_d0 = [];
+        dynareOBC.d0s = [];
+        dynareOBC.dPs = [];
+        dynareOBC.dNs = [];
+        dynareOBC.InvIMinusHd0s = [];
+        dynareOBC.InvIMinusFd0s = [];
+        dynareOBC.InvIMinusHdPs = [];
+        dynareOBC.InvIMinusFdNs = [];
     else
-        dynareOBC.d0 = d0;
-        dynareOBC.dP = dP;
-        dynareOBC.dN = dN;
+        dynareOBC.NormInvIMinusF = norm( InvIMinusF, Inf );
+        dynareOBC.Norm_d0 = norm( d0, Inf );
+        dynareOBC.d0s = d0s;
+        dynareOBC.dPs = dPs;
+        dynareOBC.dNs = dNs;
+        tmp = InvIMinusH * d0; %#ok<MINV>
+        dynareOBC.InvIMinusHd0s = tmp( IOVVarIndices );
+        tmp = InvIMinusF * d0; %#ok<MINV>
+        dynareOBC.InvIMinusFd0s = tmp( IOVVarIndices );
+        dynareOBC.InvIMinusHdPs = InvIMinusHdPs;
+        dynareOBC.InvIMinusFdNs = InvIMinusFdNs;
     end
     
     % dynareOBC.pMat = cell( Ts, 1 );
@@ -255,7 +281,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     
     if dynareOBC.Debug && ~TimeReversedSolutionError
         figure;
-        plot( (-(Ts-1)):(Ts-1), [ MMatrix( Ts, 1:Ts ) MMatrix( (Ts-1):-1:1, Ts )' ], '-r', (-(2*Ts-1)):(2*Ts-1), [ squeeze( dN( 1, 1, end:-1:1 ) ); d0( 1, 1 ); squeeze( dP( 1, 1, 1:end ) ) ], '--g' );
+        plot( (-(Ts-1)):(Ts-1), [ MMatrix( Ts, 1:Ts ) MMatrix( (Ts-1):-1:1, Ts )' ], '-r', (-(2*Ts-1)):(2*Ts-1), [ squeeze( dNs( 1, 1, end:-1:1 ) ); d0s( 1, 1 ); squeeze( dPs( 1, 1, 1:end ) ) ], '--g' );
     end
     
 end

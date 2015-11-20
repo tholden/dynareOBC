@@ -20,9 +20,17 @@ function dynareOBC = InitialChecks( dynareOBC )
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     
-    if value( varsigma ) >= 1e-8
+    seps = sqrt( eps );
+    if value( varsigma ) >= seps
         skipline( );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
+        skipline( );
+        if isempty( dynareOBC.d0 )
+            disp( 'Skipping tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        else
+            disp( 'Performing tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+            disp( 'TODO' );
+        end
         skipline( );
     else
         skipline( );
@@ -63,7 +71,12 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     if ptestVal > 0
         disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for less than ' int2str( dynareOBC.TimeToEscapeBounds ) ' periods.' ] );
-        if dynareOBC.d0 > 0
+        if ptest_use_mex
+            DiagIsP = ptest_mex( dynareOBC.d0s );
+        else
+            DiagIsP = ptest( dynareOBC.d0s );
+        end
+        if DiagIsP
             disp( 'A weak necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds) is satisfied.' );
         else
             disp( 'A weak necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds) is not satisfied.' );
