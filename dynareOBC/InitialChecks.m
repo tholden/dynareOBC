@@ -63,7 +63,7 @@ function dynareOBC = InitialChecks( dynareOBC )
             rhoFC = rhoF( TdaggerIndex );
             rhoGC = rhoG( TdaggerIndex );
             CFC = CF( TdaggerIndex );
-            KC = K( TdaggerIndex );
+            KC = min( 1 / eps, K( TdaggerIndex ) );
             
             rhoFCv = rhoFC .^ ( ( 1:Ts )' );
             rhoGCv = rhoGC .^ ( ( 1:Ts )' );
