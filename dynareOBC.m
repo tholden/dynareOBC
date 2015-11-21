@@ -32,11 +32,14 @@ function dynareOBC( InputFileName, varargin )
 
     %% Initialization
 
+    CurrentPath = pwd( );
     dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
 
     WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
     rmpath( genpath( [ dynareOBCPath '/dynareOBC/' ] ) );
     warning( WarningState );
+    
+    addpath( dynareOBCPath );
 
     if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
         skipline( );
@@ -54,13 +57,16 @@ function dynareOBC( InputFileName, varargin )
     addpath( [ dynareOBCPath '/dynareOBC/JGit4MATLAB/' ] );
     addpath( [ dynareOBCPath '/dynareOBC/setup/' ] );
         
+    WarningState = warning( 'off', 'jgit:noSSHpassphrase' );
     try
+        disp( 'Initializing JGit.' );
         jgit version;
     catch
-        RestartMatlab( InputFileName, varargin{:} );
+        RestartMatlab( CurrentPath, InputFileName, varargin{:} );
     end
+    warning( WarningState );
    
-    dynareOBCSetup( dynareOBCPath, InputFileName, varargin{:} );
+    dynareOBCSetup( CurrentPath, dynareOBCPath, InputFileName, varargin{:} );
     
     path( OriginalPath );
 

@@ -30,7 +30,8 @@ if any(strcmp(cmd,{'help','-h','--help'}))
 end
 %% version
 if any(strcmp(cmd,{'version','-v','--version'}))
-    JGit.VERSION
+    disp( 'Current JGit version:' );
+    disp( JGit.VERSION );
     return
 end
 %% update JGit jar-file
