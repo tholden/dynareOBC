@@ -32,12 +32,7 @@ function EnforceRequirementsAndGeneratePath( dynareOBCPath, InputFileName, varar
         Architecture = 'FAILURE';
     end
     if DLLInstalled
-        skipline( );
-        disp( 'dynareOBC needs to restart MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
-        skipline( );
-        input( 'Press return to continue, or Ctrl+C to cancel.' );
-        system( [ 'start matlab.exe -sd "' pwd( ) '" -r "dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
-        system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );     
+        RestartMatlab( InputFileName, varargin{:} );    
     end
 
     addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
