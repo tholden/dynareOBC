@@ -7,3 +7,6 @@
 [submodule "dynareOBC/glpkmex"]
 	path = dynareOBC/glpkmex
 	url = https://github.com/tholden/glpkmex.git
+[submodule "dynareOBC/eigtool"]
+	path = dynareOBC/eigtool
+	url = https://github.com/eigtool/eigtool.git
