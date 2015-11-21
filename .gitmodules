@@ -1,6 +1,6 @@
 [submodule "dynareOBC/nlma"]
 	path = dynareOBC/nlma
-	url = https://github.com/tholden/nlma
+	url = https://github.com/tholden/nlma.git
 [submodule "dynareOBC/sedumi"]
 	path = dynareOBC/sedumi
 	url = https://github.com/tholden/sedumi.git
