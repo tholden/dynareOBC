@@ -258,7 +258,8 @@ DynareOBC incorporates code:
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Andrew Makhorin, Benoît Legat and others, 2015,
  * for quadratic programming, from qpOASES, copyright Ferreau, Kirches, Potschka, Bock, Diehl, 2014,
  * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014,
- * for calculating pseudo-spectral radii from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
+ * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014,
+ * for interacting with Git, from JGit4MATLAB, copyright Mikofski and Glauche, 2014.
  
 Additionally, DynareOBC automatically downloads:
  * YALMIP, copyright Johan Löfberg, 2015,
