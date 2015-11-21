@@ -27,18 +27,24 @@ config = git.getRepository.getConfig;
 
 OriginSet = isempty( config.getString( 'remote', 'origin', 'url' ) );
 
+tmp = directory;
+if tmp( end ) == '\' || tmp( end ) == '/'
+    tmp = tmp( 1:(end-1) );
+end
+[ ~, RepositoryName ] = fileparts( tmp );
+
 if OriginSet
-    disp( [ 'Setting new DynareOBC Git origin to: ' remote ] );
+    disp( [ 'Setting new ' RepositoryName ' Git origin to: ' remote ] );
     config.setString( 'remote', 'origin', 'url', remote );
     config.save;
-    disp( 'Downloading the latest DynareOBC files.' );
+    disp( [ 'Downloading the latest ' RepositoryName ' files.' ] );
     JGit.fetch( 'gitDir', directory );
-    disp( 'Updating local DynareOBC files from the downloaded ones.' );
+    disp( [ 'Updating local ' RepositoryName ' files from the downloaded ones.' ] );
     resetCMD = git.reset;
     resetCMD.setMode( org.eclipse.jgit.reset.ResetType.HARD );
     resetCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
     resetCMD.call;
 else
-    disp( 'Merging any local changes with the latest DynareOBC files.' );
+    disp( [ 'Merging any local changes with the latest ' RepositoryName ' files.' ] );
     JGit.pull( 'gitDir', directory );
 end
