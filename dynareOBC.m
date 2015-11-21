@@ -52,15 +52,14 @@ function dynareOBC( InputFileName, varargin )
     OriginalPath = path;
     
     addpath( [ dynareOBCPath '/dynareOBC/JGit4MATLAB/' ] );
-    
+    addpath( [ dynareOBCPath '/dynareOBC/setup/' ] );
+        
     try
         jgit version;
     catch
         RestartMatlab( InputFileName, varargin{:} );
     end
    
-    addpath( [ dynareOBCPath '/dynareOBC/setup/' ] );
-    
     dynareOBCSetup( dynareOBCPath, InputFileName, varargin{:} );
     
     path( OriginalPath );
