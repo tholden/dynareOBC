@@ -41,8 +41,6 @@ function dynareOBC( InputFileName, varargin )
         return;
     end
     
-    OriginalPath = path;
-
     WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
     rmpath( genpath( [ dynareOBCPath '/dynareOBC/' ] ) );
     warning( WarningState );
@@ -50,6 +48,8 @@ function dynareOBC( InputFileName, varargin )
     if strcmpi( InputFileName, 'rmpath' )
         return;
     end
+
+    OriginalPath = path;
 
     addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
     
