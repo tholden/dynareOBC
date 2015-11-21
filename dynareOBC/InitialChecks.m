@@ -23,13 +23,13 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     seps = sqrt( eps );
     if value( varsigma ) >= seps
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
-        skipline( );
+        fprintf( 1, '\n' );
     else
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
-        skipline( );
+        fprintf( 1, '\n' );
         ptestVal = -1;
     end
 
@@ -101,21 +101,21 @@ function dynareOBC = InitialChecks( dynareOBC )
             end
 
             if value( varsigma ) >= seps
-                skipline( );
+                fprintf( 1, '\n' );
                 disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T. This is a necessary condition for there to always be a solution.' );
-                skipline( );
+                fprintf( 1, '\n' );
                 InfiniteSCondition = true;
                 break;
             end
         end
 
         if ~InfiniteSCondition
-            skipline( );
+            fprintf( 1, '\n' );
             disp( 'M did not pass the sufficient condition to be an S matrix for all sufficiently large T, so even for large T, the LCP may not be feasible, so there may not be a solution.' );
-            skipline( );
+            fprintf( 1, '\n' );
         end
     end
-    skipline( );
+    fprintf( 1, '\n' );
     
     
     global ptest_use_mex
@@ -166,14 +166,14 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'M is not a P-matrix. There are multiple solutions to the model in at least some states of the world.' );
         disp( 'The one returned will depend on the chosen value of omega.' );
     end
-    skipline();
+    fprintf( 1, '\n' );
     
     if dynareOBC.FullTest > 0
         FTS = int2str( dynareOBC.FullTest );
         MFTS = [ 'M( 1:' FTS ', 1:' FTS ' )' ];
-        skipline();
+        fprintf( 1, '\n' );
         disp( [ 'Running full test to see if ' MFTS ' is a P and/or (strictly) semi-monotone matrix.' ] );
-        skipline();
+        fprintf( 1, '\n' );
         [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
         if MinimumDeterminant >= 1e-8
             disp( [ MFTS ' is a P-matrix.' ] );
@@ -210,9 +210,9 @@ function dynareOBC = InitialChecks( dynareOBC )
         PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
         PLCP.bth = ones( 2 * Tss, 1 );
 
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Solving for a parametric solution over the requested domain.' );
-        skipline( );
+        fprintf( 1, '\n' );
         OpenPool;
         try
             ParametricSolution = mpt_plcp( Opt( PLCP ) );

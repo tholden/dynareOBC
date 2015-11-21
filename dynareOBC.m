@@ -42,9 +42,9 @@ function dynareOBC( InputFileName, varargin )
     addpath( dynareOBCPath );
 
     if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
-        skipline( );
+        fprintf( 1, '\n' );
         disp( fileread( [ dynareOBCPath '/README.md' ] ) );
-        skipline( );
+        fprintf( 1, '\n' );
         return;
     end
     

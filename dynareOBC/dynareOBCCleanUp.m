@@ -1,7 +1,7 @@
 function dynareOBCCleanUp
-    skipline( );
+    fprintf( 1, '\n' );
     disp( 'Cleaning up.' );
-    skipline( );
+    fprintf( 1, '\n' );
 
     WarningState = warning( 'off', 'all' );
     try

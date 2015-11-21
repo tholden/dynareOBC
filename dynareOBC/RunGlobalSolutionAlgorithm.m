@@ -18,9 +18,9 @@ end
 
 function [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithmInternal( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, MaxArgPattern, CurrentNumParams, CurrentNumVar, dynareOBC )
 
-    skipline( );
+    fprintf( 1, '\n' );
     disp( 'Generating the intermediate mod file.' );
-    skipline( );
+    fprintf( 1, '\n' );
 
     [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC, AmpValues ] = ...
         InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, MaxArgPattern, CurrentNumParams, CurrentNumVar, dynareOBC );
@@ -38,9 +38,9 @@ function [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalS
     fprintf( newmodfile, '%s', FileText );
     fclose( newmodfile );
 
-    skipline( );
+    fprintf( 1, '\n' );
     disp( 'Calling dynare on the intermediate mod file.' );
-    skipline( );
+    fprintf( 1, '\n' );
 
     global M_ oo_ options_
     options_.solve_tolf = eps;

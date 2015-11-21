@@ -56,31 +56,31 @@ function EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFi
         
         if ~exist( [ dynareOBCPath '/dynareOBC/' OptiString '/opti_Install.m' ], 'file' )
             if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' )
-                skipline( );
+                fprintf( 1, '\n' );
                 disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
                 disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
                 disp( 'However, SCIP is only available under the ZLIB Academic License.' );
                 disp( 'Thus, you are only allowed to retrieve SCIP for research purposes,' );
                 disp( 'as a member of a non-commercial and academic institution.' );
-                skipline( );
+                fprintf( 1, '\n' );
                 SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
-                skipline( );
+                fprintf( 1, '\n' );
 
                 if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
                     OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
                 else
                     OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
                 end
-                skipline( );
+                fprintf( 1, '\n' );
                 disp( 'Downloading the OptiToolbox.' );
                 disp( 'This may take several minutes even on fast university connections.' );
-                skipline( );
+                fprintf( 1, '\n' );
                 aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
             end
 
-            skipline( );
+            fprintf( 1, '\n' );
             disp( [ 'Extracting files from ' OptiString '.zip.' ] );
-            skipline( );
+            fprintf( 1, '\n' );
             unzip( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
 
             copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
@@ -110,9 +110,9 @@ function EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFi
     end
 
     if isempty( TBXManagerDetails )
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Downloading the latest version of tbxmanager.' );
-        skipline( );
+        fprintf( 1, '\n' );
         [ NewTBXManagerContents, URLReadStatus ] = urlread( 'http://www.tbxmanager.com/tbxmanager.m' );
         if URLReadStatus
             NewTBXManagerContents = regexprep( NewTBXManagerContents, '^\s*(\w*)\s*=\s*input\s*\(\s*\w*\s*,\s*''s''\s*\)\s*;$', '$1=''y'';\nfprintf(''Agreed automatically. Please delete this folder if you do not agree.\\n\\n'');', 'lineanchors' );
@@ -126,9 +126,9 @@ function EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFi
 
     addpath( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
 
-    skipline( );
+    fprintf( 1, '\n' );
     disp( 'Ensuring key packages are up to date.' );
-    skipline( );
+    fprintf( 1, '\n' );
 
     try
         tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;

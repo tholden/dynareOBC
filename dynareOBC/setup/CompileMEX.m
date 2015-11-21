@@ -1,5 +1,5 @@
 function CompileMEX( dynareOBCPath )
-    skipline( );
+    fprintf( 1, '\n' );
     global spkron_use_mex ptest_use_mex;
     try
         spkron_use_mex = 1;
@@ -8,9 +8,9 @@ function CompileMEX( dynareOBCPath )
         end
     catch 
         try
-            skipline( );
+            fprintf( 1, '\n' );
             disp( 'Attempting to compile spkron.' );
-            skipline( );
+            fprintf( 1, '\n' );
             build_spkron;
             rehash path;
             movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/dynareOBC/' ], 'f' );
@@ -35,9 +35,9 @@ function CompileMEX( dynareOBCPath )
         end
     catch
         try
-            skipline( );
+            fprintf( 1, '\n' );
             disp( 'Attempting to compile ptest.' );
-            skipline( );
+            fprintf( 1, '\n' );
             build_ptest;
             rehash path;
             movefile( which( 'ptest_mex' ), [ dynareOBCPath '/dynareOBC/' ], 'f' );
@@ -55,5 +55,5 @@ function CompileMEX( dynareOBCPath )
     else
         disp( 'Not using the mex version of ptest.' );
     end
-    skipline( );
+    fprintf( 1, '\n' );
 end

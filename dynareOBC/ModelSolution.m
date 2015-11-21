@@ -5,9 +5,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     end
 
     if SlowMode
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Solving the model for specific parameters.' );
-        skipline( );
+        fprintf( 1, '\n' );
     end
 
     if FirstCall
@@ -23,9 +23,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
         if dynareOBC.Sparse
             if SlowMode
-                skipline( );
+                fprintf( 1, '\n' );
                 disp( 'Converting to sparse matrices.' );
-                skipline( );
+                fprintf( 1, '\n' );
             end
             DRFieldNames = fieldnames( oo.dr );
             for i = 1 : length( DRFieldNames )
@@ -35,9 +35,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         end
 
         if SlowMode
-            skipline( );
+            fprintf( 1, '\n' );
             disp( 'Computing the first order approximation around the selected non-steady-state point.' );
-            skipline( );
+            fprintf( 1, '\n' );
         end
         dynareOBC.Order = options.order;
         deflect_ = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
@@ -55,9 +55,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
 
     if dynareOBC.Sparse
         if SlowMode
-            skipline( );
+            fprintf( 1, '\n' );
             disp( 'Converting to sparse matrices.' );
-            skipline( );
+            fprintf( 1, '\n' );
         end
         DRFieldNames = fieldnames( oo.dr );
         for i = 1 : length( DRFieldNames )
@@ -67,25 +67,25 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     end
 
     if SlowMode
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Saving NLMA parameters.' );
-        skipline( );
+        fprintf( 1, '\n' );
     end
     [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, options, oo.dr, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
     
     if SlowMode
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Retrieving IRFs to shadow shocks.' );
-        skipline( );
+        fprintf( 1, '\n' );
     end
 
     dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC );
 
     if SlowMode
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Pre-calculating the augmented state transition matrices and possibly conditional covariances.' );
-        skipline( );
+        fprintf( 1, '\n' );
     end
 
     Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || dynareOBC.Global );
@@ -96,9 +96,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     dynareOBC.FullNumVarExo = M.exo_nbr;
 
 %     if SlowMode
-%         skipline( );
+%         fprintf( 1, '\n' );
 %         disp( 'Reducing the size of decision matrices.' );
-%         skipline( );
+%         fprintf( 1, '\n' );
 %     end
 % 
 %     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
@@ -109,9 +109,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     if SlowMode
         if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
             if SlowMode
-                skipline( );
+                fprintf( 1, '\n' );
                 disp( 'Attemtping to build a custom version of the simulation code.' );
-                skipline( );
+                fprintf( 1, '\n' );
             end
             try
                 BuildCustomLanMeyerGohdePrunedSimulation( M, oo, dynareOBC, dynareOBC.Estimation );
@@ -121,9 +121,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
             end
         end
 
-        skipline( );
+        fprintf( 1, '\n' );
         disp( 'Performing initial checks on the model.' );
-        skipline( );
+        fprintf( 1, '\n' );
         
         dynareOBC = InitialChecks( dynareOBC );
     end
