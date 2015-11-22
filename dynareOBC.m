@@ -64,7 +64,19 @@ function dynareOBC( InputFileName, varargin )
     try
         disp( 'Initializing JGit.' );
         jgit version;
-        UpdateRepository( dynareOBCPath, 'https://github.com/tholden/dynareOBC.git' );
+        
+        UpdateRepository( dynareOBCPath, [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
+        
+        GitModulesFile = fileread( [ dynareOBCPath '/.gitmodules' ] );
+        ModuleIncides = find( GitModulesFile == ']' );
+        NModules = length( ModuleIncides );
+        ModuleIncides( end + 1 ) = length( GitModulesFile );
+        for i = 1 : NModules
+            CurrentBlock = GitModulesFile( ModuleIncides( i ) : ModuleIncides( i + 1 ) );
+            ModulePath = regexp( CurrentBlock, '(?<=path\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
+            ModuleURL = regexp( CurrentBlock, '(?<=url\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
+            UpdateRepository( [ dynareOBCPath '/' ModulePath '/' ], [ dynareOBCPath '/.git/modules/' ModulePath '/' ] , ModuleURL );
+        end
     catch JGitError
         if strcmp( JGitError.identifier, 'jgit:noJGit' )
             try
