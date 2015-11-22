@@ -39,11 +39,7 @@ config = gitRepository.getConfig;
 
 OriginSet = isempty( config.getString( 'remote', 'origin', 'url' ) );
 
-tmp = directory;
-if tmp( end ) == '\' || tmp( end ) == '/'
-    tmp = tmp( 1:(end-1) );
-end
-[ ~, RepositoryName ] = fileparts( tmp );
+[ ~, RepositoryName ] = fileparts( remote );
 
 if OriginSet
     disp( [ 'Setting new ' RepositoryName ' Git origin to: ' remote ] );
