@@ -1,4 +1,4 @@
-function EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFileName, varargin )
+function EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
     [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/' ] );
     if ~MKDirStatus
         error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
@@ -32,7 +32,7 @@ function EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFi
         Architecture = 'FAILURE';
     end
     if DLLInstalled
-        RestartMatlab( CurrentPath, InputFileName, varargin{:} );    
+        RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );    
     end
 
     addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );

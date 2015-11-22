@@ -1,4 +1,4 @@
-function dynareOBCSetup( CurrentPath, dynareOBCPath, InputFileName, varargin )
+function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
 %       This command runs dynareOBC with the model file specified in
 %       the InputFileName arument.
 %       Please type "dynareOBC help" to see the full instructions.
@@ -61,7 +61,7 @@ function dynareOBCSetup( CurrentPath, dynareOBCPath, InputFileName, varargin )
     CompileMEX( dynareOBCPath );
     
     if strcmpi( InputFileName, 'addpath' )
-        EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFileName, varargin{:} );
+        EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
         dynare_config;
         return;
     end
@@ -99,7 +99,7 @@ function dynareOBCSetup( CurrentPath, dynareOBCPath, InputFileName, varargin )
     end
 
     if strcmpi( InputFileName, 'TestSolvers' )
-        EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFileName, varargin{:} );
+        EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
         yalmiptest;
         if ~isempty( dynareOBC_.LPSolver )
             try
@@ -130,7 +130,7 @@ function dynareOBCSetup( CurrentPath, dynareOBCPath, InputFileName, varargin )
         return;
     end
 
-    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( CurrentPath, dynareOBCPath, InputFileName, varargin{:} ) );
+    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
     
     %% Cleaning up
 

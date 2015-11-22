@@ -32,7 +32,7 @@ function dynareOBC( InputFileName, varargin )
 
     %% Initialization
 
-    CurrentPath = pwd( );
+    CurrentFolder = pwd( );
     dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
 
     WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
@@ -80,7 +80,7 @@ function dynareOBC( InputFileName, varargin )
     catch JGitError
         if strcmp( JGitError.identifier, 'jgit:noJGit' )
             try
-                RestartMatlab( CurrentPath, InputFileName, varargin{:} );
+                RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );
             catch
                 disp( 'Automatically restarting MATLAB failed. Note that automatic restart is only supported on Windows.' );
                 disp( 'Please manually restart MATLAB now.' );
@@ -93,10 +93,10 @@ function dynareOBC( InputFileName, varargin )
         end
     end
     warning( WarningState );
-    cd( CurrentPath );
+    cd( CurrentFolder );
 
     if ContinueExecution
-        dynareOBCSetup( CurrentPath, dynareOBCPath, InputFileName, varargin{:} );
+        dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
     end
     
     path( OriginalPath );

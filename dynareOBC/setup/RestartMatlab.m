@@ -1,4 +1,4 @@
-function RestartMatlab( CurrentPath, InputFileName, varargin )
+function RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin )
     Architecture = computer;
     if length( Architecture ) >= 5 && strcmp( Architecture( 1:5 ), 'PCWIN' )
 
@@ -11,7 +11,7 @@ function RestartMatlab( CurrentPath, InputFileName, varargin )
             error( 'dynareOBC:RestartMATLAB', 'Please manually restart MATLAB.' );
         end
         
-        system( [ 'start matlab.exe -sd "' CurrentPath '" -r "try;matlabrc;catch;end;try;startup;catch;end; cd( ''' CurrentPath ''' ); dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
+        system( [ 'start matlab.exe -sd "' CurrentFolder '" -r "try;matlabrc;catch;end;try;startup;catch;end; cd( ''' CurrentFolder ''' ); path( ''' OriginalPath ''' ); dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
         system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] ); 
         
     else
