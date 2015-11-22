@@ -23,9 +23,9 @@ if ~git_folder.isAbsolute
     git_folder = java.io.File( pwd, gitDirectory ); % folder relative to pwd
 end
 
+initCMD.readEnvironment;
 initCMD.setWorkTree( folder );
 initCMD.setGitDir( git_folder );
-% initCMD.readEnviroment;
 
 %% call
 gitRepository = initCMD.build;
@@ -47,6 +47,7 @@ if OriginSet
     config.save;
     disp( [ 'Downloading the latest ' RepositoryName ' files.' ] );
     fetchCMD = gitAPI.fetch;
+    fetchCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
     fetchCMD.call;
     disp( [ 'Updating local ' RepositoryName ' files from the downloaded ones.' ] );
     resetCMD = gitAPI.reset;
@@ -56,5 +57,6 @@ if OriginSet
 else
     disp( [ 'Merging any local changes with the latest ' RepositoryName ' files.' ] );
     pullCMD = gitAPI.pull;
+    pullCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
     pullCMD.call;
 end
