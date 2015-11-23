@@ -69,7 +69,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         cloneCMD.setBranch( 'master' );
         cloneCMD.call( );
         
-        movefile( [ TemporaryLocation '*' ], Directory, 'f' );
+        MoveFiles( TemporaryLocation, Directory );
         
         disp( [ 'Succesfully cloned the latest files from the ' RepositoryName ' repository.' ] );
 
