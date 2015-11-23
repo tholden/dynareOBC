@@ -1,5 +1,13 @@
 function MoveFiles( Source, Destination )
 
+    WarningState = warning( 'off', 'all' );
+    [ Success, ~, MKDirErrorIdentifier ] = mkdir( Destination );
+    warning( WarningState );
+    if ~Success
+        disp( [ 'Error ' MKDirErrorIdentifier ' creating directory: ' Destination ] );
+        return;
+    end
+    
     Files = dir( Source );
     
     for i = 1 : length( Files )
@@ -8,13 +16,6 @@ function MoveFiles( Source, Destination )
             continue;
         end
         if File.isdir
-            WarningState = warning( 'off', 'all' );
-            try
-                mkdir( [ Destination File.name '/' ] );
-            catch MKDirError
-                disp( [ 'Error ' MKDirError.identifier ' creating directory: ' Destination File.name '/' ] );
-            end
-            warning( WarningState );
             MoveFiles( [ Source File.name '/' ], [ Destination File.name '/' ] );
         else
             try
