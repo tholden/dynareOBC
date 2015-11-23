@@ -12,8 +12,6 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         CurrentGitDirectory = LongDefaultGitDirectory;
     end
 
-    JavaDirectory = GetJavaFile( Directory );
-
     [ ~, RepositoryName ] = fileparts( Remote );
 
     if exist( CurrentGitDirectory, 'dir' ) == 7
@@ -21,7 +19,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
             RepoBuilder = org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
             RepoBuilder.readEnvironment;
-            RepoBuilder.setWorkTree( JavaDirectory );
+            RepoBuilder.setWorkTree( GetJavaFile( Directory ) );
             RepoBuilder.setGitDir( GetJavaFile( CurrentGitDirectory ) );
             RepoBuilder.setMustExist( true );
 
@@ -58,8 +56,10 @@ function UpdateRepository( Directory, GitDirectory, Remote )
     end
 
     if isempty( CurrentGitDirectory )
+        TemporaryLocation = [ tempname '/' ];
+        
         cloneCMD = org.eclipse.jgit.api.Git.cloneRepository;
-        cloneCMD.setDirectory( JavaDirectory );
+        cloneCMD.setDirectory( GetJavaFile( TemporaryLocation ) );
         cloneCMD.setBare( false );
         cloneCMD.setCloneAllBranches( false );
         cloneCMD.setCloneSubmodules( true );
@@ -68,6 +68,9 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         cloneCMD.setURI( Remote );
         cloneCMD.setBranch( 'master' );
         cloneCMD.call( );
+        
+        movefile( [ TemporaryLocation '*' ], Directory, 'f' );
+        
         disp( [ 'Succesfully cloned the latest files from the ' RepositoryName ' repository.' ] );
 
         CurrentGitDirectory = LongDefaultGitDirectory;
