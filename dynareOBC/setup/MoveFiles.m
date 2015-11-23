@@ -8,11 +8,13 @@ function MoveFiles( Source, Destination )
             continue;
         end
         if File.isdir
+            WarningState = warning( 'off', 'all' );
             try
                 mkdir( [ Destination File.name '/' ] );
             catch
                 disp( [ 'Error creating directory: ' Destination File.name '/' ] );
             end
+            warning( WarningState );
             MoveFiles( [ Source File.name '/' ], [ Destination File.name '/' ] );
         else
             try
