@@ -2,7 +2,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
     %
     %   Copyright (c) 2013-2015 Mark Mikofski, 2015 Tom Holden
 
-    ShortDefaultGitDirectory = [ Directory '/.git' ];
+    ShortDefaultGitDirectory = [ Directory '.git' ];
     LongDefaultGitDirectory = [ ShortDefaultGitDirectory '/' ];
 
     if exist( ShortDefaultGitDirectory, 'file' ) == 2
