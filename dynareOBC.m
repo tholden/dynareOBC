@@ -94,6 +94,7 @@ function dynareOBC( InputFileName, varargin )
     end
     warning( WarningState );
     cd( CurrentFolder );
+    rehash;
 
     if ContinueExecution
         dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
