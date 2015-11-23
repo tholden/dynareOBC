@@ -13,7 +13,6 @@ function UpdateRepository( Directory, GitDirectory, Remote )
     end
 
     JavaDirectory = GetJavaFile( Directory );
-    JavaCurrentGitDirectory = GetJavaFile( CurrentGitDirectory );
 
     [ ~, RepositoryName ] = fileparts( Remote );
 
@@ -23,7 +22,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
 
             RepoBuilder.readEnvironment;
             RepoBuilder.setWorkTree( JavaDirectory );
-            RepoBuilder.setGitDir( JavaCurrentGitDirectory );
+            RepoBuilder.setGitDir( GetJavaFile( CurrentGitDirectory ) );
             RepoBuilder.setMustExist( true );
 
             % call
