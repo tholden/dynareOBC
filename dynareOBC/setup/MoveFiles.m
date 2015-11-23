@@ -13,6 +13,11 @@ function MoveFiles( Source, Destination )
             try
                 movefile( [ Source File.name ], [ Destination File.name ], 'f' );
             catch
+                try
+                    copyfile( [ Source File.name ], [ Destination File.name ], 'f' );
+                    delete( [ Source File.name ] );
+                catch
+                end
             end
         end
     end
