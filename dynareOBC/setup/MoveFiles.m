@@ -11,8 +11,8 @@ function MoveFiles( Source, Destination )
             WarningState = warning( 'off', 'all' );
             try
                 mkdir( [ Destination File.name '/' ] );
-            catch
-                disp( [ 'Error creating directory: ' Destination File.name '/' ] );
+            catch MKDirError
+                disp( [ 'Error ' MKDirError.identifier ' creating directory: ' Destination File.name '/' ] );
             end
             warning( WarningState );
             MoveFiles( [ Source File.name '/' ], [ Destination File.name '/' ] );
@@ -23,8 +23,8 @@ function MoveFiles( Source, Destination )
                 try
                     copyfile( [ Source File.name ], [ Destination File.name ], 'f' );
                     delete( [ Source File.name ] );
-                catch
-                    disp( [ 'Error moving: ' Source File.name ' to ' Destination File.name ] );
+                catch MoveError
+                    disp( [ 'Error ' MoveError.identifier ' moving: ' Source File.name ' to ' Destination File.name ] );
                 end
             end
         end
