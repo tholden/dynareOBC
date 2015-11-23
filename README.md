@@ -249,23 +249,25 @@ Acknowledgements and copyright information
 ------------------------------------------
 
 DynareOBC incorporates code:
- * for calculating risky first order approximations, by Alexander Meyer-Gohde. More information is contained in his paper
-   describing the algorithm, available here: http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf
- * from the nonlinear moving average toolkit, by Hong Lan and Alexander Meyer-Gohde,
- * for nested Gaussian cubature that is copyright Alan Genz and Bradley Keister, 1996,
- * for LDL decompositions that is copyright Brian Borchers, 2002,
- * for displaying a progress bar that is copyright Antonio Cacho, "Stefan" and Jeremy Scheff, 2014,
- * for (mixed-integer) linear programming, from GLPKMEX, copyright Andrew Makhorin, Benoît Legat and others, 2015,
+ * for calculating risky first order approximations that is copyright Meyer-Gohde, 2014.
+   More information is contained in his paper describing the algorithm, available here:
+   http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf
+ * from the nonlinear moving average toolkit that is copyright Lan and Alexander Meyer-Gohde, 2014,
+ * for nested Gaussian cubature that is copyright Genz and Keister, 1996,
+ * for LDL decompositions that is copyright Borchers, 2002,
+ * for displaying a progress bar that is copyright Cacho, "Stefan" and Scheff, 2014,
+ * for calculating relative paths that is copyright Lenz and Chatfield, 2013,
+ * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
  * for quadratic programming, from qpOASES, copyright Ferreau, Kirches, Potschka, Bock, Diehl, 2014,
  * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014,
  * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014,
  * for interacting with Git, from JGit4MATLAB, copyright Mikofski and Glauche, 2014.
  
 Additionally, DynareOBC automatically downloads:
- * YALMIP, copyright Johan Löfberg, 2015,
- * the Opti Toolbox, copyright Jonathan Currie, and others, 2015,
- * QPC, copyright Adrian Wills, 2009,
- * and MPT, with its dependencies, copyright Martin Herceg and others, 2015.
+ * YALMIP, copyright Lofberg, 2015,
+ * the Opti Toolbox, copyright Currie, and others, 2015,
+ * QPC, copyright Wills, 2009,
+ * and MPT, with its dependencies, copyright Herceg and others, 2015.
 
-The original portions of DynareOBC are copyright Tom Holden, 2015.
+The original portions of DynareOBC are copyright Holden, 2015.
 DynareOBC is released under the GNU GPL, version 3.0, available from https://www.gnu.org/copyleft/gpl.html
