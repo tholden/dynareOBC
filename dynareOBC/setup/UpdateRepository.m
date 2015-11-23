@@ -37,10 +37,9 @@ function UpdateRepository( Directory, GitDirectory, Remote )
                 pullCMD = gitAPI.pull;
                 pullCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
                 pullCMD.call;
+                disp( [ 'Succesfully updated the latest files from the ' RepositoryName ' repository.' ] );
             end
 
-            disp( [ 'Succesfully updated the latest files from the ' RepositoryName ' repository.' ] );
-            CurrentGitDirectory = [];
         catch CaughtRepoError
             disp( [ 'Error ' CaughtRepoError.identifier 'accessing the Git repository for ' RepositoryName '. Details follow:' ] );
             disp( CaughtRepoError.message );
@@ -50,6 +49,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
             DestinationGitDirectory = [ tempname '/' ];
             disp( [ 'Moving old Git directory from: ' CurrentGitDirectory ' to ' DestinationGitDirectory ] );
             movefile( CurrentGitDirectory, DestinationGitDirectory, 'f' );
+            CurrentGitDirectory = [];
         end
     else
         CurrentGitDirectory = [];    
