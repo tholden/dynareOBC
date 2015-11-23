@@ -59,7 +59,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
     end
 
     if isempty( CurrentGitDirectory )
-        cloneCMD = org.eclipse.jgit.api.Git.clone;
+        cloneCMD = org.eclipse.jgit.api.Git.cloneRepository;
         cloneCMD.setDirectory( JavaDirectory );
         cloneCMD.setBare( false );
         cloneCMD.setCloneAllBranches( false );
