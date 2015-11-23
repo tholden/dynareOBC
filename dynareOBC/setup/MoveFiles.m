@@ -17,6 +17,7 @@ function MoveFiles( Source, Destination )
                     copyfile( [ Source File.name ], [ Destination File.name ], 'f' );
                     delete( [ Source File.name ] );
                 catch
+                    disp( [ 'Error moving: ' Source File.name ' to ' Destination File.name ] );
                 end
             end
         end
