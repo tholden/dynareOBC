@@ -65,7 +65,7 @@ function dynareOBC( InputFileName, varargin )
         disp( 'Initializing JGit.' );
         jgit version;
         
-        UpdateRepository( dynareOBCPath, [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
+        UpdateRepository( [ dynareOBCPath '/' ], [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
         
         GitModulesFile = fileread( [ dynareOBCPath '/.gitmodules' ] );
         ModuleIncides = find( GitModulesFile == ']' );
