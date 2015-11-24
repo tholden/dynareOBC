@@ -37,6 +37,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'Skipping tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
     else
         disp( 'Performing tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
 
         FTGC = dynareOBC.FeasibilityTestGridSize;
         
@@ -143,7 +144,8 @@ function dynareOBC = InitialChecks( dynareOBC )
                         ptestVal = -1;
                     end
                 else
-                    disp( 'Testing whether M is a P-matrix using the non-MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
+                    disp( 'Testing whether M is a P-matrix using the non-MEX version of ptest.'
+                    disp( 'To skip this run dynareOBC with the noptest option.' );
                     if ptest( Ms )
                         ptestVal = 1;
                     else
