@@ -63,35 +63,16 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         cloneCMD.setBare( false );
         cloneCMD.setCloneAllBranches( false );
         cloneCMD.setCloneSubmodules( false );
-        cloneCMD.setNoCheckout( true );
+        cloneCMD.setNoCheckout( false );
         cloneCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
         cloneCMD.setURI( Remote );
         cloneCMD.setBranch( 'master' );
         cloneCMD.call( );
         
         MoveFiles( [ TemporaryLocation '.git/' ], GitDirectory );
+        MoveFiles( TemporaryLocation, Directory );
         
         disp( [ 'Succesfully cloned the latest files from the ' RepositoryName ' repository.' ] );
-
-        CurrentGitDirectory = GitDirectory;
-        
-        RepoBuilder = org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-
-        RepoBuilder.readEnvironment;
-        RepoBuilder.setWorkTree( GetJavaFile( Directory ) );
-        RepoBuilder.setGitDir( GetJavaFile( CurrentGitDirectory ) );
-        RepoBuilder.setMustExist( true );
-
-        gitRepository = RepoBuilder.build;
-        gitAPI = org.eclipse.jgit.api.Git( gitRepository );
-        checkoutCMD = gitAPI.checkout;
-        checkoutCMD.setAllPaths( true );
-        checkoutCMD.setForce( true );
-        checkoutCMD.setName( 'master' );
-        checkoutCMD.setCreateBranch( true );
-        checkoutCMD.setUpstreamMode( javaMethod('valueOf','org.eclipse.jgit.api.CreateBranchCommand$SetupUpstreamMode','TRACK') );
-        checkoutCMD.setStartPoint( 'origin/master' );
-        checkoutCMD.call;
     end
 
     SourceDestEqual = false;
