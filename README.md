@@ -10,11 +10,10 @@ Or read the slides here: https://github.com/tholden/dynareOBC/raw/master/slides.
 Installation
 ------------
 
-First, clone the toolkit, by pressing the clone button on: https://github.com/tholden/dynareOBC
-GitHub will then download the toolkit and its dependencies. Note that **the "download ZIP" button will not give you these
-dependencies**.
+First, either download or clone the toolkit, by pressing the download or clone button on:
+https://github.com/tholden/dynareOBC
 
-Then, add the toolkit to your MATLAB path.
+Then, add the toolkit to your MATLAB path. DynareOBC updates itself and its dependencies each time it is run.
 
 Requirements
 ------------
