@@ -37,6 +37,11 @@ function UpdateRepository( Directory, GitDirectory, Remote )
                 pullCMD = gitAPI.pull;
                 pullCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
                 pullCMD.call;
+                checkoutCMD = gitAPI.checkout;
+                checkoutCMD.setAllPaths( true );
+                checkoutCMD.setForce( false );
+                checkoutCMD.setName( 'master' );
+                checkoutCMD.call;
                 disp( [ 'Succesfully updated the latest files from the ' RepositoryName ' repository.' ] );
             end
 
@@ -84,11 +89,11 @@ function UpdateRepository( Directory, GitDirectory, Remote )
 
         gitRepository = RepoBuilder.build;
         gitAPI = org.eclipse.jgit.api.Git( gitRepository );
-        checkoutCMD = gitAPI.checkout( );
+        checkoutCMD = gitAPI.checkout;
         checkoutCMD.setAllPaths( true );
         checkoutCMD.setForce( true );
         checkoutCMD.setName( 'master' );
-        checkoutCMD.call( );
+        checkoutCMD.call;
     end
 
     SourceDestEqual = false;
