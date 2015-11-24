@@ -90,6 +90,9 @@ function dynareOBC( InputFileName, varargin )
             disp( [ 'The JGit error ' JGitError.identifier ' was caught. We will attempt to continue anyway.' ] );
             disp( 'Further details of the error follow:' );
             disp( JGitError.message );
+            for i = 1 : length( JGitError.stack )
+                disp( JGitError.stack( i ) );
+            end
         end
     end
     warning( WarningState );
