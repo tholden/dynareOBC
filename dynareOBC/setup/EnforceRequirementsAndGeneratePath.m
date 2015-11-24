@@ -143,6 +143,7 @@ function EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynare
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
         
+    addpath( [ dynareOBCPath '/dynareOBC/eigtool/num_comp/pseudo_radius/' ] );
     addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
 end
