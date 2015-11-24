@@ -9,6 +9,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedPointMaxIterations', 100 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FastCubature', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'FeasibilityTestGridSize', 10 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FirstOrderAroundRSS1OrMean2', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FirstOrderConditionalCovariance', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FMinFunctor', @( OptiFunction, OptiX0, OptiLB, OptiUB, varargin ) fmincon( OptiFunction, OptiX0, [], [], [], [], OptiLB, OptiUB, [], optimset( 'algorithm', 'sqp', 'display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', sqrt( eps ), 'TolFun', sqrt( eps ), 'UseParallel', true, 'ObjectiveLimit', -Inf, varargin{:} ) ) );
