@@ -54,53 +54,68 @@ function dynareOBC( InputFileName, varargin )
 
     OriginalPath = path;
     
-    addpath( [ dynareOBCPath '/dynareOBC/JGit4MATLAB/' ] );
     addpath( [ dynareOBCPath '/dynareOBC/setup/' ] );
         
     ContinueExecution = true;
     
-    WarningState = warning( 'off', 'jgit:noSSHpassphrase' );
-    warning( 'off', 'jgit:noUserInfo' );
-    try
-        disp( 'Initializing JGit.' );
-        jgit version;
-        
-        UpdateRepository( [ dynareOBCPath '/' ], [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
-        
-        GitModulesFile = fileread( [ dynareOBCPath '/.gitmodules' ] );
-        ModuleIncides = find( GitModulesFile == ']' );
-        NModules = length( ModuleIncides );
-        ModuleIncides( end + 1 ) = length( GitModulesFile );
-        for i = 1 : NModules
-            CurrentBlock = GitModulesFile( ModuleIncides( i ) : ModuleIncides( i + 1 ) );
-            ModulePath = regexp( CurrentBlock, '(?<=path\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
-            ModuleURL = regexp( CurrentBlock, '(?<=url\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
-            UpdateRepository( [ dynareOBCPath '/' ModulePath '/' ], [ dynareOBCPath '/.git/modules/' ModulePath '/' ] , ModuleURL );
-        end
-    catch JGitError
-        if strcmp( JGitError.identifier, 'jgit:noJGit' )
-            try
-                RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );
-            catch
-                disp( 'Automatically restarting MATLAB failed. Note that automatic restart is only supported on Windows.' );
-                disp( 'Please manually restart MATLAB now.' );
-                ContinueExecution = false;
-            end
-        else
-            disp( [ 'The JGit error ' JGitError.identifier ' was caught. We will attempt to continue anyway.' ] );
-            disp( 'Further details of the error follow:' );
-            disp( JGitError.message );
-            for i = 1 : length( JGitError.stack )
-                disp( JGitError.stack( i ) );
+    Update = true;
+    
+    CurrentDay = now;
+    if exist( [ dynareOBCPath '/LastUpdate.mat' ], 'file' ) == 2
+        LastUpdateStructure = load( [ dynareOBCPath '/LastUpdate.mat' ] );
+        if isfield( LastUpdateStructure, 'CurrentDay' )
+            if CurrentDay - LastUpdateStructure.CurrentDay < 1
+                Update = false;
             end
         end
     end
-    warning( WarningState );
-    cd( CurrentFolder );
-    rehash;
+    
+    if Update
+        addpath( [ dynareOBCPath '/dynareOBC/JGit4MATLAB/' ] );
+        WarningState = warning( 'off', 'jgit:noSSHpassphrase' );
+        warning( 'off', 'jgit:noUserInfo' );
+        try
+            disp( 'Initializing JGit.' );
+            jgit version;
+
+            UpdateRepository( [ dynareOBCPath '/' ], [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
+
+            GitModulesFile = fileread( [ dynareOBCPath '/.gitmodules' ] );
+            ModuleIncides = find( GitModulesFile == ']' );
+            NModules = length( ModuleIncides );
+            ModuleIncides( end + 1 ) = length( GitModulesFile );
+            for i = 1 : NModules
+                CurrentBlock = GitModulesFile( ModuleIncides( i ) : ModuleIncides( i + 1 ) );
+                ModulePath = regexp( CurrentBlock, '(?<=path\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
+                ModuleURL = regexp( CurrentBlock, '(?<=url\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
+                UpdateRepository( [ dynareOBCPath '/' ModulePath '/' ], [ dynareOBCPath '/.git/modules/' ModulePath '/' ] , ModuleURL );
+            end
+            save( [ dynareOBCPath '/LastUpdate.mat' ], 'CurrentDay' );
+        catch JGitError
+            if strcmp( JGitError.identifier, 'jgit:noJGit' )
+                try
+                    RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );
+                catch
+                    disp( 'Automatically restarting MATLAB failed. Note that automatic restart is only supported on Windows.' );
+                    disp( 'Please manually restart MATLAB now.' );
+                    ContinueExecution = false;
+                end
+            else
+                disp( [ 'The JGit error ' JGitError.identifier ' was caught. We will attempt to continue anyway.' ] );
+                disp( 'Further details of the error follow:' );
+                disp( JGitError.message );
+                for i = 1 : length( JGitError.stack )
+                    disp( JGitError.stack( i ) );
+                end
+            end
+        end
+        warning( WarningState );
+        cd( CurrentFolder );
+        rehash;
+    end
 
     if ContinueExecution
-        dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
+        dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
     end
     
     path( OriginalPath );

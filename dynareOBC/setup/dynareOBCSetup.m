@@ -1,4 +1,4 @@
-function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
+function dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
 %       This command runs dynareOBC with the model file specified in
 %       the InputFileName arument.
 %       Please type "dynareOBC help" to see the full instructions.
@@ -58,10 +58,12 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
 
-    CompileMEX( dynareOBCPath );
+    if Update
+        CompileMEX( dynareOBCPath );
+    end
     
     if strcmpi( InputFileName, 'addpath' )
-        EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
+        EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
         dynare_config;
         return;
     end
@@ -99,7 +101,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     end
 
     if strcmpi( InputFileName, 'TestSolvers' )
-        EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
+        EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
         yalmiptest;
         if ~isempty( dynareOBC_.LPSolver )
             try
@@ -130,7 +132,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         return;
     end
 
-    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
+    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
     
     %% Cleaning up
 
