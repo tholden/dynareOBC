@@ -88,6 +88,9 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         checkoutCMD.setAllPaths( true );
         checkoutCMD.setForce( true );
         checkoutCMD.setName( 'master' );
+        checkoutCMD.setCreateBranch( true );
+        checkoutCMD.setUpstreamMode( javaMethod('valueOf','org.eclipse.jgit.api.CreateBranchCommand$SetupUpstreamMode','TRACK') );
+        checkoutCMD.setStartPoint( 'origin/master' );
         checkoutCMD.call;
     end
 
