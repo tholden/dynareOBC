@@ -144,5 +144,7 @@ function dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, Inp
     end
 
     evalin( 'base', 'global dynareOBC_' );
+    
+    path( OriginalPath );
 
 end

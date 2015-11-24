@@ -118,6 +118,4 @@ function dynareOBC( InputFileName, varargin )
         dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
     end
     
-    path( OriginalPath );
-
 end
