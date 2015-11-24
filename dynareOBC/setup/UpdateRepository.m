@@ -72,6 +72,8 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         MoveFiles( [ TemporaryLocation '.git/' ], GitDirectory );
         MoveFiles( TemporaryLocation, Directory );
         
+        CurrentGitDirectory = GitDirectory;
+        
         disp( [ 'Succesfully cloned the latest files from the ' RepositoryName ' repository.' ] );
     end
 
