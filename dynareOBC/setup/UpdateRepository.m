@@ -37,11 +37,6 @@ function UpdateRepository( Directory, GitDirectory, Remote )
                 pullCMD = gitAPI.pull;
                 pullCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
                 pullCMD.call;
-                checkoutCMD = gitAPI.checkout;
-                checkoutCMD.setAllPaths( true );
-                checkoutCMD.setForce( false );
-                checkoutCMD.setName( 'master' );
-                checkoutCMD.call;
                 disp( [ 'Succesfully updated the latest files from the ' RepositoryName ' repository.' ] );
             end
 
@@ -67,7 +62,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         cloneCMD.setDirectory( GetJavaFile( TemporaryLocation ) );
         cloneCMD.setBare( false );
         cloneCMD.setCloneAllBranches( false );
-        cloneCMD.setCloneSubmodules( true );
+        cloneCMD.setCloneSubmodules( false );
         cloneCMD.setNoCheckout( true );
         cloneCMD.setProgressMonitor( com.mikofski.jgit4matlab.MATLABProgressMonitor );
         cloneCMD.setURI( Remote );
