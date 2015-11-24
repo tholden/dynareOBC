@@ -20,9 +20,14 @@ function MoveFiles( Source, Destination )
         else
             try
                 copyfile( [ Source File.name ], [ Destination File.name ], 'f' );
+                lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
                 delete( [ Source File.name ] );
                 warning( WarningState );
+                [ ~, DeleteWarningIdentifier ] = lastwarn;
+                if ~isempty( DeleteWarningIdentifier )
+                    disp( [ 'Warning ' DeleteWarningIdentifier ' moving: ' Source File.name ' to ' Destination File.name ] );
+                end
             catch MoveError
                 disp( [ 'Error ' MoveError.identifier ' moving: ' Source File.name ' to ' Destination File.name ] );
             end
