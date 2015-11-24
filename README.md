@@ -168,7 +168,8 @@ Note:
     * NoPTest
          Skips testing if M is a P matrix.
     * FeasibilityTestGridSize=INTEGER (default: 10)
-         Specifies the number of values of epsilon for which a test of a sufficient condition for feasibility is performed.
+         Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for feasibility
+         is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
          If FeasibilityTestGridSize=0 then the test is disabled.
     * FullTest=INTEGER (default: 0)
          Runs very slow tests to see if the top INTEGERxINTEGER submatrix of M is a P and/or (strictly) semi-monotone matrix.

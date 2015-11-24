@@ -55,6 +55,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     T = dynareOBC.InternalIRFPeriods;
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
+    FTGC = dynareOBC.FeasibilityTestGridSize;
 
     VarIndices = dynareOBC.VarIndices_ZeroLowerBounded;
     
@@ -80,16 +81,23 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     
     G = -C * V; %#ok<MINV>
     
-    try
-        [ H, TimeReversedSolutionError ] = cycle_reduction( C, B, A, seps, true );
-    catch
-        H = [];
-        TimeReversedSolutionError = 1;
+    if FTGC
+        TimeReversedSolutionError = 0;
+    else
+        TimeReversedSolutionError = 100;
     end
     
-    if TimeReversedSolutionError
-        warning( 'dynareOBC:NoTimeReversedSolution', 'Could not solve the time reversed model. Skipping infinite T tests.' );
-    else
+    if ~TimeReversedSolutionError
+        try
+            [ H, TimeReversedSolutionError ] = cycle_reduction( C, B, A, seps, true );
+        catch
+            H = [];
+            TimeReversedSolutionError = 1;
+            warning( 'dynareOBC:NoTimeReversedSolution', 'Could not solve the time reversed model. Skipping infinite T tests.' );
+        end
+    end
+    
+    if ~TimeReversedSolutionError
         if ( max( abs( eig( F ) ) ) > 1 - 2 * seps )
             warning( 'dynareOBC:CloseToUnitRoot', 'Forward model is close to a unit root. Skipping infinite T tests.' );
             TimeReversedSolutionError = 2;
@@ -98,14 +106,13 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
             warning( 'dynareOBC:CloseToUnitRoot', 'Backwards model is close to a unit root. Skipping infinite T tests.' );
             TimeReversedSolutionError = 2;
         end       
-    end       
-    
-    if dynareOBC.Debug
-        if max( abs( sort( abs( eig( G ) ) ) - sort( abs( eig( H ) ) ) ) ) > seps
-            warning( 'dynareOBC:GHNonAgreement', 'The eigenvalues of the G and H matrices do not appear to agree.' );
+        if dynareOBC.Debug
+            if max( abs( sort( abs( eig( G ) ) ) - sort( abs( eig( H ) ) ) ) ) > seps
+                warning( 'dynareOBC:GHNonAgreement', 'The eigenvalues of the G and H matrices do not appear to agree.' );
+            end
         end
     end
-    
+
     ITs = eye( Ts );
     Iendo_nbr = eye( endo_nbr );
     
@@ -167,8 +174,8 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         dynareOBC.InvIMinusHdPs = [];
         dynareOBC.InvIMinusFdNs = [];
     else
-        dynareOBC.NormInvIMinusF = norm( InvIMinusF, Inf );
-        dynareOBC.Norm_d0 = max( abs( d0 ) );
+        dynareOBC.NormInvIMinusF = norm( InvIMinusF, 2 );
+        dynareOBC.Norm_d0 = sqrt( sum( abs( d0 ).^2 ) );
         dynareOBC.d0s = d0s;
         dynareOBC.dPs = dPs;
         dynareOBC.dNs = dNs;
@@ -188,38 +195,27 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     dynareOBC.pMat = cell2mat( p( 1, : ) );
     
     if ~TimeReversedSolutionError
-        Tdaggers = zeros( T, 1 );
-        rhoF = zeros( T, 1 );
-        rhoG = zeros( T, 1 );
-        CF = zeros( T, 1 );
-        CG = zeros( T, 1 );
- 
-        TestIndex = 0;
-        TestPower = 0;
-        FP = eye( endo_nbr );
-        GP = eye( endo_nbr );
-        mFP = 1;
-        mGP = 1;
-        while TestIndex < T
-            TestPower = TestPower + 1;
-            FP = FP * F;
-            GP = GP * G;
-            nFP = norm( FP, Inf );
-            nGP = norm( GP, Inf );
-            mFP = max( mFP, nFP );
-            mGP = max( mGP, nGP );
-            if ( nFP < 1 - seps ) && ( nGP < 1 - seps )
-                TestIndex = TestIndex + 1;
-                Tdaggers( TestIndex ) = TestPower;
-                rhoF( TestIndex ) = nFP .^ ( 1 / TestPower );
-                rhoG( TestIndex ) = nGP .^ ( 1 / TestPower );
-                CF( TestIndex ) = mFP / nFP;
-                CG( TestIndex ) = mGP / nGP;
-            end
-        end
-        K = CF .* CG .* norm( V, Inf );
+        FepsilonBound = exp( fzero( @( log_epsilon ) pspr_2way( F, exp( log_epsilon ) ) - 1, 0 ) );
+        GepsilonBound = exp( fzero( @( log_epsilon ) pspr_2way( G, exp( log_epsilon ) ) - 1, 0 ) );
         
-        dynareOBC.Tdaggers = Tdaggers;
+        epsilonScales = ( 1:FTGC )' ./ ( FTGC + 1 );
+        Fepsilons = epsilonScales * FepsilonBound;
+        Gepsilons = epsilonScales * GepsilonBound;
+        rhoF = zeros( FTGC, 1 );
+        rhoG = zeros( FTGC, 1 );
+        
+        for i = 1 : FTGC
+            rhoF( i ) = pspr_2way( F, Fepsilons( i ) );
+            rhoG( i ) = pspr_2way( G, Gepsilons( i ) );
+        end
+        
+        CF = rhoF ./ Fepsilons;
+        CG = rhoG ./ Gepsilons;
+ 
+        K = ( CF * CG' ) .* norm( V, 2 );
+        
+        dynareOBC.Fepsilons = Fepsilons;
+        dynareOBC.Gepsilons = Gepsilons;
         dynareOBC.rhoF = rhoF;
         dynareOBC.rhoG = rhoG;
         dynareOBC.CF = CF;
@@ -284,7 +280,6 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     dynareOBC.sInverseIndices = sInverseIndices;
 
     dynareOBC.MsMatrix = MMatrix( sIndices, : );
-    dynareOBC.NormMsMatrix = norm( dynareOBC.MsMatrix, Inf );
     
     if dynareOBC.Debug && ~TimeReversedSolutionError
         figure;

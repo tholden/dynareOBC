@@ -38,6 +38,8 @@ function dynareOBC = InitialChecks( dynareOBC )
     else
         disp( 'Performing tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
 
+        FTGC = dynareOBC.FeasibilityTestGridSize;
+        
         NormInvIMinusF = dynareOBC.NormInvIMinusF;
         Norm_d0 = dynareOBC.Norm_d0;
         InvIMinusHd0s = dynareOBC.InvIMinusHd0s;
@@ -59,52 +61,57 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         InfiniteSCondition = false;
 
-        for TdaggerIndex = 1 : T
-            rhoFC = rhoF( TdaggerIndex );
-            rhoGC = rhoG( TdaggerIndex );
-            CFC = CF( TdaggerIndex );
-            KC = min( 1 / eps, K( TdaggerIndex ) );
-            
-            rhoFCv = rhoFC .^ ( ( 1:Ts )' );
-            rhoGCv = rhoGC .^ ( ( 1:Ts )' );
-            
-            dSumIndices = bsxfun( @plus, ( 1:Ts )', (Ts-1):-1:0 );
-            
-            DenomFG_G = 1 ./ ( ( 1 - rhoFC * rhoGC ) .* ( 1 - rhoGC ) );
-            DenomFG = 1 ./ ( 1 - rhoFC * rhoGC );
-            DenomF = 1 ./ ( 1 - rhoFC );
+        for i = 1 : FTGC
+            for j = 1 : FTGC
+                rhoFC = rhoF( i );
+                rhoGC = rhoG( j );
+                CFC = CF( i );
+                KC = K( i, j );
 
-            Constraints = Constraints0;
-            for ConVar = 1 : ns % row index
-                Minimand1 = zeros( Ts, 1 );
-                Minimand2 = zeros( Ts, 1 );
-                Minimand3 = 0;
-                for ConShock = 1 : ns % column index
-                    yC = y( ( 1:Ts ) + ( ConShock - 1 ) * Ts );
-                    yInfC = yInf( ConShock );
-                    Norm_d0C = Norm_d0( ConShock );
-                    InvIMinusHd0sC = InvIMinusHd0s( ConVar, ConShock );
-                    InvIMinusHdPsC = squeeze( InvIMinusHdPs( ConVar, ConShock, : ) );
-                    InvIMinusFdNsC = squeeze( InvIMinusFdNs( ConVar, ConShock, : ) );
-                    dNsC = squeeze( dNs( ConVar, ConShock, : ) );
+                rhoFCv = rhoFC .^ ( ( 1:Ts )' );
+                rhoGCv = rhoGC .^ ( ( 1:Ts )' );
 
-                    Minimand1 = Minimand1 + CellMs{ ConVar, ConShock } * yC + InvIMinusHdPsC( Ts:-1:1 ) * yInfC - KC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
-                    Minimand2 = Minimand2 + ( dNsC( dSumIndices ) - KC / DenomFG * rhoFCv( end ) * rhoFCv * rhoGCv' ) * yC + ( InvIMinusFdNsC( 1 ) - InvIMinusFdNsC( 1:Ts ) ) * yInfC + InvIMinusHd0sC * yInfC - KC * rhoFCv * rhoFCv( end ) * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
-                    Minimand3 = Minimand3 - CFC * DenomF * rhoFC * rhoFCv( end ) * ( 1 - rhoFCv( end ) ) * Norm_d0C - CFC * rhoFC * rhoFCv( end ) * NormInvIMinusF * Norm_d0C * yInfC + InvIMinusFdNsC( 1 ) * yInfC + InvIMinusHd0sC * yInfC - KC * rhoFC * rhoFCv( end ) * rhoFCv( end ) * rhoGC * DenomFG_G;
+                dSumIndices = bsxfun( @plus, ( 1:Ts )', (Ts-1):-1:0 );
+
+                DenomFG_G = 1 ./ ( ( 1 - rhoFC * rhoGC ) .* ( 1 - rhoGC ) );
+                DenomFG = 1 ./ ( 1 - rhoFC * rhoGC );
+                DenomF = 1 ./ ( 1 - rhoFC );
+
+                Constraints = Constraints0;
+                for ConVar = 1 : ns % row index
+                    Minimand1 = zeros( Ts, 1 );
+                    Minimand2 = zeros( Ts, 1 );
+                    Minimand3 = 0;
+                    for ConShock = 1 : ns % column index
+                        yC = y( ( 1:Ts ) + ( ConShock - 1 ) * Ts );
+                        yInfC = yInf( ConShock );
+                        Norm_d0C = Norm_d0( ConShock );
+                        InvIMinusHd0sC = InvIMinusHd0s( ConVar, ConShock );
+                        InvIMinusHdPsC = squeeze( InvIMinusHdPs( ConVar, ConShock, : ) );
+                        InvIMinusFdNsC = squeeze( InvIMinusFdNs( ConVar, ConShock, : ) );
+                        dNsC = squeeze( dNs( ConVar, ConShock, : ) );
+
+                        Minimand1 = Minimand1 + CellMs{ ConVar, ConShock } * yC + InvIMinusHdPsC( Ts:-1:1 ) * yInfC - KC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
+                        Minimand2 = Minimand2 + ( dNsC( dSumIndices ) - KC / DenomFG * rhoFCv( end ) * rhoFCv * rhoGCv' ) * yC + ( InvIMinusFdNsC( 1 ) - InvIMinusFdNsC( 1:Ts ) ) * yInfC + InvIMinusHd0sC * yInfC - KC * rhoFCv * rhoFCv( end ) * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
+                        Minimand3 = Minimand3 - CFC * DenomF * rhoFC * rhoFCv( end ) * ( 1 - rhoFCv( end ) ) * Norm_d0C - CFC * rhoFC * rhoFCv( end ) * NormInvIMinusF * Norm_d0C * yInfC + InvIMinusFdNsC( 1 ) * yInfC + InvIMinusHd0sC * yInfC - KC * rhoFC * rhoFCv( end ) * rhoFCv( end ) * rhoGC * DenomFG_G;
+                    end
+                    Constraints = [ Constraints, varsigma <= Minimand1, varsigma <= Minimand2, varsigma <= Minimand3 ]; %#ok<AGROW>
                 end
-                Constraints = [ Constraints, varsigma <= Minimand1, varsigma <= Minimand2, varsigma <= Minimand3 ]; %#ok<AGROW>
-            end
-            Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
+                Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
 
-            if Diagnostics.problem ~= 0
-                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-            end
+                if Diagnostics.problem ~= 0
+                    error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                end
 
-            if value( varsigma ) >= seps
-                fprintf( 1, '\n' );
-                disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T. This is a necessary condition for there to always be a solution.' );
-                fprintf( 1, '\n' );
-                InfiniteSCondition = true;
+                if value( varsigma ) >= seps
+                    fprintf( 1, '\n' );
+                    disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T. This is a necessary condition for there to always be a solution.' );
+                    fprintf( 1, '\n' );
+                    InfiniteSCondition = true;
+                    break;
+                end
+            end
+            if InfiniteSCondition
                 break;
             end
         end
