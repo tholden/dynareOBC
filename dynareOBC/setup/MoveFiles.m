@@ -19,14 +19,12 @@ function MoveFiles( Source, Destination )
             MoveFiles( [ Source File.name '/' ], [ Destination File.name '/' ] );
         else
             try
-                movefile( [ Source File.name ], [ Destination File.name ], 'f' );
-            catch
-                try
-                    copyfile( [ Source File.name ], [ Destination File.name ], 'f' );
-                    delete( [ Source File.name ] );
-                catch MoveError
-                    disp( [ 'Error ' MoveError.identifier ' moving: ' Source File.name ' to ' Destination File.name ] );
-                end
+                copyfile( [ Source File.name ], [ Destination File.name ], 'f' );
+                WarningState = warning( 'off', 'all' );
+                delete( [ Source File.name ] );
+                warning( WarningState );
+            catch MoveError
+                disp( [ 'Error ' MoveError.identifier ' moving: ' Source File.name ' to ' Destination File.name ] );
             end
         end
     end
