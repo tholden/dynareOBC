@@ -107,6 +107,12 @@ function dynareOBC = InitialChecks( dynareOBC )
                 if value( varsigma ) >= seps
                     fprintf( 1, '\n' );
                     disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T. This is a necessary condition for there to always be a solution.' );
+                    disp( 'phiF:' );
+                    disp( rhoFC );
+                    disp( 'phiG:' );
+                    disp( rhoGC );
+                    disp( 'varsigma:' );
+                    disp( value( varsigma ) );
                     fprintf( 1, '\n' );
                     InfiniteSCondition = true;
                     break;
