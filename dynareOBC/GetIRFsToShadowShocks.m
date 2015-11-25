@@ -119,7 +119,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     p = cell( Ts, ns );
     
     if ~TimeReversedSolutionError
-        d0 = zeros( endo_nbr, endo_nbr );
+        d0 = zeros( endo_nbr, ns );
         InvIMinusHdPs = zeros( ns, ns, 2 * Ts - 1 );
         InvIMinusFdNs = zeros( ns, ns, 2 * Ts - 1 );
         d0s = zeros( ns, ns );
@@ -194,35 +194,6 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
 
     dynareOBC.pMat = cell2mat( p( 1, : ) );
     
-    if ~TimeReversedSolutionError
-        FepsilonBound = exp( fzero( @( log_epsilon ) pspr_2way( F, exp( log_epsilon ) ) - 1, 0 ) );
-        GepsilonBound = exp( fzero( @( log_epsilon ) pspr_2way( G, exp( log_epsilon ) ) - 1, 0 ) );
-        
-        epsilonScales = ( 1:FTGC )' ./ ( FTGC + 1 );
-        Fepsilons = epsilonScales * FepsilonBound;
-        Gepsilons = epsilonScales * GepsilonBound;
-        rhoF = zeros( FTGC, 1 );
-        rhoG = zeros( FTGC, 1 );
-        
-        for i = 1 : FTGC
-            rhoF( i ) = pspr_2way( F, Fepsilons( i ) );
-            rhoG( i ) = pspr_2way( G, Gepsilons( i ) );
-        end
-        
-        CF = rhoF ./ Fepsilons;
-        CG = rhoG ./ Gepsilons;
- 
-        K = ( CF * CG' ) .* norm( V, 2 );
-        
-        dynareOBC.Fepsilons = Fepsilons;
-        dynareOBC.Gepsilons = Gepsilons;
-        dynareOBC.rhoF = rhoF;
-        dynareOBC.rhoG = rhoG;
-        dynareOBC.CF = CF;
-        dynareOBC.CG = CG;
-        dynareOBC.K = K;
-    end
-    
     MSubMatrices = cell( endo_nbr, 1 );
     
     for j = 1 : endo_nbr
@@ -285,5 +256,74 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         figure;
         plot( (-(Ts-1)):(Ts-1), [ MMatrix( Ts, 1:Ts ) MMatrix( (Ts-1):-1:1, Ts )' ], '-r', (-(2*Ts-1)):(2*Ts-1), [ squeeze( dNs( 1, 1, end:-1:1 ) ); d0s( 1, 1 ); squeeze( dPs( 1, 1, 1:end ) ) ], '--g' );
     end
+
+    if ~TimeReversedSolutionError
+        disp( 'Performing pre-calculations for the tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
+        
+        rhoFmin = max( abs( eig( F ) ) );
+        rhoGmin = max( abs( eig( G ) ) );
+        rhoScales = ( 1:FTGC )' ./ ( FTGC + 1 );
+        rhoF = ( 1 - rhoScales ) * rhoFmin + rhoScales;
+        rhoG = ( 1 - rhoScales ) * rhoGmin + rhoScales;
+        
+        KF = zeros( FTGC, 1 );
+        KG = zeros( FTGC, 1 );
+        
+        for i = 1 : FTGC
+            Fc = F / rhoF( i );
+            Gc = G / rhoG( i );
+            
+            FcepsilonLowerBound = exp( fzero( @( log_epsilon ) pspr_2way( Fc, exp( log_epsilon ) ) - 1, 0 ) );
+            GcepsilonLowerBound = exp( fzero( @( log_epsilon ) pspr_2way( Gc, exp( log_epsilon ) ) - 1, 0 ) );
+
+            Fcval = 0;
+            Gcval = 0;
+
+            FcepsilonUpperBound = 2 * FcepsilonLowerBound;
+            GcepsilonUpperBound = 2 * GcepsilonLowerBound;
+
+            while true
+                newFcval = ( pspr_2way( Fc, FcepsilonUpperBound ) - 1 ) / FcepsilonUpperBound;
+                if newFcval < Fcval
+                    break;
+                end
+                FcepsilonUpperBound = 2 * FcepsilonUpperBound;
+                Fcval = newFcval;
+            end
+
+            while true
+                newGcval = ( pspr_2way( Gc, GcepsilonUpperBound ) - 1 ) / GcepsilonUpperBound;
+                if newGcval < Gcval
+                    break;
+                end
+                GcepsilonUpperBound = 2 * GcepsilonUpperBound;
+                Gcval = newGcval;
+            end
+
+            [ ~, KF( i ) ] = fminbnd( @( epsilon ) ( 1 - pspr_2way( Fc, epsilon ) ) / epsilon, FcepsilonLowerBound, FcepsilonUpperBound );
+            [ ~, KG( i ) ] = fminbnd( @( epsilon ) ( 1 - pspr_2way( Gc, epsilon ) ) / epsilon, GcepsilonLowerBound, GcepsilonUpperBound );
+            
+            if dynareOBC.Debug
+                figure;
+                ezplot( @( epsilon ) ( pspr_2way( Fc, epsilon ) - 1 ) / epsilon, [ FcepsilonLowerBound, FcepsilonUpperBound ] );
+                figure;
+                ezplot( @( epsilon ) ( pspr_2way( Gc, epsilon ) - 1 ) / epsilon, [ GcepsilonLowerBound, FcepsilonUpperBound ] );
+            end
+        
+        end
+
+        CF = KF * exp( 1 ) * endo_nbr;
+        CG = KG * exp( 1 ) * endo_nbr;
+ 
+        K = ( CF * CG' ) .* norm( V, 2 );
+        
+        dynareOBC.rhoF = rhoF;
+        dynareOBC.rhoG = rhoG;
+        dynareOBC.CF = CF;
+        dynareOBC.CG = CG;
+        dynareOBC.K = K;
+    end
+    
     
 end
