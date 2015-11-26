@@ -1,5 +1,4 @@
 function dynareOBC = InitialChecks( dynareOBC )
-    T = dynareOBC.InternalIRFPeriods;
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     

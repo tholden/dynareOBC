@@ -267,55 +267,16 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         rhoF = ( 1 - rhoScales ) * rhoFmin + rhoScales;
         rhoG = ( 1 - rhoScales ) * rhoGmin + rhoScales;
         
-        KF = zeros( FTGC, 1 );
-        KG = zeros( FTGC, 1 );
+        CF = zeros( FTGC, 1 );
+        CG = zeros( FTGC, 1 );
         
         for i = 1 : FTGC
-            Fc = F / rhoF( i );
-            Gc = G / rhoG( i );
-            
-            FcepsilonLowerBound = exp( fzero( @( log_epsilon ) pspr_2way( Fc, exp( log_epsilon ) ) - 1, 0 ) );
-            GcepsilonLowerBound = exp( fzero( @( log_epsilon ) pspr_2way( Gc, exp( log_epsilon ) ) - 1, 0 ) );
 
-            Fcval = 0;
-            Gcval = 0;
-
-            FcepsilonUpperBound = 2 * FcepsilonLowerBound;
-            GcepsilonUpperBound = 2 * GcepsilonLowerBound;
-
-            while true
-                newFcval = ( pspr_2way( Fc, FcepsilonUpperBound ) - 1 ) / FcepsilonUpperBound;
-                if newFcval < Fcval
-                    break;
-                end
-                FcepsilonUpperBound = 2 * FcepsilonUpperBound;
-                Fcval = newFcval;
-            end
-
-            while true
-                newGcval = ( pspr_2way( Gc, GcepsilonUpperBound ) - 1 ) / GcepsilonUpperBound;
-                if newGcval < Gcval
-                    break;
-                end
-                GcepsilonUpperBound = 2 * GcepsilonUpperBound;
-                Gcval = newGcval;
-            end
-
-            [ ~, KF( i ) ] = fminbnd( @( epsilon ) ( 1 - pspr_2way( Fc, epsilon ) ) / epsilon, FcepsilonLowerBound, FcepsilonUpperBound );
-            [ ~, KG( i ) ] = fminbnd( @( epsilon ) ( 1 - pspr_2way( Gc, epsilon ) ) / epsilon, GcepsilonLowerBound, GcepsilonUpperBound );
-            
-            if dynareOBC.Debug
-                figure;
-                ezplot( @( epsilon ) ( pspr_2way( Fc, epsilon ) - 1 ) / epsilon, [ FcepsilonLowerBound, FcepsilonUpperBound ] );
-                figure;
-                ezplot( @( epsilon ) ( pspr_2way( Gc, epsilon ) - 1 ) / epsilon, [ GcepsilonLowerBound, FcepsilonUpperBound ] );
-            end
+            CF( i ) = GetC( F / rhoF( i ) );
+            CG( i ) = GetC( G / rhoG( i ) );
         
         end
 
-        CF = KF * exp( 1 ) * endo_nbr;
-        CG = KG * exp( 1 ) * endo_nbr;
- 
         K = ( CF * CG' ) .* norm( V, 2 );
         
         dynareOBC.rhoF = rhoF;
@@ -326,4 +287,29 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     end
     
     
+end
+
+function C = GetC( M )
+    InitialValue = 0;
+    epsilonStar = -1;
+    while epsilonStar < 0
+        try
+            epsilonStar = exp( fzero( @( log_epsilon ) pspr_2way( M, exp( log_epsilon ) ) - 1, InitialValue ) );
+        catch
+            InitialValue = InitialValue - 1;
+        end
+    end
+    
+    Power = eye( size( M ) );
+    Norm = 1;
+    SupNorm = 1;
+    
+    while SupNorm * epsilonStar < Norm
+        Power = Power * M;
+        Norm = norm( Power, 2 );
+        SupNorm = max( Norm, SupNorm );
+    end
+    
+    C = SupNorm;
+
 end
