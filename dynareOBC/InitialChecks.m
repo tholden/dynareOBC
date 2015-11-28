@@ -163,7 +163,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
     if ptestVal > 0
-        disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for less than ' int2str( dynareOBC.TimeToEscapeBounds ) ' periods.' ] );
+        disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( dynareOBC.TimeToEscapeBounds ) ' periods.' ] );
         if ptest_use_mex
             DiagIsP = ptest_mex( dynareOBC.d0s );
         else
