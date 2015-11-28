@@ -258,7 +258,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     end
 
     if ~TimeReversedSolutionError
-        disp( 'Performing pre-calculations for the tests of the sufficient condition for feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        disp( 'Performing pre-calculations for the tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
         disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
         
         rhoFmin = max( abs( eig( F ) ) );
@@ -269,21 +269,24 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         
         CF = zeros( FTGC, 1 );
         CG = zeros( FTGC, 1 );
+        CH = zeros( FTGC, 1 );
         
         for i = 1 : FTGC
 
             CF( i ) = GetC( F / rhoF( i ) );
             CG( i ) = GetC( G / rhoG( i ) );
+            CH( i ) = GetC( H / rhoG( i ) );
         
         end
-
-        K = ( CF * CG' ) .* norm( V, 2 );
+        
+        D = ( CF * CG' ) .* norm( V, 2 );
         
         dynareOBC.rhoF = rhoF;
         dynareOBC.rhoG = rhoG;
         dynareOBC.CF = CF;
         dynareOBC.CG = CG;
-        dynareOBC.K = K;
+        dynareOBC.CH = CH;
+        dynareOBC.D = D;
     end
     
     
