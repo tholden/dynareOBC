@@ -23,9 +23,9 @@ function MoveFiles( Source, Destination )
                 srcFile = -1;
                 destFile = -1;
                 try
-                    srcFile = fopen( [ Source File.name '/' ], 'r' );
+                    srcFile = fopen( [ Source File.name ], 'r' );
                     srcData = fread( srcFile, Inf, '*uint8' );
-                    destFile = fopen( [ Destination File.name '/' ], 'r' );
+                    destFile = fopen( [ Destination File.name ], 'r' );
                     destData = fread( destFile, Inf, '*uint8' );
                     if numel( srcData ) == numel( destData ) && all( srcData == destData )
                         Different = false;
