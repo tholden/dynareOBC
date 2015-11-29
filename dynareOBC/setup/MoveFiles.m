@@ -18,7 +18,7 @@ function MoveFiles( Source, Destination )
         if File.isdir
             MoveFiles( [ Source File.name '/' ], [ Destination File.name '/' ] );
         else
-            if exists( [ Destination File.name ], 'file' ) == 2
+            if exist( [ Destination File.name ], 'file' ) == 2
                 Different = true;
                 srcFile = -1;
                 destFile = -1;
