@@ -23,7 +23,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     vy = value( y );
     vy = max( 0, vy ./ max( 1, max( vy ) ) );
-    new_varsigma = min( Ms * vy );
+    new_varsigma = min( ( MsScale * Ms ) * vy );
     
     vvarsigma = value( varsigma );
     if new_varsigma > 0
