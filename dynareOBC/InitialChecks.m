@@ -11,7 +11,8 @@ function dynareOBC = InitialChecks( dynareOBC )
     varsigma = sdpvar( 1, 1 );
     y = sdpvar( Ts * ns, 1 );
     
-    LBConstraints = [ 0 <= y, y <= 1, varsigma <= Ms * y ];
+    MsScale = 1e4 ./ norm( Ms, Inf );
+    LBConstraints = [ 0 <= y, y <= 1, varsigma <= ( MsScale * Ms ) * y ];
     Objective = -varsigma;
     Diagnostics = optimize( LBConstraints, Objective, dynareOBC.LPOptions );
 
@@ -20,14 +21,18 @@ function dynareOBC = InitialChecks( dynareOBC )
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     
-    seps = sqrt( eps );
-    if value( varsigma ) >= seps
+    % TODO check new_varsigma
+    if value( varsigma ) >= 1e-6
         fprintf( 1, '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
+        disp( 'varsigma:' );
+        disp( value( varsigma ) );
         fprintf( 1, '\n' );
     else
         fprintf( 1, '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
+        disp( 'varsigma:' );
+        disp( value( varsigma ) );
         fprintf( 1, '\n' );
         ptestVal = -1;
     end
@@ -171,6 +176,8 @@ function dynareOBC = InitialChecks( dynareOBC )
 
         if all( AbsArguments < pi - pi / size( Ms, 1 ) )
             disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
+            disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
+            disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
             if dynareOBC.NoPTest
                 disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple solutions.' );
             else
@@ -192,6 +199,9 @@ function dynareOBC = InitialChecks( dynareOBC )
                 end
             end
         else
+            disp( 'Necessary condition for M to be a P-matrix is not satisfied.' );
+            disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
+            disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
             ptestVal = -1;
         end
     end
