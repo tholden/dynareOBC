@@ -45,7 +45,6 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'varsigma bounds:' );
         disp( [ new_varsigma vvarsigma ] );
         fprintf( 1, '\n' );
-        ptestVal = -1;
     end
 
     if isempty( dynareOBC.d0s )
