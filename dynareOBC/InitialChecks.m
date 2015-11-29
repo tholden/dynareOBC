@@ -21,18 +21,29 @@ function dynareOBC = InitialChecks( dynareOBC )
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     
-    % TODO check new_varsigma
-    if value( varsigma ) >= 1e-6
+    vy = value( y );
+    vy = max( 0, vy ./ max( 1, max( vy ) ) );
+    new_varsigma = min( Ms * vy );
+    
+    vvarsigma = value( varsigma );
+    if new_varsigma > 0
         fprintf( 1, '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
-        disp( 'varsigma:' );
-        disp( value( varsigma ) );
+        disp( 'varsigma bounds:' );
+        disp( [ new_varsigma vvarsigma ] );
         fprintf( 1, '\n' );
-    else
+    elseif value( varsigma ) == 0
         fprintf( 1, '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
-        disp( 'varsigma:' );
-        disp( value( varsigma ) );
+        disp( 'varsigma bounds:' );
+        disp( [ new_varsigma vvarsigma ] );
+        fprintf( 1, '\n' );
+        ptestVal = -1;
+    else
+        fprintf( 1, '\n' );
+        disp( 'Due to numerical inaccuracies, we cannot tell if M is an S matrix.' );
+        disp( 'varsigma bounds:' );
+        disp( [ new_varsigma vvarsigma ] );
         fprintf( 1, '\n' );
         ptestVal = -1;
     end
