@@ -12,39 +12,67 @@ function dynareOBC = InitialChecks( dynareOBC )
     y = sdpvar( Ts * ns, 1 );
     
     MsScale = 1e4 ./ norm( Ms, Inf );
-    LBConstraints = [ 0 <= y, y <= 1, varsigma <= ( MsScale * Ms ) * y ];
+    scaledMs = MsScale * Ms;
+    
+    Constraints = [ 0 <= y, y <= 1, varsigma <= scaledMs * y ];
     Objective = -varsigma;
-    Diagnostics = optimize( LBConstraints, Objective, dynareOBC.LPOptions );
-
-    ptestVal = 0;
+    Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
+    
     if Diagnostics.problem ~= 0
         error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
     
     vy = value( y );
     vy = max( 0, vy ./ max( 1, max( vy ) ) );
-    new_varsigma = min( ( MsScale * Ms ) * vy );
+    new_varsigma = min( scaledMs * vy );
+
+    AltConstraints = [ 0 <= y, y <= 1, y' * scaledMs <= 0 ];
+    AltObjective = -ones( 1, Ts * ns ) * y;
+    AltDiagnostics = optimize( AltConstraints, AltObjective, dynareOBC.LPOptions );
+
+    if AltDiagnostics.problem ~= 0
+        warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' AltDiagnostics.info ] );
+        new_sum_y = 0;
+    else
+        vy = value( y );
+        vy = max( 0, vy ./ max( 1, max( vy ) ) );
+        new_sum_y = sum( vy );
+    end
     
+    ptestVal = 0;
+
     vvarsigma = value( varsigma );
-    if new_varsigma > 0
+    if new_varsigma > 0 % && new_sum_y <= 1e-6
         fprintf( 1, '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
         disp( 'varsigma bounds:' );
         disp( [ new_varsigma vvarsigma ] );
+        disp( 'sum of y from the alternative problem:' );
+        disp( new_sum_y );
         fprintf( 1, '\n' );
-    elseif value( varsigma ) == 0
+        SkipUpperBound = true;
+    elseif new_varsigma <= 1e-6 && new_sum_y > 0
         fprintf( 1, '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
         disp( 'varsigma bounds:' );
         disp( [ new_varsigma vvarsigma ] );
+        disp( 'sum of y from the alternative problem:' );
+        disp( new_sum_y );
         fprintf( 1, '\n' );
         ptestVal = -1;
+        if new_sum_y == 0
+            warning( 'dynareOBC:InconsistentSResults', 'The alternative test suggests that M is an S matrix. Results cannot be trusted. This may be caused by numerical inaccuracies.' );
+        end
+        SkipUpperBound = false;
     else
         fprintf( 1, '\n' );
         disp( 'Due to numerical inaccuracies, we cannot tell if M is an S matrix.' );
         disp( 'varsigma bounds:' );
         disp( [ new_varsigma vvarsigma ] );
+        disp( 'sum of y from the alternative problem:' );
+        disp( new_sum_y );
         fprintf( 1, '\n' );
+        SkipUpperBound = true;
     end
 
     if isempty( dynareOBC.d0s )
@@ -97,8 +125,8 @@ function dynareOBC = InitialChecks( dynareOBC )
                 DenomG = 1 ./ ( 1 - rhoGC );
                 DenomFG_G = DenomFG * DenomG;
 
-                LBConstraints = LBConstraints0;
-                UBConstraints = UBConstraints0;
+                LBConstraints = [];
+                UBConstraints = [];
                 for ConVar = 1 : ns % row index
                     LBMinimand1 = zeros( Ts, 1 );
                     LBMinimand2 = zeros( Ts, 1 );
@@ -119,16 +147,22 @@ function dynareOBC = InitialChecks( dynareOBC )
                         
                         UBMinimand = UBMinimand + CellMs{ ConVar, ConShock } * yC + CHC * Norm_d0C * DenomG * rhoGCv( Ts:-1:1 ) + DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G;
                     end
-                    LBConstraints = [ LBConstraints, varsigma <= LBMinimand1, varsigma <= LBMinimand2, varsigma <= LBMinimand3 ]; %#ok<AGROW>
-                    UBConstraints = [ UBConstraints, varsigma <= UBMinimand ]; %#ok<AGROW>
+                    LBConstraints = [ LBConstraints; LBMinimand1; LBMinimand2; LBMinimand3 ]; %#ok<AGROW>
+                    UBConstraints = [ UBConstraints; UBMinimand ]; %#ok<AGROW>
                 end
-                Diagnostics = optimize( LBConstraints, Objective, dynareOBC.LPOptions );
+                Diagnostics = optimize( [ LBConstraints0, varsigma <= LBConstraints ], Objective, dynareOBC.LPOptions );
 
                 if Diagnostics.problem ~= 0
                     error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
                 end
 
-                if value( varsigma ) > 1e-6
+                vvarsigma = value( varsigma );
+                vy = value( y );
+                vy = max( 0, vy ./ max( 1, max( vy ) ) );
+                assign( y, vy );
+                new_varsigma = min( value( LBConstraints ) );
+                
+                if new_varsigma > 0
                     fprintf( 1, '\n' );
                     disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T.' );
                     disp( 'This is a necessary condition for there to always be a solution.' );
@@ -136,32 +170,34 @@ function dynareOBC = InitialChecks( dynareOBC )
                     disp( rhoFC );
                     disp( 'phiG:' );
                     disp( rhoGC );
-                    disp( 'varsigma lower bound:' );
-                    disp( value( varsigma ) );
+                    disp( 'varsigma lower bound, bounds:' );
+                    disp( [ new_varsigma vvarsigma ] );
                     fprintf( 1, '\n' );
                     LBInfiniteSCondition = true;
                     break;
                 end
                 
-                Diagnostics = optimize( UBConstraints, Objective, dynareOBC.LPOptions );
+                if ~SkipUpperBound
+                    Diagnostics = optimize( [ UBConstraints0, varsigma <= UBConstraints ], Objective, dynareOBC.LPOptions );
 
-                if Diagnostics.problem ~= 0
-                    error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-                end
+                    if Diagnostics.problem ~= 0
+                        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                    end
 
-                if value( varsigma ) <= 0
-                    fprintf( 1, '\n' );
-                    disp( 'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.' );
-                    disp( 'The model does not always posess a solution.' );
-                    disp( 'phiF:' );
-                    disp( rhoFC );
-                    disp( 'phiG:' );
-                    disp( rhoGC );
-                    disp( 'varsigma upper bound:' );
-                    disp( value( varsigma ) );
-                    fprintf( 1, '\n' );
-                    UBInfiniteSCondition = true;
-                    break;
+                    if value( varsigma ) <= 0
+                        fprintf( 1, '\n' );
+                        disp( 'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.' );
+                        disp( 'The model does not always posess a solution.' );
+                        disp( 'phiF:' );
+                        disp( rhoFC );
+                        disp( 'phiG:' );
+                        disp( rhoGC );
+                        disp( 'varsigma upper bound:' );
+                        disp( value( varsigma ) );
+                        fprintf( 1, '\n' );
+                        UBInfiniteSCondition = true;
+                        break;
+                    end
                 end
             end
             if LBInfiniteSCondition || UBInfiniteSCondition
@@ -300,4 +336,6 @@ function dynareOBC = InitialChecks( dynareOBC )
         catch
         end
     end
+    
+    yalmip( 'clear' );
 end

@@ -147,7 +147,26 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     
     if dynareOBC.NumberOfMax > 0
         EnforceRequirementsAndGeneratePathFunctor( );
-        dynareOBC = SetDefaultOption( dynareOBC, 'LPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.LPSolver ) );
+        LPOptions = sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.LPSolver );
+        OptionsFieldNames = fieldnames( LPOptions );
+        for i = 1 : length( OptionsFieldNames )
+            CurrentField = LPOptions.( OptionsFieldNames{i} );
+            if isstruct( CurrentField )
+                OptionsSubFieldNames = fieldnames( CurrentField );
+                for j = 1 : length( OptionsSubFieldNames )
+                    CurrentSubFieldName = OptionsSubFieldNames{j};
+                    if ~isempty( strfind( lower( CurrentSubFieldName ), 'tol' ) )
+                        CurrentSubField = CurrentField.( CurrentSubFieldName );
+                        if numel( CurrentSubField ) == 1 && CurrentSubField > 0 && CurrentSubField <= 1e-4
+                            CurrentField.( CurrentSubFieldName ) = min( sqrt( eps ), CurrentSubField );
+                        end
+                    end
+                end
+                LPOptions.( OptionsFieldNames{i} ) = CurrentField;
+            end
+        end
+        LPOptions.gurobi.NumericFocus = 3;
+        dynareOBC = SetDefaultOption( dynareOBC, 'LPOptions', LPOptions );
         dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
         dynareOBC = SetDefaultOption( dynareOBC, 'QPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.QPSolver ) );
     end
