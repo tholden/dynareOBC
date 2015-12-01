@@ -45,17 +45,24 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         
     %% end taken from dyn_first_order_solver
     
-    seps = sqrt( eps );
-    if abs( det( A + B + C ) ) < seps
-        warning( 'dynareOBC:UnitRoot', 'Your model appears to have an exact unit root. Results will be unreliable.' );
-    end
-
     %% calculate ps
     
     T = dynareOBC.InternalIRFPeriods;
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     FTGC = dynareOBC.FeasibilityTestGridSize;
+
+    if FTGC
+        TimeReversedSolutionError = 0;
+    else
+        TimeReversedSolutionError = 100;
+    end
+    
+    seps = sqrt( eps );
+    if abs( det( A + B + C ) ) < seps
+        warning( 'dynareOBC:UnitRoot', 'Your model appears to have an exact unit root. Skipping infinite T tests.' );
+        TimeReversedSolutionError = 7;
+    end
 
     VarIndices = dynareOBC.VarIndices_ZeroLowerBounded;
     
@@ -80,12 +87,6 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     V = inv( B + C * F );
     
     G = -C * V; %#ok<MINV>
-    
-    if FTGC
-        TimeReversedSolutionError = 0;
-    else
-        TimeReversedSolutionError = 100;
-    end
     
     if ~TimeReversedSolutionError
         try
