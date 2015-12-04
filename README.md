@@ -185,7 +185,7 @@ Note:
          By default, IRFs are centered around the risky steady state with the fastirfs option, or around the approximate mean
          without it. This option instead centers IRFs around 0.
     * ShockScale=FLOAT (default: 1)
-         Scale of shocks for IRFs.
+         Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller than one standard deviation.
 
  * **For controlling estimation**
     * Estimation
