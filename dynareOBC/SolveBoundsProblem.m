@@ -1,6 +1,6 @@
 function y = SolveBoundsProblem( q, dynareOBC )
     Tolerance = dynareOBC.Tolerance;
-    if all( q >= -Tolerance ) && ~dynareOBC.NoPositiveShortcut
+    if all( q >= -Tolerance ) && ~dynareOBC.FullHorizon
         y = dynareOBC.ZeroVecS;
         return
     end

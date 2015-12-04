@@ -80,7 +80,7 @@ Note:
          DynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's
          solver. To find out what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by
          YALMIP.
-    * NoPositiveShortcut
+    * FullHorizon
          By default, DynareOBC skips solving the bounds problem when the constraint is not violated. This is harmless when M is
          a semi-monotone or P matrix, but otherwise it may result in the solution procedure missing times when the model should
          have jumped to the bound. This option forces DynareOBC to solve the bounds problem in all cases.
