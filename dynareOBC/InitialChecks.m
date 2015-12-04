@@ -77,6 +77,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
     if isempty( dynareOBC.d0s )
         disp( 'Skipping tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        disp( 'To run them, set FeasibilityTestGridSize=INTEGER where INTEGER>0.' );
     else
         disp( 'Performing tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
         disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
