@@ -325,16 +325,18 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n' );
         disp( 'Solving for a parametric solution over the requested domain.' );
         fprintf( 1, '\n' );
-         try
+        
+        strTss = int2str( Tss );
+        try
             ParametricSolution = mpt_plcp( Opt( PLCP ) );
             if ParametricSolution.exitflag == 1
                 try
-                    ParametricSolution.xopt.toC( 'z', 'dynareOBCTempSolution' );
-                    mex dynareOBCTempSolution_mex.c;
+                    ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
+                    mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
                     dynareOBC.ParametricSolutionFound( Tss ) = 2;
                 catch
                     try
-                        ParametricSolution.xopt.toMatlab( 'dynareOBCTempSolution', 'z', 'first-region' );
+                        ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
                         dynareOBC.ParametricSolutionFound( Tss ) = 1;
                     catch
                         SkipCalcs = true;
