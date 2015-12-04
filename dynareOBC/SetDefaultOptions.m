@@ -58,7 +58,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToSolveParametrically', 4 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToEscapeBounds', 8 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 16 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', sqrt( eps ) );
+    dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', 1e-6 );
     dynareOBC = SetDefaultOption( dynareOBC, 'UseSimulationCode', true );
     dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
     
