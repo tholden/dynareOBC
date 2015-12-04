@@ -79,7 +79,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         end
         dynareOBC.MLVSimulationMode = 1;
         dynareOBC.Sparse = false;
-        dynareOBC.NoPTest = true;
+        dynareOBC.PTest = 0;
         dynareOBC.TimeToSolveParametrically = 0;
     end
 

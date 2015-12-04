@@ -224,20 +224,26 @@ function dynareOBC = InitialChecks( dynareOBC )
             disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
             disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
             disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
-            if dynareOBC.NoPTest
-                disp( 'Skipping the full ptest, thus we cannot know whether there may be multiple solutions.' );
+            if dynareOBC.PTest == 0
+                disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
+                disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
             else
+                TM = dynareOBC.PTest;
+
+                T = min( TM, Ts );
+                Indices = bsxfun( @plus, (1:T)', int64( 0 ):Ts:((ns-1)*Ts ) );
+                Indices = Indices(:);
+                M = dynareOBC.MMatrix( Indices, Indices );                
                 if ptest_use_mex
-                    disp( 'Testing whether M is a P-matrix using the MEX version of ptest. To skip this run dynareOBC with the noptest option.' );
-                    if ptest_mex( Ms )
+                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
+                    if ptest_mex( M )
                         ptestVal = 1;
                     else
                         ptestVal = -1;
                     end
                 else
-                    disp( 'Testing whether M is a P-matrix using the non-MEX version of ptest.' );
-                    disp( 'To skip this run dynareOBC with the noptest option.' );
-                    if ptest( Ms )
+                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
+                    if ptest( M )
                         ptestVal = 1;
                     else
                         ptestVal = -1;
@@ -272,10 +278,8 @@ function dynareOBC = InitialChecks( dynareOBC )
     fprintf( 1, '\n' );
     
     if dynareOBC.FullTest > 0
-        FTS = int2str( dynareOBC.FullTest );
-        MFTS = [ 'M( 1:' FTS ', 1:' FTS ' )' ];
         fprintf( 1, '\n' );
-        disp( [ 'Running full test to see if ' MFTS ' is a P and/or (strictly) semi-monotone matrix.' ] );
+        disp( 'Running full test to see if the requested sub-matrix of M is a P and/or (strictly) semi-monotone matrix.' );
         fprintf( 1, '\n' );
         [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
         if MinimumDeterminant >= 1e-8
