@@ -164,7 +164,7 @@ Note:
          Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC.
 
  * **For controlling and performing model diagnostics**
-    * FeasibilityTestGridSize=INTEGER (default: 10)
+    * FeasibilityTestGridSize=INTEGER (default: 0)
          Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for feasibility
          is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
          If FeasibilityTestGridSize=0 then the test is disabled.
