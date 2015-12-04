@@ -73,7 +73,7 @@ Note:
          The number of periods in which to verify that the constraints are not being violated. If this is lower than the
          requested number of IRF periods, then that value will be used instead. This also controls the number of periods of
          uncertainty over which we integrate.
-    * Omega=FLOAT (default: 2)
+    * Omega=FLOAT (default: 0.001)
          The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be
          returned when there are multiple solutions.
     * MILPSolver=STRING (default: automatically selected based on the detected solvers)
