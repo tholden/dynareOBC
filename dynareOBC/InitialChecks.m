@@ -299,17 +299,22 @@ function dynareOBC = InitialChecks( dynareOBC )
         end        
     end
     
-    for Tss = dynareOBC.TimeToSolveParametrically : -1 : 0
+    dynareOBC.ssIndices = cell( Ts, 1 );
+    dynareOBC.ParametricSolutionFound = zeros( Ts, 1 );
+    SkipCalcs = false;
+
+    OpenPool;
+    for Tss = 1 : Ts
         ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
         Mss = Ms( ssIndices, ssIndices );
-        if min( eig( Mss + Mss' ) ) > sqrt( eps )
-            break;
+        
+        dynareOBC.ssIndices{ Tss } = ssIndices;
+
+        if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || min( eig( Mss + Mss' ) ) < sqrt( eps )
+            SkipCalcs = true;
+            continue;
         end
-    end
-
-    if Tss > 0
-        dynareOBC.ssIndices = ssIndices;
-
+        
         PLCP = struct;
         PLCP.M = Mss;
         PLCP.q = zeros( Tss, 1 );
@@ -320,25 +325,30 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n' );
         disp( 'Solving for a parametric solution over the requested domain.' );
         fprintf( 1, '\n' );
-        OpenPool;
-        try
+         try
             ParametricSolution = mpt_plcp( Opt( PLCP ) );
             if ParametricSolution.exitflag == 1
                 try
                     ParametricSolution.xopt.toC( 'z', 'dynareOBCTempSolution' );
                     mex dynareOBCTempSolution_mex.c;
-                    dynareOBC.ParametricSolutionFound = 2;
+                    dynareOBC.ParametricSolutionFound( Tss ) = 2;
                 catch
                     try
                         ParametricSolution.xopt.toMatlab( 'dynareOBCTempSolution', 'z', 'first-region' );
-                        dynareOBC.ParametricSolutionFound = 1;
-                    catch 
+                        dynareOBC.ParametricSolutionFound( Tss ) = 1;
+                    catch
+                        SkipCalcs = true;
+                        continue;
                     end
                 end
             end
-            rehash;
         catch
+            SkipCalcs = true;
+            continue;
         end
+    end
+    if sum( dynareOBC.ParametricSolutionFound ) > 0
+        rehash;
     end
     
     yalmip( 'clear' );
