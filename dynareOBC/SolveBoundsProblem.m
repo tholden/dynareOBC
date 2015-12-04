@@ -19,7 +19,13 @@ function y = SolveBoundsProblem( q, dynareOBC )
     
     ZeroVecS = dynareOBC.ZeroVecS;
     
-    for Tss = 1 : Ts
+    if dynareOBC.FullHorizon
+        InitTs = Ts;
+    else
+        InitTs = 1;
+    end
+    
+    for Tss = InitTs : Ts
     
         CssIndices = ssIndices{ Tss };
         CParametricSolutionFound = ParametricSolutionFound( Tss );

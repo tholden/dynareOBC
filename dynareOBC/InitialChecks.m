@@ -310,7 +310,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         dynareOBC.ssIndices{ Tss } = ssIndices;
 
-        if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || min( eig( Mss + Mss' ) ) < sqrt( eps )
+        if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || min( eig( Mss + Mss' ) ) < sqrt( eps )
             SkipCalcs = true;
             continue;
         end

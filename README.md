@@ -81,9 +81,8 @@ Note:
          solver. To find out what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by
          YALMIP.
     * FullHorizon
-         By default, DynareOBC skips solving the bounds problem when the constraint is not violated. This is harmless when M is
-         a semi-monotone or P matrix, but otherwise it may result in the solution procedure missing times when the model should
-         have jumped to the bound. This option forces DynareOBC to solve the bounds problem in all cases.
+         By default, DynareOBC finds a solution for which the last period at the bound is as soon as possible. This option
+         makes DynareOBC just solve the bounds problem at the longest horizon (i.e. TimeToEscapeBounds).
     * IgnoreBoundFailures
          Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability.
          This will severely compromise accuracy.
