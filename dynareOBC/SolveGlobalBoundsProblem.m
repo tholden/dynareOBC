@@ -4,6 +4,8 @@ function y = SolveGlobalBoundsProblem( y, Ey, UnconstrainedReturnPathShortRun, U
     
     W1 = repmat( pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
     W2 = repmat( 1 - pWeight, 1, size( UnconstrainedReturnPathLongRun, 2 ) );
+    W1 = W1(:);
+    W2 = W2(:);
     
     y = sdpvar( length( y ), 1 );
 
