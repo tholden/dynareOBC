@@ -153,7 +153,7 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     end
 
                     if dynareOBC.Global
-                        y = SolveGlobalBoundsProblem( y, yNext, UnconstrainedReturnPath,  ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
+                        y = SolveGlobalBoundsProblem( y, yNext, UnconstrainedReturnPath, ReturnPath( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
                     end
                 catch Error
                     if dynareOBC.Estimation || dynareOBC.IgnoreBoundFailures

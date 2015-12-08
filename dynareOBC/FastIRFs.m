@@ -67,6 +67,6 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, 
     end
 
     if dynareOBC.Global
-        y = SolveGlobalBoundsProblem( y, zeros( size( y ) ), UnconstrainedReturnPath,  TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
+        y = SolveGlobalBoundsProblem( y, zeros( size( y ) ), UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
     end
 end
