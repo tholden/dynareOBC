@@ -129,6 +129,24 @@ Note:
          When order>1 (possibly with firstorderaroundrss or firstorderaroundmean), by default, DynareOBC uses a second order
          approximation of the conditional covariance. This option specifies that a first order approximation should be used
          instead.
+    * MLVSimulationMode=0|1|2|3 (default: 0)
+         If MLVSimulationMode=0, DynareOBC does not attempt to simulate the path of model local variables.
+         If MLVSimulationMode>0, DynareOBC generates simulated paths and average impulse responses for each model local variable
+         (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note that to
+         generate impulse responses, you must enable the SlowIRFs option.
+         If MLVSimulationMode>1, DynareOBC additionally generates simulated paths and average impulse responses for each
+         non-constant MLV, used in the model, containing forward looking terms.
+         If MLVSimulationMode=2, then DynareOBC takes the expectation of each forward looking MLV using sparse cubature.
+         If MLVSimulationMode=3, then DynareOBC takes the expectation of each forward looking MLV using quasi-Monte Carlo
+         integration.
+          * MLVSimulationAccuracy=INTEGER (default: 10)
+               When MLVSimulationMode=2, this specifies the degree of polynomial which should be integrated exactly. In this case,
+               values above 51 are treated as equal to 51. When MLVSimulationMode=3, 2^(1+INTEGER) - 1 is the number of points
+               used for quasi-Monte Carlo integration.
+    * Sparse
+         Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC.
+
+ * **EXPERIMENTAL settings for controlling accuracy**
     * Global
          Without this, DynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
          bound, but they do not take into account the risk of hitting the bound in the far future. With the global option,
@@ -146,22 +164,6 @@ Note:
           * QPSolver=STRING (default: automatically selected based on the detected solvers)
                Specifies the solver to use for the quadratic programming problem that is solved by the global algorithm. To find out
                what solvers are available to you, run "dynareOBC TestSolvers", and examine the list displayed by YALMIP. 
-    * MLVSimulationMode=0|1|2|3 (default: 0)
-         If MLVSimulationMode=0, DynareOBC does not attempt to simulate the path of model local variables.
-         If MLVSimulationMode>0, DynareOBC generates simulated paths and average impulse responses for each model local variable
-         (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note that to
-         generate impulse responses, you must enable the SlowIRFs option.
-         If MLVSimulationMode>1, DynareOBC additionally generates simulated paths and average impulse responses for each
-         non-constant MLV, used in the model, containing forward looking terms.
-         If MLVSimulationMode=2, then DynareOBC takes the expectation of each forward looking MLV using sparse cubature.
-         If MLVSimulationMode=3, then DynareOBC takes the expectation of each forward looking MLV using quasi-Monte Carlo
-         integration.
-          * MLVSimulationAccuracy=INTEGER (default: 10)
-               When MLVSimulationMode=2, this specifies the degree of polynomial which should be integrated exactly. In this case,
-               values above 51 are treated as equal to 51. When MLVSimulationMode=3, 2^(1+INTEGER) - 1 is the number of points
-               used for quasi-Monte Carlo integration.
-    * Sparse
-         Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC.
 
  * **For controlling and performing model diagnostics**
     * FeasibilityTestGridSize=INTEGER (default: 0)
