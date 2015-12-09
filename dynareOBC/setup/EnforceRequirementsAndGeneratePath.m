@@ -155,4 +155,10 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     addpath( [ dynareOBCPath '/dynareOBC/eigtool/num_comp/pseudo_radius/' ] );
     addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
+    
+    if Update
+        CurrentDay = now; %#ok<NASGU>
+        save( [ dynareOBCPath '/LastDependencyUpdate.mat' ], 'CurrentDay' );
+    end
+    
 end

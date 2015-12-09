@@ -115,7 +115,7 @@ function dynareOBC( InputFileName, varargin )
     end
 
     if ContinueExecution
-        dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
+        dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
     end
     
 end

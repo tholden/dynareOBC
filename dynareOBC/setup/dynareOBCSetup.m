@@ -1,4 +1,4 @@
-function dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
+function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
 %       This command runs dynareOBC with the model file specified in
 %       the InputFileName arument.
 %       Please type "dynareOBC help" to see the full instructions.
@@ -29,6 +29,19 @@ function dynareOBCSetup( Update, OriginalPath, CurrentFolder, dynareOBCPath, Inp
 %
 % You should have received a copy of the GNU General Public License
 % along with dynareOBC. If not, see <http://www.gnu.org/licenses/>.
+
+    %% Check if need to download new files
+    Update = true;
+    
+    CurrentDay = now;
+    if exist( [ dynareOBCPath '/LastDependencyUpdate.mat' ], 'file' ) == 2
+        LastUpdateStructure = load( [ dynareOBCPath '/LastDependencyUpdate.mat' ] );
+        if isfield( LastUpdateStructure, 'CurrentDay' )
+            if CurrentDay - LastUpdateStructure.CurrentDay < 1
+                Update = false;
+            end
+        end
+    end
 
     %% Initialization
 
