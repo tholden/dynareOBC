@@ -26,7 +26,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     disp( 'Searching the pre-processed output for non-differentiable functions.' );
     fprintf( 1, '\n' );
 
-    FileText = fileread( 'dynareOBCTemp1.mod' );
+    try
+        FileText = fileread( 'dynareOBCTemp1.mod' );
+    catch ErrorStruct
+        if strcmp( ErrorStruct.identifier, 'MATLAB:fileread:cannotOpenFile' )
+            disp( 'Could not open Dynare''s output. This is most frequently caused by an incorrect command line option.' );
+            disp( 'Please check your command line for typos, or commands not supported in the current version of Dynare or DynareOBC.' );
+            error( 'dynareOBC:FailedReadingDynareOutput', 'Failed reading Dynare output. This is usually caused by an incorrect command line option.' );
+        else
+            rethrow( ErrorStruct );
+        end
+    end
     FileText = ProcessModFileText( FileText );
 
     FileLines = StringSplit( FileText, { '\n', '\r' } );
