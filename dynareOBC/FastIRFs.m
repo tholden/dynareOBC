@@ -16,34 +16,36 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
     else
         pWeight = [];
     end
-    
-    if dynareOBC.Global
-        Shock = zeros( M.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
-        yGlobal = FastIRFsInternal( Shock, 'global-offset', pWeight, M, options, oo, dynareOBC, [] );
-        GlobalOffset = dynareOBC.MMatrixLongRun * yGlobal;
-    else
-        GlobalOffset = [];
+       
+	TempIRFLROffsets = repmat( dynareOBC.Mean, 1, T );
+	TempIRFSROffsets = zeros( length( dynareOBC.VariableSelect ), Ts );
+    if dynareOBC.NumberOfMax > 0 && ( ~dynareOBC.NoCubature || dynareOBC.Global )
+        Shock = zeros( M.exo_nbr, 1 );
+        y = FastIRFsInternal( Shock, 'the base path', pWeight, M, options, oo, dynareOBC );
+		for k = 1:length( dynareOBC.VariableSelect )
+			j = dynareOBC.VariableSelect( k );
+			TempIRFSROffsets( k, : ) = ( dynareOBC.MSubMatrices{ j }( 1:Ts, : ) * y )';
+		end
     end
-    
+	        
     for i = dynareOBC.ShockSelect
         Shock = zeros( M.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
         Shock(:,1) = dynareOBC.ShockScale * cs( M.exo_names_orig_ord, i );
         
-        [ y, TempIRFStruct ] = FastIRFsInternal( Shock, dynareOBC.Shocks{i}, pWeight, M, options, oo, dynareOBC, GlobalOffset );
+        [ y, TempIRFStruct ] = FastIRFsInternal( Shock, [ 'shock ' dynareOBC.Shocks{i} ], pWeight, M, options, oo, dynareOBC );
         
-        TempIRFOffsets = repmat( dynareOBC.Mean, 1, T );
+        TempIRFs = TempIRFStruct.total - TempIRFLROffsets;
         
-        TempIRFs = TempIRFStruct.total - TempIRFOffsets;
-        
-        for j = dynareOBC.VariableSelect
+        for k = 1:length( dynareOBC.VariableSelect )
+			j = dynareOBC.VariableSelect( k );
             IRFName = [ deblank( M.endo_names( j, : ) ) '_' deblank( M.exo_names( i, : ) ) ];
             CurrentIRF = TempIRFs( j, 1:Ts );
             IRFsWithoutBounds.( IRFName ) = CurrentIRF;
             if dynareOBC.NumberOfMax > 0
-                CurrentIRF = CurrentIRF + ( dynareOBC.MSubMatrices{ j }( 1:Ts, : ) * y )';
+                CurrentIRF = CurrentIRF - TempIRFSROffsets( k, 1:Ts ) + ( dynareOBC.MSubMatrices{ j }( 1:Ts, : ) * y )';
             end
             oo.irfs.( IRFName ) = CurrentIRF;
-            IRFOffsets.( IRFName ) = TempIRFOffsets( j, 1:Ts );
+            IRFOffsets.( IRFName ) = TempIRFLROffsets( j, 1:Ts );
         end
     end
     dynareOBC.IRFOffsets = IRFOffsets;
@@ -51,22 +53,20 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
     
 end
 
-function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, options, oo, dynareOBC, GlobalOffset )
+function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, options, oo, dynareOBC )
     TempIRFStruct = ExpectedReturn( Shock, M, oo.dr, dynareOBC );
 
     UnconstrainedReturnPath = vec( TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
     
-    if ~isempty( GlobalOffset )
-        UnconstrainedReturnPath = UnconstrainedReturnPath - GlobalOffset;
-    end
-    
     y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
 
-    if ~dynareOBC.NoCubature
-        y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for shock ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for shock ' ShockName '. Completed in ' ] );
-    end
+	if dynareOBC.NumberOfMax > 0
+        if ~dynareOBC.NoCubature
+			y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
+        end
 
-    if dynareOBC.Global
-        y = SolveGlobalBoundsProblem( y, zeros( size( y ) ), UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
-    end
+        if dynareOBC.Global
+			y = SolveGlobalBoundsProblem( y, zeros( size( y ) ), UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
+        end
+	end
 end
