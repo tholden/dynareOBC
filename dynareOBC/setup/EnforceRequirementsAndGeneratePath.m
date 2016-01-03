@@ -1,5 +1,6 @@
 function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin )
     Architecture = computer;
+    warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
 
     if Update
         [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/' ] );
