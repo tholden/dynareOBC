@@ -329,6 +329,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         strTss = int2str( Tss );
         try
+            warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
             ParametricSolution = mpt_plcp( Opt( PLCP ) );
             if ParametricSolution.exitflag == 1
                 try
@@ -355,4 +356,5 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     yalmip( 'clear' );
+    warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
 end
