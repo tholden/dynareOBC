@@ -5,7 +5,7 @@ function OpenPool
     OpenPoolInternal;
     try
         spmd
-            SetSPKronUseMex( value_spkron_use_mex );
+            InitializeWorkers( value_spkron_use_mex );
         end
     catch
     end
@@ -44,7 +44,8 @@ function OpenPoolInternal
     MatlabPoolSize = 0;
 end
 
-function SetSPKronUseMex( value_spkron_use_mex )
+function InitializeWorkers( value_spkron_use_mex )
     global spkron_use_mex
     spkron_use_mex = value_spkron_use_mex;
+    warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
 end

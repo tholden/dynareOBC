@@ -149,6 +149,10 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
     
+    rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] ); 
+    warning( 'off', 'optim:quadprog:WillBeRemoved' );
+    mpt_init;
+    
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
