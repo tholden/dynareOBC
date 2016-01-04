@@ -338,13 +338,20 @@ function dynareOBC = InitialChecks( dynareOBC )
                     dynareOBC.ParametricSolutionFound( Tss ) = 2;
                 catch MPTError
                     disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
+                    disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
                     try
                         ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
                         dynareOBC.ParametricSolutionFound( Tss ) = 1;
-                    catch
-                        disp( 'Failed to write the Matlab file for the parameteric solution.' );
+                    catch MPTTMError
+                        disp( [ 'Error ' MPTTMError.identifier ' writing the MATLAB file for the parameteric solution. ' MPTTMError.message ] );
                         SkipCalcs = true;
                         continue;
+                    end
+                    try
+                        BuildParametricSolutionCode( Tss );
+                        dynareOBC.ParametricSolutionFound( Tss ) = 2;
+                    catch CoderError
+                        disp( [ 'Error ' CoderError.identifier ' compiling the MATLAB file with MATLAB Coder. ' CoderError.message ] );
                     end
                 end
             end

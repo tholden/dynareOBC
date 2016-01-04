@@ -1,5 +1,13 @@
 function OpenPool
     global spkron_use_mex
+    try
+        rmpath( fileparts( which( 'szasbvar' ) ) );
+    catch
+    end
+    try
+        distcomp.feature( 'LocalUseMpiexec', false );
+    catch
+    end
     value_spkron_use_mex = spkron_use_mex;
     WarningState = warning( 'off', 'all' );
     OpenPoolInternal;
