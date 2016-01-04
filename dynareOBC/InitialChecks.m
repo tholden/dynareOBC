@@ -336,17 +336,20 @@ function dynareOBC = InitialChecks( dynareOBC )
                     ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
                     mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
                     dynareOBC.ParametricSolutionFound( Tss ) = 2;
-                catch
+                catch MPTError
+                    disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
                     try
                         ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
                         dynareOBC.ParametricSolutionFound( Tss ) = 1;
                     catch
+                        disp( 'Failed to write the Matlab file for the parameteric solution.' );
                         SkipCalcs = true;
                         continue;
                     end
                 end
             end
         catch
+            disp( 'Failed to solve for a parametric solution.' );
             SkipCalcs = true;
             continue;
         end
