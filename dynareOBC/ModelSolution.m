@@ -110,7 +110,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
             if SlowMode
                 fprintf( 1, '\n' );
-                disp( 'Attemtping to build a custom version of the simulation code.' );
+                disp( 'Attempting to build a custom version of the simulation code.' );
                 fprintf( 1, '\n' );
             end
             try
