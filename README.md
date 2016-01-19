@@ -70,9 +70,9 @@ Note:
          constraints. Note that when a global solution is requested, this value is ignored, and the maximum of the requested
          number of IRF periods, and the value of TimeToReturnToSteadyState, is used instead.
     * TimeToReturnToSteadyState=INTEGER (default: 32)
-         The number of periods in which to verify that the constraints are not being violated. If this is lower than the
-         requested number of IRF periods, then that value will be used instead. This also controls the number of periods of
-         uncertainty over which we integrate.
+         The number of periods in which to verify that the constraints are not being violated. If this is lower than
+         TimeToEscapeBounds, or the requested number of IRF periods, then that value will be used instead. This also controls
+         the number of periods of uncertainty over which we integrate.
     * Omega=FLOAT (default: 1000)
          The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be
          returned when there are multiple solutions.
