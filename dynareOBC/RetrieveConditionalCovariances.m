@@ -71,6 +71,7 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         parfor i = 1 : LengthConditionalCovarianceTemp
             p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
             q = i - 0.5 * p * ( p - 1 );
+            % p and q are indexes of the lower triangle of a matrix, p>=q
             pWeight = 0.5 * ( 1 + cos( pi * ( p - 1 ) / TM2 ) );
             qWeight = 0.5 * ( 1 + cos( pi * ( q - 1 ) / TM2 ) );
             CurrentCov = A2Powers{ p - q + 1 } * VarianceZ2{ q }; %#ok<PFBNS>
