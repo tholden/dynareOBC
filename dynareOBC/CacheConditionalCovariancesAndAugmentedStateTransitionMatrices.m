@@ -308,16 +308,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             end
 
             dynareOBC.RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC );
-
-            % [L,D] = ldl( ConditionalCovariance );
-            % assert( isdiag( D ) );
-            % diagD = diag( D );
-            % RootD = sqrt( max( 0, diagD ) );
-            % NRootD = sort( RootD );
-            % RootD( RootD <= NRootD( end - dynareOBC_.MaxCubatureDimension ) ) = 0;
-            % IDv = RootD > sqrt( eps );
-            % dynareOBC_.RootConditionalCovariance = L( :, IDv ) * diag( RootD( IDv ) );
-            
+           
             dynareOBC.LengthXi = size( Sigma, 1 );
 
         else
