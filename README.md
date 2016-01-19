@@ -109,6 +109,9 @@ Note:
           * NoStatisticalCubature
                Disables the statistical improvement to the cubature algorithm, which aggregates results of cubature at different
                degrees. Will generally reduce accuracy, but increase speed.
+    * CubaturePruningCutOff=FLOAT (default: 0.01)
+         Eigenvalues of the covariance matrix of the distribution from which we integrate that are below FLOAT times the maximum
+         eigenvalue are "pruned" to zero, in order to increase integration speed.
     * CubatureTolerance=FLOAT (default: 1e-6)
          Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature. Setting
          this to zero disables adaptive cubature.
