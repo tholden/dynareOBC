@@ -65,11 +65,11 @@ Note:
     * TimeToSolveParametrically=INTEGER (default: 4)
          If the simulation is at the bound for at most this number of periods, then a pre-computed solution will be used,
          increasing the speed of long simulations, or those involving integration.
-    * TimeToEscapeBounds=INTEGER (default: 64)
+    * TimeToEscapeBounds=INTEGER (default: 32)
          The number of periods following a shock after which the model is expected to be away from any occasionally binding
          constraints. Note that when a global solution is requested, this value is ignored, and the maximum of the requested
          number of IRF periods, and the value of TimeToReturnToSteadyState, is used instead.
-    * TimeToReturnToSteadyState=INTEGER (default: 64)
+    * TimeToReturnToSteadyState=INTEGER (default: 32)
          The number of periods in which to verify that the constraints are not being violated. If this is lower than the
          requested number of IRF periods, then that value will be used instead. This also controls the number of periods of
          uncertainty over which we integrate.
