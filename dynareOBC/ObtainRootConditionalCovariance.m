@@ -10,4 +10,3 @@ function RootConditionalCovariance = ObtainRootConditionalCovariance( Conditiona
     IDv = RootD > sqrt( eps );
     RootConditionalCovariance = U( :, IDv ) * diag( RootD( IDv ) );
 end
-
