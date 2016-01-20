@@ -300,7 +300,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 % p and q are indexes of the lower triangle of a matrix, p>=q
                 CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q }; %#ok<PFBNS> % * A1Powers{ q - q + 1 }' = eye; 
                 ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
-                ConditionalCovarianceTemp{i} = 0.5 * ( ReducedCov + ReducedCov' );
+                ConditionalCovarianceTemp{i} = ReducedCov;
             end
             for p = 1 : TM1
                 for q = 1 : p
@@ -313,6 +313,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 end
             end
 
+            ConditionalCovariance = 0.5 * ( ConditionalCovariance + ConditionalCovariance' );
+            
             dynareOBC.RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC );
            
             dynareOBC.LengthXi = size( Sigma, 1 );

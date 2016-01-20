@@ -80,7 +80,7 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
             % p and q are indexes of the lower triangle of a matrix, p>=q
             CurrentCov = A2Powers{ p - q + 1 } * VarianceZ2{ q }; %#ok<PFBNS> % * A2Powers{ p - q + 1 }' = eye
             ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
-            ConditionalCovarianceTemp{i} = 0.5 * ( ReducedCov + ReducedCov' );
+            ConditionalCovarianceTemp{i} = ReducedCov;
         end
         for p = 1 : TM1
             for q = 1 : p
@@ -92,6 +92,8 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
                 ConditionalCovariance( 1 + p + StepIndices, 1 + q + StepIndices ) = ConditionalCovarianceTemp{i}';
             end
         end
+        
+        ConditionalCovariance = 0.5 * ( ConditionalCovariance + ConditionalCovariance' );
         
         RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC );
 
