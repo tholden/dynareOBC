@@ -298,7 +298,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
                 q = i - 0.5 * p * ( p - 1 );
                 % p and q are indexes of the lower triangle of a matrix, p>=q
-                CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q } * A1Powers{ p - q + 1 }'; %#ok<PFBNS>
+                CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q }; %#ok<PFBNS> % * A1Powers{ q - q + 1 }' = eye; 
                 ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
                 ConditionalCovarianceTemp{i} = 0.5 * ( ReducedCov + ReducedCov' );
             end
