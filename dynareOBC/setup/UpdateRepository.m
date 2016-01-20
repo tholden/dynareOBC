@@ -1,7 +1,9 @@
-function UpdateRepository( Directory, GitDirectory, Remote )
+function WarningStrings = UpdateRepository( Directory, GitDirectory, Remote )
     %
     %   Copyright (c) 2013-2015 Mark Mikofski, 2015 Tom Holden
 
+    WarningStrings = {};
+    
     ShortDefaultGitDirectory = [ Directory '.git' ];
     LongDefaultGitDirectory = [ ShortDefaultGitDirectory '/' ];
 
@@ -48,7 +50,7 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         if RepoError
             DestinationGitDirectory = [ tempname '/' ];
             disp( [ 'Moving old Git directory from: ' CurrentGitDirectory ' to ' DestinationGitDirectory ] );
-            MoveFiles( CurrentGitDirectory, DestinationGitDirectory );
+            WarningStrings = MoveFiles( WarningStrings, CurrentGitDirectory, DestinationGitDirectory );
             CurrentGitDirectory = [];
         end
     else
@@ -69,12 +71,17 @@ function UpdateRepository( Directory, GitDirectory, Remote )
         cloneCMD.setBranch( 'master' );
         cloneCMD.call( );
         
-        MoveFiles( [ TemporaryLocation '.git/' ], GitDirectory );
-        MoveFiles( TemporaryLocation, Directory );
+        WarningStrings = MoveFiles( WarningStrings, [ TemporaryLocation '.git/' ], GitDirectory );
+        WarningStrings = MoveFiles( WarningStrings, TemporaryLocation, Directory );
         
         CurrentGitDirectory = GitDirectory;
         
-        disp( [ 'Succesfully cloned the latest files from the ' RepositoryName ' repository.' ] );
+        if ~isempty( WarningStrings )
+            disp( [ 'Possible problems cloning the latest files from the ' RepositoryName ' repository.' ] );
+            disp( 'See the global variable UpdateWarningStrings for details, and try cloning manually to get the latest files, if necessary.' );
+        else      
+            disp( [ 'Succesfully cloned the latest files from the ' RepositoryName ' repository.' ] );
+        end
     end
 
     SourceDestEqual = false;

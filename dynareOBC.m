@@ -70,6 +70,10 @@ function dynareOBC( InputFileName, varargin )
         end
     end
     
+    global UpdateWarningStrings
+    
+    UpdateWarningStrings = cell( 0, 1 );
+    
     if Update
         addpath( [ dynareOBCPath '/dynareOBC/JGit4MATLAB/' ] );
         WarningState = warning( 'off', 'jgit:noSSHpassphrase' );
@@ -78,7 +82,7 @@ function dynareOBC( InputFileName, varargin )
             disp( 'Initializing JGit.' );
             jgit version;
 
-            UpdateRepository( [ dynareOBCPath '/' ], [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
+            UpdateWarningStrings{1} = UpdateRepository( [ dynareOBCPath '/' ], [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
 
             GitModulesFile = fileread( [ dynareOBCPath '/.gitmodules' ] );
             ModuleIncides = find( GitModulesFile == ']' );
@@ -88,7 +92,7 @@ function dynareOBC( InputFileName, varargin )
                 CurrentBlock = GitModulesFile( ModuleIncides( i ) : ModuleIncides( i + 1 ) );
                 ModulePath = regexp( CurrentBlock, '(?<=path\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
                 ModuleURL = regexp( CurrentBlock, '(?<=url\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
-                UpdateRepository( [ dynareOBCPath '/' ModulePath '/' ], [ dynareOBCPath '/.git/modules/' ModulePath '/' ] , ModuleURL );
+                UpdateWarningStrings{i+1} = UpdateRepository( [ dynareOBCPath '/' ModulePath '/' ], [ dynareOBCPath '/.git/modules/' ModulePath '/' ] , ModuleURL );
             end
             save( [ dynareOBCPath '/LastUpdate.mat' ], 'CurrentDay' );
         catch JGitError

@@ -1,10 +1,10 @@
-function MoveFiles( Source, Destination )
+function WarningStrings = MoveFiles( WarningStrings, Source, Destination )
 
     WarningState = warning( 'off', 'all' );
     [ Success, ~, MKDirErrorIdentifier ] = mkdir( Destination );
     warning( WarningState );
     if ~Success
-        disp( [ 'Error ' MKDirErrorIdentifier ' creating directory: ' Destination ] );
+        WarningStrings{ end + 1 } = [ 'Error ' MKDirErrorIdentifier ' creating directory: ' Destination ];
         return;
     end
     
@@ -16,7 +16,7 @@ function MoveFiles( Source, Destination )
             continue;
         end
         if File.isdir
-            MoveFiles( [ Source File.name '/' ], [ Destination File.name '/' ] );
+            WarningStrings = MoveFiles( WarningStrings, [ Source File.name '/' ], [ Destination File.name '/' ] );
         else
             if exist( [ Destination File.name ], 'file' ) == 2
                 Different = true;
@@ -41,16 +41,16 @@ function MoveFiles( Source, Destination )
                 catch
                 end
                 if Different
-                    SafeMove( [ Destination File.name ], [ Destination File.name '.bak' ] );
+                    WarningStrings = SafeMove( WarningStrings, [ Destination File.name ], [ Destination File.name '.bak' ] );
                 end
             end
-            SafeMove( [ Source File.name ], [ Destination File.name ] );
+            WarningStrings = SafeMove( WarningStrings, [ Source File.name ], [ Destination File.name ] );
         end
     end
     
 end
 
-function SafeMove( SourceFile, DestinationFile )
+function WarningStrings = SafeMove( WarningStrings, SourceFile, DestinationFile )
     try
         copyfile( SourceFile, DestinationFile, 'f' );
         lastwarn( '' );
@@ -59,9 +59,9 @@ function SafeMove( SourceFile, DestinationFile )
         warning( WarningState );
         [ ~, DeleteWarningIdentifier ] = lastwarn;
         if ~isempty( DeleteWarningIdentifier )
-            disp( [ 'Warning ' DeleteWarningIdentifier ' moving: ' SourceFile ' to ' DestinationFile ] );
+            WarningStrings{ end + 1 } = [ 'Warning ' DeleteWarningIdentifier ' moving: ' SourceFile ' to ' DestinationFile ];
         end
     catch MoveError
-        disp( [ 'Error ' MoveError.identifier ' moving: ' SourceFile ' to ' DestinationFile ] );
+        WarningStrings{ end + 1 } = [ 'Error ' MoveError.identifier ' moving: ' SourceFile ' to ' DestinationFile ];
     end
 end
