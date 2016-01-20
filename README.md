@@ -69,10 +69,10 @@ Note:
          The number of periods following a shock after which the model is expected to be away from any occasionally binding
          constraints. Note that when a global solution is requested, this value is ignored, and the maximum of the requested
          number of IRF periods, and the value of TimeToReturnToSteadyState, is used instead.
-    * TimeToReturnToSteadyState=INTEGER (default: 32)
+    * TimeToReturnToSteadyState=INTEGER (default: 64)
          The number of periods in which to verify that the constraints are not being violated. If this is lower than
-         TimeToEscapeBounds, or the requested number of IRF periods, then that value will be used instead. This also controls
-         the number of periods of uncertainty over which we integrate.
+         TimeToEscapeBounds, or the requested number of IRF periods, or PeriodsOfUncertainty + 1, then that value will be used
+         instead.
     * Omega=FLOAT (default: 1000)
          The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be
          returned when there are multiple solutions.
@@ -88,6 +88,9 @@ Note:
          This will severely compromise accuracy.
 
  * **For controlling cubature**
+    * PeriodsOfUncertainty=INTEGER (default: 32)
+	     Controls the number of periods of uncertainty over which we integrate. Since a cosine windowing function is used, the
+	     effective number of periods of uncertainty is roughly half this number.
     * FastCubature
          Causes DynareOBC to ignore the value specified in MaxCubatureDegree and QuasiMonteCarlo, and to instead use a degree 3
          monomial cubature rule without negative weights, but involving evaluations further from the origin.

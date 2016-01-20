@@ -1,12 +1,12 @@
 function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M, options, oo, dynareOBC )
 
     T = dynareOBC.InternalIRFPeriods;
-    TM2 = T - 2;
+    TM1 = T - 1;
     ns = dynareOBC.NumberOfMax;
     SelectState = dynareOBC.SelectState;
     nEndo = M.endo_nbr;
     
-    dynareOBC.MaxCubatureDimension = min( dynareOBC.MaxCubatureDimension, TM2 * ns );
+    dynareOBC.MaxCubatureDimension = min( dynareOBC.MaxCubatureDimension, TM1 * ns );
     
     % pre-calculations for order=1 terms
     A1 = sparse( nEndo, nEndo );
@@ -27,16 +27,33 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         dynareOBC.LengthXi = size( Sigma, 1 );
     end
         
-    CurrentInternal = B1 * Sigma * B1';
-    VarianceZ1 = cell( TM2, 1 );
-    VarianceZ1{1} = CurrentInternal;
+    A1Powers = cell( TM1, 1 );
+    A1Powers{1} = speye( size( A1 ) );
 
-    for k = 2 : TM2
-        CurrentInternal = A1 * CurrentInternal * A1';
-        CurrentInternal( abs(CurrentInternal)<eps ) = 0;
-        VarianceZ1{ k } = VarianceZ1{ k - 1 } + CurrentInternal;
+    for k = 2 : TM1
+        A1Powers{ k } = A1 * A1Powers{ k - 1 };
+        A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
     end
 
+    LengthZ1 = size( A1, 1 );
+        
+    VarianceZ1 = cell( TM1, 1 );
+    
+    BCovXiB = B1 * Sigma * B1';
+    
+    PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
+    
+    OpenPool;
+    parfor k = 1 : TM1
+        VarianceZ1{ k } = sparse( LengthZ1, LengthZ1 );
+        for i = 1 : min( k, PeriodsOfUncertainty )
+            iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
+            CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }'; %#ok<PFBNS>
+            CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+            VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
+        end
+    end    
+    
     Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~( options.order == 1 || dynareOBC.FirstOrderConditionalCovariance );
     
     if dynareOBC.Order > 1 || Order2ConditionalCovariance
@@ -125,13 +142,12 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         B2 = sparse( B2i, B2j, B2s, LengthZ2, LengthXi );  
 
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
-        [ Vi, Vj, Vs ] = find( Sigma );
+        % [ Vi, Vj, Vs ] = find( Sigma );
 
         % BCovXiB{i}( Jdx2, Jdx2 ) = dynareOBC_.Variance_exe;
-        [ Tmpi, Tmpj, Tmps ] = find( ( speye( nExo2 ) + commutation_sparse( nExo, nExo ) ) * spkron( Sigma, Sigma ) );
-        Vi = [ Vi; Tmpi + nExo ];
-        Vj = [ Vj; Tmpj + nExo ];
-        Vs = [ Vs; Tmps ];
+        [ Vi, Vj, Vs ] = find( ( speye( nExo2 ) + commutation_sparse( nExo, nExo ) ) * spkron( Sigma, Sigma ) );
+        Vi = Vi + nExo;
+        Vj = Vj + nExo;
         
     end
         
@@ -267,16 +283,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     
     % Calculate conditional covariances
     if ~dynareOBC.NoCubature
-        OpenPool;
         if ~Order2ConditionalCovariance
-
-            A1Powers = cell( TM2, 1 );
-            A1Powers{1} = speye( size( A1 ) );
-
-            for k = 2 : TM2
-                A1Powers{ k } = A1 * A1Powers{ k - 1 };
-                A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
-            end
 
             ConditionalCovariance = zeros( T * ns, T * ns );
             StepIndices = 0:T:T*(ns-1);
@@ -284,25 +291,23 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             inv_order_var = oo.dr.inv_order_var;
             VarIndices_ZeroLowerBounded = dynareOBC.VarIndices_ZeroLowerBounded;
 
-            LengthConditionalCovarianceTemp = 0.5 * TM2 * ( TM2 + 1 );
+            LengthConditionalCovarianceTemp = 0.5 * TM1 * ( TM1 + 1 );
             ConditionalCovarianceTemp = cell( LengthConditionalCovarianceTemp, 1 );
 
             parfor i = 1 : LengthConditionalCovarianceTemp
                 p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
                 q = i - 0.5 * p * ( p - 1 );
                 % p and q are indexes of the lower triangle of a matrix, p>=q
-                pWeight = 0.5 * ( 1 + cos( pi * ( p - 1 ) / TM2 ) );
-                qWeight = 0.5 * ( 1 + cos( pi * ( q - 1 ) / TM2 ) );
                 CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q } * A1Powers{ p - q + 1 }'; %#ok<PFBNS>
                 ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
-                ConditionalCovarianceTemp{i} = ( pWeight * qWeight * 0.5 ) * ( ReducedCov + ReducedCov' );
+                ConditionalCovarianceTemp{i} = 0.5 * ( ReducedCov + ReducedCov' );
             end
-            for p = 1 : TM2
+            for p = 1 : TM1
                 for q = 1 : p
                     i = 0.5 * p * ( p - 1 ) + q;
                     ConditionalCovariance( 1 + p + StepIndices, 1 + q + StepIndices ) = ConditionalCovarianceTemp{i};
                 end
-                for q = (p+1) : TM2
+                for q = (p+1) : TM1
                     i = 0.5 * q * ( q - 1 ) + p;
                     ConditionalCovariance( 1 + p + StepIndices, 1 + q + StepIndices ) = ConditionalCovarianceTemp{i}';
                 end
@@ -318,18 +323,18 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 warning( 'dynareOBC:ApproximatingConditionalCovariance', 'At present, dynareOBC approximates the conditional covariance of third order approximations with the conditional covariance of a second order approximation.' );
             end
 
-            A2Powers = cell( TM2, 1 );
+            A2Powers = cell( TM1, 1 );
             A2Powers{1} = speye( size( A2 ) );
 
-            for k = 2 : TM2
+            for k = 2 : TM1
                 A2Powers{ k } = A2 * A2Powers{ k - 1 };
                 A2Powers{ k }( abs(A2Powers{ k })<eps ) = 0;
             end
 
-            VarianceY1State = cell( TM2, 1 );
+            VarianceY1State = cell( TM1, 1 );
             VarianceY1State{1} = zeros( nState );
 
-            parfor k = 2 : TM2
+            parfor k = 2 : TM1
                 VarianceY1State{k} = VarianceZ1{ k - 1 }( SelectState, SelectState );
             end
 

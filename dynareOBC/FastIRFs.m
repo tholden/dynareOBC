@@ -12,7 +12,8 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
     if dynareOBC.Global
         TM2 = T - 2;
         pM1 = ( -1 : TM2 )';
-        pWeight = 0.5 * ( 1 + cos( pi * max( 0, pM1 ) / TM2 ) );
+        PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
+        pWeight = 0.5 * ( 1 + cos( pi * max( 0, min( PeriodsOfUncertainty, pM1 ) ) / PeriodsOfUncertainty ) );
     else
         pWeight = [];
     end
