@@ -112,11 +112,12 @@ Note:
     * CubaturePruningCutOff=FLOAT (default: 0.01)
          Eigenvalues of the covariance matrix of the distribution from which we integrate that are below FLOAT times the maximum
          eigenvalue are "pruned" to zero, in order to increase integration speed.
+    * MaxCubatureDimension=INTEGER (default: 128)
+         The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all
+         but the INTEGER largest eigenvalues of the covariance matrix to zero.
     * CubatureTolerance=FLOAT (default: 1e-6)
-         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature. Setting
-         this to zero disables adaptive cubature.
-    * MaxCubatureDimension=INTEGER (default: 100)
-         The maximum dimension over which to integrate.
+         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
+         Setting this to zero disables adaptive cubature.
     * NoCubature
          Speeds up DynareOBC by assuming that agents are "surprised" by the existence of the bound. At order=1, this is
          equivalent to a perfect foresight solution to the model.
