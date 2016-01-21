@@ -45,18 +45,18 @@ function dynareOBC = InitialChecks( dynareOBC )
     if new_varsigma > 0 % && new_sum_y <= 1e-6
         fprintf( 1, '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
-        disp( 'varsigma bounds:' );
+        disp( 'varsigma bounds (positive means M is an S matrix):' );
         disp( [ new_varsigma vvarsigma ] );
-        disp( 'sum of y from the alternative problem:' );
+        disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
         fprintf( 1, '\n' );
         SkipUpperBound = true;
     elseif new_varsigma <= 1e-6 && new_sum_y > 0
         fprintf( 1, '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
-        disp( 'varsigma bounds:' );
+        disp( 'varsigma bounds (positive means M is an S matrix):' );
         disp( [ new_varsigma vvarsigma ] );
-        disp( 'sum of y from the alternative problem:' );
+        disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
         fprintf( 1, '\n' );
         ptestVal = -1;
@@ -67,9 +67,9 @@ function dynareOBC = InitialChecks( dynareOBC )
     else
         fprintf( 1, '\n' );
         disp( 'Due to numerical inaccuracies, we cannot tell if M is an S matrix.' );
-        disp( 'varsigma bounds:' );
+        disp( 'varsigma bounds (positive means M is an S matrix):' );
         disp( [ new_varsigma vvarsigma ] );
-        disp( 'sum of y from the alternative problem:' );
+        disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
         fprintf( 1, '\n' );
         SkipUpperBound = true;
