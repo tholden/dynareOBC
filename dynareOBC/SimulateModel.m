@@ -264,8 +264,8 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
         
         for i = 1 : nMLV
             MLVName = MLVNames{i};
-            Simulation.MLVsWithBounds.( MLVName ) = NaN( SimulationLength, 1 );
-            Simulation.MLVsWithoutBounds.( MLVName ) = NaN( SimulationLength, 1 );
+            Simulation.MLVsWithBounds.( MLVName ) = NaN( 1, SimulationLength );
+            Simulation.MLVsWithoutBounds.( MLVName ) = NaN( 1, SimulationLength );
         end
         
         for t = 1 : SimulationLength
