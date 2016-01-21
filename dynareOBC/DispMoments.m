@@ -33,7 +33,7 @@ try
         MLVName = MLVNames{i};
         y = [ y, dynareOBC.MLVSimulationWithBounds.( MLVName )( Drop+1:end )' ]; %#ok<AGROW>
     end
-    m = mean(y);
+    m = nanmean(y);
 
     if options.hp_filter
         [~,y] = sample_hp_filter(y,options.hp_filter);
@@ -41,7 +41,7 @@ try
         y = bsxfun(@minus, y, m);
     end
 
-    s2 = mean(y.*y);
+    s2 = nanmean(y.*y);
     s = sqrt(s2);
     oo.mean = transpose(m);
     oo.var = y'*y/size(y,1);
@@ -49,7 +49,7 @@ try
     labels = deblank( char( [ dynareOBC.EndoVariables( VariableSelect ) dynareOBC.MLVNames( MLVSelect ) ] ) );
 
     if options.nomoments == 0
-        z = [ m' s' s2' (mean(y.^3)./s2.^1.5)' (mean(y.^4)./(s2.*s2)-3)' ];    
+        z = [ m' s' s2' (nanmean(y.^3)./s2.^1.5)' (nanmean(y.^4)./(s2.*s2)-3)' ];    
         title='MOMENTS OF SIMULATED VARIABLES';
         if options.hp_filter
             title = [title ' (HP filter, lambda = ' ...

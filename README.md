@@ -150,6 +150,9 @@ Note:
                When MLVSimulationMode=2, this specifies the degree of polynomial which should be integrated exactly. In this case,
                values above 51 are treated as equal to 51. When MLVSimulationMode=3, 2^(1+INTEGER) - 1 is the number of points
                used for quasi-Monte Carlo integration.
+          * MLVSimulationSubSample=INTEGER (default: 1)
+               Causes DynareOBC to only calculate the value of MLVs every INTEGER samples. Setting this greater than 1 is useful
+               when calculating MLVs is expensive, and you want to reduce the standard error of simulated moments.
     * Sparse
          Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC.
 
