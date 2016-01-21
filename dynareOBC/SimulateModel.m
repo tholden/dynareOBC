@@ -262,6 +262,12 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
             p = [];
         end
         
+        for i = 1 : nMLV
+            MLVName = MLVNames{i};
+            Simulation.MLVsWithBounds.( MLVName ) = NaN( SimulationLength, 1 );
+            Simulation.MLVsWithoutBounds.( MLVName ) = NaN( SimulationLength, 1 );
+        end
+        
         for t = 1 : SimulationLength
             % clear the last warning
             lastwarn( '' );
@@ -325,22 +331,18 @@ function Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, D
                     if WarningGenerated
                         warning( 'dynareOBC:InnerMLVWarning', 'Warnings were generated in the inner loop responsible for evaluating expectations of model local variables.' );
                     end
-                    for i = 1 : nMLV
-                        Simulation.MLVsWithBounds.( MLVNames{i} )( t ) = MLVValuesWithBounds( i );
-                        Simulation.MLVsWithoutBounds.( MLVNames{i} )( t ) = MLVValuesWithoutBounds( i );
-                    end
-               else
-                    CurrentMLVsWithBounds = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                else
+                    MLVValuesWithBounds = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
                     if dynareOBC.NumberOfMax > 0
-                        CurrentMLVsWithoutBounds = dynareOBCTempGetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
+                        MLVValuesWithoutBounds = dynareOBCTempGetMLVs( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ], CurrentShock, ParamVec, SteadyState, 1 );
                     else
-                        CurrentMLVsWithoutBounds = CurrentMLVsWithBounds;
+                        MLVValuesWithoutBounds = MLVValuesWithBounds;
                     end
-                    for i = 1 : nMLV
-                        MLVName = MLVNames{i};
-                        Simulation.MLVsWithBounds.( MLVName )( t ) = CurrentMLVsWithBounds.( MLVName );
-                        Simulation.MLVsWithoutBounds.( MLVName )( t ) = CurrentMLVsWithoutBounds.( MLVName );
-                    end
+                end
+                for i = 1 : nMLV
+                    MLVName = MLVNames{i};
+                    Simulation.MLVsWithBounds.( MLVName )( t ) = MLVValuesWithBounds.( MLVName );
+                    Simulation.MLVsWithoutBounds.( MLVName )( t ) = MLVValuesWithoutBounds.( MLVName );
                 end
                 LagValuesWithBounds = CurrentValuesWithBounds;
                 LagValuesWithoutBounds = CurrentValuesWithoutBounds;
