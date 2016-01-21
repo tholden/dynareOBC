@@ -44,7 +44,7 @@ try
     s2 = nanmean(y.*y);
     s = sqrt(s2);
     oo.mean = transpose(m);
-    oo.var = y'*y/size(y,1);
+    oo.var = reshape( nanmean( cell2mat( cellfun( @( yv ) vec( yv' * yv )', mat2cell( y, ones( size( y, 1 ), 1 ) ), 'UniformOutput', false ) ) ), [ size( y, 2 ), size( y, 2 ) ] );
 
     labels = deblank( char( [ dynareOBC.EndoVariables( VariableSelect ) dynareOBC.MLVNames( MLVSelect ) ] ) );
 
@@ -61,7 +61,7 @@ try
     end
 
     if options.nocorr == 0
-        corr = (y'*y/size(y,1))./(s'*s);
+        corr = oo.var ./( s' * s );
         if options.noprint == 0
             title = 'CORRELATION OF SIMULATED VARIABLES';
             if options.hp_filter
@@ -82,7 +82,7 @@ try
         autocorr = [];
         for i=1:ar
             oo.autocorr{i} = y(ar+1:end,:)'*y(ar+1-i:end-i,:)./((size(y,1)-ar)*std(y(ar+1:end,:))'*std(y(ar+1-i:end-i,:)));
-            autocorr = [ autocorr diag(oo.autocorr{i}) ];
+            autocorr = [ autocorr diag(oo.autocorr{i}) ]; %#ok<AGROW>
         end
         if options.noprint == 0
             title = 'AUTOCORRELATION OF SIMULATED VARIABLES';
