@@ -12,13 +12,13 @@ function y = SolveBoundsProblem( q, dynareOBC )
     if Norm_q < Tolerance
         Norm_q = 1;
     end
-    qt = q ./ Norm_q;
+    qScaled = q ./ Norm_q;
     
     M = dynareOBC.MMatrix;
     Ms = dynareOBC.MsMatrix;
     omega = dynareOBC.Omega;
 
-    qs = qt( dynareOBC.sIndices );
+    qsScaled = qScaled( dynareOBC.sIndices );
     
     ParametricSolutionFound = dynareOBC.ParametricSolutionFound;
     ssIndices = dynareOBC.ssIndices;
@@ -38,14 +38,14 @@ function y = SolveBoundsProblem( q, dynareOBC )
         CssIndices = ssIndices{ Tss };
         CParametricSolutionFound = ParametricSolutionFound( Tss );
         
-        qss = qs( CssIndices );
+        qssScaled = qsScaled( CssIndices );
         
         if CParametricSolutionFound > 0
             try
                 if CParametricSolutionFound > 1
-                    yss = feval( [ 'dynareOBCTempSolution' strTss '_mex' ], qss );
+                    yss = feval( [ 'dynareOBCTempSolution' strTss '_mex' ], qssScaled );
                 else
-                    yss = feval( [ 'dynareOBCTempSolution' strTss ], qss );
+                    yss = feval( [ 'dynareOBCTempSolution' strTss ], qssScaled );
                 end
             catch
                 warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
@@ -58,7 +58,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
             alpha = sdpvar( 1, 1 );
             z = binvar( Tss * ns, 1 );
             
-            Constraints = [ 0 <= yss, yss <= z, 0 <= alpha, 0 <= alpha * qt + M( :, CssIndices ) * yss, alpha * qss + Ms( CssIndices, CssIndices ) * yss <= omega * ( 1 - z ) ];
+            Constraints = [ 0 <= yss, yss <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yss, alpha * qssScaled + Ms( CssIndices, CssIndices ) * yss <= omega * ( 1 - z ) ];
             Objective = -alpha;
             Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
             if Diagnostics.problem ~= 0
