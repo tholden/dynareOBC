@@ -8,11 +8,14 @@ function y = SolveBoundsProblem( q, dynareOBC )
         return
     end
     
+    Norm_q = norm( q, Inf );
+    qt = q ./ Norm_q;
+    
     M = dynareOBC.MMatrix;
     Ms = dynareOBC.MsMatrix;
     omega = dynareOBC.Omega;
 
-    qs = q( dynareOBC.sIndices );
+    qs = qt( dynareOBC.sIndices );
     
     ParametricSolutionFound = dynareOBC.ParametricSolutionFound;
     ssIndices = dynareOBC.ssIndices;
@@ -33,8 +36,6 @@ function y = SolveBoundsProblem( q, dynareOBC )
         CParametricSolutionFound = ParametricSolutionFound( Tss );
         
         qss = qs( CssIndices );
-        Norm_qss = norm( qss, Inf );
-        qss = qss ./ Norm_qss;
         
         if CParametricSolutionFound > 0
             try
@@ -50,8 +51,6 @@ function y = SolveBoundsProblem( q, dynareOBC )
         end
         
         if CParametricSolutionFound == 0
-            qt = q ./ Norm_qss;
-
             yss = sdpvar( Tss * ns, 1 );
             alpha = sdpvar( 1, 1 );
             z = binvar( Tss * ns, 1 );
@@ -66,7 +65,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
         end
         
         if all( isfinite( yss ) )
-            yss = max( 0, yss * Norm_qss );
+            yss = max( 0, yss * Norm_q );
             y = ZeroVecS;
             y( CssIndices ) = yss;
             w = q + M * y;
