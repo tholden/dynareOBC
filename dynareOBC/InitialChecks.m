@@ -364,7 +364,44 @@ function dynareOBC = InitialChecks( dynareOBC )
     if sum( dynareOBC.ParametricSolutionFound ) > 0
         rehash;
     end
-    
+
     yalmip( 'clear' );
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
+    
+    % Do a test solver run to get the correct solver and check YALMIP is working
+    
+    M = dynareOBC.MMatrix;
+    omega = dynareOBC.Omega;
+    
+    yScaled = sdpvar( Ts * ns, 1 );
+    alpha = sdpvar( 1, 1 );
+    z = binvar( Ts * ns, 1 );
+    
+    qScaled = ones( size( M, 1 ), 1 );
+    qsScaled = ones( Ts * ns, 1 );
+
+    Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
+    Objective = -alpha;
+    Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
+    if Diagnostics.problem ~= 0
+        error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+    end
+    SolverString = regexp( Diagnostics.info, '(?<=\()\w+(?=(\)|-))', 'match', 'once' );
+    dynareOBC.MILPOptions.solver = [ '+' lower( SolverString ) ];
+    
+    fprintf( 1, '\n' );
+    disp( [ 'Using solver: ' SolverString ] );
+    fprintf( 1, '\n' );
+    
+    % Form optimizer
+    
+    qScaled = sdpvar( size( M, 1 ), 1 );
+    qsScaled = qScaled( dynareOBC.sIndices );
+    Tss = sdpvar( 1, 1 );
+    
+    zWeights = repmat( ( 1 : Ts )', ns, 1 );
+    
+    Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeights <= Tss, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
+    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, [ qScaled, Tss ], [ yScaled, alpha ] );
+    
 end
