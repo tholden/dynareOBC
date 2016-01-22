@@ -62,7 +62,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
             Objective = -alpha;
             Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
             if Diagnostics.problem ~= 0
-                error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
             yScaled = value( yScaled ) / value( alpha );
         end
