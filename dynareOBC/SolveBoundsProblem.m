@@ -43,9 +43,9 @@ function y = SolveBoundsProblem( q, dynareOBC )
         if CParametricSolutionFound > 0
             try
                 if CParametricSolutionFound > 1
-                    yss = feval( [ 'dynareOBCTempSolution' strTss '_mex' ], qssScaled );
+                    yScaled = feval( [ 'dynareOBCTempSolution' strTss '_mex' ], qssScaled );
                 else
-                    yss = feval( [ 'dynareOBCTempSolution' strTss ], qssScaled );
+                    yScaled = feval( [ 'dynareOBCTempSolution' strTss ], qssScaled );
                 end
             catch
                 warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
@@ -54,23 +54,23 @@ function y = SolveBoundsProblem( q, dynareOBC )
         end
         
         if CParametricSolutionFound == 0
-            yss = sdpvar( Tss * ns, 1 );
+            yScaled = sdpvar( Tss * ns, 1 );
             alpha = sdpvar( 1, 1 );
             z = binvar( Tss * ns, 1 );
             
-            Constraints = [ 0 <= yss, yss <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yss, alpha * qssScaled + Ms( CssIndices, CssIndices ) * yss <= omega * ( 1 - z ) ];
+            Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qssScaled + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ) ];
             Objective = -alpha;
             Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
             if Diagnostics.problem ~= 0
                 error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
-            yss = value( yss ) / value( alpha );
+            yScaled = value( yScaled ) / value( alpha );
         end
         
-        if all( isfinite( yss ) )
-            yss = max( 0, yss * Norm_q );
+        if all( isfinite( yScaled ) )
+            yScaled = max( 0, yScaled * Norm_q );
             y = ZeroVecS;
-            y( CssIndices ) = yss;
+            y( CssIndices ) = yScaled;
             w = q + M * y;
             if all( w >= -Tolerance ) && all( abs( w( dynareOBC.sIndices ) .* y ) <= Tolerance )
                 return;
