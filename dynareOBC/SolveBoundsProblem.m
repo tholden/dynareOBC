@@ -9,6 +9,9 @@ function y = SolveBoundsProblem( q, dynareOBC )
     end
     
     Norm_q = norm( q, Inf );
+    if Norm_q < Tolerance
+        Norm_q = 1;
+    end
     qt = q ./ Norm_q;
     
     M = dynareOBC.MMatrix;
