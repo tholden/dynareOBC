@@ -21,8 +21,8 @@ Requirements
 Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone. Note that while DynareOBC should work on all platforms, it has
    been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
- * The MATLAB Optimization toolbox, or an alternative non-linear minimisation routine. (To use an alternative routine, you must
-   set dynareOBC.FMinFunctor.)
+ * The MATLAB Optimization toolbox, or an alternative non-linear minimisation routine, unless the `NoStatisticalCubature` option
+   is set. (To use an alternative routine, you must set `dynareOBC.FMinFunctor`.)
  * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
 
 Recommended additional installations:
@@ -74,7 +74,7 @@ Note:
  * DynareOBC may produce strange results on models with an indeterminate steady-state, so caution should be taken when using the
    `STEADY_STATE` command. The initval or steady_state_model blocks should not be used to attempt to pin down a steady-state,
    since these will be ignored by DynareOBC in later steps of its solution procedure.
- * DynareOBC defines the preprocessor constant "dynareOBC" during execution.
+ * DynareOBC defines the preprocessor constant `dynareOBC` during execution.
 
 **OPTIONS (NOT CASE SENSITIVE!)** include:
 
