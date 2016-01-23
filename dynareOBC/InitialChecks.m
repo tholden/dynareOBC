@@ -415,4 +415,12 @@ function dynareOBC = InitialChecks( dynareOBC )
     Objective = -alpha;
     dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, Input, Output );
     
+    yalmip( 'clear' );
+    
+    dynareOBC.LPOptions = [];
+    dynareOBC.MILPOptions = [];
+    if ~dynareOBC.Global
+        dynareOBC.QPOptions = [];
+    end
+    
 end
