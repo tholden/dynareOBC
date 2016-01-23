@@ -201,6 +201,6 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     end
     PathsToAdd = strsplit( path, ';' );
     PathsToAdd = PathsToAdd( ~cellfun( @isempty, strfind( PathsToAdd, 'dynareOBC' ) ) );
-    save( [ dynareOBCPath '/FastStart.mat' ], GlobalVariables, PathsToAdd );
+    save( [ dynareOBCPath '/FastStart.mat' ], 'GlobalVariables', 'PathsToAdd' );
     
 end
