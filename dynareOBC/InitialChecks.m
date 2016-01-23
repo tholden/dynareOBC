@@ -402,6 +402,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     zWeights = repmat( ( 1 : Ts )', ns, 1 );
     
     Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeights <= Tss, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
-    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, [ qScaled, Tss ], [ yScaled, alpha ] );
+    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, [ qScaled; Tss ], [ yScaled; alpha ] );
     
 end
