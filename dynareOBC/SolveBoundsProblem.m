@@ -10,9 +10,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
     Ts = dynareOBC.TimeToEscapeBounds;
     Optimizer = dynareOBC.Optimizer;
     M = dynareOBC.MMatrix;
-    ZeroVecS = dynareOBC.ZeroVecS;
     sIndices = dynareOBC.sIndices;
-    ssIndices = dynareOBC.ssIndices;
 
     Norm_q = norm( q, Inf );
     if Norm_q < Tolerance
@@ -24,6 +22,8 @@ function y = SolveBoundsProblem( q, dynareOBC )
     
     if sum( ParametricSolutionFound ) > 0    
         qsScaled = qScaled( sIndices );    
+        ssIndices = dynareOBC.ssIndices;
+        ZeroVecS = dynareOBC.ZeroVecS;
     end
     
     if dynareOBC.FullHorizon
@@ -35,10 +35,10 @@ function y = SolveBoundsProblem( q, dynareOBC )
     for Tss = InitTss : Ts
     
         CParametricSolutionFound = ParametricSolutionFound( Tss );
-        CssIndices = ssIndices{ Tss };
         
         if CParametricSolutionFound > 0
             
+            CssIndices = ssIndices{ Tss };
             strTss = int2str( Tss );
             qssScaled = qsScaled( CssIndices );
             
@@ -52,6 +52,8 @@ function y = SolveBoundsProblem( q, dynareOBC )
                 warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
                 CParametricSolutionFound = 0;
             end
+            y = ZeroVecS;
+            y( CssIndices ) = yScaled;
             
         end
         
@@ -59,13 +61,11 @@ function y = SolveBoundsProblem( q, dynareOBC )
             OptOut = Optimizer{ [ qScaled; Tss ] };
             yScaled = OptOut( 1 : ( end - 1 ), : );
             alpha = OptOut( end );
-            yScaled = yScaled / alpha;
+            y = yScaled / alpha;
         end
         
-        if all( isfinite( yScaled ) )
-            yScaled = max( 0, yScaled * Norm_q );
-            y = ZeroVecS;
-            y( CssIndices ) = yScaled;
+        if all( isfinite( y ) )
+            y = max( 0, y * Norm_q );
             w = q + M * y;
             if all( w >= -Tolerance ) && all( abs( w( sIndices ) .* y ) <= Tolerance )
                 return;
