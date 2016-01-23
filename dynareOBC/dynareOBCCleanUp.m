@@ -9,6 +9,10 @@ function dynareOBCCleanUp
     catch
     end
     try
+        rmdir codegen s
+    catch
+    end
+    try
         delete dynareOBCTemp*.*;
     catch
     end
