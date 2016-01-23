@@ -43,6 +43,23 @@ Recommended additional installations:
     * IBM CPLEX, by following the instructions here:
       https://www.ibm.com/developerworks/community/blogs/jfp/entry/cplex_studio_in_ibm_academic_initiative?lang=en
 
+Troubleshooting
+---------------
+
+If you have any problems, first try these steps:
+
+ 1. Delete all `.mat` files from the DynareOBC directory.
+ 2. Delete all `.mex*` files from the DynareOBC\dynareOBC directory (but not from sub-directories).
+ 3. Follow the following steps to do a manual update:
+    * Open a Git shell (e.g. by clicking on the gear icon from within the GitHub application).
+    * Navigate to the directory in which you installed DynareOBC.
+    * Type `git fetch --all --recurse-submodules` then press return.
+    * Type `git reset --hard origin/master` then press return.
+    * Type `git submodule foreach --recursive git deinit --force` then press return.
+    * Type `git submodule foreach --recursive git submodule update --init` then press return.
+
+If after doing this, you suspect a bug, report it here: https://github.com/tholden/dynareOBC/issues
+
 Basic Usage
 -----------
 
@@ -53,7 +70,7 @@ DynareOBC executes instruction included in the conventional dynare mod file, FIL
 Unlike dynare, DynareOBC can handle simulation of models containing non-differentiable functions.
 Note:
  * DynareOBC approximates the non-differentiable function in levels. Thus if r and pi are the endogenous variables of interest:
-   "r = max( 0, 0.005 + 1.5 * pi );" will be more accurate than: "exp(r) = max( 1, exp( 0.005 + 1.5 * pi ) );".
+   `r = max( 0, 0.005 + 1.5 * pi );` will be more accurate than: `exp(r) = max( 1, exp( 0.005 + 1.5 * pi ) );`.
  * DynareOBC may produce strange results on models with an indeterminate steady-state, so caution should be taken when using the
    STEADY_STATE command. The initval or steady_state_model blocks should not be used to attempt to pin down a steady-state,
    since these will be ignored by DynareOBC in later steps of its solution procedure.
