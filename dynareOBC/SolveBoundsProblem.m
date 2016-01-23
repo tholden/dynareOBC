@@ -1,6 +1,7 @@
 function y = SolveBoundsProblem( q, dynareOBC )
     Ts = dynareOBC.TimeToEscapeBounds;
-    ns = dynareOBC.NumberOfMax;
+    
+    Optimizer = dynareOBC.Optimizer;
 
     Tolerance = dynareOBC.Tolerance;
     if all( q >= -Tolerance ) && ~dynareOBC.FullHorizon
@@ -14,16 +15,12 @@ function y = SolveBoundsProblem( q, dynareOBC )
     end
     qScaled = q ./ Norm_q;
     
-    M = dynareOBC.MMatrix;
-    Ms = dynareOBC.MsMatrix;
-    omega = dynareOBC.Omega;
-
-    qsScaled = qScaled( dynareOBC.sIndices );
-    
     ParametricSolutionFound = dynareOBC.ParametricSolutionFound;
-    ssIndices = dynareOBC.ssIndices;
     
-    ZeroVecS = dynareOBC.ZeroVecS;
+    if sum( ParametricSolutionFound ) > 0    
+        qsScaled = qScaled( dynareOBC.sIndices );    
+        ssIndices = dynareOBC.ssIndices;
+    end
     
     if dynareOBC.FullHorizon
         InitTss = Ts;
@@ -33,14 +30,14 @@ function y = SolveBoundsProblem( q, dynareOBC )
     
     for Tss = InitTss : Ts
     
-        strTss = int2str( Tss );
-        
-        CssIndices = ssIndices{ Tss };
         CParametricSolutionFound = ParametricSolutionFound( Tss );
         
-        qssScaled = qsScaled( CssIndices );
-        
         if CParametricSolutionFound > 0
+            
+            strTss = int2str( Tss );
+            CssIndices = ssIndices{ Tss };
+            qssScaled = qsScaled( CssIndices );
+            
             try
                 if CParametricSolutionFound > 1
                     yScaled = feval( [ 'dynareOBCTempSolution' strTss '_mex' ], qssScaled );
@@ -51,19 +48,11 @@ function y = SolveBoundsProblem( q, dynareOBC )
                 warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
                 CParametricSolutionFound = 0;
             end
+            
         end
         
         if CParametricSolutionFound == 0
-            yScaled = sdpvar( Tss * ns, 1 );
-            alpha = sdpvar( 1, 1 );
-            z = binvar( Tss * ns, 1 );
             
-            Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qssScaled + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ) ];
-            Objective = -alpha;
-            Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
-            if Diagnostics.problem ~= 0
-                error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-            end
             yScaled = value( yScaled ) / value( alpha );
         end
         
