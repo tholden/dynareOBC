@@ -35,7 +35,26 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
             Architecture = 'FAILURE';
         end
         if DLLInstalled
-            RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );    
+            RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );
+        end
+    else
+        if exist( [ dynareOBCPath '/FastStart.mat' ], 'file' )
+            FastStartStruct = load( [ dynareOBCPath '/FastStart.mat' ] );
+            GlobalVariables = FastStartStruct.GlobalVariables;
+            GlobalVariablesList = fieldnames( GlobalVariables );
+            IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptest_use_mex', 'spkron_use_mex', 'MatlabPoolSize' };
+            for i = 1 : length( GlobalVariablesList )
+                GlobalVariableName = GlobalVariablesList{i};
+                if ismember( GlobalVariableName, IgnoreList )
+                    continue;
+                end
+                eval( [ 'global ' GlobalVariableName '; ' GlobalVariableName ' = GlobalVariables.' GlobalVariableName ';' ] );
+            end
+            PathsToAdd = FastStartStruct.FastStartStruct;
+            for i = 1 : length ( PathsToAdd )
+                addpath( PathsToAdd{i} );
+            end
+            return;
         end
     end
 
@@ -169,5 +188,19 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         CurrentDay = now; %#ok<NASGU>
         save( [ dynareOBCPath '/LastDependencyUpdate.mat' ], 'CurrentDay' );
     end
+
+    GlobalVariables = struct;
+    GlobalVariablesList = who( 'global' );
+    IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptest_use_mex', 'spkron_use_mex', 'MatlabPoolSize' };
+    for i = 1 : length( GlobalVariablesList )
+        GlobalVariableName = GlobalVariablesList{i};
+        if ismember( GlobalVariableName, IgnoreList )
+            continue;
+        end
+        eval( [ 'global ' GlobalVariableName '; GlobalVariables.' GlobalVariableName ' = ' GlobalVariableName ';' ] );
+    end
+    PathsToAdd = strsplit( path, ';' );
+    PathsToAdd = PathsToAdd( ~cellfun( @isempty, strfind( PathsToAdd, 'dynareOBC' ) ) );
+    save( [ dynareOBCPath '/FastStart.mat' ], GlobalVariables, PathsToAdd );
     
 end
