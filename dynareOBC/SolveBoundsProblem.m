@@ -1,14 +1,19 @@
 function y = SolveBoundsProblem( q, dynareOBC )
-    Ts = dynareOBC.TimeToEscapeBounds;
-    
-    Optimizer = dynareOBC.Optimizer;
 
     Tolerance = dynareOBC.Tolerance;
+    
     if all( q >= -Tolerance ) && ~dynareOBC.FullHorizon
         y = dynareOBC.ZeroVecS;
         return
     end
     
+    Ts = dynareOBC.TimeToEscapeBounds;
+    Optimizer = dynareOBC.Optimizer;
+    M = dynareOBC.MMatrix;
+    ZeroVecS = dynareOBC.ZeroVecS;
+    sIndices = dynareOBC.sIndices;
+    ssIndices = dynareOBC.ssIndices;
+
     Norm_q = norm( q, Inf );
     if Norm_q < Tolerance
         Norm_q = 1;
@@ -18,8 +23,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
     ParametricSolutionFound = dynareOBC.ParametricSolutionFound;
     
     if sum( ParametricSolutionFound ) > 0    
-        qsScaled = qScaled( dynareOBC.sIndices );    
-        ssIndices = dynareOBC.ssIndices;
+        qsScaled = qScaled( sIndices );    
     end
     
     if dynareOBC.FullHorizon
@@ -31,11 +35,11 @@ function y = SolveBoundsProblem( q, dynareOBC )
     for Tss = InitTss : Ts
     
         CParametricSolutionFound = ParametricSolutionFound( Tss );
+        CssIndices = ssIndices{ Tss };
         
         if CParametricSolutionFound > 0
             
             strTss = int2str( Tss );
-            CssIndices = ssIndices{ Tss };
             qssScaled = qsScaled( CssIndices );
             
             try
@@ -52,8 +56,10 @@ function y = SolveBoundsProblem( q, dynareOBC )
         end
         
         if CParametricSolutionFound == 0
-            
-            yScaled = value( yScaled ) / value( alpha );
+            OptOut = Optimizer{ [ qScaled; Tss ] };
+            yScaled = OptOut( 1 : ( end - 1 ), : );
+            alpha = OptOut( end );
+            yScaled = yScaled / alpha;
         end
         
         if all( isfinite( yScaled ) )
@@ -61,7 +67,7 @@ function y = SolveBoundsProblem( q, dynareOBC )
             y = ZeroVecS;
             y( CssIndices ) = yScaled;
             w = q + M * y;
-            if all( w >= -Tolerance ) && all( abs( w( dynareOBC.sIndices ) .* y ) <= Tolerance )
+            if all( w >= -Tolerance ) && all( abs( w( sIndices ) .* y ) <= Tolerance )
                 return;
             end
         end
