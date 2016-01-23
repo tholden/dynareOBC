@@ -389,19 +389,30 @@ function dynareOBC = InitialChecks( dynareOBC )
     SolverString = regexp( Diagnostics.info, '(?<=\()\w+(?=(\)|-))', 'match', 'once' );
     dynareOBC.MILPOptions.solver = [ '+' lower( SolverString ) ];
     
+    yalmip( 'clear' );
+    
     fprintf( 1, '\n' );
     disp( [ 'Using solver: ' SolverString ] );
     fprintf( 1, '\n' );
     
     % Form optimizer
     
-    qScaled = sdpvar( size( M, 1 ), 1 );
+    Input = sdpvar( size( M, 1 ) + 1, 1 ); % [ qScaled; Tss ]
+    Output = sdpvar( Ts * ns + 1, 1 );     % [ yScaled; alpha ]
+    
+    z = binvar( Ts * ns, 1 );
+    
+    qScaled = Input( 1 : ( end - 1 ), 1 );
     qsScaled = qScaled( dynareOBC.sIndices );
-    Tss = sdpvar( 1, 1 );
+    Tss = Input( end );
+
+    yScaled = Output( 1 : ( end - 1 ), 1 );
+    alpha = Output( end );
     
     zWeights = repmat( ( 1 : Ts )', ns, 1 );
     
     Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeights <= Tss, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
-    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, [ qScaled; Tss ], [ yScaled; alpha ] );
+    Objective = -alpha;
+    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, Input, Output );
     
 end
