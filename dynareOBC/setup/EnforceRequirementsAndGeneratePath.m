@@ -50,7 +50,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                 end
                 eval( [ 'global ' GlobalVariableName '; ' GlobalVariableName ' = GlobalVariables.' GlobalVariableName ';' ] );
             end
-            PathsToAdd = FastStartStruct.FastStartStruct;
+            PathsToAdd = FastStartStruct.PathsToAdd;
             for i = 1 : length ( PathsToAdd )
                 addpath( PathsToAdd{i} );
             end
