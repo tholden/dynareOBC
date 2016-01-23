@@ -26,12 +26,12 @@ function y = SolveBoundsProblem( q, dynareOBC )
     ZeroVecS = dynareOBC.ZeroVecS;
     
     if dynareOBC.FullHorizon
-        InitTs = Ts;
+        InitTss = Ts;
     else
-        InitTs = 1;
+        InitTss = 1;
     end
     
-    for Tss = InitTs : Ts
+    for Tss = InitTss : Ts
     
         strTss = int2str( Tss );
         
