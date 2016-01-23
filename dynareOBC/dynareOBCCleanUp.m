@@ -5,6 +5,10 @@ function dynareOBCCleanUp
 
     WarningState = warning( 'off', 'all' );
     try
+        clear mex; %#ok<CLMEX>
+    catch
+    end
+    try
         rmdir dynareOBCTemp* s
     catch
     end
