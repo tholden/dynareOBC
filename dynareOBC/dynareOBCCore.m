@@ -398,6 +398,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     [ oo_, dynareOBC ] = SimulationPreparation( M_, oo_, dynareOBC );
 
+    dynareOBC = orderfields( dynareOBC );
+
+    StoreGlobals( M_, options_, oo_, dynareOBC );
+    
     if dynareOBC.IRFPeriods > 0
         fprintf( 1, '\n' );
         disp( 'Simulating IRFs.' );

@@ -139,8 +139,4 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     end
     dynareOBC = FormOptimizer( dynareOBC );
     
-    dynareOBC = orderfields( dynareOBC );
-
-    StoreGlobals( M, options, oo, dynareOBC );
-    
 end
