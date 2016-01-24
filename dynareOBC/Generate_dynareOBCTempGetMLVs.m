@@ -26,7 +26,7 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     dynareOBC.MLVNames = {};
     MLVNameIndex = 0;
     
-    EmptyVarList = ( ~isfield( dynareOBC, 'VarList' ) ) || isempty( dynareOBC, 'VarList' );
+    EmptyVarList = ( ~isfield( dynareOBC, 'VarList' ) ) || isempty( dynareOBC.VarList );
     
     % iterate through the lines
     for i = 1 : length( FileLines )
