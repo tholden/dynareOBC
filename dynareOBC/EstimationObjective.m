@@ -4,9 +4,6 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
        
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
     RootMEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
-    % temporary work around for warning in dates object.
-    options.initial_period = [];
-    options.dataset = [];
     
     if nargin < 6
         SlowMode = true;

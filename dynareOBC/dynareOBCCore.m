@@ -404,9 +404,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         fprintf( 1, '\n' );
 
         if dynareOBC.SlowIRFs
-            [ oo_, dynareOBC ] = SlowIRFs( M_, options_, oo_, dynareOBC );
+            [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
         else
-            [ oo_, dynareOBC ] = FastIRFs( M_, options_, oo_, dynareOBC );
+            [ oo_, dynareOBC ] = FastIRFs( M_, oo_, dynareOBC );
         end
     end
 

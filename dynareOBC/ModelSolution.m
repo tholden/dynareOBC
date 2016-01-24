@@ -10,6 +10,10 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         fprintf( 1, '\n' );
     end
 
+    % temporary work around for warning in dates object.
+    options.initial_period = [];
+    options.dataset = [];
+    
     if FirstCall
         Info = 0;
     else
@@ -71,7 +75,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         disp( 'Saving NLMA parameters.' );
         fprintf( 1, '\n' );
     end
-    [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, options, oo.dr, [], 0, dynareOBC.Order, 0 );
+    [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, oo.dr, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
     
     if SlowMode

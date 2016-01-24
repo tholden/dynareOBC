@@ -1,6 +1,6 @@
-function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, FirstOrderSimulation, varargin )
+function y = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOrderSimulation, varargin )
    
-    RootConditionalCovariance = RetrieveConditionalCovariances( options, oo, dynareOBC, FirstOrderSimulation );
+    RootConditionalCovariance = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
     d = size( RootConditionalCovariance, 2 );
     if d == 0
         return;

@@ -1,4 +1,4 @@
-function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
+function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
 % derived from nlma_irf.m
     
     IRFOffsets = struct;
@@ -39,10 +39,6 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
     NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
     CholSigma_e = chol( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
-
-    % temporary work around for warning in dates object.
-    options.initial_period = [];
-    options.dataset = [];
     
     p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Please wait for around ', '. Progress: ', 'Computing base path for average IRFs. Completed in ' );
     

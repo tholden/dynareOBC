@@ -1,4 +1,4 @@
-function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
+function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
 % derived from nlma_irf.m
     
     IRFOffsets = struct;
@@ -22,7 +22,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
 	TempIRFSROffsets = zeros( length( dynareOBC.VariableSelect ), Ts );
     if dynareOBC.NumberOfMax > 0 && ( ~dynareOBC.NoCubature || dynareOBC.Global )
         Shock = zeros( M.exo_nbr, 1 );
-        y = FastIRFsInternal( Shock, 'the base path', pWeight, M, options, oo, dynareOBC );
+        y = FastIRFsInternal( Shock, 'the base path', pWeight, M, oo, dynareOBC );
 		for k = 1:length( dynareOBC.VariableSelect )
 			j = dynareOBC.VariableSelect( k );
 			TempIRFSROffsets( k, : ) = ( dynareOBC.MSubMatrices{ j }( 1:Ts, : ) * y )';
@@ -33,7 +33,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
         Shock = zeros( M.exo_nbr, 1 ); % Pre-allocate and reset irf shock sequence
         Shock(:,1) = dynareOBC.ShockScale * cs( M.exo_names_orig_ord, i );
         
-        [ y, TempIRFStruct ] = FastIRFsInternal( Shock, [ 'shock ' dynareOBC.Shocks{i} ], pWeight, M, options, oo, dynareOBC );
+        [ y, TempIRFStruct ] = FastIRFsInternal( Shock, [ 'shock ' dynareOBC.Shocks{i} ], pWeight, M, oo, dynareOBC );
         
         TempIRFs = TempIRFStruct.total - TempIRFLROffsets;
         
@@ -54,7 +54,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, options, oo, dynareOBC )
     
 end
 
-function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, options, oo, dynareOBC )
+function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, oo, dynareOBC )
     TempIRFStruct = ExpectedReturn( Shock, M, oo.dr, dynareOBC );
 
     UnconstrainedReturnPath = vec( TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
@@ -63,7 +63,7 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, 
 
 	if dynareOBC.NumberOfMax > 0
         if ~dynareOBC.NoCubature
-			y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
+			y = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
         end
 
         if dynareOBC.Global

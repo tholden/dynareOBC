@@ -1,6 +1,6 @@
 function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFullState, SkipMLVSimulation )
 
-    global M_ options_ oo_ dynareOBC_
+    global M_ oo_ dynareOBC_
         
     T = dynareOBC_.InternalIRFPeriods;
     Ts = dynareOBC_.TimeToEscapeBounds;
@@ -70,7 +70,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             call_back = @( x ) x.progress;
             call_back_arg = p;
         end
-        Simulation = LanMeyerGohdePrunedSimulation( M_, options_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, call_back, call_back_arg );
+        Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, call_back, call_back_arg );
         if ~isempty( p )
             p.stop;
         end
@@ -152,7 +152,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                     [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
 
                     if ~dynareOBC_.NoCubature
-                        y = PerformCubature( y, UnconstrainedReturnPath, options_, oo_, dynareOBC_, ReturnStruct.first );
+                        y = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnStruct.first );
                     end
 
                     if dynareOBC_.Global
@@ -232,9 +232,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
             CholSigma_e = chol( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
             SimulationFieldNames = [ StructFieldNames; { 'bound'; 'bound_offset'; 'total_with_bounds' } ];
-            % temporary work around for warning in dates object.
-            options_.initial_period = [];
-            options_.dataset = [];
         end
         
         ParamVec = M_.params;

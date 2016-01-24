@@ -1,5 +1,5 @@
-function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo, dynareOBC, ReturnPathFirstOrder )
-    if options.order == 1 || dynareOBC.FirstOrderConditionalCovariance
+function RootConditionalCovariance = RetrieveConditionalCovariances( oo, dynareOBC, ReturnPathFirstOrder )
+    if dynareOBC.FirstOrderConditionalCovariance
         RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
     else
         T = dynareOBC.InternalIRFPeriods;

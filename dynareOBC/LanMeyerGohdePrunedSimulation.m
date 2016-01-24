@@ -1,4 +1,4 @@
-function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, options, dr, shock_sequence, simul_length, pruning_order, use_cached_nlma_values, initial_state, call_back, call_back_arg )
+function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_sequence, simul_length, pruning_order, use_cached_nlma_values, initial_state, call_back, call_back_arg )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % pruning_abounds.m
@@ -160,7 +160,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, options, dr, sh
 % 3. Simulate third order pruned solutions
 %--------------------------------------------------------------------------
   if pruning_order==3
-     assert( options.pruning ~= 0, 'This function requires options_.pruning = true.' );
+     % assert( options.pruning ~= 0, 'This function requires options_.pruning = true.' );
      
            if use_cached_nlma_values
                ghs2_nlma = dr.ghs2_nlma;
