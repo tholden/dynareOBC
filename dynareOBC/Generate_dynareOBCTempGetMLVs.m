@@ -55,7 +55,7 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
         if ~isempty( regexp( FileLine, '^\s*dynareOBC', 'once' ) )
             continue;
         end
-        if ismember( VariableName, dynareOBC.VarList ) || ( EmptyVarList && ( ( ( dynareOBC.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) ) ) )
+        if ( ~EmptyVarList && ismember( [ VariableName '__' ], dynareOBC.VarList ) ) || ( EmptyVarList && ( ( ( dynareOBC.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) ) ) )
             % add the variable to our MLV array
             MLVNameIndex = MLVNameIndex + 1;
             FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', [ '$1$2\tMLVs(' int2str( MLVNameIndex ) ') = $1__;' ], 'lineanchors' );
