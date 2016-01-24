@@ -1,13 +1,5 @@
 function OpenPool
     global spkron_use_mex
-    try
-        rmpath( fileparts( which( 'szasbvar' ) ) );
-    catch
-    end
-    try
-        distcomp.feature( 'LocalUseMpiexec', false );
-    catch
-    end
     value_spkron_use_mex = spkron_use_mex;
     WarningState = warning( 'off', 'all' );
     OpenPoolInternal;
@@ -25,6 +17,7 @@ function OpenPoolInternal
     try
         GCPStruct = gcp( 'nocreate' );
         if isempty( GCPStruct )
+            PreOpen;
             parpool;
         end
         GCPStruct = gcp( 'nocreate' );
@@ -34,18 +27,10 @@ function OpenPoolInternal
     end
     try
         if matlabpool('size') == 0 %#ok<DPOOL>
+            PreOpen;
             matlabpool; %#ok<DPOOL>
         end
         MatlabPoolSize = matlabpool('size'); %#ok<DPOOL>
-        return
-    catch
-    end
-    try
-        matlabpool; %#ok<DPOOL> Really old Matlab don't have matlabpool('size')...
-        spmd
-            InternalMatlabPoolSize = numlabs;
-        end
-        MatlabPoolSize = InternalMatlabPoolSize{1};
         return
     catch
     end
@@ -56,4 +41,15 @@ function InitializeWorkers( value_spkron_use_mex )
     global spkron_use_mex
     spkron_use_mex = value_spkron_use_mex;
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
+end
+
+function PreOpen
+    try
+        rmpath( fileparts( which( 'szasbvar' ) ) );
+    catch
+    end
+    try
+        distcomp.feature( 'LocalUseMpiexec', false );
+    catch
+    end
 end
