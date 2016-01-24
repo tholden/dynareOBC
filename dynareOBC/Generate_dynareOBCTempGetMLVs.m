@@ -4,11 +4,11 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     % truncate the function after the last assignment to a MLV
     FileText = regexprep( FileText, '(?<=[\r\n]\s*)((?!(\w+__\s*=[^;]+;)).)*$', '' );
     % rename the function
-    FileText = regexprep( FileText, FileName, 'dynareOBCTempGetMLVs' );
-    % replace the function's return value with our MLV struct
+    FileText = strrep( FileText, FileName, 'dynareOBCTempGetMLVs' );
+    % replace the function's return value with our MLV array
     FileText = regexprep( FileText, '\[(\s*residual\s*)?(,)?(\s*g1\s*)?(,)?(\s*g2\s*)?(,)?(\s*g3\s*)?\]', 'MLVs' );
-    % replace the initialisation of residual, with initialisation of our MLV struct
-    FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = struct' );
+    % replace the initialisation of residual, with initialisation of our MLV array
+    FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = zeros( MLVNAMEIndex, 1 )' );
     
     % find the contemporaneous and lead variables
     ContemporaneousVariablesSearch = '\<x\(\s*it_\s*,\s*\d+\s*\)';
@@ -24,6 +24,10 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     FileLines = StringSplit( FileText, { '\r', '\n' } );
     % initialize dynareOBC_.MLVNames
     dynareOBC.MLVNames = {};
+    MLVNameIndex = 0;
+    
+    EmptyVarList = ( ~isfield( dynareOBC, 'VarList' ) ) || isempty( dynareOBC, 'VarList' );
+    
     % iterate through the lines
     for i = 1 : length( FileLines )
         FileLine = FileLines{i};
@@ -51,16 +55,19 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
         if ~isempty( regexp( FileLine, '^\s*dynareOBC', 'once' ) )
             continue;
         end
-        if ( isfield( dynareOBC, 'VarList' ) && ismember( VariableName, dynareOBC.VarList ) ) || ( ( dynareOBC.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) )
-            % add the variable to our MLV struct
-            FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', '$1$2\tMLVs.$1 = $1__;', 'lineanchors' );
+        if ismember( VariableName, dynareOBC.VarList ) || ( EmptyVarList && ( ( ( dynareOBC.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) ) ) )
+            % add the variable to our MLV array
+            MLVNameIndex = MLVNameIndex + 1;
+            FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', [ '$1$2\tMLVs(' int2str( MLVNameIndex ) ') = $1__;' ], 'lineanchors' );
             % and to dynareOBC_.MLVNames
-            dynareOBC.MLVNames{ end + 1 } = VariableName( 1:(end-2) );
+            dynareOBC.MLVNames{ MLVNameIndex } = VariableName( 1:(end-2) );
         end
     end
     % save the new file
     newmfile = fopen( 'dynareOBCTempGetMLVs.m', 'w' );
-    fprintf( newmfile, '%s', strjoin( FileLines, '\n' ) );
+    FileText = strjoin( FileLines, '\n' );
+    FileText = strrep( FileText, 'MLVNameIndex', int2str( MLVNameIndex ) );
+    fprintf( newmfile, '%s', FileText );
     fclose( newmfile );
     rehash;
     try
@@ -71,4 +78,3 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     end
     
 end
-

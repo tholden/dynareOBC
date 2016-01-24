@@ -307,21 +307,14 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                                 InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true );
                                 InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
                                 InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
-                                InnerMLVsWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                                NewMLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
                                 if NumberOfMax > 0
-                                    InnerMLVsWithoutBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                                    NewMLVValuesWithoutBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
                                 else
-                                    InnerMLVsWithoutBounds = InnerMLVsWithBounds;
+                                    NewMLVValuesWithoutBounds = NewMLVValuesWithBounds;
                                 end
-                                NewMLVWithBoundsValues = zeros( nMLV, 1 );
-                                NewMLVWithoutBoundsValues = zeros( nMLV, 1 );
-                                for i = 1 : nMLV
-                                    MLVName = MLVNames{i}; %#ok<PFBNS>
-                                    NewMLVWithBoundsValues( i ) = InnerMLVsWithBounds.( MLVName );
-                                    NewMLVWithoutBoundsValues( i ) = InnerMLVsWithoutBounds.( MLVName );
-                                end
-                                MLVValuesWithBounds = MLVValuesWithBounds + NewMLVWithBoundsValues * Weights( PointIndex );
-                                MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVWithoutBoundsValues * Weights( PointIndex );
+                                MLVValuesWithBounds = MLVValuesWithBounds + NewMLVValuesWithBounds * Weights( PointIndex );
+                                MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVValuesWithoutBounds * Weights( PointIndex );
                             catch Error
                                 warning( ParallelWarningState );
                                 rethrow( Error );
@@ -329,26 +322,21 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                             warning( ParallelWarningState );
                             WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
                         end
-                        for i = 1 : nMLV
-                            MLVName = MLVNames{i};
-                            Simulation.MLVsWithBounds.( MLVName )( t ) = MLVValuesWithBounds( i );
-                            Simulation.MLVsWithoutBounds.( MLVName )( t ) = MLVValuesWithoutBounds( i );
-                        end
                         if WarningGenerated
                             warning( 'dynareOBC:InnerMLVWarning', 'Warnings were generated in the inner loop responsible for evaluating expectations of model local variables.' );
                         end
                     else
-                        MLVValuesWithBoundsStruct = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                        MLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ] ), CurrentShock, ParamVec, SteadyState, 1 );
                         if dynareOBC_.NumberOfMax > 0
-                            MLVValuesWithoutBoundsStruct = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                            MLVValuesWithoutBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; FutureValues ] ), CurrentShock, ParamVec, SteadyState, 1 );
                         else
-                            MLVValuesWithoutBoundsStruct = MLVValuesWithBoundsStruct;
+                            MLVValuesWithoutBounds = MLVValuesWithBounds;
                         end
-                        for i = 1 : nMLV
-                            MLVName = MLVNames{i};
-                            Simulation.MLVsWithBounds.( MLVName )( t ) = MLVValuesWithBoundsStruct.( MLVName );
-                            Simulation.MLVsWithoutBounds.( MLVName )( t ) = MLVValuesWithoutBoundsStruct.( MLVName );
-                        end
+                    end
+                    for i = 1 : nMLV
+                        MLVName = MLVNames{i};
+                        Simulation.MLVsWithBounds.( MLVName )( t ) = MLVValuesWithBounds( i );
+                        Simulation.MLVsWithoutBounds.( MLVName )( t ) = MLVValuesWithoutBounds( i );
                     end
                 end
                 LagValuesWithBounds = CurrentValuesWithBounds;
