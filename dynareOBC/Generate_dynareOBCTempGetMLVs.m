@@ -8,7 +8,7 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     % replace the function's return value with our MLV array
     FileText = regexprep( FileText, '\[(\s*residual\s*)?(,)?(\s*g1\s*)?(,)?(\s*g2\s*)?(,)?(\s*g3\s*)?\]', 'MLVs' );
     % replace the initialisation of residual, with initialisation of our MLV array
-    FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = zeros( MLVNAMEIndex, 1 )' );
+    FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = zeros( MLVNameIndex, 1 )' );
     
     % find the contemporaneous and lead variables
     ContemporaneousVariablesSearch = '\<x\(\s*it_\s*,\s*\d+\s*\)';
