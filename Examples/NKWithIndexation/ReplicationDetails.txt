@@ -1,0 +1,13 @@
+This folder contains the files for the version of the Fernandez-Villaverde et al. (2012) model with price level targetting.
+The main MOD file to run is "NKAccuracy.mod".
+The other MOD files are from the Dynare transformation engine available from here: https://github.com/tholden/DynareTransformationEngine
+(The Dynare transformation engine assists in defining model local variables reducing model creation speed, and ensuring that all endogenous variables are meaningful over the whole real line.)
+
+Note that complete indexation is "hacked in" to the model without indexation by setting PI_STEADY=1 and then defining TRUE_PI = TRUE_PI_STEADY * PI.
+So, in the generated simulations, the value of "PI" is actually the value of true inflation divided by TRUE_PI_STEADY.
+
+Simulations for the paper were created by opening MATLAB, then running:
+
+dynareOBC NKAccuracy.mod orderoverride=1 SIMULATION_OPTIONS MLVSimulationMode=2 MLVSimulationSubSample=4 cubaturetolerance=0 compilesimulationcode sparse;
+
+where SIMULATION_OPTIONS are the simulation options of the run in question.

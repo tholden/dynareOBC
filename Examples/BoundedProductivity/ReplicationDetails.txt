@@ -1,0 +1,7 @@
+This folder contains the MOD file for the simple model of bounded productivity, for which an exact solution exists.
+
+Timings and simulations for the paper were created by opening MATLAB, then running:
+
+t1=java.lang.System.currentTimeMillis; save time; dynareOBC simple.mod orderoverride=2 SIMULATION_OPTIONS periodsofuncertainty=1 mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode; t2=java.lang.System.currentTimeMillis; load time; disp((t2-t1)/1000);
+
+where SIMULATION_OPTIONS are the simulation options of the run in question.
