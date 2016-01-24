@@ -386,8 +386,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( 1, M_, options_, oo_, dynareOBC );
 
-    dynareOBC = orderfields( dynareOBC );
-
     if Info ~= 0
         error( 'dynareOBC:FailedToSolve', 'dynareOBC failed to find a solution to the model.' );
     end
