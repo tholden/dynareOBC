@@ -8,6 +8,6 @@ So, in the generated simulations, the value of "PI" is actually the value of tru
 
 Simulations for the paper were created by opening MATLAB, then running:
 
-dynareOBC NKAccuracy.mod orderoverride=1 SIMULATION_OPTIONS MLVSimulationMode=2 MLVSimulationSubSample=4 cubaturetolerance=0 compilesimulationcode sparse;
+dynareOBC NKAccuracy.mod SIMULATION_OPTIONS MLVSimulationMode=2 MLVSimulationSubSample=4 cubaturetolerance=0 compilesimulationcode sparse;
 
 where SIMULATION_OPTIONS are the simulation options of the run in question.
