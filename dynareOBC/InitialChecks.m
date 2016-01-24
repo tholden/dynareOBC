@@ -368,8 +368,9 @@ function dynareOBC = InitialChecks( dynareOBC )
     yalmip( 'clear' );
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
     
-    % Do a test solver run to get the correct solver and check YALMIP is working
-    
+    fprintf( 1, '\n' );
+    disp( 'Discovering and testing the installed MILP solver.' );
+        
     M = dynareOBC.MMatrix;
     omega = dynareOBC.Omega;
     
@@ -391,36 +392,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     yalmip( 'clear' );
     
+    disp( [ 'Found working solver: ' SolverString ] );
     fprintf( 1, '\n' );
-    disp( [ 'Using solver: ' SolverString ] );
-    fprintf( 1, '\n' );
-    
-    % Form optimizer
-    
-    Input = sdpvar( size( M, 1 ) + 1, 1 ); % [ qScaled; Tss ]
-    Output = sdpvar( Ts * ns + 1, 1 );     % [ yScaled; alpha ]
-    
-    z = binvar( Ts * ns, 1 );
-    
-    qScaled = Input( 1 : ( end - 1 ), 1 );
-    qsScaled = qScaled( dynareOBC.sIndices );
-    Tss = Input( end );
-
-    yScaled = Output( 1 : ( end - 1 ), 1 );
-    alpha = Output( end );
-    
-    zWeights = repmat( ( 1 : Ts )', ns, 1 );
-    
-    Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeights <= Tss, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
-    Objective = -alpha;
-    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, Input, Output );
-    
-    yalmip( 'clear' );
-    
-    dynareOBC.LPOptions = [];
-    dynareOBC.MILPOptions = [];
-    if ~dynareOBC.Global
-        dynareOBC.QPOptions = [];
-    end
-    
+        
 end

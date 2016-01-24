@@ -9,7 +9,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
 
     ShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC.SimulationPeriods );
     
-    Simulation = SimulateModel( ShockSequence, M, options, oo, dynareOBC, true );
+    Simulation = SimulateModel( ShockSequence, true );
     
     oo.exo_simul = ShockSequence';
     oo.endo_simul = Simulation.total_with_bounds;

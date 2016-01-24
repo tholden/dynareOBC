@@ -46,7 +46,6 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
     yMatrix = y * CubatureWeights( 1, : );   
     yOriginal = y;
 
-    OpenPool;
     if ~isempty( p )
         p.progress;
     end
@@ -62,7 +61,7 @@ function y = PerformCubature( y, UnconstrainedReturnPath, options, oo, dynareOBC
             lastwarn( '' );
             WarningState = warning( 'off', 'all' );
             try
-                yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ), dynareOBC );
+                yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ) );
                 yMatrix = yMatrix + yNew * CubatureWeights( j, : );
             catch Error
                 warning( WarningState );

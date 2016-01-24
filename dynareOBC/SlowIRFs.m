@@ -44,11 +44,10 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
     options.initial_period = [];
     options.dataset = [];
     
-    OpenPool;
-    
     p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Please wait for around ', '. Progress: ', 'Computing base path for average IRFs. Completed in ' );
     
     WarningGenerated = false;
+    MLVSimulationMode = dynareOBC.MLVSimulationMode;
     parfor k = 1: Replications
         lastwarn( '' );
         WarningState = warning( 'off', 'all' );
@@ -57,12 +56,12 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
             TempShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, T ) * ( Replications > 1 );
             ShockSequence( :, :, k ) = TempShockSequence( :, IRFIndices );
 
-            Simulation = SimulateModel( TempShockSequence, M, options, oo, dynareOBC, false );
+            Simulation = SimulateModel( TempShockSequence, false );
 
             RunWithBoundsWithoutShock( :, :, k ) = Simulation.total_with_bounds( :, IRFIndices );
             RunWithoutBoundsWithoutShock( :, :, k ) = Simulation.total( :, IRFIndices );
             
-            if dynareOBC.MLVSimulationMode > 0
+            if MLVSimulationMode > 0
                 for i = 1 : nMLVIRFs
                     MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
                     MLVsWithBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
@@ -109,12 +108,12 @@ function [ oo, dynareOBC ] = SlowIRFs( M, options, oo, dynareOBC )
                 TempShockSequence = ShockSequence( :, :, k );
                 TempShockSequence( :, 1 ) = TempShockSequence( :, 1 ) + Shock;
 
-                Simulation = SimulateModel( TempShockSequence, M, options, oo, dynareOBC, false, StatePreShock( k ) );
+                Simulation = SimulateModel( TempShockSequence, false, StatePreShock( k ) );
 
                 RunWithBoundsWithShock( :, :, k ) = Simulation.total_with_bounds;
                 RunWithoutBoundsWithShock( :, :, k ) = Simulation.total;
                 
-                if dynareOBC.MLVSimulationMode > 0
+                if MLVSimulationMode > 0
                     for i = 1 : nMLVIRFs
                         MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
                         MLVsWithBoundsWithShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName );

@@ -29,7 +29,6 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( options, oo
         
         PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
         
-        OpenPool;
         parfor i = 1 : PeriodsOfUncertainty
             iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
             

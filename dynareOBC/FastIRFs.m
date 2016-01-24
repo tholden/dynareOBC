@@ -59,7 +59,7 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, 
 
     UnconstrainedReturnPath = vec( TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
     
-    y = SolveBoundsProblem( UnconstrainedReturnPath, dynareOBC );
+    y = SolveBoundsProblem( UnconstrainedReturnPath );
 
 	if dynareOBC.NumberOfMax > 0
         if ~dynareOBC.NoCubature

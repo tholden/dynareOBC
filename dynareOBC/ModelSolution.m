@@ -127,5 +127,14 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         
         dynareOBC = InitialChecks( dynareOBC );
     end
-        
+
+    if SlowMode
+        fprintf( 1, '\n' );
+        disp( 'Forming optimizer.' );
+        fprintf( 1, '\n' );
+    end
+    dynareOBC = FormOptimizer( dynareOBC );
+    
+    StoreGlobals( M, options, oo, dynareOBC );
+    
 end

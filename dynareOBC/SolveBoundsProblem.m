@@ -1,16 +1,18 @@
-function y = SolveBoundsProblem( q, dynareOBC )
+function y = SolveBoundsProblem( q )
 
-    Tolerance = dynareOBC.Tolerance;
+    global dynareOBC_
     
-    if all( q >= -Tolerance ) && ~dynareOBC.FullHorizon
-        y = dynareOBC.ZeroVecS;
+    Tolerance = dynareOBC_.Tolerance;
+    
+    if all( q >= -Tolerance ) && ~dynareOBC_.FullHorizon
+        y = dynareOBC_.ZeroVecS;
         return
     end
     
-    Ts = dynareOBC.TimeToEscapeBounds;
-    Optimizer = dynareOBC.Optimizer;
-    M = dynareOBC.MMatrix;
-    sIndices = dynareOBC.sIndices;
+    Ts = dynareOBC_.TimeToEscapeBounds;
+    Optimizer = dynareOBC_.Optimizer;
+    M = dynareOBC_.MMatrix;
+    sIndices = dynareOBC_.sIndices;
 
     Norm_q = norm( q, Inf );
     if Norm_q < Tolerance
@@ -18,15 +20,15 @@ function y = SolveBoundsProblem( q, dynareOBC )
     end
     qScaled = q ./ Norm_q;
     
-    ParametricSolutionFound = dynareOBC.ParametricSolutionFound;
+    ParametricSolutionFound = dynareOBC_.ParametricSolutionFound;
     
     if sum( ParametricSolutionFound ) > 0    
         qsScaled = qScaled( sIndices );    
-        ssIndices = dynareOBC.ssIndices;
-        ZeroVecS = dynareOBC.ZeroVecS;
+        ssIndices = dynareOBC_.ssIndices;
+        ZeroVecS = dynareOBC_.ZeroVecS;
     end
     
-    if dynareOBC.FullHorizon
+    if dynareOBC_.FullHorizon
         InitTss = Ts;
     else
         InitTss = 1;
