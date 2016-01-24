@@ -39,6 +39,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
     else
         if exist( [ dynareOBCPath '/FastStart.mat' ], 'file' )
+            fprintf( 1, '\n' );
+            disp( [ 'Restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
+            fprintf( 1, '\n' );
             FastStartStruct = load( [ dynareOBCPath '/FastStart.mat' ] );
             GlobalVariables = FastStartStruct.GlobalVariables;
             GlobalVariablesList = fieldnames( GlobalVariables );
