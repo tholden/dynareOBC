@@ -49,7 +49,7 @@ Troubleshooting
 If you have any strange errors, first try these steps:
 
  1. Delete all `.mat` files from the DynareOBC directory.
- 2. Delete all `.mex*` files from the DynareOBC\dynareOBC directory (but not from sub-directories).
+ 2. Delete all `.mex???` files from the `dynareOBC` sub-directory of your DynareOBC install (but not from its sub-directories).
  3. Follow the following steps to do a manual update:
     * Open a Git shell (e.g. by clicking on the gear icon from within the GitHub application).
     * Navigate to the directory in which you installed DynareOBC.
