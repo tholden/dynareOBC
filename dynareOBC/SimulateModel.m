@@ -241,18 +241,21 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         WarningIDs = { };
         WarningPeriods = { };
 
-        if dynareOBC_.MLVSimulationMode == 2
+        if dynareOBC_.MLVSimulationMode > 1
             if DisplayProgress
                 fprintf( '\nCalculating cubature points and weights.\n' );
             end
-            [ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC_.MLVSimulationAccuracy - 1 ) ) ) );
+            if dynareOBC_.MLVSimulationMode == 2
+                [ Weights, Points, NumPoints ] = fwtpts( NumberOfPositiveVarianceShocks, max( 0, ceil( 0.5 * ( dynareOBC_.MLVSimulationAccuracy - 1 ) ) ) );
+            else
+                NumPoints = 2^(1+dynareOBC_.MLVSimulationAccuracy)-1;
+                Weights = ones( 1, NumPoints ) * ( 1 / NumPoints );
+                Points = SobolSequence( NumberOfPositiveVarianceShocks, NumPoints );
+            end
+            FutureShocks = CholSigma_e' * Points;
             if DisplayProgress
                 fprintf( 'Found a cubature rule with %d points.\n', NumPoints );
             end
-            FutureShocks = CholSigma_e' * Points;
-        else
-            NumPoints = 2^(1+dynareOBC_.MLVSimulationAccuracy)-1;
-            Weights = ones( 1, NumPoints ) * ( 1 / NumPoints );
         end
         
         if DisplayProgress
@@ -283,11 +286,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                     CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
                     CurrentValuesWithoutBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
                     if dynareOBC_.MLVSimulationMode > 1
-                        if dynareOBC_.MLVSimulationMode == 3
-                            Points = SobolSequence( NumberOfPositiveVarianceShocks, NumPoints );
-                            FutureShocks = CholSigma_e' * Points;
-                        end
-
                         InnerInitialFullState = struct;
                         for i = 1 : length( SimulationFieldNames )
                             CurrentFieldName = SimulationFieldNames{i};
