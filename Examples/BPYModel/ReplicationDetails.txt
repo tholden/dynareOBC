@@ -1,0 +1,5 @@
+This folder contains the MOD files for the assorted variants of the Brendon, Paustian and Yates (2015) model that are considered in the paper.
+
+They can be run (e.g.) with:
+
+dynareOBC BPYModel.mod NoCubature
