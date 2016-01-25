@@ -24,6 +24,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'GlobalConstraintStrength', 1-eps );
     dynareOBC = SetDefaultOption( dynareOBC, 'GlobalViolationStrength', 1-eps );
     dynareOBC = SetDefaultOption( dynareOBC, 'IgnoreBoundFailures', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFsAroundZero', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'KappaPriorParameterA', 2-eps );
@@ -45,7 +46,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'Omega', 1000 * ( 1 + eps ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'Order', 2 );
     dynareOBC = SetDefaultOption( dynareOBC, 'OrderOverride', 0 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'PeriodsOfUncertainty', 32 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'PeriodsOfUncertainty', 16 );
     dynareOBC = SetDefaultOption( dynareOBC, 'PTest', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'QPSolver', 'qpoases' );
     dynareOBC = SetDefaultOption( dynareOBC, 'QuasiMonteCarloLevel', 0 );
@@ -63,7 +64,6 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 64 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', 1e-6 );
     dynareOBC = SetDefaultOption( dynareOBC, 'UseSimulationCode', true );
-    dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
     
     dynareOBC = orderfields( dynareOBC );
 end
