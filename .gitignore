@@ -19,6 +19,8 @@ $RECYCLE.BIN/
 *.mex*
 *.bak
 
+dynareOBCTemp*
+
 dynareOBC/codegen/
 dynareOBC/tbxmanager/
 dynareOBC/requirements/
