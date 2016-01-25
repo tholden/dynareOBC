@@ -272,7 +272,8 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
         CG = zeros( FTGC, 1 );
         CH = zeros( FTGC, 1 );
         
-        for i = 1 : FTGC
+        OpenPool;
+        parfor i = 1 : FTGC
 
             CF( i ) = GetC( F / rhoF( i ) );
             CG( i ) = GetC( G / rhoG( i ) );
