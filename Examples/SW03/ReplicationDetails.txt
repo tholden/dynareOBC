@@ -1,0 +1,5 @@
+This folder contains the MOD files for the Smets Wouters (2003) model, and a variant of it with price level targeting.
+
+They can be run (e.g.) with:
+
+dynareOBC SW03.mod timetoescapebounds=10 timetoreturntosteadystate=10 FeasibilityTestGridSize=10
