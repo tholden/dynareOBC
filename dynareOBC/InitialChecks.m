@@ -105,12 +105,14 @@ function dynareOBC = InitialChecks( dynareOBC )
         tmp = ones( 1, ns ) * Ts;
         CellMs = mat2cell( Ms, tmp, tmp );
         
-        LBInfiniteSCondition = false;
-        UBInfiniteSCondition = false;
-
-        for i = 1 : FTGC
-            for j = 1 : FTGC
-                rhoFC = rhoF( i );
+        [ iValues, jValues ] = meshgrid( 1:FTGC, 1:FTGC );
+        LoopOutput = zeros( numel( iValues ), 5 );
+        
+        try
+            parfor GridIndex = 1 : numel( iValues )
+                i = iValues( GridIndex );
+                j = jValues( GridIndex );
+                rhoFC = rhoF( i ); %#ok<*PFBNS>
                 rhoGC = rhoG( j );
                 CFC = CF( i );
                 CHC = CH( i );
@@ -145,11 +147,11 @@ function dynareOBC = InitialChecks( dynareOBC )
                         LBMinimand1 = LBMinimand1 + CellMs{ ConVar, ConShock } * yC + InvIMinusHdPsC( Ts:-1:1 ) * yInfC - DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
                         LBMinimand2 = LBMinimand2 + ( dNsC( dSumIndices ) - DC / DenomFG * rhoFCv( end ) * rhoFCv * rhoGCv' ) * yC + ( InvIMinusFdNsC( 1 ) - InvIMinusFdNsC( 1:Ts ) ) * yInfC + InvIMinusHd0sC * yInfC - DC * rhoFCv * rhoFCv( end ) * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
                         LBMinimand3 = LBMinimand3 - CFC * DenomF * rhoFC * rhoFCv( end ) * ( 1 - rhoFCv( end ) ) * Norm_d0C - CFC * rhoFC * rhoFCv( end ) * NormInvIMinusF * Norm_d0C * yInfC + InvIMinusFdNsC( 1 ) * yInfC + InvIMinusHd0sC * yInfC - DC * rhoFC * rhoFCv( end ) * rhoFCv( end ) * rhoGC * DenomFG_G;
-                        
+
                         UBMinimand = UBMinimand + CellMs{ ConVar, ConShock } * yC + CHC * Norm_d0C * DenomG * rhoGCv( Ts:-1:1 ) + DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G;
                     end
-                    LBConstraints = [ LBConstraints; LBMinimand1; LBMinimand2; LBMinimand3 ]; %#ok<AGROW>
-                    UBConstraints = [ UBConstraints; UBMinimand ]; %#ok<AGROW>
+                    LBConstraints = [ LBConstraints; LBMinimand1; LBMinimand2; LBMinimand3 ];
+                    UBConstraints = [ UBConstraints; UBMinimand ];
                 end
                 Diagnostics = optimize( [ LBConstraints0, varsigma <= LBConstraints ], Objective, dynareOBC.LPOptions );
 
@@ -162,23 +164,11 @@ function dynareOBC = InitialChecks( dynareOBC )
                 vy = max( 0, vy ./ max( 1, max( vy ) ) );
                 assign( y, vy );
                 new_varsigma = min( value( LBConstraints ) );
-                
+
                 if new_varsigma > 0
-                    fprintf( 1, '\n' );
-                    disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T.' );
-                    disp( 'This is a necessary condition for there to always be a solution.' );
-                    disp( 'phiF:' );
-                    disp( rhoFC );
-                    disp( 'phiG:' );
-                    disp( rhoGC );
-                    disp( 'varsigma lower bound, bounds:' );
-                    disp( [ new_varsigma vvarsigma ] );
-                    fprintf( 1, '\n' );
-                    LBInfiniteSCondition = true;
-                    break;
-                end
-                
-                if ~SkipUpperBound
+                    LoopOutput( GridIndex, : ) = [ 1, rhoFC, rhoGC, new_varsigma, vvarsigma ];
+                    error( 'dynareOBC:EarlyExitParFor', 'This is not a real error.' );
+                elseif ~SkipUpperBound
                     Diagnostics = optimize( [ UBConstraints0, varsigma <= UBConstraints ], Objective, dynareOBC.LPOptions );
 
                     if Diagnostics.problem ~= 0
@@ -186,27 +176,48 @@ function dynareOBC = InitialChecks( dynareOBC )
                     end
 
                     if value( varsigma ) <= 0
-                        fprintf( 1, '\n' );
-                        disp( 'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.' );
-                        disp( 'The model does not always posess a solution.' );
-                        disp( 'phiF:' );
-                        disp( rhoFC );
-                        disp( 'phiG:' );
-                        disp( rhoGC );
-                        disp( 'varsigma upper bound:' );
-                        disp( value( varsigma ) );
-                        fprintf( 1, '\n' );
-                        UBInfiniteSCondition = true;
-                        break;
+                        LoopOutput( GridIndex, : ) = [ 2, rhoFC, rhoGC, value( varsigma ), 0 ];
+                    error( 'dynareOBC:EarlyExitParFor', 'This is not a real error.' );
                     end
                 end
             end
-            if LBInfiniteSCondition || UBInfiniteSCondition
-                break;
+        catch Error
+            if ~strcmp( Error.identifier, 'dynareOBC:EarlyExitParFor' )
+                rethrow( Error );
             end
         end
+        
+        LBInfiniteSCondition = any( LoopOutput( :, 1 ) == 1 );
+        UBInfiniteSCondition = any( LoopOutput( :, 1 ) == 2 );
 
-        if ~LBInfiniteSCondition && ~UBInfiniteSCondition
+        if LBInfiniteSCondition && UBInfiniteSCondition
+            fprintf( 1, '\n' );
+            disp( 'M apparently passed both the sufficient condition to be an S matrix for all sufficiently large T, abd the sufficient condition to not be an S matrix for all sufficiently large T!' );
+            disp( 'This should never happen.' );
+            fprintf( 1, '\n' );
+        elseif LBInfiniteSCondition
+            fprintf( 1, '\n' );
+            disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T.' );
+            disp( 'This is a necessary condition for there to always be a solution.' );
+            disp( 'phiF:' );
+            disp( LoopOutput( 1 ) );
+            disp( 'phiG:' );
+            disp( LoopOutput( 2 ) );
+            disp( 'varsigma lower bound, bounds:' );
+            disp( [ LoopOutput( 3 ) LoopOutput( 4 ) ] );
+            fprintf( 1, '\n' );
+        elseif UBInfiniteSCondition
+            fprintf( 1, '\n' );
+            disp( 'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.' );
+            disp( 'The model does not always posess a solution.' );
+            disp( 'phiF:' );
+            disp( LoopOutput( 1 ) );
+            disp( 'phiG:' );
+            disp( LoopOutput( 2 ) );
+            disp( 'varsigma upper bound:' );
+            disp( LoopOutput( 3 ) );
+            fprintf( 1, '\n' );
+        else
             fprintf( 1, '\n' );
             disp( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.' );
             disp( 'To discover the properties of M, try reruning with higher TimeToEscapeBounds.' );
