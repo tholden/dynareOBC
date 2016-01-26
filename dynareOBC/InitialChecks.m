@@ -74,6 +74,8 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n' );
         SkipUpperBound = true;
     end
+    
+    yalmip( 'clear' );
 
     if isempty( dynareOBC.d0s )
         disp( 'Skipping tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
@@ -110,6 +112,12 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         try
             parfor GridIndex = 1 : numel( iValues )
+
+                varsigma = sdpvar( 1, 1 );
+                y = sdpvar( Ts * ns, 1 );
+
+                Objective = -varsigma;
+
                 i = iValues( GridIndex );
                 j = jValues( GridIndex );
                 rhoFC = rhoF( i ); %#ok<*PFBNS>
@@ -177,7 +185,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
                     if value( varsigma ) <= 0
                         LoopOutput( GridIndex, : ) = [ 2, rhoFC, rhoGC, value( varsigma ), 0 ];
-                    error( 'dynareOBC:EarlyExitParFor', 'This is not a real error.' );
+                        error( 'dynareOBC:EarlyExitParFor', 'This is not a real error.' );
                     end
                 end
             end
