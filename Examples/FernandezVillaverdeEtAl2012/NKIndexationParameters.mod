@@ -1,9 +1,10 @@
-parameters beta_STEADY, A_STEADY, Sg_STEADY, PI_STEADY, varepsilon, theta, phi_pi, phi_y, rho_a, rho_b, rho_g, sigma_g, sigma_b, sigma_a, sigma_m, vartheta, psi;
+parameters beta_STEADY, A_STEADY, Sg_STEADY, PI_STEADY, TRUE_PI_STEADY, varepsilon, theta, phi_pi, phi_y, rho_a, rho_b, rho_g, sigma_g, sigma_b, sigma_a, sigma_m, vartheta, psi;
 
 beta_STEADY = 0.994;
 Sg_STEADY = 0.2;
 A_STEADY = 1;
-PI_STEADY = 1.005;
+TRUE_PI_STEADY = 1.005;
+PI_STEADY = 1.000;
 psi = 1;
 vartheta = 1;
 theta = 0.75;
