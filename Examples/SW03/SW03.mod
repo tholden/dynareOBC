@@ -169,7 +169,7 @@ var er       = 1;	//Monetary Policy Shock
 
 end;
 
-initval;
+steady_state_model;
 
 mcf = 0;
 zcapf = 0;

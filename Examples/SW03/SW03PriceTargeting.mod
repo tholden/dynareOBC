@@ -1,3 +1,23 @@
+// Derived from:
+
+	//**************************************************************************
+	// A New Comparative Approach to Macroeconomic Modeling and Policy Analysis
+	//
+	// Volker Wieland, Tobias Cwik, Gernot J. Mueller, Sebastian Schmidt and 
+	// Maik Wolters
+	//
+	// Working Paper, 2009
+	//**************************************************************************
+
+	// Model: EA_SW03
+
+	// Further references:
+	// Smets, F., and R. Wouters. 2003. "An Estimated Stochastic Dynamic General Equilibrium Model of the Euro Area."
+	// Journal of the European Economic Association 1(5), pp. 1123-1175.
+
+	// Last edited: 10/09/07 by S. Schmidt
+
+
 var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     rf mc zcap rk k pk mu c inve y lab pinf w empl ww effort pinf4 r dr 
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 

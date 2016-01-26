@@ -134,7 +134,7 @@ var ew;
 stderr 0.244391601233500;
 end;
 
-initval;
+steady_state_model;
 	labobs = -0.1030651669858076;
 	robs = 1.589136485993303;
 	pinfobs = 0.8179822205381722;
@@ -175,13 +175,6 @@ initval;
 	sw = 0;
 	kpf = 0;
 	kp = 0;
-	ea = 0;
-	eb = 0;
-	eg = 0;
-	eqs = 0;
-	em = 0;
-	epinf = 0;
-	ew = 0;
 end;
 
 steady;
