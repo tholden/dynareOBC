@@ -42,7 +42,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
             fprintf( 1, '\n' );
             disp( [ 'Restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
             fprintf( 1, '\n' );
-            FastStartStruct = load( [ dynareOBCPath '/FastStart.mat' ] );
+            FastStartStruct = load( [ dynareOBCPath filesep 'FastStart.mat' ] );
             GlobalVariables = FastStartStruct.GlobalVariables;
             GlobalVariablesList = fieldnames( GlobalVariables );
             IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptest_use_mex', 'spkron_use_mex', 'MatlabPoolSize' };
