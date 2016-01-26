@@ -99,11 +99,6 @@ function dynareOBC = InitialChecks( dynareOBC )
         CH = dynareOBC.CH;
         D = dynareOBC.D;
 
-        yInf = sdpvar( ns, 1 );
-
-        LBConstraints0 = [ 0 <= y, y <= 1, 0 <= yInf, yInf <= 1 ];
-        UBConstraints0 = [ 0 <= y, y <= 1 ];
-
         tmp = ones( 1, ns ) * Ts;
         CellMs = mat2cell( Ms, tmp, tmp );
         
@@ -115,6 +110,10 @@ function dynareOBC = InitialChecks( dynareOBC )
 
                 varsigma = sdpvar( 1, 1 );
                 y = sdpvar( Ts * ns, 1 );
+                yInf = sdpvar( ns, 1 );
+
+                LBConstraints0 = [ 0 <= y, y <= 1, 0 <= yInf, yInf <= 1 ];
+                UBConstraints0 = [ 0 <= y, y <= 1 ];
 
                 Objective = -varsigma;
 
