@@ -116,11 +116,7 @@ model;
                
           p = p(-1) + pinf - STEADY_STATE( pinf );
                
-	      r =  max( -conster, crpi*(1-crr)*p
-               +cry*(1-crr)*(y-yf)     
-               +crdy*(y-yf-y(-1)+yf(-1))
-               +crr*r(-1)
-               +ms  );
+	      r =  max( -conster, (1-crr)*(p+y)+crr*r(-1)+ms );
 	      a = crhoa*a(-1)  + ea;
 	      b = crhob*b(-1) + eb;
 	      g = crhog*(g(-1)) + eg + cgy*ea;
