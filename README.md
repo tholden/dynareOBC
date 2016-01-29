@@ -120,7 +120,7 @@ Note:
          exactly as well.
           * `CubatureSmoothing=FLOAT_IN_UNIT_INTERVAL` (default: `0`)
                When this is larger than 0, and less than 1, DynareOBC takes a weighted combination of the results of cubature rules
-               of adjacent degrees. Large numbers imply larger weights on lower degree rules. A good setting is often 0.2-0.5.
+               of adjacent degrees. Large numbers imply larger weights on lower degree rules. A good setting is often 0.01 - 0.3.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
          Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum
          eigenvalue are "pruned" to zero, in order to increase integration speed.
