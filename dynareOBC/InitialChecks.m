@@ -105,7 +105,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         [ iValues, jValues ] = meshgrid( 1:FTGC, 1:FTGC );
         
-        LoopOutput = [];
+        LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds.' );
         
         try
             parfor GridIndex = 1 : numel( iValues )
@@ -175,11 +175,10 @@ function dynareOBC = InitialChecks( dynareOBC )
                 new_varsigma = min( value( LBConstraints ) );
 
                 if new_varsigma > 0
-                    ErrStruct = struct;
-                    ErrStruct.identifier =  'dynareOBC:EarlyExitParFor';
-                    ErrStruct.message = 'This is not a real error.';
-                    ErrStruct.LoopOutput = [ rhoFC, rhoGC, new_varsigma, vvarsigma ];
-                    error( ErrStruct );
+                    error( 'dynareOBC:EarlyExitParFor', ...
+                        'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T.\nThis is a necessary condition for there to always be a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma lower bound, bounds:\n%.15g %.15g\n', ...
+                        rhoFC, rhoGC, new_varsigma, vvarsigma ...
+                    );
                 elseif ~SkipUpperBound
                     Diagnostics = optimize( [ UBConstraints0, varsigma <= UBConstraints ], Objective, dynareOBC.LPOptions );
 
@@ -188,52 +187,22 @@ function dynareOBC = InitialChecks( dynareOBC )
                     end
 
                     if value( varsigma ) <= 0
-                        ErrStruct = struct;
-                        ErrStruct.identifier =  'dynareOBC:EarlyExitParFor';
-                        ErrStruct.message = 'This is not a real error.';
-                        ErrStruct.LoopOutput = [ rhoFC, rhoGC, value( varsigma ) ];
-                        error( ErrStruct );
+                        error( 'dynareOBC:EarlyExitParFor', ...
+                            'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.\nThe model does not always possess a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma upper bound:\n%.15g\n', ...
+                            rhoFC, rhoGC, value( varsigma ) ...
+                        );
                     end
                 end
             end
         catch ErrStruct
             if strcmp( ErrStruct.identifier, 'dynareOBC:EarlyExitParFor' )
-                LoopOutput = ErrStruct.LoopOutput;
+                LoopMessage = ErrStruct.message;
             else
                 rethrow( ErrStruct );
             end
         end
         
-        if isempty( LoopOutput )
-            fprintf( 1, '\n' );
-            disp( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.' );
-            disp( 'To discover the properties of M, try reruning with higher TimeToEscapeBounds.' );
-            fprintf( 1, '\n' );
-        else
-            if numel( LoopOutput ) > 3
-                fprintf( 1, '\n' );
-                disp( 'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T.' );
-                disp( 'This is a necessary condition for there to always be a solution.' );
-                disp( 'phiF:' );
-                disp( LoopOutput( 1 ) );
-                disp( 'phiG:' );
-                disp( LoopOutput( 2 ) );
-                disp( 'varsigma lower bound, bounds:' );
-                disp( [ LoopOutput( 3 ) LoopOutput( 4 ) ] );
-                fprintf( 1, '\n' );
-            else
-                fprintf( 1, '\n' );
-                disp( 'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.' );
-                disp( 'The model does not always posess a solution.' );
-                disp( 'phiF:' );
-                disp( LoopOutput( 1 ) );
-                disp( 'phiG:' );
-                disp( LoopOutput( 2 ) );
-                disp( 'varsigma upper bound:' );
-                disp( LoopOutput( 3 ) );
-                fprintf( 1, '\n' );
-            end
-        end
+        fprintf( 1, '\n%s\n', LoopMessage );
     end
     
     global ptest_use_mex
