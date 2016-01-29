@@ -286,6 +286,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     disp( 'Generating the final mod file.' );
     fprintf( 1, '\n' );
     
+    dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.FullTest ] );
     dynareOBC.InternalIRFPeriods = max( dynareOBC.TimeToEscapeBounds, dynareOBC.TimeToReturnToSteadyState );
     if ~dynareOBC.SlowIRFs
         dynareOBC.InternalIRFPeriods = max( dynareOBC.InternalIRFPeriods, dynareOBC.IRFPeriods );
