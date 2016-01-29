@@ -105,7 +105,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         [ iValues, jValues ] = meshgrid( 1:FTGC, 1:FTGC );
         
-        LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds.' );
+        LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds.\n' );
         
         try
             parfor GridIndex = 1 : numel( iValues )
