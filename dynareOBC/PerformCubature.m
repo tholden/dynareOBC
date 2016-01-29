@@ -50,7 +50,7 @@ function y = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOr
         p.progress;
     end
     
-    HyperParams = [ 0; 0; 0.5 ];
+    HyperParams = [ 0; 0; 1 ];
     
     Tolerance = dynareOBC.Tolerance;
     
