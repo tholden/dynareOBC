@@ -21,14 +21,13 @@ Requirements
 Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone. Note that while DynareOBC should work on all platforms, it has
    been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
- * The MATLAB Optimization toolbox, or an alternative non-linear minimisation routine, unless the `NoStatisticalCubature` option
-   is set. (To use an alternative routine, you must set `dynareOBC.FMinFunctor`.)
  * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
 
 Recommended additional installations:
  * MATLAB R2015a or later.
  * The MATLAB Parallel toolbox, or a fully compatible clone.
- * The MATLAB Optimization toolbox, or a fully compatible clone.
+ * The MATLAB Optimization toolbox, or an alternative non-linear least squares routine, which is required for the experimental 
+   `global` option. (To use an alternative routine, you must set `dynareOBC.FSolveFunctor`.)
  * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, a free compiler meeting
    these requirements is available from: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx . Alternatively, on
    Windows, with MATLAB r2015b, another free compiler meeting these requirements (which uses much less disk space) is available
@@ -115,20 +114,13 @@ Note:
          If this is non-zero, then Gaussian cubature is not used (so the MaxCubatureDegree option is ignored). Instead, quasi-
          Monte Carlo integration with at most `2^(1+INTEGER) - 1` samples is used.
     * `MaxCubatureDegree=INTEGER` (default: `7`)
-         Specifies the degree of polynomial which will be integrated exactly in the highest degree, cubature performed.
-         Values above `51` are treated as equal to `51`.
-          * `KappaPriorParameterA=FLOAT` (default: `1`)
-               With statistical cubature, the rate of decay of the standard deviation of the error is given a prior proportional
-               to `1 - ( 1 - kappa^(a*T) ) ^ b`. This setting gives the `a` parameter of this density. With high values of this parameter,
-               convergence will be slower when integrating polynomials, but accuracy ought to be increased for non-differentiable
-               functions. Setting this to `0` disables the prior on kappa.
-          * `KappaPriorParameterB=FLOAT` (default: `1`)
-               With statistical cubature, the rate of decay of the standard deviation of the error is given a prior proportional
-               to `1 - ( 1 - kappa^(a*T) ) ^ b`. This setting gives the `b` parameter of this density. With high values of this parameter,
-               the prior is flatter for large kappa, reducing the bias in these cases. Setting this to `0` disables the prior on kappa.
-          * `NoStatisticalCubature`
-               Disables the statistical improvement to the cubature algorithm, which aggregates results of cubature at different
-               degrees. Will generally reduce accuracy, but increase speed.
+         Specifies the degree of polynomial which will be integrated exactly in the highest degree, cubature performed.  Values
+         above `51` are treated as equal to `51`. Note that setting `CubatureSmoothing>0` will reduce the effective maximum accuracy
+         by 2 degrees. Setting `CubatureTolerance>0` may also mean that the result does not integrate the stated degree polynomials
+         exactly as well.
+          * `CubatureSmoothing=FLOAT_IN_UNIT_INTERVAL` (default: `0`)
+               When this is larger than 0, and less than 1, DynareOBC takes a weighted combination of the results of cubature rules
+               of adjacent degrees. Large numbers imply larger weights on lower degree rules. A good setting is often 0.2-0.5.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
          Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum
          eigenvalue are "pruned" to zero, in order to increase integration speed.
@@ -174,25 +166,6 @@ Note:
          Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC,
          at the cost of some slight reduction in accuracy for certain models with small coefficients.
 
- * **EXPERIMENTAL settings for controlling accuracy**
-    * `Global`
-         Without this, DynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
-         bound, but they do not take into account the risk of hitting the bound in the far future. With the global option,
-         DynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that under the global
-         solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the
-         response ignoring the bound entirely.
-          * `GlobalConstraintStrength=FLOAT` (default: `1`)
-               Specifies the weight on the squared deviation of the equality constraint in the global objective problem. Larger values
-               imply that the long-run path is very close to the short-run one, but can produce excess volatility in simulations.
-          * `GlobalViolationStrength=FLOAT` (default: `1`)
-               Specifies the weight on the squared violations of the inequality constraints in the global objective problem. Larger
-               values reduce violations, but can produce bias or excess volatility in simulations.
-          * `Resume`
-               Resumes an interrupted solution iteration, when using global.
-          * `QPSolver=STRING` (default: automatically selected based on the detected solvers)
-               Specifies the solver to use for the quadratic programming problem that is solved by the global algorithm. To find out
-               what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
-
  * **For controlling and performing model diagnostics**
     * `FeasibilityTestGridSize=INTEGER` (default: `0`)
          Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for feasibility
@@ -216,7 +189,27 @@ Note:
     * `ShockScale=FLOAT` (default: `1`)
          Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller than one standard deviation.
 
- * **For controlling estimation**
+ * **EXPERIMENTAL settings for controlling accuracy**
+    * `Global`
+         Without this, DynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
+         bound, but they do not take into account the risk of hitting the bound in the far future. With the global option,
+         DynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that under the global
+         solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the
+         response ignoring the bound entirely.
+         Requires the MATLAB Optimization toolbox, or an alternative non-linear least squares routine, see above for details.
+          * `GlobalConstraintStrength=FLOAT` (default: `1`)
+               Specifies the weight on the squared deviation of the equality constraint in the global objective problem. Larger values
+               imply that the long-run path is very close to the short-run one, but can produce excess volatility in simulations.
+          * `GlobalViolationStrength=FLOAT` (default: `1`)
+               Specifies the weight on the squared violations of the inequality constraints in the global objective problem. Larger
+               values reduce violations, but can produce bias or excess volatility in simulations.
+          * `Resume`
+               Resumes an interrupted solution iteration, when using global.
+          * `QPSolver=STRING` (default: automatically selected based on the detected solvers)
+               Specifies the solver to use for the quadratic programming problem that is solved by the global algorithm. To find out
+               what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
+
+ * **EXPERIMENTAL settings for controlling estimation**
     * `Estimation`
          Enables estimation of the model's parameters
           * `EstimationDataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
