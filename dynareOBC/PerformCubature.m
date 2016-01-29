@@ -50,9 +50,9 @@ function y = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOr
         p.progress;
     end
     
-    HyperParams = [ 0; 0; 1 ];
-    
     Tolerance = dynareOBC.Tolerance;
+    
+    HyperParams = [ 0; 0; 1 - Tolerance ];
     
     WarningGenerated = false;
     for i = 1 : CubatureOrder
