@@ -31,3 +31,4 @@ catch Err
     disp( Err.message );
 end
 warning( WarningState );
+writetable( Norms, 'Results.xlsx' );
