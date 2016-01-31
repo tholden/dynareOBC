@@ -104,7 +104,7 @@ Note:
          This will severely compromise accuracy.
 
  * **For controlling cubature**
-    * `PeriodsOfUncertainty=INTEGER` (default: `32`)
+    * `PeriodsOfUncertainty=INTEGER` (default: `16`)
 	     Controls the number of periods of uncertainty over which we integrate. Since a cosine windowing function is used, the
 	     effective number of periods of uncertainty is roughly half this number.
     * `FastCubature`
