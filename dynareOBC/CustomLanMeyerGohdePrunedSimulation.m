@@ -109,7 +109,7 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
     simulations.first=simulation_first(dr.inv_order_var,2:simul_length_p1);
     simulations.constant=dr.ys;
     simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
-    simulations.total=simulations.first+repmat(simulations.constant,[1 simul_length]);
+    simulations.total=bsxfun( @plus, simulations.first, simulations.constant );
     return;
   end
 
@@ -133,8 +133,7 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
             simulations.second = simulation_second(dr.inv_order_var,2:simul_length_p1);
             simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
             simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
-            simulations.total = simulations.second + simulations.first...
-                                 +repmat( simulations.constant,[1 simul_length] );
+            simulations.total = bsxfun( @plus, simulations.second + simulations.first, simulations.constant );
                              
                              return;
   end
@@ -170,8 +169,7 @@ function simulations = CustomLanMeyerGohdePrunedSimulation( nstatic, nspred, end
            simulations.third = simulation_third(dr.inv_order_var,2:simul_length_p1);
            simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
            simulations.total = coder.nullcopy( zeros( length( dr.ys ), simul_length ) );
-           simulations.total = simulations.third +simulations.first_sigma_2 + simulations.second + simulations.first...
-                               +repmat( simulations.constant,[1 simul_length] );
+           simulations.total = bsxfun( @plus, simulations.third +simulations.first_sigma_2 + simulations.second + simulations.first, simulations.constant );
                            
                            return;
       

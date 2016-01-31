@@ -114,7 +114,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
     end
     simulations.first=simulation_first(dr.inv_order_var,2:simul_length_p1);
     simulations.constant=dr.ys;
-    simulations.total=simulations.first+repmat(simulations.constant,[1 simul_length]);    
+    simulations.total=bsxfun( @plus, simulations.first, simulations.constant );
   end
 
 %--------------------------------------------------------------------------
@@ -152,8 +152,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
             simulations.first = simulation_first(dr.inv_order_var,2:simul_length_p1);
             simulations.second = simulation_second(dr.inv_order_var,2:simul_length_p1);
             simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
-            simulations.total = simulations.second + simulations.first...
-                                 +repmat( simulations.constant,[1 simul_length] );
+            simulations.total = bsxfun( @plus, simulations.second + simulations.first, simulations.constant );
   end
 
 %--------------------------------------------------------------------------
@@ -210,6 +209,5 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
            simulations.first_sigma_2 = simulation_first_sigma_2(dr.inv_order_var,2:simul_length_p1);
            simulations.third = simulation_third(dr.inv_order_var,2:simul_length_p1);
            simulations.constant = dr.ys + 0.5*ghs2_nlma(dr.inv_order_var,:);
-           simulations.total = simulations.third +simulations.first_sigma_2 + simulations.second + simulations.first...
-                               +repmat( simulations.constant,[1 simul_length] );
+           simulations.total = bsxfun( @plus, simulations.third +simulations.first_sigma_2 + simulations.second + simulations.first, simulations.constant );
   end
