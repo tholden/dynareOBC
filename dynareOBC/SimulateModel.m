@@ -142,8 +142,8 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
                 CurrentStateWithoutBound.bound = yNext;
 
-                ReturnStruct = ExpectedReturn( CurrentStateWithoutBound, M_, oo_.dr, dynareOBC_ );
-                ReturnPath = ReturnStruct.total;        
+                ReturnPathStruct = ExpectedReturn( CurrentStateWithoutBound, M_, oo_.dr, dynareOBC_ );
+                ReturnPath = ReturnPathStruct.total;        
 
                 for i = [ dynareOBC_.VarIndices_ZeroLowerBounded dynareOBC_.VarIndices_ZeroLowerBoundedLongRun ]
                     ReturnPath( i, : ) = ReturnPath( i, : ) - ( dynareOBC_.MSubMatrices{ i }( 1:T, : ) * yNext )';
@@ -156,7 +156,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                     [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
 
                     if ~dynareOBC_.NoCubature
-                        y = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnStruct.first );
+                        y = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
                     end
 
                     if dynareOBC_.Global
