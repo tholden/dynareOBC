@@ -20,15 +20,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     dynareOBC.OriginalSigma = Sigma;
 
     Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || dynareOBC.Global );
-    if ( dynareOBC.Order == 1 ) || Order2VarianceRequired
+    if ( dynareOBC.Order == 1 ) || Order2VarianceRequired || dynareOBC.SimulateOnGridPoints
         dynareOBC.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
-    end
-    if dynareOBC.SimulateOnGridPoints
-        [ A1i, A1j, A1s ] = find( A1 );
-        [ B1i, B1j, B1s ] = find( B1 );
-        A1WithExo = sparse( A1i, A1j, A1s, nEndo + nExo, nEndo + nExo );
-        B1WithExo = sparse( [ B1i; ((nEndo+1):(nEndo+nExo))' ], [ B1j; (1:nExo)' ], [ B1s; ones( nExo, 1 ) ], nEndo + nExo, nExo );
-        dynareOBC.GridVar = SparseLyapunovSymm( A1WithExo, B1WithExo*Sigma*B1WithExo' );
     end
     if ( dynareOBC.Order == 1 ) && dynareOBC.Global
         dynareOBC.UnconditionalVarXi = Sigma;
