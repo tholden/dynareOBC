@@ -35,7 +35,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
     if nargin < 4
         SkipMLVSimulation = false;
     end
-    if dynareOBC_.SimulateOnGridPoints
+    if nargin < 3 && dynareOBC_.SimulateOnGridPoints
         error( 'dynareOBC:NotImplemented', 'Not yet implemented.' );
     else
         if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation )
