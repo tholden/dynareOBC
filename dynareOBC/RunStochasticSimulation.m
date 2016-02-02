@@ -7,7 +7,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     CholSigma_e = chol( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
 
     if dynareOBC.SimulateOnGridPoints
-        [U,D] = schur( dynareOBC_.Var_z1, 'complex' );
+        [U,D] = schur( dynareOBC.Var_z1, 'complex' );
         % assert( isreal( U ) );
         diagD = diag( D );
         % assert( isreal( diagD ) );
