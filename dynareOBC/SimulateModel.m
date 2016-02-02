@@ -15,6 +15,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         Mean_z = dynareOBC_.Mean_z;
         dr = oo_.dr;
         nEndo = M_.endo_nbr;
+        nState = sum( dynareOBC_.SelectState );
         InitialFullState = struct;
         InitialFullState.bound = zeros( Ts * ns, 1 );
         InitialFullState.bound_offset = zeros( nEndo, 1 );
@@ -25,8 +26,8 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             InitialFullState.second = Mean_z( nEndo + dr.inv_order_var );
             InitialFullState.total = InitialFullState.total + InitialFullState.second;
             if dynareOBC_.Order > 2
-                InitialFullState.first_sigma_2 = Mean_z( 2 * nEndo + nEndo * nEndo + dr.inv_order_var );
-                InitialFullState.third = Mean_z( 3 * nEndo + nEndo * nEndo + dr.inv_order_var );
+                InitialFullState.first_sigma_2 = Mean_z( 2 * nEndo + nState * nState + dr.inv_order_var );
+                InitialFullState.third = Mean_z( 3 * nEndo + nState * nState + dr.inv_order_var );
                 InitialFullState.total = InitialFullState.total + InitialFullState.first_sigma_2 + InitialFullState.third;
             end
         end
