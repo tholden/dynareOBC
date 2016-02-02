@@ -10,7 +10,7 @@ dynareOBC NKPriceTargeting.mod timetoescapebounds=200 FeasibilityTestGridSize=10
 
 To run the accuracy tests run:
 
-dynareOBC NKIndexationAccuracy.mod SIMULATION_OPTIONS MLVSimulationMode=2 MLVSimulationSubSample=4 cubaturetolerance=0 compilesimulationcode sparse timetosolveparametrically=8 SimulateOnGridPoints;
+dynareOBC NKIndexationAccuracy.mod SIMULATION_OPTIONS MLVSimulationMode=2 cubaturetolerance=0 compilesimulationcode sparse timetosolveparametrically=8 SimulateOnGridPoints;
 
 where SIMULATION_OPTIONS are the simulation options of the run in question.
 
