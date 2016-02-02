@@ -62,4 +62,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 3, irf = 0, periods = 1100 ) error01, error02, error03, error04;
+stoch_simul( order = 3, irf = 0, periods = 1023 ) error01, error02, error03, error04;
