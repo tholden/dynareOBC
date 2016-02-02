@@ -285,6 +285,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
 
         Simulation.total_with_bounds = Simulation.total + Simulation.bound_offset;        
+        SimulationFieldNames = [ StructFieldNames; { 'bound'; 'bound_offset'; 'total_with_bounds' } ];
     end
     
     %% Common
@@ -306,7 +307,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_.Sigma_e) == 0 ) );
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
             CholSigma_e = chol( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
-            SimulationFieldNames = [ StructFieldNames; { 'bound'; 'bound_offset'; 'total_with_bounds' } ];
         end
         
         ParamVec = M_.params;
