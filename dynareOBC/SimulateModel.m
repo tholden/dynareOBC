@@ -35,44 +35,48 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
     if nargin < 4
         SkipMLVSimulation = false;
     end
-    if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation )
-        try
-            if dynareOBC_.Estimation
-                if dynareOBC_.Sparse
-                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo_.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+    if dynareOBC_.SimulateOnGridPoints
+        error( 'dynareOBC:NotImplemented', 'Not yet implemented.' );
+    else
+        if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation )
+            try
+                if dynareOBC_.Estimation
+                    if dynareOBC_.Sparse
+                        Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo_.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+                    else
+                        Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo_.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
+                    end
                 else
-                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo_.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
+                    if dynareOBC_.Sparse
+                        Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
+                    else
+                        Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
+                    end
                 end
-            else
-                if dynareOBC_.Sparse
-                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
-                else
-                    Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( ShockSequence, int32( SimulationLength ), InitialFullState );
-                end
+            catch Error
+                warning( 'dynareOBC:ErrorInCompiledCustomLanMeyerGohdePrunedSimulation',  [ 'Not using the compiled version of the simulation code due to the error: ' Error.message ] );
+                Simulation = [];
             end
-        catch Error
-            warning( 'dynareOBC:ErrorInCompiledCustomLanMeyerGohdePrunedSimulation',  [ 'Not using the compiled version of the simulation code due to the error: ' Error.message ] );
+        else
             Simulation = [];
         end
-    else
-        Simulation = [];
-    end
-    if isempty( Simulation )
-        if DisplayProgress
-            p = TimedProgressBar( SimulationLength * dynareOBC_.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
-        else
-            p = [];
-        end
-        if isempty( p )
-            call_back = @( x ) x;
-            call_back_arg = 0;
-        else
-            call_back = @( x ) x.progress;
-            call_back_arg = p;
-        end
-        Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, call_back, call_back_arg );
-        if ~isempty( p )
-            p.stop;
+        if isempty( Simulation )
+            if DisplayProgress
+                p = TimedProgressBar( SimulationLength * dynareOBC_.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
+            else
+                p = [];
+            end
+            if isempty( p )
+                call_back = @( x ) x;
+                call_back_arg = 0;
+            else
+                call_back = @( x ) x.progress;
+                call_back_arg = p;
+            end
+            Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, call_back, call_back_arg );
+            if ~isempty( p )
+                p.stop;
+            end
         end
     end
     % StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );

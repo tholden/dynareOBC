@@ -226,6 +226,10 @@ Note:
                a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
 
  * **Advanced options**
+    * `SimulateOnGridPoints`
+         Rather than running an actual simulation, causes DynareOBC to draw QMC points from a Gaussian approximation to the
+         stationary distribution of the model. The mean for the Gaussian approximation is accurate to the same order as the
+         order of approximation, but the variance used is always only accurate to a first order approximation.
     * `CompileSimulationCode`
          Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
     * `OrderOverride=1|2|3`

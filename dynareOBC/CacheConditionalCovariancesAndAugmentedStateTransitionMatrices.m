@@ -5,6 +5,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     ns = dynareOBC.NumberOfMax;
     SelectState = dynareOBC.SelectState;
     nEndo = M.endo_nbr;
+    nExo = M.exo_nbr;
     
     dynareOBC.MaxCubatureDimension = min( dynareOBC.MaxCubatureDimension, TM1 * ns );
     
@@ -21,6 +22,13 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || dynareOBC.Global );
     if ( dynareOBC.Order == 1 ) || Order2VarianceRequired
         dynareOBC.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
+    end
+    if dynareOBC.SimulateOnGridPoints
+        [ A1i, A1j, A1s ] = find( A1 );
+        [ B1i, B1j, B1s ] = find( B1 );
+        A1WithExo = sparse( A1i, A1j, A1s, nEndo + nExo, nEndo + nExo );
+        B1WithExo = sparse( [ B1i; ((nEndo+1):(nEndo+nExo))' ], [ B1j; (1:nExo)' ], [ B1s; ones( nExo, 1 ) ], nEndo + nExo, nExo );
+        dynareOBC.GridVar = SparseLyapunovSymm( A1WithExo, B1WithExo*Sigma*B1WithExo' );
     end
     if ( dynareOBC.Order == 1 ) && dynareOBC.Global
         dynareOBC.UnconditionalVarXi = Sigma;
@@ -63,7 +71,6 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % pre-calculations common to finding the state transition when dynareOBC_.Order > 1 and to finding the conditional covariance when Order2ConditionalCovariance=true
         
         nState = length( SelectState );
-        nExo = M.exo_nbr;
         nExo2 = nExo * nExo;
         
         % Idx1 =  1:nEndo;
@@ -71,7 +78,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % Idx3 = (2*nEndo+1):LengthZ2;
         
         % A2( Idx1, Idx1 ) = A1;
-        [ A2i, A2j, A2s ] = spfind( A1 );
+        [ A2i, A2j, A2s ] = find( A1 );
         
         % A2( Idx2, Idx2 ) = A1;
         A2i = [ A2i; A2i + nEndo ];

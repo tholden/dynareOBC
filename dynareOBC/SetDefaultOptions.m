@@ -50,6 +50,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'SaveMacro', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SaveMacroName', [ dynareOBC.BaseFileName '-macroexp.mod' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'ShockScale', 1-eps );
+    dynareOBC = SetDefaultOption( dynareOBC, 'SimulateOnGridPoints', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulationDrop', 100 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulationPeriods', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'SlowIRFs', false );
