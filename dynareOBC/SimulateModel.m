@@ -12,22 +12,26 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         DisplayProgress = true;
     end
     if nargin < 3
-        EndoZeroVec = zeros( M_.endo_nbr, 1 );
+        Mean_z = dynareOBC_.Mean_z;
+        dr = oo_.dr;
+        nEndo = M_.endo_nbr;
         InitialFullState = struct;
         InitialFullState.bound = zeros( Ts * ns, 1 );
-        InitialFullState.bound_offset = EndoZeroVec;
-        InitialFullState.first = EndoZeroVec;
-        if dynareOBC_.Order >= 3
-            InitialFullState.first_sigma_2 = EndoZeroVec;
-        end
-        if dynareOBC_.Order >= 2
-            InitialFullState.second = EndoZeroVec;
-            if dynareOBC_.Order >= 3
-                InitialFullState.third = EndoZeroVec;
+        InitialFullState.bound_offset = zeros( nEndo, 1 );
+        InitialFullState.first = Mean_z( dr.inv_order_var );
+        InitialFullState.total = bsxfun( @plus, InitialFullState.first, dynareOBC.Constant );
+
+        if dynareOBC.Order > 1
+            InitialFullState.second = Mean_z( nEndo + dr.inv_order_var );
+            InitialFullState.total = InitialFullState.total + InitialFullState.second;
+            if dynareOBC.Order > 2
+                InitialFullState.first_sigma_2 = Mean_z( 2 * nEndo + nEndo * nEndo + dr.inv_order_var );
+                InitialFullState.third = Mean_z( 3 * nEndo + nEndo * nEndo + dr.inv_order_var );
+                InitialFullState.total = InitialFullState.total + InitialFullState.first_sigma_2 + InitialFullState.third;
             end
         end
-        InitialFullState.total = EndoZeroVec;
-        InitialFullState.total_with_bounds = EndoZeroVec;
+        InitialFullState.total_with_bounds = InitialFullState.total;
+        InitialFullState = orderfields( InitialFullState );
     else
         DisplayProgress = false;
         InitialFullState = orderfields( InitialFullState );
