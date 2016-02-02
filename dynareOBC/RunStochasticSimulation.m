@@ -16,9 +16,9 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
         RootVar_z1 = U( :, IDv ) * diag( RootD( IDv ) );
         NumberOfPositiveVarianceVariables = size( RootVar_z1, 2 );
         QMCDraws = SobolSequence( NumberOfPositiveVarianceVariables + NumberOfPositiveVarianceShocks, dynareOBC.SimulationPeriods );
-        ShockSequence = zeros( max( dynareOBC.OriginalNumVarExo, nEndo ), 2 * dynareOBC.SimulationPeriods );
+        ShockSequence = zeros( max( dynareOBC.OriginalNumVarExo, M.endo_nbr ), 2 * dynareOBC.SimulationPeriods );
         Z1Offsets = RootVar_z1 * QMCDraws( 1 : NumberOfPositiveVarianceVariables, : );
-        ShockSequence( 1:nEndo, 1:2:end ) = Z1Offsets( oo.dr.inv_order_var, : );
+        ShockSequence( 1:M.endo_nbr, 1:2:end ) = Z1Offsets( oo.dr.inv_order_var, : );
         ShockSequence( PositiveVarianceShocks, 2:2:end ) = CholSigma_e' * QMCDraws( (NumberOfPositiveVarianceVariables+1):end, : );
     else
         ShockSequence = zeros( dynareOBC.OriginalNumVarExo, dynareOBC.SimulationPeriods );

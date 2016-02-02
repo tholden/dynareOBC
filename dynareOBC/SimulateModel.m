@@ -58,9 +58,9 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 Simulation.( CurrentFieldName ) = repmat( Simulation.( CurrentFieldName ), 1, SimulationLength );
             end
         end        
-        Simulation.first( 1:2:end, : ) = Simulation.first( 1:2:end, : ) + GridOffsets;
-        Simulation.total( 1:2:end, : ) = Simulation.total( 1:2:end, : ) + GridOffsets;
-        Simulation.total_with_bounds( 1:2:end, : ) = Simulation.total_with_bounds( 1:2:end, : ) + GridOffsets;
+        Simulation.first( :, 1:2:end ) = Simulation.first( :, 1:2:end ) + GridOffsets;
+        Simulation.total( :, 1:2:end ) = Simulation.total( :, 1:2:end ) + GridOffsets;
+        Simulation.total_with_bounds( :, 1:2:end ) = Simulation.total_with_bounds( :, 1:2:end ) + GridOffsets;
 
         if DisplayProgress
             p = TimedProgressBar( SimulationLength, 50, 'Computing simulations on grid points. Please wait for around ', '. Progress: ', 'Computing simulations on grid points. Completed in ' );
@@ -68,7 +68,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             p = [];
         end
         WarningGenerated = false;
-        GridSimulations = struct;
+        GridSimulations = cell( NumberOfGridPoints, 1 );
         parfor k = 1 : NumberOfGridPoints
             lastwarn( '' );
             ParallelWarningState = warning( 'off', 'all' );
@@ -80,7 +80,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 ); %#ok<PFBNS>
                     end
                 end
-                GridSimulations( k ) = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, false );
+                GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, false );
             catch Error
                 warning( ParallelWarningState );
                 rethrow( Error );
@@ -91,6 +91,9 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 p.progress;
             end
         end
+        if ~isempty( p )
+            p.stop;
+        end
         if WarningGenerated
             warning( 'dynareOBC:InnerGridWarning', 'Warnings were generated in the inner loop responsible for computing simulations on grid points.' );
         end
@@ -98,7 +101,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             for i = 1 : length( SimulationFieldNames )
                 CurrentFieldName = SimulationFieldNames{i};
                 if ~strcmp( CurrentFieldName, 'constant' )
-                    Simulation.( CurrentFieldName )( :, 2 * k ) = GridSimulations( k ).( CurrentFieldName );
+                    Simulation.( CurrentFieldName )( :, 2 * k ) = GridSimulations{ k }.( CurrentFieldName );
                 end
             end
         end
