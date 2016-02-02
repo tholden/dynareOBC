@@ -1,7 +1,7 @@
 function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC )
 
     % derived from simult.m
-    PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) == 0 ) );
+    PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) < eps ) );
     NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
     ShockSequence = zeros( dynareOBC.OriginalNumVarExo, dynareOBC.SimulationPeriods );
