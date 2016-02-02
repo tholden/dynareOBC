@@ -40,8 +40,69 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         SkipMLVSimulation = false;
     end
     if nargin < 3 && dynareOBC_.SimulateOnGridPoints
-        error( 'dynareOBC:NotImplemented', 'Not yet implemented.' );
+        %% Grid simulation
+        dynareOBC_.MLVSimulationSubSample = 2;
+        
+        GridOffsets = ShockSequence( 1:nEndo, 1:2:end );
+        nExoOriginal = dynareOBC_.OriginalNumVarExo;
+        ShockSequence( (nExoOriginal+1):end, : ) = [];
+        ShockSequence( :, 1:2:end ) = 0;
+        TempShockSequence = ShockSequence( :, 2:2:end );
+        NumberOfGridPoints = size( GridOffsets, 2 );
+        Simulation = InitialFullState;
+        SimulationFieldNames = fieldnames( Simulation );
+        for i = 1 : length( SimulationFieldNames )
+            CurrentFieldName = SimulationFieldNames{ i };
+            if ~strcmp( CurrentFieldName, 'constant' )
+                Simulation.( CurrentFieldName ) = repmat( Simulation.( CurrentFieldName ), 1, SimulationLength );
+            end
+        end        
+        Simulation.first( 1:2:end, : ) = Simulation.first( 1:2:end, : ) + GridOffsets;
+        Simulation.total( 1:2:end, : ) = Simulation.total( 1:2:end, : ) + GridOffsets;
+        Simulation.total_with_bounds( 1:2:end, : ) = Simulation.total_with_bounds( 1:2:end, : ) + GridOffsets;
+
+        if DisplayProgress
+            p = TimedProgressBar( SimulationLength, 50, 'Computing simulations on grid points. Please wait for around ', '. Progress: ', 'Computing simulations on grid points. Completed in ' );
+        else
+            p = [];
+        end
+        WarningGenerated = false;
+        GridSimulations = struct;
+        parfor k = 1 : NumberOfGridPoints
+            lastwarn( '' );
+            ParallelWarningState = warning( 'off', 'all' );
+            try
+                InnerInitialFullState = struct;
+                for i = 1 : length( SimulationFieldNames )
+                    CurrentFieldName = SimulationFieldNames{i};
+                    if ~strcmp( CurrentFieldName, 'constant' )
+                        InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 ); %#ok<PFBNS>
+                    end
+                end
+                GridSimulations( k ) = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, false );
+            catch Error
+                warning( ParallelWarningState );
+                rethrow( Error );
+            end
+            warning( ParallelWarningState );
+            WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
+            if ~isempty( p )
+                p.progress;
+            end
+        end
+        if WarningGenerated
+            warning( 'dynareOBC:InnerGridWarning', 'Warnings were generated in the inner loop responsible for computing simulations on grid points.' );
+        end
+        for k = 1 : NumberOfGridPoints
+            for i = 1 : length( SimulationFieldNames )
+                CurrentFieldName = SimulationFieldNames{i};
+                if ~strcmp( CurrentFieldName, 'constant' )
+                    Simulation.( CurrentFieldName )( :, 2 * k ) = GridSimulations( k ).( CurrentFieldName );
+                end
+            end
+        end
     else
+        %% Standard simulation
         if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation )
             try
                 if dynareOBC_.Estimation
@@ -82,145 +143,147 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 p.stop;
             end
         end
-    end
-    % StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
-    StructFieldNames = fieldnames( Simulation );
-    
-    SelectState = dynareOBC_.SelectState;
         
-    Simulation.bound = zeros( Ts * ns, SimulationLength );
-    Simulation.bound_offset = zeros( M_.endo_nbr, SimulationLength );
-    
-    ghx = oo_.dr.ghx;
-    pMat = dynareOBC_.pMat;
-    
-    if dynareOBC_.NumberOfMax > 0
-        y = InitialFullState.bound;
-        
-        BoundOffsetOriginalOrder = InitialFullState.bound_offset;
-        BoundOffsetDROrder = BoundOffsetOriginalOrder( oo_.dr.order_var );
-        
-        Reshaped_y = reshape( y, Ts, ns );
-        yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
-        yNext = yNext(:);
-                
-        BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
-        BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
-        
-        if dynareOBC_.Global
-            TM2 = T - 2;
-            pM1 = ( -1 : TM2 )';
-            PeriodsOfUncertainty = dynareOBC_.PeriodsOfUncertainty;
-            pWeight = 0.5 * ( 1 + cos( pi * max( 0, min( PeriodsOfUncertainty, pM1 ) ) / PeriodsOfUncertainty ) );
-        end
+        % StructFieldNames = setdiff( fieldnames( Simulation ), 'constant' );
+        StructFieldNames = fieldnames( Simulation );
 
-        Shock = zeros( M_.exo_nbr, 1 );
+        SelectState = dynareOBC_.SelectState;
 
-        OrderText = dynareOBC_.OrderText;
+        Simulation.bound = zeros( Ts * ns, SimulationLength );
+        Simulation.bound_offset = zeros( M_.endo_nbr, SimulationLength );
 
-        % SimulationLengthString = int2str( SimulationLength );
+        ghx = oo_.dr.ghx;
+        pMat = dynareOBC_.pMat;
 
-        CurrentStateWithoutBound = struct;
-        
-        WarningMessages = { };
-        WarningIDs = { };
-        WarningPeriods = { };
+        if dynareOBC_.NumberOfMax > 0
+            y = InitialFullState.bound;
 
-        if DisplayProgress
-            p = TimedProgressBar( SimulationLength, 50, 'Computing simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
-        else
-            p = [];
-        end
-        for t = 1 : SimulationLength
-            lastwarn( '' );
-            WarningState = warning( 'off', 'all' );
-            try
-                Shock( :, 1 ) = ShockSequence( :, t );
+            BoundOffsetOriginalOrder = InitialFullState.bound_offset;
+            BoundOffsetDROrder = BoundOffsetOriginalOrder( oo_.dr.order_var );
 
-                for i = 1 : length( StructFieldNames )
-                    CurrentFieldName = StructFieldNames{ i };
-                    if ~strcmp( CurrentFieldName, 'constant' ) && ~strcmp( CurrentFieldName, 'bound' )
-                        CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
-                    end
-                end
-                CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
-                CurrentStateWithoutBound.bound = yNext;
+            Reshaped_y = reshape( y, Ts, ns );
+            yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
+            yNext = yNext(:);
 
-                ReturnPathStruct = ExpectedReturn( CurrentStateWithoutBound, M_, oo_.dr, dynareOBC_ );
-                ReturnPath = ReturnPathStruct.total;        
+            BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
+            BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
 
-                for i = [ dynareOBC_.VarIndices_ZeroLowerBounded dynareOBC_.VarIndices_ZeroLowerBoundedLongRun ]
-                    ReturnPath( i, : ) = ReturnPath( i, : ) - ( dynareOBC_.MSubMatrices{ i }( 1:T, : ) * yNext )';
-                end
-
-                UnconstrainedReturnPath = vec( ReturnPath( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
-
-                try
-                    y = SolveBoundsProblem( UnconstrainedReturnPath );
-                    [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
-
-                    if ~dynareOBC_.NoCubature
-                        y = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
-                    end
-
-                    if dynareOBC_.Global
-                        y = SolveGlobalBoundsProblem( y, yNext, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC_ );
-                    end
-                catch Error
-                    if dynareOBC_.Estimation || dynareOBC_.IgnoreBoundFailures
-                        y = yNext;
-                        warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to Estimation or IgnoreBoundFailures option.' ] );
-                    else
-                        rethrow( Error );
-                    end
-                end
-
-                BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( y - yNext );
-                BoundOffsetOriginalOrder = BoundOffsetDROrder( oo_.dr.inv_order_var, : );
-
-                Reshaped_y = reshape( y, Ts, ns );
-                yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
-                yNext = yNext(:);
-        
-                BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
-                BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
-                
-                Simulation.bound( :, t ) = y;
-                Simulation.bound_offset( :, t ) = BoundOffsetOriginalOrder;
-            catch Error
-                warning( WarningState );
-                rethrow( Error );
-            end
-            
-            [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
-
-            warning( WarningState );
-            
-            if ~isempty( p )
-                p.progress;
+            if dynareOBC_.Global
+                TM2 = T - 2;
+                pM1 = ( -1 : TM2 )';
+                PeriodsOfUncertainty = dynareOBC_.PeriodsOfUncertainty;
+                pWeight = 0.5 * ( 1 + cos( pi * max( 0, min( PeriodsOfUncertainty, pM1 ) ) / PeriodsOfUncertainty ) );
             end
 
-        end
-        if ~isempty( p )
-            p.stop;
-        end
-        
-        for i = 1 : length( WarningIDs )
-            WarningString = sprintf( 'The following warning(s) was generated during simulation in periods: %d', WarningPeriods{i}( 1 ) );
-            for j = 2 : length( WarningPeriods{i} )
-                WarningString = sprintf( '%s, %d', WarningString, WarningPeriods{i}( j ) );
-            end
-            warning( 'dynareOBC:NestedWarning', '%s', WarningString );
-            if ~isempty( WarningIDs{i} )
-                warning( WarningIDs{i}, WarningMessages{i} );
+            Shock = zeros( M_.exo_nbr, 1 );
+
+            OrderText = dynareOBC_.OrderText;
+
+            % SimulationLengthString = int2str( SimulationLength );
+
+            CurrentStateWithoutBound = struct;
+
+            WarningMessages = { };
+            WarningIDs = { };
+            WarningPeriods = { };
+
+            if DisplayProgress
+                p = TimedProgressBar( SimulationLength, 50, 'Computing simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
             else
-                warning( WarningMessages{i} );
+                p = [];
+            end
+            for t = 1 : SimulationLength
+                lastwarn( '' );
+                WarningState = warning( 'off', 'all' );
+                try
+                    Shock( :, 1 ) = ShockSequence( :, t );
+
+                    for i = 1 : length( StructFieldNames )
+                        CurrentFieldName = StructFieldNames{ i };
+                        if ~strcmp( CurrentFieldName, 'constant' ) && ~strcmp( CurrentFieldName, 'bound' )
+                            CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
+                        end
+                    end
+                    CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
+                    CurrentStateWithoutBound.bound = yNext;
+
+                    ReturnPathStruct = ExpectedReturn( CurrentStateWithoutBound, M_, oo_.dr, dynareOBC_ );
+                    ReturnPath = ReturnPathStruct.total;        
+
+                    for i = [ dynareOBC_.VarIndices_ZeroLowerBounded dynareOBC_.VarIndices_ZeroLowerBoundedLongRun ]
+                        ReturnPath( i, : ) = ReturnPath( i, : ) - ( dynareOBC_.MSubMatrices{ i }( 1:T, : ) * yNext )';
+                    end
+
+                    UnconstrainedReturnPath = vec( ReturnPath( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
+
+                    try
+                        y = SolveBoundsProblem( UnconstrainedReturnPath );
+                        [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
+
+                        if ~dynareOBC_.NoCubature
+                            y = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
+                        end
+
+                        if dynareOBC_.Global
+                            y = SolveGlobalBoundsProblem( y, yNext, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC_ );
+                        end
+                    catch Error
+                        if dynareOBC_.Estimation || dynareOBC_.IgnoreBoundFailures
+                            y = yNext;
+                            warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to Estimation or IgnoreBoundFailures option.' ] );
+                        else
+                            rethrow( Error );
+                        end
+                    end
+
+                    BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( y - yNext );
+                    BoundOffsetOriginalOrder = BoundOffsetDROrder( oo_.dr.inv_order_var, : );
+
+                    Reshaped_y = reshape( y, Ts, ns );
+                    yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
+                    yNext = yNext(:);
+
+                    BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
+                    BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
+
+                    Simulation.bound( :, t ) = y;
+                    Simulation.bound_offset( :, t ) = BoundOffsetOriginalOrder;
+                catch Error
+                    warning( WarningState );
+                    rethrow( Error );
+                end
+
+                [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
+
+                warning( WarningState );
+
+                if ~isempty( p )
+                    p.progress;
+                end
+
+            end
+            if ~isempty( p )
+                p.stop;
+            end
+
+            for i = 1 : length( WarningIDs )
+                WarningString = sprintf( 'The following warning(s) was generated during simulation in periods: %d', WarningPeriods{i}( 1 ) );
+                for j = 2 : length( WarningPeriods{i} )
+                    WarningString = sprintf( '%s, %d', WarningString, WarningPeriods{i}( j ) );
+                end
+                warning( 'dynareOBC:NestedWarning', '%s', WarningString );
+                if ~isempty( WarningIDs{i} )
+                    warning( WarningIDs{i}, WarningMessages{i} );
+                else
+                    warning( WarningMessages{i} );
+                end
             end
         end
+
+        Simulation.total_with_bounds = Simulation.total + Simulation.bound_offset;        
     end
     
-    Simulation.total_with_bounds = Simulation.total + Simulation.bound_offset;
-    
+    %% Common
     if dynareOBC_.MLVSimulationMode > 0 && ( ~SkipMLVSimulation )
         MLVNames = dynareOBC_.MLVNames;
         nMLV = length( MLVNames );
