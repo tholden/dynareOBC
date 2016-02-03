@@ -92,10 +92,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
         fprintf( 1, '\n' );
     end
 
-    Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || dynareOBC.Global );
-    if dynareOBC.NumberOfMax > 0 || ( ~dynareOBC.SlowIRFs ) || Order2VarianceRequired
-        dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M, options, oo, dynareOBC );
-    end
+    dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M, options, oo, dynareOBC );
 
     dynareOBC.FullNumVarExo = M.exo_nbr;
 

@@ -20,6 +20,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     dynareOBC.OriginalSigma = Sigma;
 
     Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || dynareOBC.Global );
+    JustCalculateMean = ~( dynareOBC.NumberOfMax > 0 || ( ~dynareOBC.SlowIRFs ) || Order2VarianceRequired );
+    
     if ( dynareOBC.Order == 1 ) || Order2VarianceRequired || dynareOBC.SimulateOnGridPoints
         dynareOBC.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
     end
@@ -27,33 +29,34 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         dynareOBC.UnconditionalVarXi = Sigma;
         dynareOBC.LengthXi = size( Sigma, 1 );
     end
-        
-    A1Powers = cell( TM1, 1 );
-    A1Powers{1} = speye( size( A1 ) );
-
-    for k = 2 : TM1
-        A1Powers{ k } = A1 * A1Powers{ k - 1 };
-        A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
-    end
-
+    
     LengthZ1 = size( A1, 1 );
         
-    VarianceZ1 = cell( TM1, 1 );
-    
-    BCovXiB = B1 * Sigma * B1';
-    
-    PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
-    
-    OpenPool;
-    parfor k = 1 : TM1
-        VarianceZ1{ k } = sparse( LengthZ1, LengthZ1 );
-        for i = 1 : min( k, PeriodsOfUncertainty )
-            iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
-            CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }'; %#ok<PFBNS>
-            CurrentVariance( abs(CurrentVariance)<eps ) = 0;
-            VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
+    if ~JustCalculateMean
+        A1Powers = cell( TM1, 1 );
+        A1Powers{1} = speye( size( A1 ) );
+
+        for k = 2 : TM1
+            A1Powers{ k } = A1 * A1Powers{ k - 1 };
+            A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
         end
-    end    
+        VarianceZ1 = cell( TM1, 1 );
+
+        BCovXiB = B1 * Sigma * B1';
+
+        PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
+    
+        OpenPool;
+        parfor k = 1 : TM1
+            VarianceZ1{ k } = sparse( LengthZ1, LengthZ1 );
+            for i = 1 : min( k, PeriodsOfUncertainty )
+                iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
+                CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }'; %#ok<PFBNS>
+                CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
+            end
+        end 
+    end
     
     if options.order == 1
         dynareOBC.FirstOrderConditionalCovariance = true;
@@ -283,6 +286,10 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     RelativeMean = dynareOBC.AugmentedToTotal * Mean_z;
     dynareOBC.RelativeMean = RelativeMean( oo.dr.inv_order_var );
     dynareOBC.Mean = dynareOBC.RelativeMean + dynareOBC.Constant;
+    
+    if JustCalculateMean
+        return
+    end
     
     % Calculate conditional covariances
     if ~dynareOBC.NoCubature
