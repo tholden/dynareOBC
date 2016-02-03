@@ -80,7 +80,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 ); %#ok<PFBNS>
                     end
                 end
-                GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, false );
+                GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true );
             catch Error
                 warning( ParallelWarningState );
                 rethrow( Error );
