@@ -2,14 +2,14 @@ clear all; %#ok<CLALL>
 WarningState = warning( 'off', 'all' );
 try
     Files = dir( '*.mat' );
-    Norms = zeros( length( Files ), 7 );
+    Norms = zeros( length( Files ), 8 );
     for i = 1 : length( Files )
         
         load( Files( i ).name );
         
         Errors = [ dynareOBC_.MLVSimulationWithBounds.error01; dynareOBC_.MLVSimulationWithBounds.error02; dynareOBC_.MLVSimulationWithBounds.error03; dynareOBC_.MLVSimulationWithBounds.error04 ];
         NonNan = all( ~isnan( Errors ) );
-        NonNan( 1:100 ) = false;
+        % NonNan( 1:100 ) = false;
         Errors = Errors( :, NonNan );
         AtBound = oo_.endo_simul( end, NonNan ) <= 0.0001;
         
@@ -25,10 +25,10 @@ try
         AtBoundTwoNorm = sqrt( mean( Errors( AtBound ) .^ 2 ) );
         AtBoundInfNorm = max( abs( Errors( AtBound ) ) );
         
-        Norms( i, : ) = [ OneNorm, TwoNorm, InfNorm, AtBoundOneNorm, AtBoundTwoNorm, AtBoundInfNorm, sum( AtBound ) ];
+        Norms( i, : ) = [ (t2-t1)/1000, OneNorm, TwoNorm, InfNorm, AtBoundOneNorm, AtBoundTwoNorm, AtBoundInfNorm, sum( AtBound ) ];
         
     end
-    Norms = array2table( Norms, 'VariableNames', { 'OneNorm', 'TwoNorm', 'InfNorm', 'AtBoundOneNorm', 'AtBoundTwoNorm', 'AtBoundInfNorm', 'PeriodsAtBound' }, 'RowNames', { Files.name } );
+    Norms = array2table( Norms, 'VariableNames', { 'Seconds', 'OneNorm', 'TwoNorm', 'InfNorm', 'AtBoundOneNorm', 'AtBoundTwoNorm', 'AtBoundInfNorm', 'PeriodsAtBound' }, 'RowNames', { Files.name } );
     Norms = sortrows( Norms, 'OneNorm' );
     disp( Norms );
 catch Err
