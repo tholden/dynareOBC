@@ -1,5 +1,6 @@
 function [ xi, xj, xs ] = spfind( x )
 
-   [ xi, xj, xs ] = find( abs( x ) > eps );
+    x( abs( x ) < eps ) = 0;
+    [ xi, xj, xs ] = find( x );
 
 end
