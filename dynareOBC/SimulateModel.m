@@ -63,7 +63,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         Simulation.total_with_bounds( :, 1:2:end ) = Simulation.total_with_bounds( :, 1:2:end ) + GridOffsets;
 
         if DisplayProgress
-            p = TimedProgressBar( SimulationLength, 50, 'Computing simulations on grid points. Please wait for around ', '. Progress: ', 'Computing simulations on grid points. Completed in ' );
+            p = TimedProgressBar( NumberOfGridPoints, 50, 'Computing simulations on grid points. Please wait for around ', '. Progress: ', 'Computing simulations on grid points. Completed in ' );
         else
             p = [];
         end
