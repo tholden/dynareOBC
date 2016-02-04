@@ -7,12 +7,3 @@ To test the properties of these models, run:
 
 dynareOBC NK.mod timetoescapebounds=200 FeasibilityTestGridSize=10 timetosolveparametrically=0
 dynareOBC NKPriceTargeting.mod timetoescapebounds=200 FeasibilityTestGridSize=10 timetosolveparametrically=0 
-
-To run the accuracy tests run:
-
-t1=java.lang.System.currentTimeMillis; save time; dynareOBC NKIndexationAccuracy.mod SIMULATION_OPTIONS MLVSimulationMode=2 cubaturetolerance=0 compilesimulationcode sparse timetosolveparametrically=8 SimulateOnGridPoints; t2=java.lang.System.currentTimeMillis; load time; disp((t2-t1)/1000);
-
-where SIMULATION_OPTIONS are the simulation options of the run in question.
-
-Note that "NKIndexationAccuracy.mod" hacks indexation in to the model without indexation by setting PI_STEADY=1 and then defining TRUE_PI = TRUE_PI_STEADY * PI.
-So, in the generated simulations from this file, the value of "PI" is actually the value of true inflation divided by TRUE_PI_STEADY.
