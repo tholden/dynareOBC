@@ -48,8 +48,12 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
         V = Vnew;
         C = Cnew;
         CB = CBnew;
-        if thetac == theta && e1 < sqrt( eps ) && e2 < sqrt( eps ) && e3 < sqrt( eps )
-            break;
+        if thetac == theta
+            if e1 > e1o || ( e1 < sqrt( eps ) && e2 < sqrt( eps ) && e3 < sqrt( eps ) )
+                break;
+            end
+        else
+            e1o = Inf;
         end
     end
 
