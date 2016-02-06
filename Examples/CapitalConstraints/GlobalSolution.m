@@ -7,7 +7,7 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
     rho = 0.95;
     sigma = 0.005;
 
-    n = 1024;
+    n = 256;
     GridWidth = 4;
 
     k_ = 1 / ( 1 - alpha ) * ( log( alpha * beta ) + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) ) );
