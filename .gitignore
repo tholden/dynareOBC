@@ -32,3 +32,4 @@ FastStart.mat
 BuildReadMePDF.bat
 *.xlsx
 Examples/BoundedProductivity/Results/Results.xlsx
+Examples/CapitalConstraints/codegen/
