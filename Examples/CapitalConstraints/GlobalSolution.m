@@ -38,7 +38,7 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
     fprintf( '\n' );
     Iter = int32( 0 );
     while true
-        thetac = min( theta, Iter / 100 );
+        thetac = min( theta, double( Iter ) / 100 );
         [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alpha, beta, nu, thetac );
         e1 = max( max( abs( V - Vnew ) ) );
         e2 = max( max( abs( C - Cnew ) ) );
