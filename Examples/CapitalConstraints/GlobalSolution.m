@@ -36,14 +36,14 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
     CB = ( exp( ( 1 + nu ) * ( ag + alpha * kg ) ) * ( 1 - alpha ) ^ ( 1 - alpha ) ) .^ ( 1 / ( 1 + nu ) );
 
     fprintf( '\n' );
-    Iter = 0;
+    Iter = int32( 0 );
     while true
         thetac = min( theta, Iter / 100 );
         [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alpha, beta, nu, thetac );
         e1 = max( max( abs( V - Vnew ) ) );
         e2 = max( max( abs( C - Cnew ) ) );
         e3 = max( max( abs( CB - CBnew ) ) );
-        Iter = Iter + 1;
+        Iter = Iter + int32( 1 );
         fprintf( '%d %.15g %.15g %.15g %.15g\n', Iter, thetac, e1, e2, e3 );
         V = Vnew;
         C = Cnew;
