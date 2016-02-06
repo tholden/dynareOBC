@@ -37,6 +37,7 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
 
     fprintf( '\n' );
     Iter = int32( 0 );
+    e1o = Inf;
     while true
         thetac = min( theta, double( Iter ) / 100 );
         [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alpha, beta, nu, thetac );
@@ -52,8 +53,7 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
             if e1 > e1o || ( e1 < sqrt( eps ) && e2 < sqrt( eps ) && e3 < sqrt( eps ) )
                 break;
             end
-        else
-            e1o = Inf;
+            e1o = e1;
         end
     end
 
