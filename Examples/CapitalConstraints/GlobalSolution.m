@@ -7,8 +7,10 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
     rho = 0.95;
     sigma = 0.005;
 
-    n = 1024;
-    GridWidth = 8;
+    nk = 1024;
+    na = 256;
+    wk = 8;
+    wa = 4;
 
     k_ = 1 / ( 1 - alpha ) * ( log( alpha * beta ) + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) ) );
     % y_ = alpha * k_ + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) );
@@ -16,11 +18,11 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
 
     std_k = sigma * sqrt( ( 1 + alpha * rho ) / ( ( 1 - alpha ) * ( 1 + alpha ) * ( 1 - rho ) * ( 1 + rho ) * ( 1 - alpha * rho ) ) );
 
-    kv = ( k_ - GridWidth * std_k ) : ( 2 * GridWidth * std_k / ( n - 1 ) ) : ( k_ + GridWidth * std_k );
-    av = ( - GridWidth * sigma ) : ( 2 * GridWidth * sigma / ( n - 1 ) ) : ( GridWidth * sigma );
+    kv = ( k_ - wk * std_k ) : ( 2 * wk * std_k / ( nk - 1 ) ) : ( k_ + wk * std_k );
+    av = ( - wa * sigma ) : ( 2 * wa * sigma / ( na - 1 ) ) : ( wa * sigma );
 
-    W = zeros( n, n );
-    parfor i = 1 : n
+    W = zeros( na, na );
+    parfor i = 1 : na
         W( :, i ) = GeneratePiecewiseLinearCubatureRule( av, rho * av( i ), sigma );
     end
 
