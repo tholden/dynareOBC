@@ -9,24 +9,42 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     AKEalpha = exp( a + alpha * k );
     kNewCore = ( AKEalpha ^ OPnu * OMalpha ^ OMalpha ) ^ ( 1 / alphaPnu );
     thetaK = theta * exp( k );
+    
     CBnew = exp( HalleySolveBound( log( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
-%     if DMaximand( CBnew - 2 * eps( CBnew ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) > 0
-%         Cnew = CBnew;
-%     else
-%         Cg = min( Cg, CBnew - 1e-4 );
-%         LB = Cg - 1e-4;
-%         UB = Cg + 1e-4;
-%         while DMaximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) < 0
-%             LB = max( 0.5 * LB, Cg - 2 * ( Cg - LB ) );
-%         end
-%         while DMaximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) > 0
-%             UB = min( CBnew - 0.5 * ( CBnew - UB ), Cg + 2 * ( UB - Cg ) );
-%         end
-%         Cnew = fzero( @DMaximand, [ LB, UB ], optimset( 'Display', 'off', 'TolX', min( eps( LB ), eps( UB ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-%     end
-%     Vnew = Maximand( Cnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-    [ Cnew, Vnew ] = fminbnd( @Minimand, 0, CBnew, optimset( 'Display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', max( eps, eps( CBnew ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-    Vnew = -Vnew;
+    
+    Step = 1e-4;
+    LB = max( 0.5 * CBnew, Cg - Step );
+    UB = min( CBnew, Cg + Step );
+    Cg = 0.5 * ( LB + UB );
+    FLB = Maximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    FCg = Maximand( Cg, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    while FLB >= FCg
+        UB = Cg;
+        FUB = FCg;
+        Cg = LB;
+        FCg = FLB;
+        LB = max( 0.5 * LB, LB - Step );
+        Step = 2 * Step;
+        FLB = Maximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    end
+    if UB < CBnew
+        while FUB >= FCg
+            LB = Cg;
+            FLB = FCg;
+            Cg = UB;
+            FCg = FUB;
+            UB = UB + step;
+            if UB >= CBnew
+                UB = CBnew;
+                break;
+            end
+            Step = 2 * Step;
+            FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+        end
+    end
+    
+    [ Cnew, Vnew ] = GoldenSectionMaximise( LB, UB, FLB, FUB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
 end
 
 function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
@@ -49,32 +67,62 @@ function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
     end
 end
 
-function Result = Minimand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
-    Result = -( log( C ) - ODOPnu * ( OMalpha * AKEalpha / C ) ^ OPnuDalphaPnu + beta * ExpectedV( log( max( thetaK, kNewCore * C ^ MOMalphaDalphaPnu - C ) ), V, Wv, kv, nk ) );
+function [ x, fx ] = GoldenSectionMaximise( a, b, fa, fb, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
+    gr = 0.5 * ( sqrt(5) - 1 );
+
+    if fb > fa
+        x = b;
+        fx = fb;
+    else
+        x = a;
+        fx = fa;
+    end
+    
+    c = b - gr * ( b - a );
+    d = a + gr * ( b - a );
+    fc = Maximand( c, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    fd = Maximand( d, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    while true
+        if fc > fd
+            if fc > fx
+                x = c;
+                fx = fc;
+            end
+            b = d;
+            d = c;
+            fd = fc;
+            c = b - gr * ( b - a );
+            fc = Maximand( c, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+        else
+            if fd > fx
+                x = d;
+                fx = fd;
+            end
+            a = c;
+            c = d;
+            fc = fd;
+            d = a + gr * ( b - a );
+            fd = Maximand( d, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+        end
+        if a >= c || c >= d || d >= b
+            break;
+        end
+    end
 end
 
 function Result = Maximand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
-    Result = log( C ) - ODOPnu * ( OMalpha * AKEalpha / C ) ^ OPnuDalphaPnu + beta * ExpectedV( log( max( thetaK, kNewCore * C ^ MOMalphaDalphaPnu - C ) ), V, Wv, kv, nk );
-end
-
-function Result = DMaximand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
-    Result = ( 1 + OPnuDalphaPnu * ODOPnu * ( OMalpha * AKEalpha / C ) ^ OPnuDalphaPnu ) / C + beta * ( MOMalphaDalphaPnu * kNewCore * C ^ ( MOMalphaDalphaPnu - 1 ) - 1 ) / ( kNewCore * C ^ MOMalphaDalphaPnu - C ) * DExpectedV( log( max( thetaK, kNewCore * C ^ MOMalphaDalphaPnu - C ) ), V, Wv, kv, nk );
+    Result = reallog( C ) - ODOPnu * ( OMalpha * AKEalpha / C ) ^ OPnuDalphaPnu + beta * ExpectedV( log( max( thetaK, kNewCore * C ^ MOMalphaDalphaPnu - C ) ), V, Wv, kv, nk );
 end
 
 function EV = ExpectedV( kNew, V, Wv, kv, nk )
-    Index = 1 + ( nk - 1 ) * ( kNew - kv( 1 ) ) / ( kv( end ) - kv( 1 ) );
-    lIndex = max( 1, min( nk - 1, floor( Index ) ) );
-    uIndex = lIndex + 1;
-    fIndex = Index - lIndex;
-    Vv = ( 1 - fIndex ) * V( :, lIndex ) + fIndex * V( :, uIndex );
-    EV = Wv' * Vv;
-end
-
-function DEV = DExpectedV( kNew, V, Wv, kv, nk )
-    Index = 1 + ( nk - 1 ) * ( kNew - kv( 1 ) ) / ( kv( end ) - kv( 1 ) );
-    lIndex = max( 1, min( nk - 1, floor( Index ) ) );
-    uIndex = lIndex + 1;
-    DfIndex = ( nk - 1 ) / ( kv( end ) - kv( 1 ) );
-    DVv = - DfIndex * V( :, lIndex ) + DfIndex * V( :, uIndex );
-    DEV = Wv' * DVv;
+    if isfinite( kNew )
+        Index = 1 + ( nk - 1 ) * ( kNew - kv( 1 ) ) / ( kv( end ) - kv( 1 ) );
+        lIndex = max( 1, min( nk - 1, floor( Index ) ) );
+        uIndex = lIndex + 1;
+        fIndex = Index - lIndex;
+        Vv = ( 1 - fIndex ) * V( :, lIndex ) + fIndex * V( :, uIndex );
+        EV = Wv' * Vv;
+    else
+        EV = -Inf;
+    end
 end
