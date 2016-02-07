@@ -25,7 +25,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
 %         Cnew = fzero( @DMaximand, [ LB, UB ], optimset( 'Display', 'off', 'TolX', min( eps( LB ), eps( UB ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
 %     end
 %     Vnew = Maximand( Cnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-    [ Cnew, Vnew ] = fminbnd( @Minimand, 0, CBnew, optimset( 'Display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', min( eps( LB ), eps( UB ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    [ Cnew, Vnew ] = fminbnd( @Minimand, 0, CBnew, optimset( 'Display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', max( eps, eps( CBnew ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
     Vnew = -Vnew;
 end
 
