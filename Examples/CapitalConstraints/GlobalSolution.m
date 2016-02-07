@@ -1,4 +1,4 @@
-function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
+function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSolution
 
     alpha = 0.3;
     beta = 0.99;
