@@ -7,8 +7,8 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
     rho = 0.95;
     sigma = 0.005;
 
-    n = 256;
-    GridWidth = 4;
+    n = 1024;
+    GridWidth = 8;
 
     k_ = 1 / ( 1 - alpha ) * ( log( alpha * beta ) + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) ) );
     % y_ = alpha * k_ + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) );
@@ -50,7 +50,7 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
         C = Cnew;
         CB = CBnew;
         if thetac == theta
-            if e1 > e1o || ( e1 < sqrt( eps ) && e2 < sqrt( eps ) && e3 < sqrt( eps ) )
+            if e1 >= e1o % || ( e1 < sqrt( eps ) && e2 < sqrt( eps ) && e3 < sqrt( eps ) )
                 break;
             end
             e1o = e1;
