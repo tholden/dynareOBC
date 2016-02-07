@@ -10,21 +10,23 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     kNewCore = ( AKEalpha ^ OPnu * OMalpha ^ OMalpha ) ^ ( 1 / alphaPnu );
     thetaK = theta * exp( k );
     CBnew = exp( HalleySolveBound( log( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
-    if DMaximand( CBnew - 2 * eps( CBnew ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) > 0
-        Cnew = CBnew;
-    else
-        Cg = min( Cg, CBnew - 1e-4 );
-        LB = Cg - 1e-4;
-        UB = Cg + 1e-4;
-        while DMaximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) < 0
-            LB = max( 0.5 * LB, Cg - 2 * ( Cg - LB ) );
-        end
-        while DMaximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) > 0
-            UB = min( CBnew - 0.5 * ( CBnew - UB ), Cg + 2 * ( UB - Cg ) );
-        end
-        Cnew = fzero( @DMaximand, [ LB, UB ], optimset( 'Display', 'off', 'TolX', min( eps( LB ), eps( UB ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-    end
-    Vnew = Maximand( Cnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+%     if DMaximand( CBnew - 2 * eps( CBnew ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) > 0
+%         Cnew = CBnew;
+%     else
+%         Cg = min( Cg, CBnew - 1e-4 );
+%         LB = Cg - 1e-4;
+%         UB = Cg + 1e-4;
+%         while DMaximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) < 0
+%             LB = max( 0.5 * LB, Cg - 2 * ( Cg - LB ) );
+%         end
+%         while DMaximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk ) > 0
+%             UB = min( CBnew - 0.5 * ( CBnew - UB ), Cg + 2 * ( UB - Cg ) );
+%         end
+%         Cnew = fzero( @DMaximand, [ LB, UB ], optimset( 'Display', 'off', 'TolX', min( eps( LB ), eps( UB ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+%     end
+%     Vnew = Maximand( Cnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    [ Cnew, Vnew ] = fminbnd( @Minimand, 0, CBnew, optimset( 'Display', 'off', 'MaxFunEvals', Inf, 'MaxIter', Inf, 'TolX', min( eps( LB ), eps( UB ) ) ), ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    Vnew = -Vnew;
 end
 
 function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
@@ -45,6 +47,10 @@ function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
         end
         cBg = cBnew;
     end
+end
+
+function Result = Minimand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
+    Result = -( log( C ) - ODOPnu * ( OMalpha * AKEalpha / C ) ^ OPnuDalphaPnu + beta * ExpectedV( log( max( thetaK, kNewCore * C ^ MOMalphaDalphaPnu - C ) ), V, Wv, kv, nk ) );
 end
 
 function Result = Maximand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
