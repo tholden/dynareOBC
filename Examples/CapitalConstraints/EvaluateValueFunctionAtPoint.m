@@ -10,7 +10,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     kNewCore = tpow( tpow( AKEalpha, OPnu ) * tpow( OMalpha, OMalpha ), 1 / alphaPnu );
     thetaK = theta * exp( k );
     
-    CBnew = exp( HalleySolveBound( tlog( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
+    CBnew = HalleySolveBound( CBg, kNewCore, MOMalphaDalphaPnu, thetaK );
     
 %     Step = 1e-4;
 %     Cg = min( CBnew * ( Cg / CBg ), CBnew );
@@ -48,23 +48,23 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     [ Cnew, Vnew ] = GoldenSectionMaximise( 0, CBnew, -Inf, FCBnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
 end
 
-function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
+function CBnew = HalleySolveBound( CBg, kNewCore, MOMalphaDalphaPnu, thetaK )
     ExitFlag = false;
     while true
-        t1 = kNewCore * exp( cBg * MOMalphaDalphaPnu );
-        t2 = exp( cBg );
-        f0 = t1 - t2 - thetaK;
-        f1 = MOMalphaDalphaPnu * t1 - t2;
-        f2 = MOMalphaDalphaPnu * MOMalphaDalphaPnu * t1;
+        t0 = kNewCore * tpow( CBg, MOMalphaDalphaPnu );
+        f0 = t0 - CBg - thetaK;
+        t1 = MOMalphaDalphaPnu * t0 / CBg;
+        f1 = t1 - 1;
+        f2 = ( MOMalphaDalphaPnu - 1 ) * t1 / CBg;
         Offset = 2 * f0 * f1 / ( 2 * f1 * f1 - f0 * f2 );
-        cBnew = cBg - Offset;
-        if ( cBnew == cBg ) || ExitFlag
+        CBnew = max( 0.5 * CBg, CBg - Offset );
+        if ( CBnew == CBg ) || ExitFlag
             return;
         end
-        if abs( Offset ) <= 4 * min( eps( cBg ), eps( cBnew ) )
+        if abs( Offset ) <= 4 * min( eps( CBg ), eps( CBnew ) )
             ExitFlag = true;
         end
-        cBg = cBnew;
+        CBg = CBnew;
     end
 end
 
