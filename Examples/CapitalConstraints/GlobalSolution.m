@@ -49,7 +49,7 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
         Iter = Iter + int32( 1 );
         fprintf( '%d %.15g %.15g %.15g %.15g\n', Iter, thetac, e1, e2, e3 );
         if thetac == theta
-            if e1 >= e1o && ( e1 < 1e-6 && e2 < 1e-6 && e3 < 1e-6 )
+            if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 && e3 < 1e-6 )
                 break;
             end
             e1o = e1;
