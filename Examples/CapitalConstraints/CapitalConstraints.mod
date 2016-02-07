@@ -21,7 +21,7 @@ model;
 	exp( c ) = exp( y ) - exp( k );
 	exp( -c ) = max( alpha * beta * exp( LEAD_y - c(+1) - k ) - beta * theta * lambda(+1), 1 / ( exp( y ) - theta * exp( k(-1) ) ) );
 	a = rho * a(-1) + sigma * epsilon;
-	#cError = c - QueryGlobalSolution( k(-1), a );
+	#cError = c - log( QueryGlobalSolution( k(-1), a ) );
 end;
 
 steady_state_model;
