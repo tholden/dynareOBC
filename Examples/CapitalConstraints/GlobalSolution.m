@@ -7,7 +7,7 @@ function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSoluti
     rho = 0.95;
     sigma = 0.005;
 
-    nk = 1024;
+    nk = 512;
     na = 256;
     wk = 8;
     wa = 4;
@@ -41,7 +41,7 @@ function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSoluti
     Iter = int32( 0 );
     e1o = Inf;
     while true
-        thetac = theta; % min( theta, double( Iter ) / 200 );
+        thetac = min( theta, double( Iter ) / 200 );
         [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alpha, beta, nu, thetac );
         e1 = max( max( abs( V - Vnew ) ) );
         e2 = max( max( abs( C - Cnew ) ) );
