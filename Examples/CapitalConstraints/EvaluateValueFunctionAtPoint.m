@@ -48,6 +48,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
 end
 
 function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
+    ExitFlag = false;
     while true
         t1 = kNewCore * exp( cBg * MOMalphaDalphaPnu );
         t2 = exp( cBg );
@@ -56,8 +57,11 @@ function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
         f2 = MOMalphaDalphaPnu * MOMalphaDalphaPnu * t1;
         Offset = 2 * f0 * f1 / ( 2 * f1 * f1 - f0 * f2 );
         cBnew = cBg - Offset;
-        if ( cBnew == cBg )
+        if ( cBnew == cBg ) || ExitFlag
             return;
+        end
+        if abs( Offset ) <= 4 * min( eps( cBg ), eps( cBnew ) )
+            ExitFlag = true;
         end
         cBg = cBnew;
     end
