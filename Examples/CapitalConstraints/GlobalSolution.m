@@ -5,7 +5,7 @@ function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSoluti
     nu = 2;
     theta = 0.99;
     rho = 0.95;
-    sigma = 0.005;
+    sigma = 0.01;
 
     na = 256;
     nk = 4 * na;

@@ -8,7 +8,7 @@ beta = 0.99;
 nu = 2;
 theta = 0.99;
 rho = 0.95;
-sigma = 0.005;
+sigma = 0.01;
 
 external_function( name = QueryGlobalSolution, nargs = 2 );
 
