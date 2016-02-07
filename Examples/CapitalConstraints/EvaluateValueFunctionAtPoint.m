@@ -33,8 +33,10 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
         FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
     end
     while ( FUB >= FCg ) && ( UB < CBnew )
-        LB = Cg;
-        FLB = FCg;
+        if FUB > FCg
+            LB = Cg;
+            FLB = FCg;
+        end
         Cg = UB;
         FCg = FUB;
         UB = min( UB + Step, CBnew );
