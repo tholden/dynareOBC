@@ -41,22 +41,22 @@ function [ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution
     Iter = int32( 0 );
     e1o = Inf;
     while true
-        thetac = min( theta, double( Iter ) / 100 );
+        thetac = min( theta, double( Iter ) / 400 );
         [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alpha, beta, nu, thetac );
         e1 = max( max( abs( V - Vnew ) ) );
         e2 = max( max( abs( C - Cnew ) ) );
         e3 = max( max( abs( CB - CBnew ) ) );
         Iter = Iter + int32( 1 );
         fprintf( '%d %.15g %.15g %.15g %.15g\n', Iter, thetac, e1, e2, e3 );
-        V = Vnew;
-        C = Cnew;
-        CB = CBnew;
         if thetac == theta
-            if e1 >= e1o % || ( e1 < sqrt( eps ) && e2 < sqrt( eps ) && e3 < sqrt( eps ) )
+            if e1 >= e1o && ( e1 < 1e-6 && e2 < 1e-6 && e3 < 1e-6 )
                 break;
             end
             e1o = e1;
         end
+        V = Vnew;
+        C = Cnew;
+        CB = CBnew;
     end
 
 end
