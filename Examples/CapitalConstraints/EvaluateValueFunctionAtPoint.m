@@ -7,10 +7,10 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     ODOPnu = 1 / OPnu;
     nk = length( kv );
     AKEalpha = exp( a + alpha * k );
-    kNewCore = ( AKEalpha ^ OPnu * OMalpha ^ OMalpha ) ^ ( 1 / alphaPnu );
+    kNewCore = realpow( realpow( AKEalpha, OPnu ) * realpow( OMalpha, OMalpha ), 1 / alphaPnu );
     thetaK = theta * exp( k );
     
-    CBnew = exp( HalleySolveBound( log( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
+    CBnew = exp( HalleySolveBound( reallog( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
     
     Step = 1e-4;
     Cg = min( Cg, CBnew );
@@ -66,7 +66,7 @@ function cBnew = HalleySolveBound( cBg, kNewCore, MOMalphaDalphaPnu, thetaK )
 end
 
 function [ x, fx ] = GoldenSectionMaximise( a, b, fa, fb, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
-    gr = 0.5 * ( sqrt(5) - 1 );
+    gr = 0.618033988749894848204586834365638117720;
 
     if fb > fa
         x = b;
