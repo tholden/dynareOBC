@@ -1,4 +1,4 @@
-function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, Cg, CBg, alpha, beta, nu, theta )
+function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, CBg, alpha, beta, nu, theta )
     OMalpha = 1 - alpha;
     alphaPnu = alpha + nu;
     MOMalphaDalphaPnu = - OMalpha / alphaPnu;
@@ -11,39 +11,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     thetaK = theta * exp( k );
     
     CBnew = HalleySolveBound( CBg, kNewCore, MOMalphaDalphaPnu, thetaK );
-    
-%     Step = 1e-4;
-%     Cg = min( CBnew * ( Cg / CBg ), CBnew );
-%     LB = max( 0.5 * CBnew, Cg - Step );
-%     UB = min( CBnew, Cg + Step );
-%     Cg = 0.5 * ( LB + UB );
-%     FLB = Maximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-%     FCg = Maximand( Cg, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-%     FUB = NaN;
-%     while FLB >= FCg
-%         UB = Cg;
-%         FUB = FCg;
-%         Cg = LB;
-%         FCg = FLB;
-%         LB = max( 0.5 * LB, LB - Step );
-%         Step = 2 * Step;
-%         FLB = Maximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-%     end
-%     if isnan( FUB )
-%         FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-%     end
-%     while ( FUB >= FCg ) && ( UB < CBnew )
-%         if FUB > FCg
-%             LB = Cg;
-%             FLB = FCg;
-%         end
-%         Cg = UB;
-%         FCg = FUB;
-%         UB = min( UB + Step, CBnew );
-%         Step = 2 * Step;
-%         FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-%     end
-    
+       
     FCBnew = Maximand( CBnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
     [ Cnew, Vnew ] = GoldenSectionMaximise( 0, CBnew, -Inf, FCBnew, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
 end

@@ -9,7 +9,7 @@ function [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alph
         Wv = W( :, ia );
         for ik = 1 : nk
             k = kv( ik ); %#ok<PFBNS>
-            [ Vnew( ia, ik ), Cnew( ia, ik ), CBnew( ia, ik ) ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, C( ia, ik ), CB( ia, ik ), alpha, beta, nu, theta );
+            [ Vnew( ia, ik ), Cnew( ia, ik ), CBnew( ia, ik ) ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, CB( ia, ik ), alpha, beta, nu, theta );
         end
     end
 end
