@@ -10,6 +10,8 @@ theta = 0.99;
 rho = 0.95;
 sigma = 0.005;
 
+external_function( name = QueryGlobalSolution, nargs = 2 );
+
 model;
 	#l = 1 / ( alpha + nu ) * ( log( 1 - alpha ) + a + alpha * k(-1) - c );
 	#y = a + alpha * k(-1) + ( 1 - alpha ) * l;
@@ -19,6 +21,7 @@ model;
 	exp( c ) = exp( y ) - exp( k );
 	exp( -c ) = max( alpha * beta * exp( LEAD_y - c(+1) - k ) - beta * theta * lambda(+1), 1 / ( exp( y ) - theta * exp( k(-1) ) ) );
 	a = rho * a(-1) + sigma * epsilon;
+	#cError = c - QueryGlobalSolution( k(-1), a );
 end;
 
 steady_state_model;
@@ -32,4 +35,4 @@ shocks;
 	var epsilon = 1;
 end;
 
-stoch_simul( order = 1, periods = 0 );
+stoch_simul( order = 1, periods = 1100 ) cError;
