@@ -34,7 +34,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
             FLB = FCg;
             Cg = UB;
             FCg = FUB;
-            UB = UB + step;
+            UB = UB + Step;
             if UB >= CBnew
                 UB = CBnew;
                 break;
