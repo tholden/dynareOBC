@@ -109,7 +109,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, fa, fb, ODOPnu, OMalpha, AKEal
 end
 
 function Result = Maximand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
-    Result = reallog( C ) - ODOPnu * ( OMalpha * AKEalpha / C ) ^ OPnuDalphaPnu + beta * ExpectedV( log( max( thetaK, kNewCore * C ^ MOMalphaDalphaPnu - C ) ), V, Wv, kv, nk );
+    Result = reallog( C ) - ODOPnu * realpow( OMalpha * AKEalpha / C, OPnuDalphaPnu ) + beta * ExpectedV( reallog( max( thetaK, kNewCore * realpow( C, MOMalphaDalphaPnu ) - C ) ), V, Wv, kv, nk );
 end
 
 function EV = ExpectedV( kNew, V, Wv, kv, nk )
