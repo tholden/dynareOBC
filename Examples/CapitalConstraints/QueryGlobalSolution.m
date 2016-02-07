@@ -1,4 +1,4 @@
-function Cnew = QueryGlobalSolution( k, a )
+function [ Cnew, DCnew, DDCnew ] = QueryGlobalSolution( k, a )
     persistent kv av V CB alpha beta nu theta rho sigma;
     if isempty( kv )
         Results = load( 'GlobalResults.mat' );
@@ -14,4 +14,6 @@ function Cnew = QueryGlobalSolution( k, a )
         sigma = Results.sigma;
     end
     [ ~, Cnew, ~ ] = EvaluateValueFunctionOffGrid_mex( k, a, kv, av, V, CB, alpha, beta, nu, theta, rho, sigma );
+    DCnew = NaN( 2, 1 );
+    DDCnew = NaN( 2, 2 );
 end
