@@ -8,9 +8,9 @@ function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSoluti
     sigma = 0.005;
 
     na = 256;
-    nk = 1.5 * 2 * na;
+    nk = 4 * na;
     wa = 4;
-    wk = 1.5 * 2 * wa;
+    wk = 4 * wa;
 
     k_ = 1 / ( 1 - alpha ) * ( log( alpha * beta ) + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) ) );
     % y_ = alpha * k_ + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) );
