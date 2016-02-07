@@ -7,10 +7,10 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     ODOPnu = 1 / OPnu;
     nk = length( kv );
     AKEalpha = exp( a + alpha * k );
-    kNewCore = realpow( realpow( AKEalpha, OPnu ) * realpow( OMalpha, OMalpha ), 1 / alphaPnu );
+    kNewCore = tpow( tpow( AKEalpha, OPnu ) * tpow( OMalpha, OMalpha ), 1 / alphaPnu );
     thetaK = theta * exp( k );
     
-    CBnew = exp( HalleySolveBound( reallog( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
+    CBnew = exp( HalleySolveBound( tlog( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
     
     Step = 1e-4;
     Cg = min( CBnew * ( Cg / CBg ), CBnew );
@@ -111,7 +111,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, fa, fb, ODOPnu, OMalpha, AKEal
 end
 
 function Result = Maximand( C, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk )
-    Result = reallog( C ) - ODOPnu * realpow( OMalpha * AKEalpha / C, OPnuDalphaPnu ) + beta * ExpectedV( reallog( max( thetaK, kNewCore * realpow( C, MOMalphaDalphaPnu ) - C ) ), V, Wv, kv, nk );
+    Result = tlog( C ) - ODOPnu * tpow( OMalpha * AKEalpha / C, OPnuDalphaPnu ) + beta * ExpectedV( tlog( max( thetaK, kNewCore * tpow( C, MOMalphaDalphaPnu ) - C ) ), V, Wv, kv, nk );
 end
 
 function EV = ExpectedV( kNew, V, Wv, kv, nk )
@@ -124,5 +124,27 @@ function EV = ExpectedV( kNew, V, Wv, kv, nk )
         EV = Wv' * Vv;
     else
         EV = -Inf;
+    end
+end
+
+function y = tlog( x )
+    if x > 0
+        y = reallog( x );
+    else
+        y = -Inf;
+    end
+end
+
+function y = tpow( x, a )
+    if x > 0
+        y = realpow( x, a );
+    else
+        if a > 0
+            y = 0;
+        elseif a < 0
+            y = Inf;
+        else
+            y = 1;
+        end
     end
 end
