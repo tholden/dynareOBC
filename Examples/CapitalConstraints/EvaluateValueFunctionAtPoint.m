@@ -19,7 +19,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     Cg = 0.5 * ( LB + UB );
     FLB = Maximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
     FCg = Maximand( Cg, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-    FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    FUB = NaN;
     while FLB >= FCg
         UB = Cg;
         FUB = FCg;
@@ -29,20 +29,17 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
         Step = 2 * Step;
         FLB = Maximand( LB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
     end
-    if UB < CBnew
-        while FUB >= FCg
-            LB = Cg;
-            FLB = FCg;
-            Cg = UB;
-            FCg = FUB;
-            UB = UB + Step;
-            if UB >= CBnew
-                UB = CBnew;
-                break;
-            end
-            Step = 2 * Step;
-            FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
-        end
+    if isnan( FUB )
+        FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
+    end
+    while ( FUB >= FCg ) && ( UB < CBnew )
+        LB = Cg;
+        FLB = FCg;
+        Cg = UB;
+        FCg = FUB;
+        UB = min( UB + Step, CBnew );
+        Step = 2 * Step;
+        FUB = Maximand( UB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
     end
     
     [ Cnew, Vnew ] = GoldenSectionMaximise( LB, UB, FLB, FUB, ODOPnu, OMalpha, AKEalpha, OPnuDalphaPnu, beta, thetaK, kNewCore, MOMalphaDalphaPnu, V, Wv, kv, nk );
