@@ -20,6 +20,7 @@ $RECYCLE.BIN/
 *.bak
 
 dynareOBCTemp*
+*deleteThis*
 
 dynareOBC/codegen/
 dynareOBC/tbxmanager/
