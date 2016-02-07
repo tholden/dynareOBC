@@ -7,10 +7,10 @@ function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSoluti
     rho = 0.95;
     sigma = 0.005;
 
-    nk = 512;
     na = 256;
-    wk = 8;
+    nk = 1.5 * 2 * na;
     wa = 4;
+    wk = 1.5 * 2 * wa;
 
     k_ = 1 / ( 1 - alpha ) * ( log( alpha * beta ) + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) ) );
     % y_ = alpha * k_ + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) );
