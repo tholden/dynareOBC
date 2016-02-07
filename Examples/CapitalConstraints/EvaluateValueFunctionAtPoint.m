@@ -13,7 +13,7 @@ function [ Vnew, Cnew, CBnew ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, 
     CBnew = exp( HalleySolveBound( reallog( CBg ), kNewCore, MOMalphaDalphaPnu, thetaK ) );
     
     Step = 1e-4;
-    Cg = min( Cg, CBnew );
+    Cg = min( CBnew * ( Cg / CBg ), CBnew );
     LB = max( 0.5 * CBnew, Cg - Step );
     UB = min( CBnew, Cg + Step );
     Cg = 0.5 * ( LB + UB );
