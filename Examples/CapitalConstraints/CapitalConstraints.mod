@@ -29,6 +29,7 @@ steady_state_model;
 	k = 1 / ( 1 - alpha ) * ( log( alpha * beta ) + a + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) ) );
 	y_ = a + alpha * k + ( ( 1 - alpha ) / ( 1 + nu ) ) * log( ( 1 - alpha ) / ( 1 - alpha * beta ) );
 	c = log( 1 - alpha * beta ) + y_;
+	lambda = 0;
 end;
 
 shocks;
