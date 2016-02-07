@@ -1,4 +1,4 @@
 clear all; %#ok<CLALL>
 coder -build GlobalSolution.prj;
-[ V, C, CB, W, kv, alpha, beta, nu, theta ] = GlobalSolution_mex;
+[ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSolution_mex;
 save GlobalResults.mat;
