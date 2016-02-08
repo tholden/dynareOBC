@@ -55,20 +55,40 @@ function y = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOr
     WarningGenerated = false;
     for i = 1 : CubatureOrder
     
-        parfor j = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 )
-            lastwarn( '' );
-            WarningState = warning( 'off', 'all' );
-            try
-                yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ) );
-                yMatrix = yMatrix + yNew * CubatureWeights( j, : );
-            catch Error
+        jv = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 );
+        if length( jv ) > 3
+            parfor j = jv
+                lastwarn( '' );
+                WarningState = warning( 'off', 'all' );
+                try
+                    yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ) );
+                    yMatrix = yMatrix + yNew * CubatureWeights( j, : );
+                catch Error
+                    warning( WarningState );
+                    rethrow( Error );
+                end
                 warning( WarningState );
-                rethrow( Error );
+                WarningGenerated = WarningGenerated | ~isempty( lastwarn );
+                if ~isempty( p )
+                    p.progress;
+                end
             end
-            warning( WarningState );
-            WarningGenerated = WarningGenerated | ~isempty( lastwarn );
-            if ~isempty( p )
-                p.progress;
+        else
+            for j = jv
+                lastwarn( '' );
+                WarningState = warning( 'off', 'all' );
+                try
+                    yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ) );
+                    yMatrix = yMatrix + yNew * CubatureWeights( j, : );
+                catch Error
+                    warning( WarningState );
+                    rethrow( Error );
+                end
+                warning( WarningState );
+                WarningGenerated = WarningGenerated | ~isempty( lastwarn );
+                if ~isempty( p )
+                    p.progress;
+                end
             end
         end
         

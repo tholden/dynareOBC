@@ -29,26 +29,50 @@ function RootConditionalCovariance = RetrieveConditionalCovariances( oo, dynareO
         
         PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
         
-        parfor i = 1 : PeriodsOfUncertainty
-            iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
-            
-            CurrentSigma = iWeight * Sigma;
-            % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
-            % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
-            % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
-            [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), CurrentSigma );
-            % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
-            [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma ); %#ok<PFBNS>
-            Tmpi = Tmpi + Offset3;
-            Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
-            Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
-            Cs2 = [ Vs * iWeight; Cs * iWeight * iWeight; Tmps; Tmps; Tmps2 ];
-            
-            BCovXiB{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
-            
-            BCovXiB{i} = B2 * BCovXiB{i} * B2';
-            BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
-            
+        if PeriodsOfUncertainty > 3
+            parfor i = 1 : PeriodsOfUncertainty
+                iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
+
+                CurrentSigma = iWeight * Sigma;
+                % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
+                % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
+                % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
+                [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), CurrentSigma );
+                % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
+                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma ); %#ok<PFBNS>
+                Tmpi = Tmpi + Offset3;
+                Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
+                Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
+                Cs2 = [ Vs * iWeight; Cs * iWeight * iWeight; Tmps; Tmps; Tmps2 ];
+
+                BCovXiB{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
+
+                BCovXiB{i} = B2 * BCovXiB{i} * B2';
+                BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
+
+            end
+        else
+            for i = 1 : PeriodsOfUncertainty
+                iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
+
+                CurrentSigma = iWeight * Sigma;
+                % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
+                % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
+                % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
+                [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), CurrentSigma );
+                % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
+                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma );
+                Tmpi = Tmpi + Offset3;
+                Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
+                Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
+                Cs2 = [ Vs * iWeight; Cs * iWeight * iWeight; Tmps; Tmps; Tmps2 ];
+
+                BCovXiB{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
+
+                BCovXiB{i} = B2 * BCovXiB{i} * B2';
+                BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
+
+            end
         end
         
         A2Powers = dynareOBC.A2Powers;
