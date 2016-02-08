@@ -18,6 +18,7 @@ model;
 	exp( -c ) = alpha * beta * exp( LEAD_y - c(+1) - k );
 	exp( y ) = exp( c ) + exp( k );
 	a = rho * a(-1) + sigma * epsilon;
+	#cError = c - log( QueryGlobalSolutionNoBound( k(-1), a ) );
 end;
 
 steady_state_model;
@@ -31,4 +32,4 @@ shocks;
 	var epsilon = 1;
 end;
 
-stoch_simul( order = 1, periods = 0 );
+stoch_simul( order = 1, periods = 1023, irf = 0 ) cError;
