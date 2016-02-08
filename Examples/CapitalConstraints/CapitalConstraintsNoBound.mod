@@ -35,4 +35,4 @@ shocks;
 	var epsilon = 1;
 end;
 
-stoch_simul( order = 1, periods = 1100, irf = 0 ) cError;
+stoch_simul( order = 1, periods = 1023, irf = 0 ) cError;
