@@ -10,6 +10,8 @@ theta = 0.99;
 rho = 0.95;
 sigma = 0.01;
 
+external_function( name = QueryGlobalSolutionNoBound, nargs = 2 );
+
 model;
 	#l = 1 / ( alpha + nu ) * ( log( 1 - alpha ) + a + alpha * k(-1) - c );
 	#y = a + alpha * k(-1) + ( 1 - alpha ) * l;
