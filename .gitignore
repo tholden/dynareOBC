@@ -21,6 +21,7 @@ $RECYCLE.BIN/
 
 dynareOBCTemp*
 *deleteThis*
+~*
 
 dynareOBC/codegen/
 dynareOBC/tbxmanager/
@@ -31,6 +32,4 @@ LastUpdate.mat
 LastDependencyUpdate.mat
 FastStart.mat
 BuildReadMePDF.bat
-*.xlsx
-Examples/BoundedProductivity/Results/Results.xlsx
 Examples/CapitalConstraints/codegen/
