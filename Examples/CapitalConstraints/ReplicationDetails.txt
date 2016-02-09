@@ -1,0 +1,8 @@
+To solve for the global solution, run the script RunGlobalSolution.m.
+Note that this requires the MATLAB Coder toolkit, in order to compile the code to C for acceptable performance.
+Parameters may be adjusted in GlobalSolution.m.
+
+To run the accuracy tests, run:
+
+clear all;dynareOBC CapitalConstraints.mod [nocubature|fastcubature|quasimontecarlolevel=9] periodsofuncertainty=??? mlvsimulationmode=1 cubaturetolerance=0 simulateongridpoints
+disp(nanmean(abs(dynareOBC_.MLVSimulationWithBounds.cError(1:end))));
