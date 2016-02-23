@@ -68,7 +68,7 @@ try
                 title = [title ' (HP filter, lambda = ' ...
                          num2str(options.hp_filter) ')'];
             end
-            headers = char('VARIABLE',M.endo_names(VariableSelect,:));
+            headers = char( 'VARIABLE', labels );
             dyntable(title,headers,labels,corr,size(labels,2)+2,8,4);
         end
     end
