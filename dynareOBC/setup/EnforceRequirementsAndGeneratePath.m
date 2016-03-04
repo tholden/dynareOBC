@@ -159,12 +159,12 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     if Update
         try
-            tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
+            tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
         catch
-            tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
+            tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
         end
     else
-        tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso oasesmex;
+        tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
     end
     tbxmanager restorepath;
 

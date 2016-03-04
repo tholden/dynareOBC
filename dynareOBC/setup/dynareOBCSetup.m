@@ -130,13 +130,6 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
                 warning( 'dynareOBC:TestSolversError', Error.message );
             end
         end
-        if ~isempty( dynareOBC_.QPSolver )
-            try
-                yalmiptest( dynareOBC_.QPSolver );
-            catch Error
-                warning( 'dynareOBC:TestSolversError', Error.message );
-            end
-        end
         try
             opti_Install_Test;
         catch Error

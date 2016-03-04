@@ -43,7 +43,6 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'OrderOverride', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'PeriodsOfUncertainty', 16 );
     dynareOBC = SetDefaultOption( dynareOBC, 'PTest', 0 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'QPSolver', 'qpoases' );
     dynareOBC = SetDefaultOption( dynareOBC, 'QuasiMonteCarloLevel', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Replications', 50 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Resume', false );

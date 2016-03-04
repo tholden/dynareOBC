@@ -179,7 +179,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         LPOptions.gurobi.NumericFocus = 3;
         dynareOBC = SetDefaultOption( dynareOBC, 'LPOptions', LPOptions );
         dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
-        dynareOBC = SetDefaultOption( dynareOBC, 'QPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.QPSolver ) );
     end
     dynareOBC = orderfields( dynareOBC );
 
