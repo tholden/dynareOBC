@@ -23,6 +23,8 @@ dynareOBCTemp*
 *deleteThis*
 ~*
 
+dynareOBCGlobalResume.mat
+
 dynareOBC/codegen/
 dynareOBC/tbxmanager/
 dynareOBC/requirements/
