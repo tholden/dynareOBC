@@ -41,6 +41,7 @@ function InitializeWorkers( value_spkron_use_mex )
     global spkron_use_mex
     spkron_use_mex = value_spkron_use_mex;
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
+    warning( 'off', 'MATLAB:nargchk:deprecated' );
 end
 
 function PreOpen
