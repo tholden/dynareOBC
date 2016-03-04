@@ -172,6 +172,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
     warning( 'off', 'optim:quadprog:WillBeRemoved' );
+    warning( 'off', 'MATLAB:nargchk:deprecated' );
     mpt_init;
     try
         rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
