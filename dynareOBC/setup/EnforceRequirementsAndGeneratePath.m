@@ -172,6 +172,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
     warning( 'off', 'optim:quadprog:WillBeRemoved' );
+    warning( 'off', 'MATLAB:nargchk:deprecated' );
     mpt_init;
     try
         rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
@@ -191,7 +192,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         save( [ dynareOBCPath '/LastDependencyUpdate.mat' ], 'CurrentDay' );
     end
 
-    GlobalVariables = struct;
+    GlobalVariables = struct; %#ok<NASGU>
     GlobalVariablesList = who( 'global' );
     IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptest_use_mex', 'spkron_use_mex', 'MatlabPoolSize' };
     for i = 1 : length( GlobalVariablesList )
@@ -202,7 +203,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         eval( [ 'global ' GlobalVariableName '; GlobalVariables.' GlobalVariableName ' = ' GlobalVariableName ';' ] );
     end
     PathsToAdd = strsplit( path, ';' );
-    PathsToAdd = PathsToAdd( ~cellfun( @isempty, strfind( PathsToAdd, 'dynareOBC' ) ) );
+    PathsToAdd = PathsToAdd( ~cellfun( @isempty, strfind( PathsToAdd, 'dynareOBC' ) ) ); %#ok<NASGU>
     save( [ dynareOBCPath '/FastStart.mat' ], 'GlobalVariables', 'PathsToAdd' );
     
 end
