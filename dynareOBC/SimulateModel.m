@@ -172,13 +172,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
             BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
 
-            if dynareOBC_.Global
-                TM2 = T - 2;
-                pM1 = ( -1 : TM2 )';
-                PeriodsOfUncertainty = dynareOBC_.PeriodsOfUncertainty;
-                pWeight = 0.5 * ( 1 + cos( pi * max( 0, min( PeriodsOfUncertainty, pM1 ) ) / PeriodsOfUncertainty ) );
-            end
-
             Shock = zeros( M_.exo_nbr, 1 );
 
             OrderText = dynareOBC_.OrderText;
@@ -227,7 +220,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         if ~dynareOBC_.NoCubature
                             [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
                             if dynareOBC_.Global
-                                y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, yNext, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC_ );
+                                y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC_ );
                             end
                         end
                     catch Error

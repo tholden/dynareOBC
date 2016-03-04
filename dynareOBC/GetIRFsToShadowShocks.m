@@ -241,7 +241,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     dynareOBC.MSubMatrices = MSubMatrices;
     dynareOBC.MMatrix = MMatrix;
     if dynareOBC.Global
-        dynareOBC.MMatrixLongRun = MMatrixLongRun;
+        dynareOBC.PInvMMatrixLongRun = pinv( MMatrixLongRun );
     end
 
     sIndices = vec( bsxfun( @plus, (1:Ts)', 0:T:((ns-1)*T) ) )';
