@@ -320,6 +320,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         strTss = int2str( Tss );
         try
             warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
+            warning( 'off', 'MATLAB:nargchk:deprecated' );
             ParametricSolution = mpt_plcp( Opt( PLCP ) );
             if ParametricSolution.exitflag == 1
                 try
