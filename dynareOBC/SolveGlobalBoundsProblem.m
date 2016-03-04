@@ -2,8 +2,8 @@ function y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedRetu
 
     DesiredReturnPath = max( 0, UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * max( 0, y ) );
     
-    DesiredReturnPath = GlobalVarianceShare * DesiredReturnPath + ( 1 - GlobalVarianceShare ) * UnconstrainedReturnPathLongRun(:);
+    DesiredReturnPath = GlobalVarianceShare .* DesiredReturnPath + ( 1 - GlobalVarianceShare ) .* UnconstrainedReturnPathLongRun(:);
     
     y = dynareOBC.PInvMMatrixLongRun * ( DesiredReturnPath - UnconstrainedReturnPathLongRun(:) );
-
+    
 end
