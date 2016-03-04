@@ -1,6 +1,8 @@
 function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, EnforceRequirementsAndGeneratePathFunctor )
     %% Dynare pre-processing
 
+    warning( 'off', 'MATLAB:nargchk:deprecated' );
+
     if exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' )
         try
             delete( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ] );
