@@ -1,4 +1,4 @@
-function y = SolveGlobalBoundsProblem( y, Ey, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, dynareOBC )
+function y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, Ey, UnconstrainedReturnPathShortRun, UnconstrainedReturnPathLongRun, pWeight, dynareOBC )
 
     DesiredReturnPath = max( 0, UnconstrainedReturnPathShortRun(:) + dynareOBC.MMatrix * max( 0, y ) );
     

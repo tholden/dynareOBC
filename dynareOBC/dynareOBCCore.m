@@ -45,6 +45,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     if dynareOBC.NumberOfMax == 0
         dynareOBC.NoCubature = true;
+        dynareOBC.Global = false;
     end
     
     [ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
@@ -264,10 +265,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Global polynomial approximation
 
-    if dynareOBC.NumberOfMax <= 0
-        dynareOBC.Global = false;
-    end
     if dynareOBC.Global
+        if dynareOBC.NoCubature
+            error( 'dynareOBC:GlobalNoCubature', 'You cannot specify both the NoCubature and the Global options.' );
+        end
+        
         fprintf( 1, '\n' );
         disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
         fprintf( 1, '\n' );

@@ -7,6 +7,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     nEndo = M.endo_nbr;
     nExo = M.exo_nbr;
     
+    Global = dynareOBC.Global;
+    
     dynareOBC.MaxCubatureDimension = min( dynareOBC.MaxCubatureDimension, TM1 * ns );
     
     % pre-calculations for order=1 terms
@@ -19,13 +21,13 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     Sigma = spsparse( M.Sigma_e );
     dynareOBC.OriginalSigma = Sigma;
 
-    Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || dynareOBC.Global );
+    Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || Global );
     JustCalculateMean = ~( dynareOBC.NumberOfMax > 0 || ( ~dynareOBC.SlowIRFs ) || Order2VarianceRequired );
     
     if ( dynareOBC.Order == 1 ) || Order2VarianceRequired || dynareOBC.SimulateOnGridPoints
         dynareOBC.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
     end
-    if ( dynareOBC.Order == 1 ) && dynareOBC.Global
+    if ( dynareOBC.Order == 1 ) && Global
         dynareOBC.UnconditionalVarXi = Sigma;
         dynareOBC.LengthXi = size( Sigma, 1 );
     end
@@ -41,6 +43,9 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
         end
         VarianceZ1 = cell( TM1, 1 );
+        if Global
+			VarianceZ1Global = cell( TM1, 1 );
+        end
 
         BCovXiB = B1 * Sigma * B1';
 
@@ -54,6 +59,14 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }'; %#ok<PFBNS>
                 CurrentVariance( abs(CurrentVariance)<eps ) = 0;
                 VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
+            end
+            if Global
+				VarianceZ1Global{ k } = sparse( LengthZ1, LengthZ1 );
+				for i = 1 : k
+					CurrentVariance = A1Powers{ k - i + 1 } * BCovXiB * A1Powers{ k - i + 1 }';
+					CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+					VarianceZ1Global{ k } = VarianceZ1Global{ k } + CurrentVariance;
+				end
             end
         end 
     end
@@ -301,7 +314,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             inv_order_var = oo.dr.inv_order_var;
             VarIndices_ZeroLowerBounded = dynareOBC.VarIndices_ZeroLowerBounded;
 
-            LengthConditionalCovarianceTemp = 0.5 * TM1 * ( TM1 + 1 );
+            LengthConditionalCovarianceTemp = 0.5 * TM1 * T;
             ConditionalCovarianceTemp = cell( LengthConditionalCovarianceTemp, 1 );
 
             parfor i = 1 : LengthConditionalCovarianceTemp
@@ -312,6 +325,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
                 ConditionalCovarianceTemp{i} = ReducedCov;
             end
+
             for p = 1 : TM1
                 for q = 1 : p
                     i = 0.5 * p * ( p - 1 ) + q;
@@ -327,6 +341,28 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             
             dynareOBC.RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC );
            
+			if Global
+				ConditionalVarianceGlobal = zeros( T * ns, 1 );
+				
+				for p = 1 : TM1
+					CurrentCov = VarianceZ1Global{ p };
+					ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) );
+					ConditionalVarianceGlobal( 1 + p + StepIndices, 1 ) = ReducedCov;
+				end
+				
+				GlobalVarianceShare = max( 0, min( 1, diag( ConditionalCovariance ) ./ max( eps, ConditionalVarianceGlobal ) ) );
+				GlobalVarianceShare( 1 + StepIndices, 1 ) = 1;
+
+				dynareOBC.GlobalVarianceShare = GlobalVarianceShare;
+                
+                EndVarianceShare = max( GlobalVarianceShare( T + StepIndices, 1 ) );
+                if EndVarianceShare > eps
+                    error( 'dynareOBC:InternalIRFPeriodsTooLow', 'Please increase TimeToReturnToSteadyState as it is currently too low for global simulation. Current end variance share: %.17g', EndVarianceShare );
+                end
+            else
+                dynareOBC.GlobalVarianceShare = [];
+			end
+			
             dynareOBC.LengthXi = size( Sigma, 1 );
 
         else
@@ -345,9 +381,17 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
 
             VarianceY1State = cell( TM1, 1 );
             VarianceY1State{1} = zeros( nState );
+            
+            if Global
+				VarianceY1StateGlobal = cell( TM1, 1 );
+				VarianceY1StateGlobal{1} = zeros( nState );
+            end
 
             parfor k = 2 : TM1
                 VarianceY1State{k} = VarianceZ1{ k - 1 }( SelectState, SelectState );
+                if Global
+					VarianceY1StateGlobal{k} = VarianceZ1Global{ k - 1 }( SelectState, SelectState );
+                end
             end
 
             % dynareOBC_.A1Powers = A1Powers;
@@ -355,6 +399,10 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             dynareOBC.B2 = B2;
             dynareOBC.VarianceY1State = VarianceY1State;
             dynareOBC.LengthXi = LengthXi;
+            
+            if Global
+				dynareOBC.VarianceY1StateGlobal = VarianceY1StateGlobal;
+            end
 
             dynareOBC.VarianceXiSkeleton = sparse( Vi, Vj, Vs, LengthXi, LengthXi );
 

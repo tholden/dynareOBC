@@ -63,11 +63,10 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, pWeight, M, 
 
 	if dynareOBC.NumberOfMax > 0
         if ~dynareOBC.NoCubature
-			y = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
-        end
-
-        if dynareOBC.Global
-			y = SolveGlobalBoundsProblem( y, zeros( size( y ) ), UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
+			[ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
+            if dynareOBC.Global
+                y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, zeros( size( y ) ), UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC );
+            end
         end
 	end
 end

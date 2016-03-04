@@ -225,11 +225,10 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
 
                         if ~dynareOBC_.NoCubature
-                            y = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
-                        end
-
-                        if dynareOBC_.Global
-                            y = SolveGlobalBoundsProblem( y, yNext, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC_ );
+                            [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
+                            if dynareOBC_.Global
+                                y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, yNext, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', pWeight, dynareOBC_ );
+                            end
                         end
                     catch Error
                         if dynareOBC_.Estimation || dynareOBC_.IgnoreBoundFailures
