@@ -109,9 +109,8 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         LengthZ2 = size( A2Powers{1}, 1 );
         
         VarianceZ2 = cell( TM1, 1 );
-        if Global
-            VarianceZ2Global = cell( TM1, 1 );
-        end
+        VarianceZ2Global = cell( TM1, 1 );
+
         parfor k = 1 : TM1
             VarianceZ2{ k } = sparse( LengthZ2, LengthZ2 );
             for i = 1 : min( k, PeriodsOfUncertainty )

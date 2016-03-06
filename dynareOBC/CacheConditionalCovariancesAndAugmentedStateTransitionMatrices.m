@@ -43,9 +43,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
         end
         VarianceZ1 = cell( TM1, 1 );
-        if Global
-			VarianceZ1Global = cell( TM1, 1 );
-        end
+        VarianceZ1Global = cell( TM1, 1 );
 
         BCovXiB = B1 * Sigma * B1';
 
@@ -382,8 +380,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             VarianceY1State = cell( TM1, 1 );
             VarianceY1State{1} = zeros( nState );
             
+            VarianceY1StateGlobal = cell( TM1, 1 );
             if Global
-				VarianceY1StateGlobal = cell( TM1, 1 );
 				VarianceY1StateGlobal{1} = zeros( nState );
             end
 
