@@ -17,8 +17,10 @@ function [ V, C, CB, kv, av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     
     Bbliss = ( 1 - Ybar ) / ( R - 1 );
 
+	std_A = sigma / sqrt( 1 - rho^2 );
+
     Bv = B_ : ( ( Bbliss - B_ ) / ( nB - 1 ) ) : Bbliss;
-    Av = ( - wA * sigma ) : ( 2 * wA * sigma / ( nA - 1 ) ) : ( wA * sigma );
+    Av = ( - wA * std_A ) : ( 2 * wA * std_A / ( nA - 1 ) ) : ( wA * std_A );
 
     W = zeros( nA, nA );
     parfor i = 1 : nA

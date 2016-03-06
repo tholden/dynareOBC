@@ -17,9 +17,10 @@ function [ V, C, CB, kv, av, alpha, beta, nu, theta, rho, sigma ] = GlobalSoluti
     % c_ = log( 1 - alpha * beta ) + y_;
 
     std_k = sigma * sqrt( ( 1 + alpha * rho ) / ( ( 1 - alpha ) * ( 1 + alpha ) * ( 1 - rho ) * ( 1 + rho ) * ( 1 - alpha * rho ) ) );
+	std_a = sigma / sqrt( 1 - rho^2 );
 
     kv = ( k_ - wk * std_k ) : ( 2 * wk * std_k / ( nk - 1 ) ) : ( k_ + wk * std_k );
-    av = ( - wa * sigma ) : ( 2 * wa * sigma / ( na - 1 ) ) : ( wa * sigma );
+    av = ( - wa * std_a ) : ( 2 * wa * std_a / ( na - 1 ) ) : ( wa * std_a );
 
     W = zeros( na, na );
     parfor i = 1 : na
