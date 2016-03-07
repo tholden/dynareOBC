@@ -1,15 +1,14 @@
-function [ Vnew, Cnew, CBnew ] = IterateValueFunction( V, C, CB, W, kv, av, alpha, beta, nu, theta )
-    nk = length( kv );
-    na = length( av );
+function [ Vnew, Cnew ] = IterateValueFunction( V, C, CB, W, Bv, Av, Vmin, beta, Ybar, R )
+    nB = length( Bv );
+    nA = length( Av );
     Vnew = coder.nullcopy( V );
     Cnew = coder.nullcopy( C );
-    CBnew = coder.nullcopy( CB );
-    parfor ia = 1 : na
-        a = av( ia );
-        Wv = W( :, ia );
-        for ik = 1 : nk
-            k = kv( ik ); %#ok<PFBNS>
-            [ Vnew( ia, ik ), Cnew( ia, ik ), CBnew( ia, ik ) ] = EvaluateValueFunctionAtPoint( k, a, Wv, kv, V, CB( ia, ik ), alpha, beta, nu, theta );
+    parfor iA = 1 : nA
+        A = Av( iA );
+        Wv = W( :, iA );
+        for iB = 1 : nB
+            B = Bv( iB ); %#ok<PFBNS>
+            [ Vnew( iA, iB ), Cnew( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, CB( iA, iB ), Vmin, beta, Ybar, R );
         end
     end
 end
