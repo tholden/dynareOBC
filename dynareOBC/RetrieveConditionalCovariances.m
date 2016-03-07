@@ -24,15 +24,11 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         [ Ci, Cj, Cs ] = find( dynareOBC.VarianceXiSkeleton );
             
         BCovXiB = cell( TM1, 1 );
+        BCovXiBGlobal = cell( TM1, 1 );
         
         VarianceY1State = dynareOBC.VarianceY1State;
         
         Global = dynareOBC.Global;
-        
-        if Global
-            VarianceY1StateGlobal = dynareOBC.VarianceY1StateGlobal;
-            BCovXiBGlobal = cell( TM1, 1 );
-        end
         
         B2 = dynareOBC.B2;
         
@@ -48,7 +44,7 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
                 % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
                 [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), CurrentSigma );
                 % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
-                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma );
+                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma ); %#ok<PFBNS>
                 Tmpi = Tmpi + Offset3;
                 Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
                 Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
@@ -61,6 +57,8 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
 
             end
         else
+            VarianceY1StateGlobal = dynareOBC.VarianceY1StateGlobal;
+            
             for i = 1 : PeriodsOfUncertainty
                 iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
 
