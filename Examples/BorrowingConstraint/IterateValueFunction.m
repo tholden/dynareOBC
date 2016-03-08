@@ -11,4 +11,6 @@ function [ Vnew, Cnew ] = IterateValueFunction( V, C, CB, W, Bv, Av, Vmin, beta,
             [ Vnew( iA, iB ), Cnew( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, CB( iA, iB ), Vmin, beta, Ybar, R );
         end
     end
+    Vnew = cummax( Vnew, 1 );
+    Vnew = cummax( Vnew, 2 );
 end

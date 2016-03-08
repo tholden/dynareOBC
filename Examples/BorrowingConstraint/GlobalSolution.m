@@ -31,7 +31,7 @@ function [ V, C, CB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         W( :, i ) = GeneratePiecewiseLinearCubatureRule( Av, rho * Av( i ), sigma );
     end
 
-    Vtmp = max( Vmin, min( 0, ValueFunctionAlwaysAtBorrowingConstraint( Av, beta, mu, rho, sigma, Ybar ) ) );
+    Vtmp = max( Vmin, min( 0, cummax( ValueFunctionAlwaysAtBorrowingConstraint( Av, beta, mu, rho, sigma, Ybar ) ) ) );
     
     V = bsxfun( @times, Vtmp, 1:(-1/(nB-1)):0 );
     
