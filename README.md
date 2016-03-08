@@ -230,18 +230,21 @@ Note:
                a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
 
  * **Advanced options**
-    * `SimulateOnGridPoints`
-         Rather than running an actual simulation, causes DynareOBC to draw QMC points from a Gaussian approximation to the
-         stationary distribution of the model. The mean for the Gaussian approximation is accurate to the same order as the
-         order of approximation, but the variance used is always only accurate to a first order approximation.
-    * `CompileSimulationCode`
-         Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
-    * `OrderOverride=1|2|3`
-         Overrides the order of approximation set within the call to stoch_simul.
     * `Bypass`
          Ignores all non-differentiabilities in the model. Useful for debugging.
+    * `CompileSimulationCode`
+         Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
     * `NoCleanup`
          Prevents the deletion of DynareOBC's temporary files. Useful for debugging.
+    * `OrderOverride=1|2|3`
+         Overrides the order of approximation set within the call to stoch_simul.
+    * `ShockSequenceFile=FILENAME.mat`
+         Specifies a MAT file to open to load shocks from. The MAT file should contain a matrix called `ShockSequence`, which should
+         have as many rows as there are shocks, and as many columns as there are simulation periods.
+    * `SimulateOnGridPoints`
+         Rather than running an actual simulation, causes DynareOBC to draw QMC points from a Gaussian approximation to the
+         stationary distribution of the model without bounds. The mean for the Gaussian approximation is accurate to the same order
+         as the order of approximation, but the variance used is always only accurate to a first order approximation. EXPERIMENTAL.
 
 See the Dynare reference manual for other available options.
 
