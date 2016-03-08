@@ -221,7 +221,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 TM = dynareOBC.PTest;
 
                 T = min( TM, Ts );
-                Indices = bsxfun( @plus, (1:T)', int64( 0 ):Ts:((ns-1)*Ts ) );
+                Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
                 Indices = Indices(:);
                 M = dynareOBC.MMatrix( Indices, Indices );                
                 if ptest_use_mex
