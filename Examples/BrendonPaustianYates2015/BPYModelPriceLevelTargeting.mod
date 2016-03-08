@@ -46,7 +46,7 @@ end;
   shocks;
     var e = 1;
   end;
-  stoch_simul( order = 2, periods = 0, irf = 20 ) y p i err1 err2 err3;
+  stoch_simul( order = 1, periods = 0, irf = 20 ) y p i err1 err2 err3;
 @#else
   shocks;
     var e;

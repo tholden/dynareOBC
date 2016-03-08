@@ -34,4 +34,4 @@ end;
 
 steady;
 
-stoch_simul( order = 2, periods = 0, irf = 20 ) y pi i d;
+stoch_simul( order = 1, periods = 0, irf = 20 ) y pi i d;
