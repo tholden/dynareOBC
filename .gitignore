@@ -18,6 +18,7 @@ $RECYCLE.BIN/
 *.asv
 *.mex*
 *.bak
+*.log
 
 dynareOBCTemp*
 *deleteThis*
