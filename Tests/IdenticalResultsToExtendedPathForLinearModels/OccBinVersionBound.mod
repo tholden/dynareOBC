@@ -22,18 +22,6 @@ model;
   i = 0;
 end;
 
-steady_state_model;
-  pi = - ( 1 - beta );
-  y = ( 1 - beta ) / ( ( 1 - theta ) * ( 1 - theta * beta ) / theta * ( sigma + phi ) ) * pi;
-  i = 0;
-  d = 1 - beta + 1.5 * pi + 0.25 * y;
-  x = 0;
-end;
-
 shocks;
 	var e = 1;
 end;
-
-steady;
-
-stoch_simul( order = 1, periods = 1100, irf = 0 );

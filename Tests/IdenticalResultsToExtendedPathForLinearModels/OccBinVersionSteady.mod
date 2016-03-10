@@ -36,4 +36,4 @@ end;
 
 steady;
 
-stoch_simul( order = 1, periods = 1100, irf = 0 );
+stoch_simul( order = 1, periods = 0, irf = 0 );
