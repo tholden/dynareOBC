@@ -2,7 +2,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
     global M_ oo_ dynareOBC_
         
-    T = dynareOBC_.InternalIRFPeriods;
     Ts = dynareOBC_.TimeToEscapeBounds;
     ns = dynareOBC_.NumberOfMax;
    
@@ -224,7 +223,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         end
                     end
 
-                    BoundOffsetDROrder = pMat * y;
+                    BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * y;
                     BoundOffsetOriginalOrder = BoundOffsetDROrder( oo_.dr.inv_order_var, : );
 
                     BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
