@@ -1,4 +1,4 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, SubEndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, EndoSelectWithControls, EndoSelect, SubEndoSelect, FullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
     Mean = [];
     RootCovariance = [];
     TwoNLogObservationLikelihood = NaN;
@@ -26,11 +26,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, EndoSelect, FullMean, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), false, InitialFullState, true );
         if dynareOBC.Order == 1
-            TempNewStatePoints = [ Simulation.first; Simulation.bound_offset; Simulation.bound ];
+            TempNewStatePoints = Simulation.first + Simulation.bound_offset;
         elseif dynareOBC.Order == 2
-            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.bound_offset; Simulation.bound ];
+            TempNewStatePoints = [ Simulation.first; Simulation.second + Simulation.bound_offset ];
         else
-            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third; Simulation.first_sigma_2; Simulation.bound_offset; Simulation.bound ];
+            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third + Simulation.bound_offset; Simulation.first_sigma_2 ];
         end
         NewStatePoints( :, i ) = TempNewStatePoints( EndoSelectWithControls ); % TempNewStatePoints( EndoSelect );
         if any( ~isfinite( NewStatePoints( :, i ) ) )
@@ -94,7 +94,7 @@ end
 function FullStateStruct = GetFullStateStruct( PartialState, NEndo, EndoSelect, FullMean, Order, Constant )
     CurrentState = FullMean;
     CurrentState( EndoSelect ) = PartialState;
-    FullStateStruct = struct( 'bound', [] );
+    FullStateStruct = struct;
     FullStateStruct.first = CurrentState( 1:NEndo );
     total = FullStateStruct.first + Constant;
     if Order >= 2
@@ -104,16 +104,9 @@ function FullStateStruct = GetFullStateStruct( PartialState, NEndo, EndoSelect, 
             FullStateStruct.third = CurrentState( (2*NEndo+1):(3*NEndo) );
             FullStateStruct.first_sigma_2 = CurrentState( (3*NEndo+1):(4*NEndo) );
             total = total + FullStateStruct.third + FullStateStruct.first_sigma_2;
-            FullStateStruct.bound_offset = CurrentState( (4*NEndo+1):(5*NEndo) );
-            FullStateStruct.bound = CurrentState( (5*NEndo+1):end );
-        else
-            FullStateStruct.bound_offset = CurrentState( (2*NEndo+1):(3*NEndo) );
-            FullStateStruct.bound = CurrentState( (3*NEndo+1):end );
         end
-    else
-        FullStateStruct.bound_offset = CurrentState( (NEndo+1):(2*NEndo) );
-            FullStateStruct.bound = CurrentState( (2*NEndo+1):end );
     end
+    FullStateStruct.bound_offset = zeros( NEndo, 1 );
     FullStateStruct.total = total;
     FullStateStruct.total_with_bounds = FullStateStruct.total + FullStateStruct.bound_offset;
 end

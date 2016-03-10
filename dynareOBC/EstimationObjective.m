@@ -11,7 +11,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
         SlowMode = false;
     end
     
-    [ Info, M, options, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, SlowMode );
+    [ Info, M, ~, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, SlowMode );
     if Info ~= 0
         return
     end
@@ -71,7 +71,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
         end
 
         try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, EndoSelect, AllEndoSelect, OldMean, OldMean( EndoSelect ), OldRootCovariance( EndoSelect, EndoSelect ), RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), AllEndoSelect, EndoSelect, AllEndoSelect, OldMean, OldMean( EndoSelect ), OldRootCovariance( EndoSelect, EndoSelect ), RootQ, RootMEVar, M, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
         catch
             Mean = [];
         end
@@ -117,7 +117,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), EndoSelectWithControls, EndoSelect, SubEndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), EndoSelectWithControls, EndoSelect, SubEndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
         catch
             Mean = [];
         end
@@ -146,7 +146,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
 
     TwoNLogLikelihood = 0;
     for t = 1:T
-        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), EndoSelectWithControls, EndoSelect, SubEndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, options, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), EndoSelectWithControls, EndoSelect, SubEndoSelect, CurrentFullMean, OldMean, OldRootCovariance, RootQ, RootMEVar, M, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
         if isempty( Mean )
             TwoNLogLikelihood = Inf;
             return;

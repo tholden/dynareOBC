@@ -17,7 +17,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         nEndo = M_.endo_nbr;
         nState = length( dynareOBC_.SelectState );
         InitialFullState = struct;
-        InitialFullState.bound = zeros( Ts * ns, 1 );
         InitialFullState.bound_offset = zeros( nEndo, 1 );
         InitialFullState.first = Mean_z( dr.inv_order_var );
         InitialFullState.total = bsxfun( @plus, InitialFullState.first, dynareOBC_.Constant );
@@ -153,23 +152,18 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
         SelectState = dynareOBC_.SelectState;
 
-        Simulation.bound = zeros( Ts * ns, SimulationLength );
         Simulation.bound_offset = zeros( M_.endo_nbr, SimulationLength );
 
         ghx = oo_.dr.ghx;
         pMat = dynareOBC_.pMat;
 
         if dynareOBC_.NumberOfMax > 0
-            y = InitialFullState.bound;
+            y = zeros( Ts * ns, 1 );
 
             BoundOffsetOriginalOrder = InitialFullState.bound_offset;
             BoundOffsetDROrder = BoundOffsetOriginalOrder( oo_.dr.order_var );
 
-            Reshaped_y = reshape( y, Ts, ns );
-            yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
-            yNext = yNext(:);
-
-            BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
+            BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
             BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
 
             Shock = zeros( M_.exo_nbr, 1 );
@@ -197,22 +191,18 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
                     for i = 1 : length( StructFieldNames )
                         CurrentFieldName = StructFieldNames{ i };
-                        if ~strcmp( CurrentFieldName, 'constant' ) && ~strcmp( CurrentFieldName, 'bound' )
+                        if ~strcmp( CurrentFieldName, 'constant' )
                             CurrentStateWithoutBound.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, t );
                         end
                     end
                     CurrentStateWithoutBound.( OrderText ) = CurrentStateWithoutBound.( OrderText ) + BoundOffsetOriginalOrderNext;
-                    CurrentStateWithoutBound.bound = yNext;
 
                     ReturnPathStruct = ExpectedReturn( CurrentStateWithoutBound, M_, oo_.dr, dynareOBC_ );
                     ReturnPath = ReturnPathStruct.total;        
 
-                    for i = [ dynareOBC_.VarIndices_ZeroLowerBounded dynareOBC_.VarIndices_ZeroLowerBoundedLongRun ]
-                        ReturnPath( i, : ) = ReturnPath( i, : ) - ( dynareOBC_.MSubMatrices{ i }( 1:T, : ) * yNext )';
-                    end
-
                     UnconstrainedReturnPath = vec( ReturnPath( dynareOBC_.VarIndices_ZeroLowerBounded, : )' );
 
+                    yOld = y;
                     try
                         y = SolveBoundsProblem( UnconstrainedReturnPath );
                         [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
@@ -225,24 +215,21 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         end
                     catch Error
                         if dynareOBC_.Estimation || dynareOBC_.IgnoreBoundFailures
-                            y = yNext;
+                            Reshaped_yOld = reshape( yOld, Ts, ns );
+                            y = [ Reshaped_yOld( 2:end, : ); zeros( 1, ns ) ];
+                            y = y(:);
                             warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to Estimation or IgnoreBoundFailures option.' ] );
                         else
                             rethrow( Error );
                         end
                     end
 
-                    BoundOffsetDROrder = BoundOffsetDROrderNext + pMat * ( y - yNext );
+                    BoundOffsetDROrder = pMat * y;
                     BoundOffsetOriginalOrder = BoundOffsetDROrder( oo_.dr.inv_order_var, : );
 
-                    Reshaped_y = reshape( y, Ts, ns );
-                    yNext = [ Reshaped_y( 2:end, : ); zeros( 1, ns ) ];
-                    yNext = yNext(:);
-
-                    BoundOffsetDROrderNext = pMat * yNext + ghx * BoundOffsetDROrder( SelectState );
+                    BoundOffsetDROrderNext = ghx * BoundOffsetDROrder( SelectState );
                     BoundOffsetOriginalOrderNext = BoundOffsetDROrderNext( oo_.dr.inv_order_var );
 
-                    Simulation.bound( :, t ) = y;
                     Simulation.bound_offset( :, t ) = BoundOffsetOriginalOrder;
                 catch Error
                     warning( WarningState );
@@ -277,7 +264,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
 
         Simulation.total_with_bounds = Simulation.total + Simulation.bound_offset;        
-        SimulationFieldNames = [ StructFieldNames; { 'bound'; 'bound_offset'; 'total_with_bounds' } ];
+        SimulationFieldNames = [ StructFieldNames; { 'bound_offset'; 'total_with_bounds' } ];
     end
     
     %% Common

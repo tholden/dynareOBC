@@ -43,7 +43,6 @@ ARGS{1}{5} = coder.typeof(0,[M.exo_nbr Inf],[0 1]);
 ARGS{1}{6} = coder.typeof(int32(0));
 ARGS{1}{7} = coder.Constant(int32(dynareOBC.Order));
 ARGS{1}{8} = struct;
-ARGS{1}{8}.bound = coder.typeof( zeros( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 ) );
 ARGS{1}{8}.bound_offset = coder.typeof(dynareOBC.Constant);
 ARGS{1}{8}.first = coder.typeof(dynareOBC.Constant);
 if dynareOBC.Order >= 3
