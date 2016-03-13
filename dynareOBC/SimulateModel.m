@@ -129,17 +129,16 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         if isempty( Simulation )
             if DisplayProgress
-                p = TimedProgressBar( SimulationLength * dynareOBC_.Order, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
+                p = TimedProgressBar( SimulationLength, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
             else
                 p = [];
             end
             if isempty( p )
                 call_back = @( x ) x;
-                call_back_arg = 0;
             else
                 call_back = @( x ) x.progress;
-                call_back_arg = p;
             end
+            call_back_arg = p;
             Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, call_back, call_back_arg );
             if ~isempty( p )
                 p.stop;
