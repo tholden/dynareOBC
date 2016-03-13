@@ -87,10 +87,10 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
         end
     end
     
-    if nargin < 7
+    if nargin < 6
         use_cached_nlma_values = 0;
     end
-    if nargin >= 8
+    if nargin >= 7
         simulation_first( :, 1 ) = initial_state.first( dr.order_var );
         if pruning_order >= 2
             simulation_second( :, 1 ) = initial_state.second( dr.order_var );
@@ -108,7 +108,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
     E = shock_sequence;
     for t=2:simul_length_p1
       simulation_first(:,t)=dr.ghx*simulation_first(select_state,t-1)+dr.ghu*E(:,t-1);
-       if nargin >= 10
+       if nargin >= 9
           call_back(call_back_arg);
        end
     end
