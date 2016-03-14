@@ -4,5 +4,6 @@ Parameters may be adjusted in GlobalSolution.m.
 
 To run the accuracy tests, run:
 
-clear all;dynareOBC CapitalConstraints.mod [nocubature|fastcubature|quasimontecarlolevel=9] periodsofuncertainty=??? mlvsimulationmode=1 cubaturetolerance=0 simulateongridpoints
-disp(nanmean(abs(dynareOBC_.MLVSimulationWithBounds.cError(1:end))));
+clear all;dynareOBC CapitalConstraints.mod periodsofuncertainty=??? [nocubature|fastcubature|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 
+tmp = abs( dynareOBC_.MLVSimulationWithBounds.cError( 101:end ) );
+disp( [mean(tmp) sqrt(mean(tmp.^2)) max(tmp)] );
