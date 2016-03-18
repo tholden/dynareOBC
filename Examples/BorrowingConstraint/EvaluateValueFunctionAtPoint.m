@@ -28,7 +28,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R
     fc = Maximand( c, B, A, Wv, Bv, V, beta, Ybar, R, nB );
     fd = Maximand( d, B, A, Wv, Bv, V, beta, Ybar, R, nB );
     while true
-        if fc > fd
+        if fc >= fd
             if fc > fx
                 x = c;
                 fx = fc;
@@ -58,7 +58,8 @@ end
 function V = Maximand( X, B, A, Wv, Bv, V, beta, Ybar, R, nB )
     OmC = max( 0, 1 - X );
     phi = R - 1;
-    V = min( 0, -0.5 * OmC * OmC - 0.5 * phi * B * B + beta * ExpectedV( max( Ybar, A ) + R * B - X, V, Wv, Bv, nB ) );
+    BNew = max( Ybar, A ) + R * B - X;
+    V = min( 0, -0.5 * OmC * OmC - 0.5 * phi * BNew * BNew + beta * ExpectedV( BNew, V, Wv, Bv, nB ) );
 end
 
 function EV = ExpectedV( BNew, V, Wv, Bv, nB )
