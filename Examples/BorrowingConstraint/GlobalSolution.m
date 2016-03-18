@@ -23,11 +23,13 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
 	std_A = sigma / sqrt( 1 - rho^2 );
 
     Bv = Bmin : ( ( Bmax - Bmin ) / ( nB - 1 ) ) : Bmax;
-    Av = ( - wA * std_A ) : ( 2 * wA * std_A / ( nA - 1 ) ) : ( wA * std_A );
+    Av = ( mu - wA * std_A ) : ( 2 * wA * std_A / ( nA - 1 ) ) : ( mu + wA * std_A );
 
+    Aoffset = ( 1 - rho ) * mu;
+    
     W = zeros( nA, nA );
     parfor i = 1 : nA
-        W( :, i ) = GeneratePiecewiseLinearCubatureRule( Av, rho * Av( i ), sigma );
+        W( :, i ) = GeneratePiecewiseLinearCubatureRule( Av, Aoffset + rho * Av( i ), sigma );
     end
 
     [ V, X ] = ValueAndPolicyFunctionsNoBounds( Av, Bv, beta, mu, rho, sigma );
