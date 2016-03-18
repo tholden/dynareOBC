@@ -1,16 +1,21 @@
-function [ Vnew, Cnew ] = IterateValueFunction( V, C, CB, W, Bv, Av, Vmin, beta, Ybar, R )
+function [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R )
     nB = length( Bv );
     nA = length( Av );
     Vnew = coder.nullcopy( V );
-    Cnew = coder.nullcopy( C );
+    Xnew = coder.nullcopy( X );
     parfor iA = 1 : nA
         A = Av( iA );
         Wv = W( :, iA );
+        Vmax = -Inf;
+        Xmax = -Inf;
         for iB = 1 : nB
             B = Bv( iB ); %#ok<PFBNS>
-            [ Vnew( iA, iB ), Cnew( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, CB( iA, iB ), Vmin, beta, Ybar, R );
+            [ Vtmp, Xtmp ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XB( iA, iB ), beta, Ybar, R );
+            Vmax = max( Vmax, Vtmp );
+            Xmax = max( Xmax, Xtmp );
+            Vnew( iA, iB ) = Vmax;
+            Xnew( iA, iB ) = Xmax;
         end
     end
-    Vnew = cummax( Vnew, 1 );
-    Vnew = cummax( Vnew, 2 );
+    Vnew = cummax( Vnew );
 end

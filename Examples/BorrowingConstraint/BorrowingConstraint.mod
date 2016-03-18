@@ -1,37 +1,35 @@
-var A, B, lambdaY;
+var A, B, X, lambdaY;
 varexo epsilon;
 
-parameters beta, mu, rho, sigma, Ybar, R;
+parameters beta, mu, rho, sigma, Ybar;
 
 beta = 0.99;
 mu = 0.5;
 rho = 0.95;
 sigma = 0.05;
 Ybar = 0.25;
-R = 1.01;
 
 external_function( name = QueryGlobalSolution, nargs = 2 );
 
 model;
 	#R = 1 / beta;
 	#phi = R - 1;
-	#Y = max( Ybar, A );
-	#C = max( 0, 1 - lambdaY );
-	#ShadowC = max( 0, 1 - beta * R * lambdaY(+1) );
-	B = max( -Ybar / ( R - 1 ), Y + R * B(-1) - ShadowC );
-	Y = C + B - R * B(-1);
+	X = max( 0, 1 - lambdaY ) + max( 0, X - 1 );
+	B = max( -Ybar / ( R - 1 ), 1 / phi * ( lambdaY(+1) - lambdaY ) );
+	X = max( Ybar, A ) + R * B(-1) - B;	
 	A = ( 1 - rho ) * mu + rho * A(-1) + sigma * epsilon;
-	#CError = C - log( QueryGlobalSolution( B(-1), A ) );
+	#XError = X - XQueryGlobalSolution( B(-1), A );
 end;
 
 steady_state_model;
 	A = mu;
-	B = -Ybar / ( R - 1 );
-	lambdaY = 1 + Ybar - mu;
+	B = 0;
+	X = mu;
+	lambdaY = 1 - mu;
 end;
 
 shocks;
 	var epsilon = 1;
 end;
 
-stoch_simul( order = 2, periods = 1023, irf = 0 ) CError;
+stoch_simul( order = 1, periods = 1100, irf = 0 ) XError;

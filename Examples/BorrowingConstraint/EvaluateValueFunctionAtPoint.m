@@ -1,12 +1,18 @@
-function [ Vnew, Cnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, CB, Vmin, beta, Ybar, R )
+function [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XB, beta, Ybar, R )
     nB = length( Bv );
     
-    [ Cnew, Vnew ] = GoldenSectionMaximise( 0, CB, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+    [ Xnew, Vnew ] = GoldenSectionMaximise( 0, XB, B, A, Wv, Bv, V, beta, Ybar, R, nB );
 end
 
-function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB )
+function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R, nB )
     gr = 0.618033988749894848204586834365638117720;
 
+    if a >= b
+        x = a;
+        fx = Maximand( a, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+        return;
+    end
+    
     fa = Maximand( a, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
     fb = Maximand( b, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
     if fb > fa
@@ -49,10 +55,10 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, Vmin, beta, Y
     end
 end
 
-function V = Maximand( C, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB )
-    OmC = 1 - C;
-    V = -0.5 * OmC * OmC + beta * ExpectedV( max( Ybar, A ) + R * B - C, V, Wv, Bv, nB );
-    V = max( Vmin, min( 0, V ) );
+function V = Maximand( X, B, A, Wv, Bv, V, beta, Ybar, R, nB )
+    OmC = max( 0, 1 - X );
+    phi = R - 1;
+    V = min( 0, -0.5 * OmC * OmC - 0.5 * phi * B * B + beta * ExpectedV( max( Ybar, A ) + R * B - X, V, Wv, Bv, nB ) );
 end
 
 function EV = ExpectedV( BNew, V, Wv, Bv, nB )
