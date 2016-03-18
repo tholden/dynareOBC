@@ -34,4 +34,5 @@ dynareOBC/JGit4MATLAB/@JGit/older-versions/*.jar
 LastUpdate.mat
 LastDependencyUpdate.mat
 FastStart.mat
-Examples/CapitalConstraints/codegen/
+Examples/CapitalConstraint/codegen/
+Examples/BorrowingConstraint/codegen/
