@@ -59,12 +59,12 @@ function V = Maximand( X, B, A, Wv, Bv, V, beta, Ybar, R, nB )
     OmC = max( 0, 1 - X );
     phi = R - 1;
     BNew = max( Ybar, A ) + R * B - X;
+    BNew = max( Bv( 1 ), min( Bv( end ), BNew ) );
     V = min( 0, -0.5 * OmC * OmC - 0.5 * phi * BNew * BNew + beta * ExpectedV( BNew, V, Wv, Bv, nB ) );
 end
 
 function EV = ExpectedV( BNew, V, Wv, Bv, nB )
     if ~isnan( BNew )
-        BNew = max( Bv( 1 ), min( Bv( end ), BNew ) );
         Index = 1 + ( nB - 1 ) * ( BNew - Bv( 1 ) ) / ( Bv( end ) - Bv( 1 ) );
         lIndex = min( nB - 1, floor( Index ) );
         uIndex = lIndex + 1;
