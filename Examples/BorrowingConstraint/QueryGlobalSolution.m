@@ -1,34 +1,32 @@
-function [ Cnew, DCnew, DDCnew ] = QueryGlobalSolution( k, a )
-    persistent kv av V CB alpha beta nu theta rho sigma;
+function [ Xnew, DXnew, DDXnew ] = QueryGlobalSolution( B, A )
+    persistent V Bv Av beta mu rho sigma Ybar R
     
     if coder.target('MATLAB')
-        if isempty( kv )
+        if isempty( Bv )
             Results = load( 'GlobalResults.mat' );
-            kv = Results.kv;
-            av = Results.av;
             V = Results.V;
-            CB = Results.CB;
-            alpha = Results.alpha;
+            Bv = Results.Bv;
+            Av = Results.Av;
             beta = Results.beta;
-            nu = Results.nu;
-            theta = Results.theta;
+            mu = Results.mu;
             rho = Results.rho;
             sigma = Results.sigma;
+            Ybar = Results.Ybar;
+            R = Results.R;
         end
     else
         Results = coder.load( 'GlobalResults.mat' );
-        kv = Results.kv;
-        av = Results.av;
         V = Results.V;
-        CB = Results.CB;
-        alpha = Results.alpha;
+        Bv = Results.Bv;
+        Av = Results.Av;
         beta = Results.beta;
-        nu = Results.nu;
-        theta = Results.theta;
+        mu = Results.mu;
         rho = Results.rho;
         sigma = Results.sigma;
+        Ybar = Results.Ybar;
+        R = Results.R;
     end
-    [ ~, Cnew, ~ ] = EvaluateValueFunctionOffGrid( k, a, kv, av, V, CB, alpha, beta, nu, theta, rho, sigma );
-    DCnew = NaN( 2, 1 );
-    DDCnew = NaN( 2, 2 );
+    [ ~, Xnew, ~ ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, V, beta, Ybar, R, mu, rho, sigma );
+    DXnew = NaN( 2, 1 );
+    DDXnew = NaN( 2, 2 );
 end
