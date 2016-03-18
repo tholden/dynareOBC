@@ -47,7 +47,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         e1 = max( max( abs( V - Vnew ) ) );
         e2 = max( max( abs( X - Xnew ) ) );
         Iter = Iter + int32( 1 );
-        fprintf( '%d %.15g %.15g %.15g\n', Iter, e1, e2 );
+        fprintf( '%d %.15g %.15g\n', Iter, e1, e2 );
         if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
             break;
         end
