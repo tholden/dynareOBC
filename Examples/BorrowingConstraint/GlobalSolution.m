@@ -18,7 +18,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     Bmin = -MaxBorrowing;
     % C_ = mu - Ybar;
     
-    Bmax = ( 1 - Ybar ) / ( R - 1 );
+    Bmax = 25; % ( 1 - Ybar ) / ( R - 1 );
 
 	std_A = sigma / sqrt( 1 - rho^2 );
 
