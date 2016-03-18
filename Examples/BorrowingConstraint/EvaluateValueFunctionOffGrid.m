@@ -3,5 +3,5 @@ function [ Vnew, Xnew ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, V, beta, Y
        
     XB = max( 0, max( Ybar, A ) + R * B + Ybar / ( R - 1 ) );
     
-    [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XB, beta, Ybar, R );
+    [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, 0, XB, beta, Ybar, R );
 end

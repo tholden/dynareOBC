@@ -9,7 +9,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     % phi = R - 1;
 
     nA = 256;
-    nB = 4 * nA;
+    nB = 16 * nA;
     wA = 4;
     
     MaxBorrowing = Ybar / ( R - 1 );
@@ -45,7 +45,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     Iter = int32( 0 );
     e1o = Inf;
     while true
-        [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R );
+        [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
         e1 = max( max( abs( V - Vnew ) ) );
         e2 = max( max( abs( X - Xnew ) ) );
         Iter = Iter + int32( 1 );

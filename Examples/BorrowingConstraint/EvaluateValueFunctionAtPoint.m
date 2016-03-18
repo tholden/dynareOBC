@@ -1,7 +1,7 @@
-function [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XB, beta, Ybar, R )
+function [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, XU, beta, Ybar, R )
     nB = length( Bv );
     
-    [ Xnew, Vnew ] = GoldenSectionMaximise( 0, XB, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    [ Xnew, Vnew ] = GoldenSectionMaximise( XL, XU, B, A, Wv, Bv, V, beta, Ybar, R, nB );
 end
 
 function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R, nB )

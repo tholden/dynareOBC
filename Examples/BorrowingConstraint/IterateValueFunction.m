@@ -1,4 +1,4 @@
-function [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R )
+function [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, UseTightBounds )
     nB = length( Bv );
     nA = length( Av );
     Vnew = coder.nullcopy( V );
@@ -7,13 +7,29 @@ function [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar,
         A = Av( iA );
         Wv = W( :, iA );
         Vmax = -Inf;
-        Xmax = -Inf;
+        Xmax = 0;
         for iB = 1 : nB
             B = Bv( iB ); %#ok<PFBNS>
-            [ Vtmp, Xtmp ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XB( iA, iB ), beta, Ybar, R );
+            XL = Xmax;
+            XU = XB( iA, iB );
+            if UseTightBounds
+                if iA > 1
+                    XL = max( XL, X( iA - 1, iB ) );
+                end
+                if iB > 1
+                    XL = max( XL, X( iA, iB - 1 ) );
+                end
+                if iA < nA
+                    XU = min( XU, X( iA + 1, iB ) );
+                end
+                if iB < nB
+                    XU = min( XU, X( iA, iB + 1 ) ); %#ok<PFBNS>
+                end
+            end
+            XU = max( XL, XU );
+            [ Vtmp, Xmax ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, XU, beta, Ybar, R );
             Vmax = max( Vmax, Vtmp );
             Vnew( iA, iB ) = Vmax;
-            Xmax = max( Xmax, Xtmp );
             Xnew( iA, iB ) = Xmax;
         end
     end
