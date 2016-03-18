@@ -47,10 +47,13 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     while true
         [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
         e1 = max( max( abs( V - Vnew ) ) );
-        e2 = max( max( abs( X - Xnew ) ) );
+        tmp = abs( X - Xnew );
+        tmp = tmp(:);
+        [ e2, ind ] = max( tmp );
         e3 = mean( mean( abs( X - Xnew ) ) );
+        [ sub1, sub2 ] = ind2sub( size( X ), ind );
         Iter = Iter + int32( 1 );
-        fprintf( '%d %.15g %.15g %.15g\n', Iter, e1, e2, e3 );
+        fprintf( '%d %.15g %.15g %.15g %d %d\n', Iter, e1, e2, e3, int32( sub1 ), int32( sub2 ) );
         if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
             break;
         end
