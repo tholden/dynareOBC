@@ -49,7 +49,7 @@ function [ V, X ] = ValueAndPolicyFunctionsNoBounds( Av, Bv, beta, mu, rho, sigm
     VAB = -t10 * t30;
     VBB = -t4 * (t30 ^ 2) / 2;
     
-    X = cummax( cummax( max( 0, 1 - F - bsxfun( @plus, G * Av, H * Bv' ) ), 1 ), 2 );
+    X = cummax( cummax( max( 0, 1 - F - bsxfun( @plus, G * Av', H * Bv ) ), 1 ), 2 );
     
-    V = cummax( cummax( V11 + bsxfun( @plus, V1A * Av + VAA * ( Av .* Av ), V1B * Bv' + VBB * ( Bv .* Bv )' ) + bsxfun( @times, VAB * Av, Bv' ), 1 ), 2 );
+    V = cummax( cummax( V11 + bsxfun( @plus, V1A * Av' + VAA * ( Av .* Av )', V1B * Bv + VBB * ( Bv .* Bv ) ) + bsxfun( @times, VAB * Av', Bv ), 1 ), 2 );
 end

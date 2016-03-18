@@ -9,12 +9,12 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R
 
     if a >= b
         x = a;
-        fx = Maximand( a, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+        fx = Maximand( a, B, A, Wv, Bv, V, beta, Ybar, R, nB );
         return;
     end
     
-    fa = Maximand( a, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
-    fb = Maximand( b, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+    fa = Maximand( a, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    fb = Maximand( b, B, A, Wv, Bv, V, beta, Ybar, R, nB );
     if fb > fa
         x = b;
         fx = fb;
@@ -25,8 +25,8 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R
     
     c = b - gr * ( b - a );
     d = a + gr * ( b - a );
-    fc = Maximand( c, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
-    fd = Maximand( d, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+    fc = Maximand( c, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    fd = Maximand( d, B, A, Wv, Bv, V, beta, Ybar, R, nB );
     while true
         if fc > fd
             if fc > fx
@@ -37,7 +37,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R
             d = c;
             fd = fc;
             c = b - gr * ( b - a );
-            fc = Maximand( c, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+            fc = Maximand( c, B, A, Wv, Bv, V, beta, Ybar, R, nB );
         else
             if fd > fx
                 x = d;
@@ -47,7 +47,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, b, B, A, Wv, Bv, V, beta, Ybar, R
             c = d;
             fc = fd;
             d = a + gr * ( b - a );
-            fd = Maximand( d, B, A, Wv, Bv, V, Vmin, beta, Ybar, R, nB );
+            fd = Maximand( d, B, A, Wv, Bv, V, beta, Ybar, R, nB );
         end
         if a >= c || c >= d || d >= b
             break;
