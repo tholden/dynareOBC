@@ -1,5 +1,5 @@
 function [ Xnew, DXnew, DDXnew ] = QueryGlobalSolution( B, A )
-    persistent V X Bv Av beta mu rho sigma Ybar R
+    persistent V X Bv Av beta mu rho sigma Ybar R PP
     
     if coder.target('MATLAB')
         if isempty( Bv )
@@ -14,6 +14,7 @@ function [ Xnew, DXnew, DDXnew ] = QueryGlobalSolution( B, A )
             sigma = Results.sigma;
             Ybar = Results.Ybar;
             R = Results.R;
+            PP = Results.PP;
         end
     else
         Results = coder.load( 'GlobalResults.mat' );
@@ -27,8 +28,9 @@ function [ Xnew, DXnew, DDXnew ] = QueryGlobalSolution( B, A )
         sigma = Results.sigma;
         Ybar = Results.Ybar;
         R = Results.R;
+        PP = Results.PP;
     end
-    [ ~, Xnew, ~ ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, V, X, beta, Ybar, R, mu, rho, sigma );
+    [ ~, Xnew, ~ ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, PP, max( max( V ) ), X, beta, Ybar, R, mu, rho, sigma );
     DXnew = NaN( 2, 1 );
     DDXnew = NaN( 2, 2 );
 end

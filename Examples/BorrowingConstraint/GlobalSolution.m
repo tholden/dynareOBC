@@ -1,4 +1,4 @@
-function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
+function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R, PP ] = GlobalSolution
 
 	beta = 0.99;
 	mu = 0.5;
@@ -46,7 +46,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         coder.ceval( 'fflushStdOut', int32( 0 ) );
     end
     while true
-        [ Vnew, Xnew, e2 ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
+        [ Vnew, Xnew, e2, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
         e1 = max( max( abs( V - Vnew ) ) );
         tmp = abs( X - Xnew );
         tmp = tmp(:);
