@@ -23,11 +23,11 @@ function [ Vnew, Xnew ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar,
                     XU = min( XU, X( iA + 1, iB ) );
                 end
                 if iB < nB
-                    XU = min( XU, X( iA, iB + 1 ) ); %#ok<PFBNS>
+                    XU = min( XU, X( iA, iB + 1 ) );
                 end
             end
             XU = max( XL, XU );
-            [ Vtmp, Xmax ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, XU, beta, Ybar, R );
+            [ Vtmp, Xmax ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
             Vmax = max( Vmax, Vtmp );
             Vnew( iA, iB ) = Vmax;
             Xnew( iA, iB ) = Xmax;
