@@ -46,9 +46,16 @@ function [ Vnew, Xnew, Verr ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta,
             % V0max = V0maxNew;
             % V1min = V1minNew;
             % V2max = V2maxNew;
-            V2max = max( V2max, min( 0, Vtmp( iA, iB ) - V0max - V1min ) );
-            V1min = V1min + V2max;
-            V0max = V0max + V1min;
+            if iB > 2
+                V2max = max( V2max, min( 0, Vtmp( iA, iB ) - V0max - V1min ) );
+                V1min = V1min + V2max;
+                V0max = V0max + V1min;
+            elseif iB == 2
+                V1min = max( 0, Vtmp( iA, iB ) - V0max );
+                V0max = V0max + V1min;
+            else % iB == 1
+                V0max = Vtmp( iA, iB );
+            end
             Vnew( iA, iB ) = V0max;
         end
     end
