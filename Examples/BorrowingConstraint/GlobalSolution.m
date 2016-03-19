@@ -51,6 +51,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         [ sub1, sub2 ] = ind2sub( size( X ), ind );
         Iter = Iter + int32( 1 );
         fprintf( '%d %.15g %.15g %.15g %.15g %d %d\n', Iter, e1, e2, e3, e4, int32( sub1 ), int32( sub2 ) );
+        coder.ceval( 'fflush', uint32( 1 ) );
         if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
             break;
         end
