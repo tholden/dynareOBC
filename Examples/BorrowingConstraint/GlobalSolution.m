@@ -58,6 +58,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         if ~coder.target( 'MATLAB' )
             coder.ceval( 'fflushStdOut', int32( 0 ) );
         end
+        drawnow update;
         if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
             break;
         end
