@@ -30,7 +30,15 @@ function [ Vnew, Xnew, Verr ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta,
             Xnew( iA, iB ) = Xmax;
         end
     end
-    Vnew = cummax( cummax( Vtmp, 2 ), 1 );
+    Vnew = coder.nullcopy( Vtmp );
+    parfor iA = 1 : nA
+        Vmax = -Inf;
+        for iB = 1 : nB
+            Vmax = max( Vmax, Vtmp( iA, iB ) );
+            Vnew( iA, iB ) = Vmax;
+        end
+    end
+    Vnew = cummax( Vnew );
     Xnew = cummax( Xnew );
     Vtmp = abs( Vtmp - Vnew );
     Vtmp = Vtmp(:);
