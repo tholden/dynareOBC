@@ -81,14 +81,14 @@ function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, beta, Ybar
     end
 end
 
-function V = Maximand( X, B, A, Wv, Bv, V, beta, Ybar, R, nB )
+function Vout = Maximand( X, B, A, Wv, Bv, V, beta, Ybar, R, nB )
     OmC = max( 0, 1 - X );
     phi = R - 1;
     BNew = max( Ybar, A ) + R * B - X;
     if BNew < Bv( 1 )
-        V = -Inf;
+        Vout = -Inf;
     else
-        V = min( 0, -0.5 * OmC * OmC - 0.5 * phi * BNew * BNew + beta * ExpectedV( BNew, V, Wv, Bv, nB ) );
+        Vout = min( 0, -0.5 * OmC * OmC - 0.5 * phi * BNew * BNew + beta * ExpectedV( BNew, V, Wv, Bv, nB ) );
     end
 end
 
