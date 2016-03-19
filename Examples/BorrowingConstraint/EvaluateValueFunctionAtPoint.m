@@ -1,25 +1,25 @@
-function [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, XG, XU, beta, Ybar, R )
+function [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, VOverallMax, XL, XG, XU, beta, Ybar, R )
     nB = length( Bv );
     
-    [ Xnew, Vnew ] = GoldenSectionMaximise( XL, XG, XU, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    [ Xnew, Vnew ] = GoldenSectionMaximise( XL, XG, XU, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
 end
 
-function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, beta, Ybar, R, nB )
+function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB )
     gr = 0.618033988749894848204586834365638117720;
 
     if a >= b
         x = a;
-        fx = Maximand( a, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+        fx = Maximand( a, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
         return;
     end
     
     g = max( a, min( b, g ) );
     
     x = g;
-    fx = Maximand( g, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    fx = Maximand( g, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
     
-    fa = Maximand( a, B, A, Wv, Bv, V, beta, Ybar, R, nB );
-    fb = Maximand( b, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    fa = Maximand( a, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
+    fb = Maximand( b, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
     if fb > fa
         if fb > fx
             x = b;
@@ -43,8 +43,8 @@ function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, beta, Ybar
     
     c = b - gr * ( b - a );
     d = a + gr * ( b - a );
-    fc = Maximand( c, B, A, Wv, Bv, V, beta, Ybar, R, nB );
-    fd = Maximand( d, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+    fc = Maximand( c, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
+    fd = Maximand( d, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
     while true
         if fc > fd || ( fc == fd && abs( g - c ) <= abs( g - d ) )
             if fc > fx
@@ -59,7 +59,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, beta, Ybar
             d = c;
             fd = fc;
             c = b - gr * ( b - a );
-            fc = Maximand( c, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+            fc = Maximand( c, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
         else
             if fd > fx
                 x = d;
@@ -73,7 +73,7 @@ function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, beta, Ybar
             c = d;
             fc = fd;
             d = a + gr * ( b - a );
-            fd = Maximand( d, B, A, Wv, Bv, V, beta, Ybar, R, nB );
+            fd = Maximand( d, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB );
         end
         if a >= c || c >= d || d >= b
             break;
@@ -81,14 +81,14 @@ function [ x, fx ] = GoldenSectionMaximise( a, g, b, B, A, Wv, Bv, V, beta, Ybar
     end
 end
 
-function Vout = Maximand( X, B, A, Wv, Bv, V, beta, Ybar, R, nB )
+function Vout = Maximand( X, B, A, Wv, Bv, V, VOverallMax, beta, Ybar, R, nB )
     OmC = max( 0, 1 - X );
     phi = R - 1;
     BNew = max( Ybar, A ) + R * B - X;
     if BNew < Bv( 1 )
         Vout = -Inf;
     else
-        Vout = min( 0, -0.5 * OmC * OmC - 0.5 * phi * BNew * BNew + beta * ExpectedV( BNew, V, Wv, Bv, nB ) );
+        Vout = min( 0, -0.5 * OmC * OmC - 0.5 * phi * BNew * BNew + beta * min( VOverallMax, ExpectedV( BNew, V, Wv, Bv, nB ) ) );
     end
 end
 

@@ -1,6 +1,7 @@
 function [ Vnew, Xnew, Verr ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, UseTightBounds )
     nB = length( Bv );
     nA = length( Av );
+    VOverallMax = max( max( V ) );
     Vtmp = coder.nullcopy( V );
     Xnew = coder.nullcopy( X );
     parfor iA = 1 : nA
@@ -26,7 +27,7 @@ function [ Vnew, Xnew, Verr ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta,
                 end
             end
             XU = max( XL, XU );
-            [ Vtmp( iA, iB ), Xmax ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
+            [ Vtmp( iA, iB ), Xmax ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
             Xnew( iA, iB ) = Xmax;
         end
     end

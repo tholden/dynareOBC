@@ -26,5 +26,5 @@ function [ Vnew, Xnew ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, V, X, beta
     
     XG = ( 1 - AfIndex ) * ( ( 1 - BfIndex ) * X( AlIndex, BlIndex ) + BfIndex * X( AlIndex, BuIndex ) ) + AfIndex * ( ( 1 - BfIndex ) * X( AuIndex, BlIndex ) + BfIndex * X( AuIndex, BuIndex ) );
 
-    [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, XL, XG, XU, beta, Ybar, R );
+    [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, V, max( max( V ) ), XL, XG, XU, beta, Ybar, R );
 end
