@@ -32,31 +32,21 @@ function [ Vnew, Xnew, Verr ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta,
     end
     Vnew = coder.nullcopy( Vtmp );
     parfor iA = 1 : nA
-        V0max = -Inf;
-        V1min = Inf;
-        V2max = -Inf;
-        for iB = 1 : nB
-            % V1minNew = V1min + V2maxNew >= V1min + V2max
-            % V1minNew <= V1min
-            % V0maxNew = V0max + V1minNew
-            % V0max + V1min + V2max <= V0maxNew <= V0max + V1min
-            % V0maxNew = max( V0max + V1min + V2max, min( V0max + V1min, Vtmp( iA, iB ) ) );
-            % V1minNew = V0maxNew - V0max; % V1minNew = max( V1min + V2max, min( V1min, Vtmp( iA, iB ) - V0max ) );
-            % V2maxNew = V1minNew - V1min; % V2maxNew = max( V2max, min( 0, Vtmp( iA, iB ) - V0max - V1min ) );
-            % V0max = V0maxNew;
-            % V1min = V1minNew;
-            % V2max = V2maxNew;
-            if iB > 2
-                V2max = max( V2max, min( 0, Vtmp( iA, iB ) - V0max - V1min ) );
-                V1min = V1min + V2max;
-                V0max = V0max + V1min;
-            elseif iB == 2
-                V1min = max( 0, Vtmp( iA, iB ) - V0max );
-                V0max = V0max + V1min;
-            else % iB == 1
-                V0max = Vtmp( iA, iB );
+        V0min = Inf;
+        V1max = -Inf;
+        V2min = Inf;
+        for iB = nB : -1 : 1
+            if iB < nB - 1
+                V2min = min( V2min, max( 0, Vtmp( iA, iB ) - V0min - V1max ) );
+                V1max = V1max + V2min;
+                V0min = V0min + V1max;
+            elseif iB == nB - 1
+                V1max = min( 0, Vtmp( iA, iB ) - V0min );
+                V0min = V0min + V1max;
+            else % iB == nB
+                V0min = Vtmp( iA, iB );
             end
-            Vnew( iA, iB ) = V0max;
+            Vnew( iA, iB ) = V0min;
         end
     end
     Vnew = cummax( Vnew );
