@@ -41,6 +41,10 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     fprintf( '\n' );
     Iter = int32( 0 );
     e1o = Inf;
+    if ~coder.target( 'MATLAB' )
+        coder.cinclude( 'fflushStdOut.h' );
+        coder.ceval( 'fflushStdOut' );
+    end
     while true
         [ Vnew, Xnew, e2 ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
         e1 = max( max( abs( V - Vnew ) ) );
@@ -51,7 +55,9 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         [ sub1, sub2 ] = ind2sub( size( X ), ind );
         Iter = Iter + int32( 1 );
         fprintf( '%d %.15g %.15g %.15g %.15g %d %d\n', Iter, e1, e2, e3, e4, int32( sub1 ), int32( sub2 ) );
-        coder.ceval( 'fflush', uint32( 1 ) );
+        if ~coder.target( 'MATLAB' )
+            coder.ceval( 'fflushStdOut' );
+        end
         if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
             break;
         end
