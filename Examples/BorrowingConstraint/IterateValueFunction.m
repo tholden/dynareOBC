@@ -32,10 +32,14 @@ function [ Vnew, Xnew, Verr ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta,
     end
     Vnew = coder.nullcopy( Vtmp );
     parfor iA = 1 : nA
-        Vmax = -Inf;
+        V0max = -Inf;
+        V1min = Inf;
+        % V2max = -Inf;
         for iB = 1 : nB
-            Vmax = max( Vmax, Vtmp( iA, iB ) );
-            Vnew( iA, iB ) = Vmax;
+            V0maxNew = max( V0max, min( V0max + V1min, Vtmp( iA, iB ) ) );
+            V1min = min( V1min, V0maxNew - V0max );
+            V0max = V0maxNew;
+            Vnew( iA, iB ) = V0max;
         end
     end
     Vnew = cummax( Vnew );
