@@ -1,6 +1,6 @@
-#include <stdio.h>
+#ifndef FFLUSH_STD_OUT_H
+#define FFLUSH_STD_OUT_H
 
-inline void fflushStdOut( void )
-{
-    fflush( stdout );
-}
+#define fflushStdOut( x ) fflush( stdout );
+
+#endif

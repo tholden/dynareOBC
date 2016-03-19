@@ -43,7 +43,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
     e1o = Inf;
     if ~coder.target( 'MATLAB' )
         coder.cinclude( 'fflushStdOut.h' );
-        coder.ceval( 'fflushStdOut' );
+        coder.ceval( 'fflushStdOut', int32( 0 ) );
     end
     while true
         [ Vnew, Xnew, e2 ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
@@ -56,7 +56,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
         Iter = Iter + int32( 1 );
         fprintf( '%d %.15g %.15g %.15g %.15g %d %d\n', Iter, e1, e2, e3, e4, int32( sub1 ), int32( sub2 ) );
         if ~coder.target( 'MATLAB' )
-            coder.ceval( 'fflushStdOut' );
+            coder.ceval( 'fflushStdOut', int32( 0 ) );
         end
         if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
             break;
