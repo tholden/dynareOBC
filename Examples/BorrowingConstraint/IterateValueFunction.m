@@ -6,21 +6,10 @@ function [ Vnew, Xnew, BSnew, VS, PP, Verr, Xerr, BSerr ] = IterateValueFunction
     Vopt = coder.nullcopy( V );
     Xopt = coder.nullcopy( X );
     VS = coder.nullcopy( BS );
-    BSopt = coder.nullcopy( BS );
     parfor iA = 1 : nA
         A = Av( iA );
         Wv = W( :, iA );
-        BL = Bv( 1 ); %#ok<PFBNS>
-        BU = Bv( end );
-        if UseTightBounds
-            if iA > 1
-                BL = max( BL, BS( iA + 1 ) );
-            end
-            if iA < nA
-                BU = min( BU, BS( iA - 1 ) );
-            end
-        end
-        [ BSopt( iA ), VS( iA ) ] = GoldenSectionBMaximise( BL, BS( iA ), BU, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R ); %#ok<PFBNS>
+        [ BS( iA ), VS( iA ) ] = GoldenSectionBMaximise( Bv( 1 ), BS( iA ), Bv( end ), A, Wv, Bv, PP, VOverallMax, beta, Ybar, R ); %#ok<PFBNS>
         for iB = 1 : nB
             B = Bv( iB );
             XL = 0;
@@ -40,15 +29,15 @@ function [ Vnew, Xnew, BSnew, VS, PP, Verr, Xerr, BSerr ] = IterateValueFunction
                 end
             end
             XU = max( XL, XU );
-            [ Vopt( iA, iB ), Xopt( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, BSopt( iA ), VS( iA ), Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
+            [ Vopt( iA, iB ), Xopt( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, BS( iA ), VS( iA ), Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
         end
     end
     Xnew = MakeIncreasing( Xopt );
     Xerr = max( max( abs( Xnew - Xopt ) ) );
     Vnew = MakeIncreasing( Vopt );
     Verr = max( max( abs( Vnew - Vopt ) ) );
-    BSnew = 0.5 * ( cummin( BSopt, 2, 'forward' ) + cummax( BSopt, 2, 'reverse' ) );
-    BSerr = max( abs( BSnew - BSopt ) );
+    BSnew = 0.5 * ( cummin( BS, 2, 'forward' ) + cummax( BS, 2, 'reverse' ) );
+    BSerr = max( abs( BSnew - BS ) );
 end
 
 function Z = MakeIncreasing( Z )
