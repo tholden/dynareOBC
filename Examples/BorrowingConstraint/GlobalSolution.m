@@ -1,4 +1,4 @@
-function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R, PP ] = GlobalSolution
+function [ V, X, PP, BS, VS, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = GlobalSolution
 
 	beta = 0.99;
 	mu = 0.5;
@@ -35,6 +35,8 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R, PP ] = GlobalSolutio
     
     XB = max( 0, max( Ybar, Ag ) + R * Bg + Ybar / ( R - 1 ) );
     
+    BS = ones( size( Av ) ) * ( 0.5 * ( Bv( 1 ) + Bv( end ) ) );
+    
     assert( all( size( V ) == size( Bg ) ) );
     assert( all( size( X ) == size( Bg ) ) );
 
@@ -46,7 +48,7 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R, PP ] = GlobalSolutio
         coder.ceval( 'fflushStdOut', int32( 0 ) );
     end
     while true
-        [ Vnew, Xnew, e3, e6, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 10 );
+        [ Vnew, Xnew, PP, BS, VS, e3, e6 ] = IterateValueFunction( V, X, BS, XB, W, Bv, Av, beta, Ybar, R, Iter > 10 );
         tmp = abs( V - Vnew );
         tmp = tmp(:);
         e1 = max( tmp );
