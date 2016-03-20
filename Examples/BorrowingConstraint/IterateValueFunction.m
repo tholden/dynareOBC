@@ -30,8 +30,19 @@ function [ Vnew, Xopt, Verr, Xerr, PP ] = IterateValueFunction( V, X, XB, W, Bv,
             [ Vopt( iA, iB ), Xopt( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
         end
     end
-    Xnew = 0.5 * ( cummax( cummax( Xopt, 2, 'forward' ), 1, 'forward' ) + cummin( cummin( Xopt, 2, 'reverse' ), 1, 'reverse' ) );
+    Xnew = MakeIncreasing( Xopt );
     Xerr = max( max( abs( Xnew - Xopt ) ) );
-    Vnew = 0.5 * ( cummax( cummax( Vopt, 2, 'forward' ), 1, 'forward' ) + cummin( cummin( Vopt, 2, 'reverse' ), 1, 'reverse' ) );
+    Vnew = MakeIncreasing( Vopt );
+%     while true
+%         Vold = Vnew;
+%         Vnew = MakeIncreasing( cumsum( [ Vnew( :, 1 ), -MakeIncreasing( -diff( Vnew, 1, 2 ) ) ], 2 ) );
+%         if max( max( abs( Vnew - Vold ) ) ) < eps
+%             break;
+%         end
+%     end
     Verr = max( max( abs( Vnew - Vopt ) ) );
+end
+
+function Z = MakeIncreasing( Z )
+    Z = 0.5 * ( cummax( cummax( Z, 2, 'forward' ), 1, 'forward' ) + cummin( cummin( Z, 2, 'reverse' ), 1, 'reverse' ) );
 end
