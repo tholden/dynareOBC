@@ -13,6 +13,7 @@ end
 function EV = ExpectedV( BNew, PP, Wv )
     if ~isnan( BNew )
         Vv = ppval( PP, BNew );
+        Vv = 0.5 * ( cummax( Vv, 1, 'forward' ) + cummin( Vv, 1, 'reverse' ) );
         EV = Wv' * Vv;
     else
         EV = -Inf;
