@@ -4,6 +4,6 @@ Parameters may be adjusted in GlobalSolution.m.
 
 To run the accuracy tests, run:
 
-clear all;dynareOBC BorrowingConstraints.mod periodsofuncertainty=??? [nocubature|fastcubature|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 
+clear all;dynareOBC BorrowingConstraint.mod periodsofuncertainty=??? [nocubature|fastcubature|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 
 tmp = abs( dynareOBC_.MLVSimulationWithBounds.XError( 101:end ) );
 disp( [mean(tmp) sqrt(mean(tmp.^2)) max(tmp)] );
