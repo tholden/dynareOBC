@@ -1,17 +1,16 @@
-function [ Vnew, Xnew, Verr, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, UseTightBounds )
+function [ Vnew, Xopt, Verr, Xerr, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, UseTightBounds )
     nB = length( Bv );
     nA = length( Av );
     VOverallMax = max( max( V ) );
     PP = pchip( Bv, V );
-    Vtmp = coder.nullcopy( V );
-    Xnew = coder.nullcopy( X );
+    Vopt = coder.nullcopy( V );
+    Xopt = coder.nullcopy( X );
     parfor iA = 1 : nA
         A = Av( iA );
         Wv = W( :, iA );
-        Xmax = 0;
         for iB = 1 : nB
             B = Bv( iB ); %#ok<PFBNS>
-            XL = Xmax;
+            XL = 0;
             XU = XB( iA, iB );
             if UseTightBounds
                 if iA > 1
@@ -28,27 +27,11 @@ function [ Vnew, Xnew, Verr, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, b
                 end
             end
             XU = max( XL, XU );
-            [ Vtmp( iA, iB ), Xmax ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
-            Xnew( iA, iB ) = Xmax;
+            [ Vopt( iA, iB ), Xopt( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
         end
     end
-    Vnew = cummax( Vtmp );
-    parfor iA = 1 : nA
-        V0min = 0;
-        V1min = 0;
-        for iB = nB : -1 : 1
-            if iB < nB
-                V1min = min( V1min, Vnew( iA, iB ) - V0min );
-                V0min = V0min + V1min; % = min( V0min + V1min, Vtmp( iA, iB ) );
-            else % iB == nB
-                V0min = Vnew( iA, iB );
-            end
-            Vnew( iA, iB ) = V0min;
-        end
-    end
-    Vnew = cummax( Vnew );
-    Xnew = cummax( Xnew );
-    Vtmp = abs( Vtmp - Vnew );
-    Vtmp = Vtmp(:);
-    Verr = max( Vtmp );
+    Xnew = 0.5 * ( cummax( cummax( Xopt, 2, 'forward' ), 1, 'forward' ) + cummin( cummin( Xopt, 2, 'reverse' ), 1, 'reverse' ) );
+    Xerr = max( max( abs( Xnew - Xopt ) ) );
+    Vnew = 0.5 * ( cummax( cummax( Vopt, 2, 'forward' ), 1, 'forward' ) + cummin( cummin( Vopt, 2, 'reverse' ), 1, 'reverse' ) );
+    Verr = max( max( abs( Vnew - Vopt ) ) );
 end

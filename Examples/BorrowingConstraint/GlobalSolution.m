@@ -46,20 +46,22 @@ function [ V, X, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R, PP ] = GlobalSolutio
         coder.ceval( 'fflushStdOut', int32( 0 ) );
     end
     while true
-        [ Vnew, Xnew, e2, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 20 );
-        e1 = max( max( abs( V - Vnew ) ) );
+        [ Vnew, Xnew, e3, e6, PP ] = IterateValueFunction( V, X, XB, W, Bv, Av, beta, Ybar, R, Iter > 10 );
+        tmp = abs( V - Vnew );
+        tmp = tmp(:);
+        e1 = max( tmp );
+        e2 = mean( tmp );
         tmp = abs( X - Xnew );
         tmp = tmp(:);
-        [ e3, ind ] = max( tmp );
-        e4 = mean( mean( abs( X - Xnew ) ) );
-        [ sub1, sub2 ] = ind2sub( size( X ), ind );
+        e4 = max( tmp );
+        e5 = mean( tmp );
         Iter = Iter + int32( 1 );
-        fprintf( '%d %.15g %.15g %.15g %.15g %d %d\n', Iter, e1, e2, e3, e4, int32( sub1 ), int32( sub2 ) );
+        fprintf( '%d %.15g %.15g %.15g %.15g %.15g %.15g\n', Iter, e1, e2, e3, e4, e5, e6 );
         if ~coder.target( 'MATLAB' )
             coder.ceval( 'fflushStdOut', int32( 0 ) );
         end
         drawnow update;
-        if e1 >= e1o % && ( e1 < 1e-6 && e2 < 1e-6 )
+        if e1 >= e1o
             break;
         end
         e1o = e1;
