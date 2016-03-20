@@ -48,7 +48,7 @@ function [ V, X, PP, BS, VS, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = Globa
         coder.ceval( 'fflushStdOut', int32( 0 ) );
     end
     while true
-        [ Vnew, Xnew, PP, BS, VS, e3, e6 ] = IterateValueFunction( V, X, BS, XB, W, Bv, Av, beta, Ybar, R, Iter > 10 );
+        [ Vnew, Xnew, BSnew, VS, PP, e3, e6, e9 ] = IterateValueFunction( V, X, BS, XB, W, Bv, Av, beta, Ybar, R, Iter > 10 );
         tmp = abs( V - Vnew );
         tmp = tmp(:);
         e1 = max( tmp );
@@ -57,8 +57,11 @@ function [ V, X, PP, BS, VS, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = Globa
         tmp = tmp(:);
         e4 = max( tmp );
         e5 = mean( tmp );
+        tmp = abs( BS - BSnew );
+        e7 = max( tmp );
+        e8 = mean( tmp );
         Iter = Iter + int32( 1 );
-        fprintf( '%d %.15g %.15g %.15g %.15g %.15g %.15g\n', Iter, e1, e2, e3, e4, e5, e6 );
+        fprintf( '%d %.15g %.15g %.15g %.15g %.15g %.15g %.15g %.15g %.15g\n', Iter, e1, e2, e3, e4, e5, e6, e7, e8, e9 );
         if ~coder.target( 'MATLAB' )
             coder.ceval( 'fflushStdOut', int32( 0 ) );
         end
@@ -69,6 +72,7 @@ function [ V, X, PP, BS, VS, XB, Bv, Av, beta, mu, rho, sigma, Ybar, R ] = Globa
         e1o = e1;
         V = Vnew;
         X = Xnew;
+        BS = BSnew;
     end
 
 end

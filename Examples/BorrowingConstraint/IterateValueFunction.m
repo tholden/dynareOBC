@@ -1,4 +1,4 @@
-function [ Vnew, Xnew, PP, BS, VS, Verr, Xerr ] = IterateValueFunction( V, X, BS, XB, W, Bv, Av, beta, Ybar, R, UseTightBounds )
+function [ Vnew, Xnew, BSnew, VS, PP, Verr, Xerr, BSerr ] = IterateValueFunction( V, X, BS, XB, W, Bv, Av, beta, Ybar, R, UseTightBounds )
     nB = length( Bv );
     nA = length( Av );
     VOverallMax = max( max( V ) );
@@ -6,10 +6,21 @@ function [ Vnew, Xnew, PP, BS, VS, Verr, Xerr ] = IterateValueFunction( V, X, BS
     Vopt = coder.nullcopy( V );
     Xopt = coder.nullcopy( X );
     VS = coder.nullcopy( BS );
+    BSopt = coder.nullcopy( BS );
     parfor iA = 1 : nA
         A = Av( iA );
         Wv = W( :, iA );
-        [ BS( iA ), VS( iA ) ] = GoldenSectionBMaximise( Bv( 1 ), BS( iA ), Bv( end ), A, Wv, Bv, PP, VOverallMax, beta, Ybar, R ); %#ok<PFBNS>
+        BL = Bv( 1 ); %#ok<PFBNS>
+        BU = Bv( end );
+        if UseTightBounds
+            if iA > 1
+                BL = max( BL, BS( iA - 1 ) );
+            end
+            if iA < nA
+                BU = min( BU, BS( iA + 1 ) );
+            end
+        end
+        [ BSopt( iA ), VS( iA ) ] = GoldenSectionBMaximise( BL, BS( iA ), BU, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R ); %#ok<PFBNS>
         for iB = 1 : nB
             B = Bv( iB );
             XL = 0;
@@ -29,20 +40,15 @@ function [ Vnew, Xnew, PP, BS, VS, Verr, Xerr ] = IterateValueFunction( V, X, BS
                 end
             end
             XU = max( XL, XU );
-            [ Vopt( iA, iB ), Xopt( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, BS( iA ), VS( iA ), Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
+            [ Vopt( iA, iB ), Xopt( iA, iB ) ] = EvaluateValueFunctionAtPoint( B, A, BSopt( iA ), VS( iA ), Wv, Bv, PP, VOverallMax, XL, X( iA, iB ), XU, beta, Ybar, R ); %#ok<PFBNS>
         end
     end
     Xnew = MakeIncreasing( Xopt );
     Xerr = max( max( abs( Xnew - Xopt ) ) );
     Vnew = MakeIncreasing( Vopt );
-%     while true
-%         Vold = Vnew;
-%         Vnew = MakeIncreasing( cumsum( [ Vnew( :, 1 ), -MakeIncreasing( -diff( Vnew, 1, 2 ) ) ], 2 ) );
-%         if max( max( abs( Vnew - Vold ) ) ) < eps
-%             break;
-%         end
-%     end
     Verr = max( max( abs( Vnew - Vopt ) ) );
+    BSnew = 0.5 * ( cummax( BSopt, 2, 'forward' ) + cummin( BSopt, 2, 'reverse' ) );
+    BSerr = max( abs( BSnew - BSopt ) );
 end
 
 function Z = MakeIncreasing( Z )
