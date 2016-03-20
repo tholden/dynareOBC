@@ -3,7 +3,8 @@ function [ Vnew, Xnew ] = EvaluateValueFunctionAtPoint( B, A, BS, VS, Wv, Bv, PP
         Vnew = VS;
         Xnew = 1 + R * ( B - BS );
     else
-        [ Xnew, Vnew ] = GoldenSectionXMaximise( XL, XG, XU, B, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R );
+        [ Xnew, Vnew ] = GoldenSectionXMaximise( XL, XG, min( 1, XU ), B, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R );
+        Vnew = min( Vnew, VS );
     end
 end
 
