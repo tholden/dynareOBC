@@ -30,7 +30,7 @@ function [ Xnew, DXnew, DDXnew ] = QueryGlobalSolution( B, A )
         Ybar = Results.Ybar;
         R = Results.R;
     end
-    [ ~, Xnew, ~ ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, PP, max( max( V ) ), X, beta, Ybar, R, mu, rho, sigma );
+    [ ~, Xnew ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, PP, max( max( V ) ), X, beta, Ybar, R, mu, rho, sigma );
     DXnew = NaN( 2, 1 );
     DDXnew = NaN( 2, 2 );
 end
