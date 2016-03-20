@@ -14,10 +14,10 @@ function [ Vnew, Xnew, BSnew, VS, PP, Verr, Xerr, BSerr ] = IterateValueFunction
         BU = Bv( end );
         if UseTightBounds
             if iA > 1
-                BL = max( BL, BS( iA - 1 ) );
+                BL = max( BL, BS( iA + 1 ) );
             end
             if iA < nA
-                BU = min( BU, BS( iA + 1 ) );
+                BU = min( BU, BS( iA - 1 ) );
             end
         end
         [ BSopt( iA ), VS( iA ) ] = GoldenSectionBMaximise( BL, BS( iA ), BU, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R ); %#ok<PFBNS>
@@ -47,7 +47,7 @@ function [ Vnew, Xnew, BSnew, VS, PP, Verr, Xerr, BSerr ] = IterateValueFunction
     Xerr = max( max( abs( Xnew - Xopt ) ) );
     Vnew = MakeIncreasing( Vopt );
     Verr = max( max( abs( Vnew - Vopt ) ) );
-    BSnew = 0.5 * ( cummax( BSopt, 2, 'forward' ) + cummin( BSopt, 2, 'reverse' ) );
+    BSnew = 0.5 * ( cummin( BSopt, 2, 'forward' ) + cummax( BSopt, 2, 'reverse' ) );
     BSerr = max( abs( BSnew - BSopt ) );
 end
 
