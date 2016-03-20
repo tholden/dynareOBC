@@ -18,7 +18,7 @@ model;
 	B = max( -Ybar / ( R - 1 ), 1 / phi * ( lambdaY(+1) - lambdaY ) );
 	X = max( Ybar, A ) + R * B(-1) - B;	
 	A = ( 1 - rho ) * mu + rho * A(-1) + sigma * epsilon;
-	#XError = X - XQueryGlobalSolution( B(-1), A );
+	#XError = X - QueryGlobalSolution( B(-1), A );
 end;
 
 steady_state_model;
