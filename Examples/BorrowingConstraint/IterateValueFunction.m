@@ -71,12 +71,12 @@ function [ x, fx ] = GoldenSectionBMaximise( a, g, b, A, Wv, Bv, PP, VOverallMax
     
     fa = BMaximand( a, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R );
     fb = BMaximand( b, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R );
-    if fb > fa
+    if fa < fb
         if fb > fx
             x = b;
             fx = fb;
         end
-    elseif fa < fb
+    elseif fa > fb
         if fa > fx
             x = a;
             fx = fa;

@@ -23,12 +23,12 @@ function [ x, fx ] = GoldenSectionXMaximise( a, g, b, B, A, Wv, Bv, PP, VOverall
     
     fa = XMaximand( a, B, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R );
     fb = XMaximand( b, B, A, Wv, Bv, PP, VOverallMax, beta, Ybar, R );
-    if fb > fa
+    if fa < fb
         if fb > fx
             x = b;
             fx = fb;
         end
-    elseif fa < fb
+    elseif fa > fb
         if fa > fx
             x = a;
             fx = fa;
