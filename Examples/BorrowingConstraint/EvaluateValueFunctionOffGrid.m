@@ -4,12 +4,12 @@ function [ Vnew, Xnew ] = EvaluateValueFunctionOffGrid( B, A, Bv, Av, PP, VOvera
     nB = length( Bv );
     nA = length( Av );
     
-    BIndex = 1 + ( nB - 1 ) * ( k - Bv( 1 ) ) / ( Bv( end ) - Bv( 1 ) );
+    BIndex = 1 + ( nB - 1 ) * ( B - Bv( 1 ) ) / ( Bv( end ) - Bv( 1 ) );
     BlIndex = max( 1, min( nB - 1, floor( BIndex ) ) );
     BuIndex = BlIndex + 1;
     BfIndex = BIndex - BlIndex;
 
-    AIndex = 1 + ( nA - 1 ) * ( a - Av( 1 ) ) / ( Av( end ) - Av( 1 ) );
+    AIndex = 1 + ( nA - 1 ) * ( A - Av( 1 ) ) / ( Av( end ) - Av( 1 ) );
     AlIndex = max( 1, min( nA - 1, floor( AIndex ) ) );
     AuIndex = AlIndex + 1;
     AfIndex = AIndex - AlIndex;
