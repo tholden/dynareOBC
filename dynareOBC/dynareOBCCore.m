@@ -132,6 +132,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     options_.solve_tolx = eps;
     dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
     global oo_ M_
+    oo_.steady_state = oo_.dr.ys;
 
     Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTemp2_static' );
 
@@ -275,10 +276,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
         dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
         [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
+        SteadyStateBlockDeclaration = 'initval;';
     else
         dynareOBC.StateVariableAndShockCombinations = { };
         GlobalApproximationParameters = [];
         AmpValues = ones( dynareOBC.NumberOfMax, 1 );
+        SteadyStateBlockDeclaration = 'steady_state_model;';
     end
 
     %% Generating the final mod file
@@ -312,7 +315,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
     [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
     [ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
-    [ FileLines, ~ ] = PerformInsertion( [ { 'initval;' } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
+    [ FileLines, ~ ] = PerformInsertion( [ { SteadyStateBlockDeclaration } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
 
     %Save the result
 
