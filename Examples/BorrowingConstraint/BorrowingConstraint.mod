@@ -14,7 +14,7 @@ external_function( name = QueryGlobalSolution, nargs = 2 );
 model;
 	#R = 1 / beta;
 	#phi = R - 1;
-	X = max( 0, 1 - lambdaY ) + max( 0, X - 1 );
+	min( 1, X ) = max( 0, 1 - lambdaY );
 	B = max( -Ybar / ( R - 1 ), 1 / phi * ( lambdaY(+1) - lambdaY ) );
 	X = max( Ybar, A ) + R * B(-1) - B;	
 	A = ( 1 - rho ) * mu + rho * A(-1) + sigma * epsilon;
