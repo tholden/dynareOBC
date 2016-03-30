@@ -23,7 +23,7 @@ while pou <= 30;
     load pou.mat
     disp( [ pou mean(tmp) sqrt(mean(tmp.^2)) max(tmp) seconds ] );
     fid = fopen( 'TempOutput.txt', 'a+' );
-    fprintf( fid, '%d %.15g %.15g %.15g\n', pou, mean(tmp), sqrt(mean(tmp.^2)), max(tmp), seconds );
+    fprintf( fid, '%d %.15g %.15g %.15g %.15g\n', pou, mean(tmp), sqrt(mean(tmp.^2)), max(tmp), seconds );
     fclose( fid );
     pou = pou + 1;
 end
