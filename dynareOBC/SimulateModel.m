@@ -11,14 +11,14 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         DisplayProgress = true;
     end
     if nargin < 3
-        Mean_z = dynareOBC_.Mean_z;
+        Mean_z = full( dynareOBC_.Mean_z );
         dr = oo_.dr;
         nEndo = M_.endo_nbr;
         nState = length( dynareOBC_.SelectState );
         InitialFullState = struct;
         InitialFullState.bound_offset = zeros( nEndo, 1 );
         InitialFullState.first = Mean_z( dr.inv_order_var );
-        InitialFullState.total = bsxfun( @plus, InitialFullState.first, dynareOBC_.Constant );
+        InitialFullState.total = bsxfun( @plus, InitialFullState.first, full( dynareOBC_.Constant ) );
 
         if dynareOBC_.Order > 1
             InitialFullState.second = Mean_z( nEndo + dr.inv_order_var );
@@ -114,6 +114,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo_.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
                     end
                 else
+                    keyboard;
                     if dynareOBC_.Sparse
                         Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
                     else
