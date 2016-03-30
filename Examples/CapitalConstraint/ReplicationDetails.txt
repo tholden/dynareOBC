@@ -11,7 +11,7 @@ disp( [ mean(tmp) sqrt(mean(tmp.^2)) max(tmp) ] );
 Alternatively, to run them in a loop, with timing, run:
 
 pou=1;
-while pou <= 30;
+while pou <= 20;
     save pou.mat pou;
     t1 = java.lang.System.currentTimeMillis;
     save time.mat t1;
