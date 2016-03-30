@@ -114,7 +114,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( oo_.dr, ShockSequence, int32( SimulationLength ), InitialFullState );
                     end
                 else
-                    keyboard;
                     if dynareOBC_.Sparse
                         Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( full( ShockSequence ), int32( SimulationLength ), InitialFullState );
                     else
