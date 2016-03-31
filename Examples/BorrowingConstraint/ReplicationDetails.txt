@@ -4,18 +4,18 @@ Parameters may be adjusted in GlobalSolution.m.
 
 To run the accuracy tests, run:
 
-clear all; dynareOBC BorrowingConstraint.mod periodsofuncertainty=??? [nocubature|fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode
+clear all; dynareOBC BorrowingConstraint.mod periodsofuncertainty=??? [nocubature|fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode timetoescapebounds=45
 tmp = abs( dynareOBC_.MLVSimulationWithBounds.XError( 101:end ) );
 disp( [ mean(tmp) sqrt(mean(tmp.^2)) max(tmp) ] );
 
 Alternatively, to run them in a loop, with timing, run:
 
 pou=1;
-while pou <= 30;
+while pou <= 40;
     save pou.mat pou;
     t1 = java.lang.System.currentTimeMillis;
     save time.mat t1;
-    eval( [ 'clear all; dynareOBC BorrowingConstraint.mod periodsofuncertainty=' int2str( pou ) ' [nocubature|fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode' ] );
+    eval( [ 'clear all; dynareOBC BorrowingConstraint.mod periodsofuncertainty=' int2str( pou ) ' [nocubature|fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode timetoescapebounds=45' ] );
     t2 = java.lang.System.currentTimeMillis;
     load time.mat;
     seconds = ( t2 - t1 ) / 1000;
