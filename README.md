@@ -9,6 +9,8 @@ And the computational paper from here: https://github.com/tholden/dynareOBC/raw/
 
 A paper containing both the theoretical and computational results is available on RePEc from here (for citations): https://ideas.repec.org/p/zbw/esprep/127430.html
 
+The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.48948
+
 Alternatively, read the slides from here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
 
 Installation
