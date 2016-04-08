@@ -28,6 +28,9 @@ Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone. Note that while DynareOBC should work on all platforms, it has
    been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
  * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
+ * If on Windows, either administrative rights on the computer on which you are installing DynareOBC, so that DynareOBC can
+   automatically install its other dependencies, or the manual installation of the items listed in the _Additional requirements
+   for people using Windows, without administrative rights_ section below.
 
 Recommended additional installations:
  * MATLAB R2015a or later.
@@ -47,6 +50,27 @@ Recommended additional installations:
     * MOSEK, from https://mosek.com/resources/academic-license and https://mosek.com/resources/downloads
     * IBM CPLEX, by following the instructions here:
       https://www.ibm.com/developerworks/community/blogs/jfp/entry/cplex_studio_in_ibm_academic_initiative?lang=en
+
+Additional requirements for people using Windows, without administrative rights
+-------------------------------------------------------------------------------
+
+If you are using Windows, and you do not have administrative rights on your own computer, you need to ask your system administrator
+to download and install the following standard redistributable packages, which provide system libraries used by code compiled with
+either Microsoft Visual C++, the Intel C Compiler, or the Intel Fortran Compiler.
+
+If you are using a 64-bit version of MATLAB, please ask for the following to be installed:
+
+ * http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe
+ * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe
+ * w_ccompxe_redist_intel64_2013_sp1.4.237.msi from within: https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip 
+ * w_fcompxe_redist_intel64_2015.2.179.msi from within: https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip
+
+If you are using a 32-bit version of MATLAB, please ask for the following to be installed:
+
+ * http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe
+ * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe
+ * w_ccompxe_redist_ia32_2013_sp1.4.237.msi from within: https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip
+ * w_fcompxe_redist_ia32_2015.2.179.msi from within: https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip
 
 Troubleshooting
 ---------------
