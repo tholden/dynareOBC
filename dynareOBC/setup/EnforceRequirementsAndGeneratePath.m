@@ -92,15 +92,35 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                 fprintf( 1, '\n' );
 
                 if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-                    OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.12.zip'; % 
+                    OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1';
                 else
-                    OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1'; % 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.12.zip'; % 
+                    OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1';
                 end
                 fprintf( 1, '\n' );
                 disp( 'Downloading the OptiToolbox.' );
                 disp( 'This may take several minutes even on fast university connections.' );
                 fprintf( 1, '\n' );
-                aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
+                
+                ErrCaught = false;
+                try
+                    aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
+                catch
+                    ErrCaught = true;
+                end
+                
+                if ErrCaught || exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' ) == 0
+                    fprintf( 1, '\n' );
+                    disp( 'Downloading the OptiToolbox from an alternative location.' );
+                    if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
+                        OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.16.zip';
+                    else
+                        OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.16.zip';
+                    end
+                    fprintf( 1, '\n' );
+                    disp( 'This may take several minutes even on fast university connections.' );
+                    fprintf( 1, '\n' );
+                    aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
+                end
             end
 
             fprintf( 1, '\n' );
