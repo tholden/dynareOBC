@@ -27,6 +27,7 @@ dynareOBCTemp*
 dynareOBCGlobalResume.mat
 
 dynareOBC/codegen/
+dynareOBC/setup/codegen/
 dynareOBC/tbxmanager/
 dynareOBC/requirements/
 dynareOBC/OptiToolbox216/
