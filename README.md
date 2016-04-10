@@ -219,6 +219,24 @@ Note:
     * `ShockScale=FLOAT` (default: `1`)
          Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller than one standard deviation.
 
+ * **Settings for controlling estimation**
+    * `Estimation`
+         Enables estimation of the model's parameters
+          * `EstimationDataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
+               Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The
+               first sheet should have a title row containing the names of the MLVs being observed, followed by one row per
+               observation. There should not be a column with dates. The second sheet should contain a title row with the names
+               of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as
+               minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
+          * `EstimationFixedPointMaxIterations=INTEGER` (default: `100`)
+               The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
+          * `EstimationAlternativeCubature`
+               Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
+               additional central point. While this requires solving the model less far from the steady-state, it also requires
+               a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
+          * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
+               Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
+               
  * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`
          Without this, DynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the
@@ -238,22 +256,6 @@ Note:
           * `QPSolver=STRING` (default: automatically selected based on the detected solvers)
                Specifies the solver to use for the quadratic programming problem that is solved by the global algorithm. To find out
                what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
-
- * **EXPERIMENTAL settings for controlling estimation**
-    * `Estimation`
-         Enables estimation of the model's parameters
-          * `EstimationDataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
-               Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The
-               first sheet should have a title row containing the names of the MLVs being observed, followed by one row per
-               observation. There should not be a column with dates. The second sheet should contain a title row with the names
-               of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as
-               minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
-          * `EstimationFixedPointMaxIterations=INTEGER` (default: `100`)
-               The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
-          * `EstimationAlternativeCubature`
-               Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
-               additional central point. While this requires solving the model less far from the steady-state, it also requires
-               a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
 
  * **Advanced options**
     * `Bypass`
