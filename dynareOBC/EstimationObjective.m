@@ -1,17 +1,16 @@
-function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationObjective( p, M, options, oo, dynareOBC, EndoSelectWithControls, EndoSelect )
+function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun )
     TwoNLogLikelihood = Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
        
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
     RootMEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
     
-    if nargin < 6
-        SlowMode = true;
-    else
-        SlowMode = false;
-    end
+    persistent FullMean;
+    persistent FullRootCovariance;
     
-    [ Info, M, ~, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, SlowMode );
+    InitialRun = InitialRun || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || any( size( FullRootCovariance ) ~= [ Nm Nm ] ) || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
+
+    [ Info, M, ~, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, InitialRun );
     if Info ~= 0
         return
     end
@@ -22,7 +21,7 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     NEndoMult = ( 2 .^ ( dynareOBC.Order - 1 ) ) + 1;
     Nm = NEndoMult * NEndo;
 
-    RootQ = chol( M.Sigma_e( 1:NExo, 1:NExo ), 'lower' ); % sparse
+    RootQ = chol( M.Sigma_e( 1:NExo, 1:NExo ), 'lower' ); % sparsel
 
     OriginalVarSelect = false( NEndo );
     OriginalVarSelect( 1:dynareOBC.OriginalNumVar ) = true;
@@ -32,17 +31,14 @@ function [ TwoNLogLikelihood, EndoSelectWithControls, EndoSelect ] = EstimationO
     FutureValues = nan( sum( LeadIndices ), 1 );
     NanShock = nan( 1, NExo );
 
-    persistent FullMean;
-    persistent FullRootCovariance;
-    
-    UpdateSelect = SlowMode || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || any( size( FullRootCovariance ) ~= [ Nm Nm ] ) || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
-    if UpdateSelect
+    if InitialRun
         OldMean = zeros( Nm, 1 );
         dr = oo.dr;
         if dynareOBC.Order == 1
             TempOldRootCovariance = chol( dynareOBC.Var_z1( dr.inv_order_var, dr.inv_order_var ) + sqrt( eps ) * eye( NEndo ), 'lower' );
         else
             doubleInvOrderVar = [ dr.inv_order_var; dr.inv_order_var ];
+            keyboard;
             TempOldRootCovariance = chol( dynareOBC.Var_z2( doubleInvOrderVar, doubleInvOrderVar ) + sqrt( eps ) * eye( 2 * NEndo ), 'lower' );
         end
 
