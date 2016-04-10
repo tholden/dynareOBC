@@ -1,4 +1,4 @@
-EstimationDataFile = 'BoundedProductivityData.xlsx';
+EstimationDataFile = 'BoundedProductivityEstimation.xlsx';
 
 beta = 0.99;
 gamma = 5;
