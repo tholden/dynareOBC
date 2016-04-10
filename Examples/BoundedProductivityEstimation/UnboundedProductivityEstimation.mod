@@ -12,6 +12,7 @@ varexo epsilon;
 model;
 	g = ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon;
 	1 = beta * exp( r ) * exp( -gamma * g(+1) );
+	#rObs = r;
 end;
 
 shocks;
