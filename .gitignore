@@ -26,8 +26,7 @@ dynareOBCTemp*
 
 dynareOBCGlobalResume.mat
 
-dynareOBC/codegen/
-dynareOBC/setup/codegen/
+codegen/
 dynareOBC/tbxmanager/
 dynareOBC/requirements/
 dynareOBC/OptiToolbox216/
@@ -35,8 +34,6 @@ dynareOBC/JGit4MATLAB/@JGit/older-versions/*.jar
 LastUpdate.mat
 LastDependencyUpdate.mat
 FastStart.mat
-Examples/CapitalConstraint/codegen/
-Examples/BorrowingConstraint/codegen/
 
 pou.mat
 time.mat
