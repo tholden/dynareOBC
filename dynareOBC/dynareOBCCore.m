@@ -18,6 +18,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     run1varargin = basevarargin;
     run1varargin( end + 1 : end + 2 ) = { 'savemacro=dynareOBCTemp1.mod', 'onlymacro' };
 
+    warning( 'off', 'MATLAB:lang:cannotClearExecutingFunction' );
     dynare( InputFileName, run1varargin{:} );
 
     %% Finding non-differentiable functions
