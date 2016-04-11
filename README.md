@@ -321,7 +321,6 @@ DynareOBC incorporates code:
    http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf
  * from the nonlinear moving average toolkit that is copyright Lan and Alexander Meyer-Gohde, 2014,
  * for nested Gaussian cubature that is copyright Genz and Keister, 1996,
- * for LDL decompositions that is copyright Borchers, 2002,
  * for displaying a progress bar that is copyright Cacho, "Stefan" and Scheff, 2014,
  * for calculating relative paths that is copyright Lenz and Chatfield, 2013,
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
