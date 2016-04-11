@@ -1,5 +1,5 @@
 function RootCovariance = ObtainEstimateRootCovariance( Covariance, EstimationStdDevThreshold )
-    [U,D] = schur( Covariance, 'complex' );
+    [U,D] = schur( full( Covariance ), 'complex' );
     % assert( isreal( U ) );
     diagD = diag( D );
     % assert( isreal( diagD ) );
