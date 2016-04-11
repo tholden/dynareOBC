@@ -1,4 +1,4 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock )
     Mean = [];
     RootCovariance = [];
     TwoNLogObservationLikelihood = NaN;
@@ -30,7 +30,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         elseif dynareOBC.Order == 2
             TempNewStatePoints = [ Simulation.first; Simulation.second + Simulation.bound_offset ];
         else
-            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.third + Simulation.bound_offset; Simulation.first_sigma_2 ];
+            TempNewStatePoints = [ Simulation.first; Simulation.second; Simulation.first_sigma_2; Simulation.third + Simulation.bound_offset ];
         end
         NewStatePoints( :, i ) = TempNewStatePoints;
         if any( ~isfinite( NewStatePoints( :, i ) ) )
@@ -52,17 +52,20 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     if NObs > 0
         NEndo3 = size( RootPredictedErrorCovariance, 2 );
         
-        UpdateIntDim = NEndo3 + NExo2;
+        UpdateIntDim = NEndo3; % + NExo2;
 
         if dynareOBC.EstimationSparseCubatureDegree > 0
             [ UpdateWeights, pTmp, UpdateNumPoints ] = fwtpts( UpdateIntDim, CubatureOrder );
-            DemeanedUpdateCubaturePoints = [ RootPredictedErrorCovariance, zeros( NEndo1, NExo2 ); zeros( NExo1, NEndo3 ), RootQ ] * pTmp;
+            DemeanedUpdateCubaturePoints = RootPredictedErrorCovariance * pTmp;
+            % DemeanedUpdateCubaturePoints = [ RootPredictedErrorCovariance, zeros( NEndo1, NExo2 ); zeros( NExo1, NEndo3 ), RootQ ] * pTmp;
         else
             UpdateNumPoints = 2 * UpdateIntDim;
-            DemeanedUpdateCubaturePoints = [ [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( UpdateIntDim ), zeros( NEndo1, 2 * NExo2 ); zeros( NExo1, 2 * NEndo3 ),  [ RootQ -RootQ ] * sqrt( UpdateIntDim ) ];
+            DemeanedUpdateCubaturePoints = [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( UpdateIntDim );
+            % DemeanedUpdateCubaturePoints = [ [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( UpdateIntDim ), zeros( NEndo1, 2 * NExo2 ); zeros( NExo1, 2 * NEndo3 ),  [ RootQ -RootQ ] * sqrt( UpdateIntDim ) ];
             UpdateWeights = 1 / UpdateNumPoints;
         end
-        UpdateCubaturePoints = bsxfun( @plus, DemeanedUpdateCubaturePoints, [ PredictedState; zeros( NExo1, 1 ) ] );
+        UpdateCubaturePoints = bsxfun( @plus, DemeanedUpdateCubaturePoints, PredictedState );
+        % UpdateCubaturePoints = bsxfun( @plus, DemeanedUpdateCubaturePoints, [ PredictedState; zeros( NExo1, 1 ) ] );
         
         NewMeasurementPoints = zeros( NObs, UpdateNumPoints );
 
@@ -70,10 +73,12 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         LagValuesWithBounds = InitialFullState.total_with_bounds( OriginalVarSelect );
         LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
         for i = 1 : UpdateNumPoints
-            Simulation = GetFullStateStruct( UpdateCubaturePoints( 1:NEndo1, i ), dynareOBC.Order, dynareOBC.Constant );
+            Simulation = GetFullStateStruct( UpdateCubaturePoints( :, i ), dynareOBC.Order, dynareOBC.Constant );
+            % Simulation = GetFullStateStruct( UpdateCubaturePoints( 1:NEndo1, i ), dynareOBC.Order, dynareOBC.Constant );
             CurrentValuesWithBounds = Simulation.total_with_bounds( OriginalVarSelect );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
-            MLVValues = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, MParams, oo.dr.ys, 1 );
+            MLVValues = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, MParams, OoDrYs, 1 );
+            % MLVValues = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], UpdateCubaturePoints( (NEndo1+1):end, i ), MParams, OoDrYs, 1 );
             NewMeasurementPoints( :, i ) = MLVValues( Observed );
             if any( ~isfinite( NewMeasurementPoints( :, i ) ) )
                 return
@@ -110,9 +115,9 @@ function FullStateStruct = GetFullStateStruct( CurrentState, Order, Constant )
         FullStateStruct.second = CurrentState( (NEndo+1):(2*NEndo) );
         total = total + FullStateStruct.second;
         if Order >= 3
-            FullStateStruct.third = CurrentState( (2*NEndo+1):(3*NEndo) );
-            FullStateStruct.first_sigma_2 = CurrentState( (3*NEndo+1):(4*NEndo) );
-            total = total + FullStateStruct.third + FullStateStruct.first_sigma_2;
+            FullStateStruct.first_sigma_2 = CurrentState( (2*NEndo+1):(3*NEndo) );
+            FullStateStruct.third = CurrentState( (3*NEndo+1):(4*NEndo) );
+            total = total + FullStateStruct.first_sigma_2 + FullStateStruct.third;
         end
     end
     FullStateStruct.bound_offset = zeros( NEndo, 1 );
