@@ -230,10 +230,13 @@ Note:
                minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
           * `EstimationFixedPointMaxIterations=INTEGER` (default: `100`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
-          * `EstimationAlternativeCubature`
-               Uses an alternative cubature rule for integrating over the states and shocks of the model, which includes an
-               additional central point. While this requires solving the model less far from the steady-state, it also requires
-               a negative weight, which may cause numerical issues with the positive definiteness of the state covariance matrix.
+          * `EstimationSparseCubatureDegree=INTEGER` (default: `0`)
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule for integrating over the
+               states and shocks of the model, which includes additional points. While this requires solving the model less far
+               from the steady-state when the state dimension is large, it also requires negative weights, which may cause
+               numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly
+               integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger
+               than twice the order of approximation. Values above `51` are treated as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
                
