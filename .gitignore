@@ -24,6 +24,8 @@ dynareOBCTemp*
 *deleteThis*
 ~*
 
+outcmaes*.*
+
 dynareOBCGlobalResume.mat
 
 codegen/
