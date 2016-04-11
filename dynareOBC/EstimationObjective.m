@@ -3,7 +3,7 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     [ T, N ] = size( dynareOBC.EstimationData );
        
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
-    RootMEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
+    MEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
     
     [ Info, M, ~, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, InitialRun );
     if Info ~= 0
@@ -15,7 +15,9 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     NEndoMult = ( 2 .^ ( dynareOBC.Order - 1 ) ) + 1;
     Nm = NEndoMult * NEndo;
    
-    RootQ = chol( M.Sigma_e( 1:NExo, 1:NExo ), 'lower' ); % sparse
+    EstimationStdDevThreshold = dynareOBC.EstimationStdDevThreshold;
+    
+    RootQ = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), EstimationStdDevThreshold );
 
     OriginalVarSelect = false( NEndo );
     OriginalVarSelect( 1:dynareOBC.OriginalNumVar ) = true;
@@ -30,8 +32,6 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     
     RecalculateMeanAndCovariance = InitialRun || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || size( FullRootCovariance, 1 ) ~= Nm || size( FullRootCovariance, 1 ) > Nm || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
 
-    EstimationStdDevThreshold = dynareOBC.EstimationStdDevThreshold;
-    
     if RecalculateMeanAndCovariance
         OldMean = dynareOBC.Mean_z;
         dr = oo.dr;
@@ -49,9 +49,11 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
         OldRootCovariance = FullRootCovariance;
     end
     
+    MParams = M.params;
+    
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, RootMEVar, M, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
         catch
             Mean = [];
         end
@@ -86,7 +88,7 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
 
     TwoNLogLikelihood = 0;
     for t = 1:T
-        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, RootMEVar, M, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, oo, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
         if isempty( Mean )
             TwoNLogLikelihood = Inf;
             return;
