@@ -23,7 +23,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     NewStatePoints = zeros( NEndo1, PredictNumPoints );
            
     for i = 1 : PredictNumPoints
-        InitialFullState = GetFullStateStruct( PredictCubaturePoints( 1:NEndo1, i ), NEndo1, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
+        InitialFullState = GetFullStateStruct( PredictCubaturePoints( 1:NEndo1, i ), dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( PredictCubaturePoints( (NEndo1+1):end, i ), false, InitialFullState, true );
         if dynareOBC.Order == 1
             TempNewStatePoints = Simulation.first + Simulation.bound_offset;
@@ -66,11 +66,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         
         NewMeasurementPoints = zeros( NObs, UpdateNumPoints );
 
-        InitialFullState = GetFullStateStruct( OldMean, NEndo1, dynareOBC.Order, dynareOBC.Constant );
+        InitialFullState = GetFullStateStruct( OldMean, dynareOBC.Order, dynareOBC.Constant );
         LagValuesWithBounds = InitialFullState.total_with_bounds( OriginalVarSelect );
         LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
         for i = 1 : UpdateNumPoints
-            Simulation = GetFullStateStruct( UpdateCubaturePoints( 1:NEndo1, i ), NEndo1, dynareOBC.Order, dynareOBC.Constant );
+            Simulation = GetFullStateStruct( UpdateCubaturePoints( 1:NEndo1, i ), dynareOBC.Order, dynareOBC.Constant );
             CurrentValuesWithBounds = Simulation.total_with_bounds( OriginalVarSelect );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices );
             MLVValues = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; FutureValues ], NanShock, MParams, oo.dr.ys, 1 );
@@ -101,7 +101,8 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     end
 end
 
-function FullStateStruct = GetFullStateStruct( CurrentState, NEndo, Order, Constant )
+function FullStateStruct = GetFullStateStruct( CurrentState, Order, Constant )
+    NEndo = length( Constant );
     FullStateStruct = struct;
     FullStateStruct.first = CurrentState( 1:NEndo );
     total = FullStateStruct.first + Constant;
