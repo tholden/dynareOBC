@@ -1,4 +1,4 @@
-var g r;
+var g r nothing;
 
 parameters beta gamma gBar sigma rho;
 beta = 0.99;
@@ -12,6 +12,7 @@ varexo epsilon;
 model;
 	g = ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon;
 	1 = beta * exp( r ) * exp( -gamma * g(+1) );
+	nothing = 0;
 	#rObs = r;
 end;
 
@@ -22,6 +23,7 @@ end;
 steady_state_model;
 	g = gBar;
 	r = gamma * gBar -log( beta );
+	nothing = 0;
 end;
 
 steady;
