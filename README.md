@@ -248,17 +248,8 @@ Note:
          solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the
          response ignoring the bound entirely.
          Requires the MATLAB Optimization toolbox, or an alternative non-linear least squares routine, see above for details.
-          * `GlobalConstraintStrength=FLOAT` (default: `1`)
-               Specifies the weight on the squared deviation of the equality constraint in the global objective problem. Larger values
-               imply that the long-run path is very close to the short-run one, but can produce excess volatility in simulations.
-          * `GlobalViolationStrength=FLOAT` (default: `1`)
-               Specifies the weight on the squared violations of the inequality constraints in the global objective problem. Larger
-               values reduce violations, but can produce bias or excess volatility in simulations.
           * `Resume`
                Resumes an interrupted solution iteration, when using global.
-          * `QPSolver=STRING` (default: automatically selected based on the detected solvers)
-               Specifies the solver to use for the quadratic programming problem that is solved by the global algorithm. To find out
-               what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
 
  * **Advanced options**
     * `Bypass`
