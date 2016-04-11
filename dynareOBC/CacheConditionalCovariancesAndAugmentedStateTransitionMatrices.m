@@ -159,21 +159,21 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         B2 = sparse( B2i, B2j, B2s, LengthZ2, LengthXi );  
 
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
-        % [ Vi, Vj, Vs ] = find( Sigma );
 
         % BCovXiB{i}( Jdx2, Jdx2 ) = dynareOBC_.Variance_exe;
-        [ Vi, Vj, Vs ] = find( ( speye( nExo2 ) + commutation_sparse( nExo, nExo ) ) * spkron( Sigma, Sigma ) );
-        Vi = Vi + nExo;
-        Vj = Vj + nExo;
+        [ Ci, Cj, Cs ] = find( ( speye( nExo2 ) + commutation_sparse( nExo, nExo ) ) * spkron( Sigma, Sigma ) );
+        Ci = Ci + nExo;
+        Cj = Cj + nExo;
         
     end
         
     if Order2VarianceRequired
         
+        [ Vi, Vj, Vs ] = find( Sigma );
         [ Tmpi, Tmpj, Tmps ] = spkron( dynareOBC.Var_z1( SelectState, SelectState ), Sigma );
-        Ui = [ Vi; Tmpi + nExo + nExo2 ];
-        Uj = [ Vj; Tmpj + nExo + nExo2 ];
-        Us = [ Vs; Tmps ];
+        Ui = [ Vi; Ci; Tmpi + nExo + nExo2 ];
+        Uj = [ Vj; Cj; Tmpj + nExo + nExo2 ];
+        Us = [ Vs; Cs; Tmps ];
 
         UnconditionalVarXi = sparse( Ui, Uj, Us, LengthXi, LengthXi );
         dynareOBC.UnconditionalVarXi = UnconditionalVarXi;
@@ -402,7 +402,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
 				dynareOBC.VarianceY1StateGlobal = VarianceY1StateGlobal;
             end
 
-            dynareOBC.VarianceXiSkeleton = sparse( Vi, Vj, Vs, LengthXi, LengthXi );
+            dynareOBC.VarianceXiSkeleton = sparse( Ci, Cj, Cs, LengthXi, LengthXi );
 
         end
     end
