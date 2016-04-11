@@ -23,7 +23,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
            
     % actual augmented state contains shock(+1), but we treat the shock(+1) component separately
     for i = 1 : Mx
-        InitialFullState = GetFullStateStruct( StateCubaturePoints( :, i ), NEndo, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
+        InitialFullState = GetFullStateStruct( StateCubaturePoints( 1:Nm, i ), NEndo, dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
         Simulation = SimulateModel( StateCubaturePoints( (Nm+1):end, i ), false, InitialFullState, true );
         if dynareOBC.Order == 1
             TempNewStatePoints = Simulation.first + Simulation.bound_offset;
