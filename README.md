@@ -240,7 +240,7 @@ Note:
                than twice the order of approximation. Values above `51` are treated as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
-          * `EstimationMinimisationFunction=[CMAESWrapper|FMinConWrapper|STRING]` (default: `CMAESWrapper)
+          * `EstimationMinimisationFunction=[CMAESWrapper|FMinBndWrapper|FMinConWrapper|STRING]` (default: `CMAESWrapper)
                Specifies the name of the function used for minimisation. Note that to use the FMinConWrapper option, you must
                have a license for the MATLAB Optimisation Toolbox.
                
