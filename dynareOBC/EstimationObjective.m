@@ -62,7 +62,7 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     end
     
     MParams = M.params;
-    OoDrYs = oo.dr.ys;
+    OoDrYs = oo.dr.ys( OriginalVarSelect );
     
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
