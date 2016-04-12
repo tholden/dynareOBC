@@ -22,15 +22,17 @@ function [ x, f ] = FMinBndWrapper( OptiFunction, x, lb, ub, varargin )
                 [ xPNew( i ), fPNew( i ) ] = FMinBndInternal( @( xi ) OptiFunction( SetCoefficient( x, i, xi ) ), lb( i ), ub( i ), Options ); %#ok<PFBNS>
                 Denom = xPNew( i ) - x( i );
                 if Denom >= 0
-                    uBound( i ) = ( ub( i ) - x( i ) ) / Denom;
+                    uBound( i ) = max( 1, ( ub( i ) - x( i ) ) / Denom );
                 else
-                    uBound( i ) = ( lb( i ) - x( i ) ) / Denom;
+                    uBound( i ) = max( 1, ( lb( i ) - x( i ) ) / Denom );
                 end
             end
             [ fPNewBest, fPNewBestIndex ] = min( fPNew );
             xPNewBest = SetCoefficient( x, fPNewBestIndex, xPNew( fPNewBestIndex ) );
+            fprintf( 'Best f after parallel step: %.15g\n\n', fpNewBest );
             fprintf( 'Serial step %d.\n', Iter );
             [ xNew, fNew ] = FMinBndInternal( @( u ) OptiFunction( ( 1 - u ) * x + u * xPNew ), 0, min( uBound ), Options );
+            fprintf( 'Best f after serial step: %.15g\n\n', fNew );
             if fNew > fPNewBest
                 xNew = xPNewBest;
                 fNew = fPNewBest;
@@ -38,6 +40,7 @@ function [ x, f ] = FMinBndWrapper( OptiFunction, x, lb, ub, varargin )
             BreakCondition = max( abs( x - xNew ) ) < 1e-10 || fNew > f - 1e-8;
             x = xNew;
             f = fNew;
+            fprintf( 'f at end of iteration %d: %.15g\n\n', Iter, f );
             if BreakCondition
                 return
             end
