@@ -9,10 +9,14 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     if Info ~= 0
         return
     end
-    global M_ oo_ dynareOBC_
-    M_ = M;
-    oo_ = oo;
-    dynareOBC_ = dynareOBC;
+
+    SetGlobalVariables( M, oo, dynareOBC );
+    try
+        spmd
+            SetGlobalVariables( M, oo, dynareOBC );
+        end
+    catch
+    end
     
     NEndo = M.endo_nbr;
     NExo = dynareOBC.OriginalNumVarExo;
@@ -105,4 +109,11 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
         OldRootCovariance = RootCovariance;
         TwoNLogLikelihood = TwoNLogLikelihood + TwoNLogObservationLikelihood;
     end
+end
+
+function SetGlobalVariables( M, oo, dynareOBC )
+    global M_ oo_ dynareOBC_
+    M_ = M;
+    oo_ = oo;
+    dynareOBC_ = dynareOBC;
 end
