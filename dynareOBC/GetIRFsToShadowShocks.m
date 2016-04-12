@@ -59,9 +59,13 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     end
     
     seps = sqrt( eps );
-    if min( abs( eig( A + B + C ) ) ) < seps
-        warning( 'dynareOBC:UnitRoot', 'Your model appears to have an exact unit root. Skipping infinite T tests.' );
-        TimeReversedSolutionError = 7;
+    if dynareOBC.Estimation
+        TimeReversedSolutionError = 999;
+    else
+        if min( abs( eig( A + B + C ) ) ) < seps
+            warning( 'dynareOBC:UnitRoot', 'Your model appears to have an exact unit root. Skipping infinite T tests.' );
+            TimeReversedSolutionError = 7;
+        end
     end
 
     VarIndices = dynareOBC.VarIndices_ZeroLowerBounded;
