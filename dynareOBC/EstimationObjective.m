@@ -12,12 +12,6 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     end
 
     SetGlobalVariables( M, oo, dynareOBC );
-    try
-        spmd
-            SetGlobalVariables( M, oo, dynareOBC );
-        end
-    catch
-    end
     
     NEndo = M.endo_nbr;
     NExo = dynareOBC.OriginalNumVarExo;
