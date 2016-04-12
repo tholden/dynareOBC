@@ -388,12 +388,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         M_.params( dynareOBC.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
         disp( 'Final parameter estimates:' );
         for i = 1 : NumEstimatedParams
-            fprintf( '%s:\t\t%.17e\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC.EstimationParameterSelect( i ) ) );
+            fprintf( '%s:\t\t%.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC.EstimationParameterSelect( i ) ) );
         end
         fprintf( 1, '\n' );
         disp( 'Final measurement error standard deviation estimates:' );
         for i = 1 : NumObservables
-            fprintf( '%s:\t\t%.17e\n', dynareOBC.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
+            fprintf( '%s:\t\t%.17g\n', dynareOBC.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
         end
     end
 
