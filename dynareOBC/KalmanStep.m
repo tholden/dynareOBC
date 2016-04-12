@@ -24,7 +24,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
            
     for i = 1 : PredictNumPoints
         InitialFullState = GetFullStateStruct( PredictCubaturePoints( 1:NEndo1, i ), dynareOBC.Order, dynareOBC.Constant ); %#ok<*PFBNS>
-        Simulation = SimulateModel( PredictCubaturePoints( (NEndo1+1):end, i ), false, InitialFullState, true );
+        Simulation = SimulateModel( PredictCubaturePoints( (NEndo1+1):end, i ), false, InitialFullState, true, true );
         if dynareOBC.Order == 1
             TempNewStatePoints = Simulation.first + Simulation.bound_offset;
         elseif dynareOBC.Order == 2

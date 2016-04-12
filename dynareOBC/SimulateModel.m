@@ -1,4 +1,4 @@
-function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFullState, SkipMLVSimulation )
+function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFullState, SkipMLVSimulation, DisableParFor )
 
     global M_ oo_ dynareOBC_
         
@@ -38,6 +38,14 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
     if nargin < 4
         SkipMLVSimulation = false;
     end
+    if nargin < 5
+        DisableParFor = false;
+    end
+    if DisableParFor
+        MaxWorkers = 0;
+    else
+        MaxWorkers = Inf;
+    end
     if nargin < 3 && dynareOBC_.SimulateOnGridPoints
         %% Grid simulation
         dynareOBC_.MLVSimulationSubSample = 2;
@@ -67,7 +75,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         WarningGenerated = false;
         GridSimulations = cell( NumberOfGridPoints, 1 );
-        parfor k = 1 : NumberOfGridPoints
+        parfor ( k = 1 : NumberOfGridPoints, MaxWorkers )
             lastwarn( '' );
             ParallelWarningState = warning( 'off', 'all' );
             try
@@ -349,7 +357,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         MLVValuesWithoutBounds = zeros( nMLV, 1 );
                         WarningGenerated = false;
                         NumberOfMax = dynareOBC_.NumberOfMax;
-                        parfor PointIndex = 1 : NumPoints
+                        parfor ( PointIndex = 1 : NumPoints, MaxWorkers )
                             lastwarn( '' );
                             ParallelWarningState = warning( 'off', 'all' );
                             try
