@@ -29,9 +29,10 @@ function [ x, f ] = FMinBndWrapper( OptiFunction, x, lb, ub, varargin )
             end
             [ fPNewBest, fPNewBestIndex ] = min( fPNew );
             xPNewBest = SetCoefficient( x, fPNewBestIndex, xPNew( fPNewBestIndex ) );
-            fprintf( 'Best f after parallel step: %.15g\n\n', fpNewBest );
+            fprintf( 'Best f after parallel step: %.15g\n\n', fPNewBest );
             fprintf( 'Serial step %d.\n', Iter );
-            [ xNew, fNew ] = FMinBndInternal( @( u ) OptiFunction( ( 1 - u ) * x + u * xPNew ), 0, min( uBound ), Options );
+            [ uNew, fNew ] = FMinBndInternal( @( u ) OptiFunction( ( 1 - u ) * x + u * xPNew ), 0, min( uBound ), Options );
+            xNew = ( 1 - uNew ) * x + uNew * xPNew;
             fprintf( 'Best f after serial step: %.15g\n\n', fNew );
             if fNew > fPNewBest
                 xNew = xPNewBest;
