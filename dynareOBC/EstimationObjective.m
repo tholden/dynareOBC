@@ -5,6 +5,7 @@ function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, 
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
     MEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
     
+    options.qz_criterium = 1 - 1e-6;
     [ Info, M, ~, oo, dynareOBC ] = ModelSolution( 1, M, options, oo, dynareOBC, InitialRun );
     if Info ~= 0
         return
