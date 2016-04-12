@@ -34,9 +34,10 @@ Requirements (to be installed and added to your Matlab path):
 
 Recommended additional installations:
  * MATLAB R2015a or later.
- * The MATLAB Parallel toolbox, or a fully compatible clone.
- * The MATLAB Optimization toolbox, or an alternative non-linear least squares routine, which is required for the experimental 
-   `global` option. (To use an alternative routine, you must set `dynareOBC.FSolveFunctor`.)
+ * The MATLAB Parallel Toolbox, or a fully compatible clone.
+ * The MATLAB Optimization Toolbox, or an alternative non-linear least squares routine, which is required for the experimental 
+   `global` option. (To use an alternative routine, you must set `dynareOBC.FSolveFunctor`.) This toolbox is also required for
+   some options of estimation, as detailed below.
  * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, a free compiler meeting
    these requirements is available from: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx . Alternatively, on
    Windows, with MATLAB r2015b, another free compiler meeting these requirements (which uses much less disk space) is available
@@ -239,6 +240,9 @@ Note:
                than twice the order of approximation. Values above `51` are treated as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
+          * `EstimationMinimisationFunction=[CMAESWrapper|FMinConWrapper|STRING]` (default: `CMAESWrapper)
+               Specifies the name of the function used for minimisation. Note that to use the FMinConWrapper option, you must
+               have a license for the MATLAB Optimisation Toolbox.
                
  * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`

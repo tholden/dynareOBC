@@ -381,7 +381,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
-        [ ResTemp, TwoNLogLikelihood ] = dynareOBC.FMinEstimateFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
+        FMinEstimateFunctor = str2func( dynareOBC.EstimationMinimisationFunction );
+        [ ResTemp, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
         disp( 'Final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
         M_.params( dynareOBC.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
