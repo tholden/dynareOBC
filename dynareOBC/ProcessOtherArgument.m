@@ -1,7 +1,7 @@
 function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
     Matched = false;
 
-    [ startindex, endindex ] = regexp( Argument, '(?<=(^savemacro\=)).*$', 'once' );
+    [ startindex, endindex ] = regexp( Argument, '(?<=(^savemacro\=)).*$', 'once', 'ignorecase' );
     if ~isempty( startindex )
         dynareOBC.SaveMacroName = Argument( startindex:endindex );
         dynareOBC.SaveMacro = true;
@@ -9,7 +9,7 @@ function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
         return
     end
 
-    [ startindex, endindex ] = regexp( Argument, '(?<=(^estimationdatafile\=)).*$', 'once' );
+    [ startindex, endindex ] = regexp( Argument, '(?<=(^estimationdatafile\=)).*$', 'once', 'ignorecase' );
     if ~isempty( startindex )
         dynareOBC.EstimationDataFile = Argument( startindex:endindex );
         dynareOBC.Estimation = true;
@@ -36,7 +36,7 @@ function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
         error( 'dynareOBC:Arguments', [ Argument ' was found without a value. Please do not put a space between the equals sign and the value.' ] );
     end
         
-    TokenNames = regexp( Argument, '^\s*(?<Key>\w+)\s*\=\s*(?<Value>\S+)\s*$', 'names', 'once' );
+    TokenNames = regexp( Argument, '^\s*(?<Key>\w+)\s*\=\s*(?<Value>\S+)\s*$', 'names', 'once', 'ignorecase' );
     if isempty( TokenNames )
         return;
     end

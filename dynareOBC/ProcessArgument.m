@@ -17,7 +17,7 @@ function [ basevarargin, dynareOBC ] = ProcessArgument( Argument, basevarargin, 
             error( 'dynareOBC:Arguments', 'estimationdatafile was found without a file name. Please do not put a space between the equals sign and the file name.' );
 
         otherwise
-            [ Matched, dynareOBC ] = ProcessOtherArgument( LowerArgument, dynareOBC );
+            [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC );
             if ~Matched
                 basevarargin{ end + 1 } = Argument; %#ok<*AGROW>
             end
