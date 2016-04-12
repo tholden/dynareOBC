@@ -375,7 +375,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
         OpenPool;
         OptiX0 = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
-        TwoNLogLikelihood = EstimationObjective( OptiX0, M_, options_, oo_, dynareOBC, true );
+        [ TwoNLogLikelihood, M_, options_, oo_, dynareOBC ] = EstimationObjective( OptiX0, M_, options_, oo_, dynareOBC, true );
         disp( 'Initial log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );

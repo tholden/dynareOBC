@@ -1,4 +1,4 @@
-function TwoNLogLikelihood = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun )
+function [ TwoNLogLikelihood, M, options, oo, dynareOBC ] = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun )
     TwoNLogLikelihood = Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
 
