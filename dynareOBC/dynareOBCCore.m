@@ -373,11 +373,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         UBTemp = dynareOBC.EstimationParameterBounds(2,:)';
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
-        OpenPool;
         OptiX0 = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
+        
         [ TwoNLogLikelihood, M_, options_, oo_, dynareOBC ] = EstimationObjective( OptiX0, M_, options_, oo_, dynareOBC, true );
+        dynareOBC = orderfields( dynareOBC );
+        StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
+        
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
