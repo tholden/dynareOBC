@@ -285,7 +285,11 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         LagValuesWithoutBounds = InitialFullState.total( OriginalVarSelect );
         LagIndices = dynareOBC_.OriginalLeadLagIncidence( 1, : ) > 0;
         CurrentIndices = dynareOBC_.OriginalLeadLagIncidence( 2, : ) > 0;
-        LeadIndices = dynareOBC_.OriginalLeadLagIncidence( 3, : ) > 0;
+        if size( dynareOBC_.OriginalLeadLagIncidence, 1 ) > 2
+            LeadIndices = dynareOBC_.OriginalLeadLagIncidence( 3, : ) > 0;
+        else
+            LeadIndices = [];
+        end
         FutureValues = nan( sum( LeadIndices ), 1 );
         
         if dynareOBC_.MLVSimulationMode > 1
