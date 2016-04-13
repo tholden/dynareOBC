@@ -38,10 +38,16 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     
     [ ~, cols_a ] = find(lead_lag_incidence(maximum_lag, order_var));
     [ ~, cols_b ] = find(lead_lag_incidence(maximum_lag+1, order_var));
-    [ ~, cols_c ] = find(lead_lag_incidence(maximum_lag+2, order_var));
+    if size( lead_lag_incidence, 1 ) > 2
+        [ ~, cols_c ] = find(lead_lag_incidence(maximum_lag+2, order_var));
+    else
+        cols_c = [];
+    end
     A( :, cols_a ) = jacobia( :, nonzeros(lead_lag_incidence(maximum_lag,:)) );
     B( :, cols_b ) = jacobia( :, nonzeros(lead_lag_incidence(maximum_lag+1,:)) );
-    C( :, cols_c ) = jacobia( :, nonzeros(lead_lag_incidence(maximum_lag+2,:)) );
+    if size( lead_lag_incidence, 1 ) > 2
+        C( :, cols_c ) = jacobia( :, nonzeros(lead_lag_incidence(maximum_lag+2,:)) );
+    end
         
     %% end taken from dyn_first_order_solver
     
