@@ -30,7 +30,11 @@ function [ TwoNLogLikelihood, M, options, oo, dynareOBC ] = EstimationObjective(
     OriginalVarSelect( 1:dynareOBC.OriginalNumVar ) = true;
     LagIndices = dynareOBC.OriginalLeadLagIncidence( 1, : ) > 0;
     CurrentIndices = dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0;
-    LeadIndices = dynareOBC.OriginalLeadLagIncidence( 3, : ) > 0;
+    if size( dynareOBC.OriginalLeadLagIncidence, 1 ) > 2
+        LeadIndices = dynareOBC.OriginalLeadLagIncidence( 3, : ) > 0;
+    else
+        LeadIndices = [];
+    end
     FutureValues = nan( sum( LeadIndices ), 1 );
     NanShock = nan( 1, NExo );
 
