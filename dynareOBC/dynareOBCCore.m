@@ -397,7 +397,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         end
     end
 
-    [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( 1, M_, options_, oo_, dynareOBC );
+    [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( true, M_, options_, oo_, dynareOBC );
 
     if Info ~= 0
         error( 'dynareOBC:FailedToSolve', 'dynareOBC failed to find a solution to the model.' );

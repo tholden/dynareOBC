@@ -1,4 +1,4 @@
-function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, options, oo, dynareOBC, SlowMode )
+function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, options, oo, dynareOBC, SlowMode )
 
     if nargin < 6
         SlowMode = true;
@@ -14,7 +14,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( FirstCall, M, opti
     options.initial_period = [];
     options.dataset = [];
     
-    if FirstCall
+    if SkipResol
         Info = 0;
     else
         [ dr, Info, M, options, oo ] = resol( 0, M, options, oo );
