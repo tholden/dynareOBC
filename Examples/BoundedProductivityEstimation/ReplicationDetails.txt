@@ -6,5 +6,5 @@ To run the estimation(s), run:
 
 dynareOBC UnboundedProductivityEstimation estimation EstimationMinimisationFunction=FMinConWrapper [EstimationFixedParameters=beta] [EstimationFixedParameters=gamma] [EstimationFixedParameters=beta#gamma] [OrderOverride=1]
 dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationMinimisationFunction=FMinConWrapper [EstimationFixedParameters=gamma]
-dynareOBC BoundedProductivityEstimation estimation nocubature EstimationMinimisationFunction=FMinConWrapper
+dynareOBC BoundedProductivityEstimation estimation nocubature EstimationMinimisationFunction=FMinConWrapper [OrderOverride=1]
 dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationMinimisationFunction=FMinConWrapper
