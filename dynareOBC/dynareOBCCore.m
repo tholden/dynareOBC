@@ -410,10 +410,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         else
             disp( 'Calculating standard errors.' );
             fprintf( 1, '\n' );
-            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, M_, options_, oo_, dynareOBC ), EstimatedParameters, size( dynareOBC.EstimationData, 1 ) );
+            ObservationCount = size( dynareOBC.EstimationData, 1 );
+            OneOverRootObservationCount = 1 / sqrt( ObservationCount );
+            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, M_, options_, oo_, dynareOBC ), EstimatedParameters, ObservationCount );
             HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, M_, options_, oo_, dynareOBC, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
-            [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector, 0 );
-            RootEstimatedParameterCovarianceMatrix = HessianLogLikelihood \ TriaJacobianScoreVector';
+            [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
+            HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
+            RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );
             EstimatedParameterCovarianceMatrix = RootEstimatedParameterCovarianceMatrix * RootEstimatedParameterCovarianceMatrix';
             dynareOBC.EstimatedParameterCovarianceMatrix = EstimatedParameterCovarianceMatrix;
             EstimatedParameterStandardErrors = sqrt( diag( EstimatedParameterCovarianceMatrix ) );
