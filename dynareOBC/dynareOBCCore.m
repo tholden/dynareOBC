@@ -404,12 +404,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         if dynareOBC.EstimationSkipStandardErrors
             disp( 'Final parameter estimates:' );
             for i = 1 : NumEstimatedParams
-                fprintf( '%s:\t\t%.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ) );
+                fprintf( '%s:\t\t%#.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ) );
             end
             fprintf( 1, '\n' );
             disp( 'Final measurement error standard deviation estimates:' );
             for i = 1 : NumObservables
-                fprintf( '%s:\t\t%.17g\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ) );
+                fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ) );
             end
         else
             disp( 'Calculating standard errors.' );
@@ -430,12 +430,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
             disp( 'Final parameter estimates:' );
             for i = 1 : NumEstimatedParams
-                fprintf( '%s:\t\t%.17g\t\t(%.17g)\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ), EstimatedParameterStandardErrors( i ) );
+                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ), EstimatedParameterStandardErrors( i ) );
             end
             fprintf( 1, '\n' );
             disp( 'Final measurement error standard deviation estimates:' );
             for i = 1 : NumObservables
-                fprintf( '%s:\t\t%.17g\t\t(%.17g)\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ), EstimatedParameterStandardErrors( NumEstimatedParams + i ) );
+                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ), EstimatedParameterStandardErrors( NumEstimatedParams + i ) );
             end
         end
         
