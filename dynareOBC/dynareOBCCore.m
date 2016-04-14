@@ -81,7 +81,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         XLSParameterSheetName = XLSSheets{2};
         [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.EstimationDataFile, XLSParameterSheetName );
         dynareOBC.EstimationParameterNames = XLSText( 1, : );
-        EstimationFixedParameters = strsplit( dynareOBC.EstimationFixedParameters, ',' );
+        EstimationFixedParameters = strsplit( dynareOBC.EstimationFixedParameters, '#' );
         for i = 1 : length( EstimationFixedParameters )
             EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, EstimationFixedParameters( i ) ), 1 );
             if ~isempty( EFPIndex )

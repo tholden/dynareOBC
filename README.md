@@ -248,8 +248,8 @@ Note:
                Specifies the name of the function used for minimisation. Note that to use the FMinConWrapper option, you must
                have a license for the MATLAB Optimisation Toolbox.
           * `EstimationFixedParameters=STRING` (default: `''`)
-               A comma deliminated list of parameters names. Any parameters in this list will not be estimated, even if they
-               occur in the second sheet of the data file.
+               A `#` deliminated list of parameters names. Any parameters in this list will not be estimated, even if they occur
+               in the second sheet of the data file.
                
  * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`
