@@ -86,7 +86,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, EstimationFixedParameters( i ) ), 1 );
             if ~isempty( EFPIndex )
                 dynareOBC.EstimationParameterNames( EFPIndex ) = [];
-                dynareOBC.EstimationParameterBounds( :, dynareOBC.EstimationParameterBounds ) = [];
+                dynareOBC.EstimationParameterBounds( :, EFPIndex ) = [];
             end
         end
         if isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
