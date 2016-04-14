@@ -3,9 +3,9 @@ var g r;
 parameters beta gamma gBar sigma rho;
 beta = 0.99;
 gamma = 5;
-gBar = 0.005;
-rho = 0.95;
-sigma = 0.007;
+gBar = 1;
+rho = 0;
+sigma = 1;
 
 varexo epsilon;
 
