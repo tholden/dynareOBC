@@ -1,5 +1,6 @@
 function Jacobian = GetJacobian( f, x, nf )
     nx = length( x );
+    Jacobian = NaN( nf, nx );
     seps = sqrt( eps );
     parfor i = 1 : nx
         xi = x( i );
