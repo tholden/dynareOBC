@@ -1,6 +1,9 @@
 function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun )
     TwoNLogLikelihood = Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
+    if nargout > 1
+        TwoNLogObservationLikelihoods = NaN( T, 1 );
+    end
 
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
     MEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
@@ -101,9 +104,6 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         return;
     end
 
-    if nargout > 1
-        TwoNLogObservationLikelihoods = zeros( T, 1 );
-    end
     TwoNLogLikelihood = 0;
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
