@@ -11,6 +11,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationSparseCubatureDegree', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedPointMaxIterations', 100 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedParameters', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationStdDevThreshold', 1e-6 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FastCubature', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FeasibilityTestGridSize', 0 );

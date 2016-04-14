@@ -81,6 +81,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         XLSParameterSheetName = XLSSheets{2};
         [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.EstimationDataFile, XLSParameterSheetName );
         dynareOBC.EstimationParameterNames = XLSText( 1, : );
+        EstimationFixedParameters = strsplit( dynareOBC.EstimationFixedParameters, ',' );
+        for i = 1 : length( EstimationFixedParameters )
+            EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, EstimationFixedParameters( i ) ), 1 );
+            if ~isempty( EFPIndex )
+                dynareOBC.EstimationParameterNames( EFPIndex ) = [];
+                dynareOBC.EstimationParameterBounds( :, dynareOBC.EstimationParameterBounds ) = [];
+            end
+        end
         if isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
             warning( 'dynareOBC:OverwritingVarList', 'The variable list passed to stoch_simul will be replaced with the list of observable variables.' );
         end
