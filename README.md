@@ -231,6 +231,8 @@ Note:
                minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
           * `EstimationFixedPointMaxIterations=INTEGER` (default: `100`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
+          * `EstimationSkipStandardErrors`
+               Makes DynareOBC skip calculation of standard errors for the estimated parameters.
           * `EstimationSparseCubatureDegree=INTEGER` (default: `0`)
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule for integrating over the
                states and shocks of the model, which includes additional points. While this requires solving the model less far
@@ -240,7 +242,7 @@ Note:
                than twice the order of approximation. Values above `51` are treated as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
-          * `EstimationMinimisationFunction=[CMAESWrapper|FMinBndWrapper|FMinConWrapper|STRING]` (default: `CMAESWrapper)
+          * `EstimationMinimisationFunction=[CMAESWrapper|FMinBndWrapper|FMinConWrapper|STRING]` (default: `CMAESWrapper`)
                Specifies the name of the function used for minimisation. Note that to use the FMinConWrapper option, you must
                have a license for the MATLAB Optimisation Toolbox.
                

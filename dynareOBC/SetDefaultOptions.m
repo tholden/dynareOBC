@@ -7,6 +7,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureTolerance', 1e-5 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Debug', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Estimation', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'EstimationSkipStandardErrors', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationSparseCubatureDegree', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedPointMaxIterations', 100 );

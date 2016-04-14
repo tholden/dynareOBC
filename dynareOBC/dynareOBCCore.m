@@ -385,19 +385,43 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
         FMinEstimateFunctor = str2func( dynareOBC.EstimationMinimisationFunction );
-        [ ResTemp, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
+        [ EstimatedParameters, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
         disp( 'Final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
-        M_.params( dynareOBC.EstimationParameterSelect ) = ResTemp( 1 : NumEstimatedParams );
-        disp( 'Final parameter estimates:' );
-        for i = 1 : NumEstimatedParams
-            fprintf( '%s:\t\t%.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), M_.params( dynareOBC.EstimationParameterSelect( i ) ) );
+ 
+        if dynareOBC.EstimationSkipStandardErrors
+            disp( 'Final parameter estimates:' );
+            for i = 1 : NumEstimatedParams
+                fprintf( '%s:\t\t%.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ) );
+            end
+            fprintf( 1, '\n' );
+            disp( 'Final measurement error standard deviation estimates:' );
+            for i = 1 : NumObservables
+                fprintf( '%s:\t\t%.17g\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ) );
+            end
+        else
+            disp( 'Calculating standard errors.' );
+            fprintf( 1, '\n' );
+            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, M_, options_, oo_, dynareOBC ), EstimatedParameters, size( dynareOBC.EstimationData, 1 ) );
+            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, M_, options_, oo_, dynareOBC, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
+            CholJacobianScoreVector = chol( JacobianScoreVector, 'lower' );
+            CholEstimatedParameterCovarianceMatrix = HessianLogLikelihood \ CholJacobianScoreVector;
+            EstimatedParameterCovarianceMatrix = CholEstimatedParameterCovarianceMatrix * CholEstimatedParameterCovarianceMatrix';
+            dynareOBC.EstimatedParameterCovarianceMatrix = EstimatedParameterCovarianceMatrix;
+            EstimatedParameterStandardErrors = sqrt( diag( EstimatedParameterCovarianceMatrix ) );
+
+            disp( 'Final parameter estimates:' );
+            for i = 1 : NumEstimatedParams
+                fprintf( '%s:\t\t%.17g\t%.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ), EstimatedParameterStandardErrors( i ) );
+            end
+            fprintf( 1, '\n' );
+            disp( 'Final measurement error standard deviation estimates:' );
+            for i = 1 : NumObservables
+                fprintf( '%s:\t\t%.17g\t%.17g\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ), EstimatedParameterStandardErrors( NumEstimatedParams + i ) );
+            end
         end
-        fprintf( 1, '\n' );
-        disp( 'Final measurement error standard deviation estimates:' );
-        for i = 1 : NumObservables
-            fprintf( '%s:\t\t%.17g\n', dynareOBC.VarList{ i }, ResTemp( NumEstimatedParams + i ) );
-        end
+        
+        M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters( 1 : NumEstimatedParams );
     end
 
     [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( ~dynareOBC.Estimation, M_, options_, oo_, dynareOBC );
