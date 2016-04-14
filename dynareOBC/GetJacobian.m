@@ -8,7 +8,7 @@ function Jacobian = GetJacobian( f, x, nf )
         if h < eps
             h = eps;
         end
-        Jacobian( :, i ) = ( f( SetElement( x, i, x + h ) ) - f( SetElement( x, i, x - h ) ) ) / ( 2 * h ); %#ok<PFBNS>
+        Jacobian( :, i ) = ( f( SetElement( x, i, xi + h ) ) - f( SetElement( x, i, xi - h ) ) ) / ( 2 * h ); %#ok<PFBNS>
     end
 end
 
