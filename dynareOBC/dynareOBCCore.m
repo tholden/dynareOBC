@@ -285,13 +285,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
         dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
         [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
-        SteadyStateBlockDeclaration = 'initval;';
     else
         dynareOBC.StateVariableAndShockCombinations = { };
         GlobalApproximationParameters = [];
         AmpValues = ones( dynareOBC.NumberOfMax, 1 );
-        SteadyStateBlockDeclaration = 'steady_state_model;';
     end
+    
+    if dynareOBC.Global || dynareOBC.Estimation
+        SteadyStateBlockDeclaration = 'initval;';
+    else
+        SteadyStateBlockDeclaration = 'steady_state_model;';
+    end       
 
     %% Generating the final mod file
 
