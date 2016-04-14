@@ -412,9 +412,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             fprintf( 1, '\n' );
             JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, M_, options_, oo_, dynareOBC ), EstimatedParameters, size( dynareOBC.EstimationData, 1 ) );
             HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, M_, options_, oo_, dynareOBC, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
-            CholJacobianScoreVector = chol( JacobianScoreVector, 'lower' );
-            CholEstimatedParameterCovarianceMatrix = HessianLogLikelihood \ CholJacobianScoreVector;
-            EstimatedParameterCovarianceMatrix = CholEstimatedParameterCovarianceMatrix * CholEstimatedParameterCovarianceMatrix';
+            [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector, 0 );
+            RootEstimatedParameterCovarianceMatrix = HessianLogLikelihood \ TriaJacobianScoreVector';
+            EstimatedParameterCovarianceMatrix = RootEstimatedParameterCovarianceMatrix * RootEstimatedParameterCovarianceMatrix';
             dynareOBC.EstimatedParameterCovarianceMatrix = EstimatedParameterCovarianceMatrix;
             EstimatedParameterStandardErrors = sqrt( diag( EstimatedParameterCovarianceMatrix ) );
 
