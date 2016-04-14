@@ -7,7 +7,8 @@ Please read the theory paper from here: https://github.com/tholden/dynareOBC/raw
 
 And the computational paper from here: https://github.com/tholden/dynareOBC/raw/master/ComputationalPaper.pdf
 
-A paper containing both the theoretical and computational results is available on RePEc from here (for citations): https://ideas.repec.org/p/zbw/esprep/127430.html
+A paper containing both the theoretical and computational results is available on RePEc from here (for citations):
+https://ideas.repec.org/p/zbw/esprep/127430.html
 
 The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.48948
 
@@ -55,9 +56,9 @@ Recommended additional installations:
 Additional requirements for people using Windows, without administrative rights
 -------------------------------------------------------------------------------
 
-If you are using Windows, and you do not have administrative rights on your own computer, you need to ask your system administrator
-to download and install the following standard redistributable packages, which provide system libraries used by code compiled with
-either Microsoft Visual C++, the Intel C Compiler, or the Intel Fortran Compiler.
+If you are using Windows, and you do not have administrative rights on your own computer, you need to ask your system
+administrator to download and install the following standard redistributable packages, which provide system libraries used by
+code compiled with either Microsoft Visual C++, the Intel C Compiler, or the Intel Fortran Compiler.
 
 If you are using a 64-bit version of MATLAB, please ask for the following to be installed:
 
@@ -139,25 +140,26 @@ Note:
 	     Controls the number of periods of uncertainty over which we integrate. Since a cosine windowing function is used, the
 	     effective number of periods of uncertainty is roughly half this number.
     * `FastCubature`
-         Causes DynareOBC to ignore the value specified in `MaxCubatureDegree` and `QuasiMonteCarlo`, and to instead use a degree 3
-         monomial cubature rule without negative weights, but involving evaluations further from the origin.
+         Causes DynareOBC to ignore the value specified in `MaxCubatureDegree` and `QuasiMonteCarlo`, and to instead use a
+         degree 3 monomial cubature rule without negative weights, but involving evaluations further from the origin.
     * `QuasiMonteCarloLevel=INTEGER` (default: `0`)
          If this is non-zero, then Gaussian cubature is not used (so the MaxCubatureDegree option is ignored). Instead, quasi-
          Monte Carlo integration with at most `2^(1+INTEGER) - 1` samples is used.
     * `MaxCubatureDegree=INTEGER` (default: `7`)
          Specifies the degree of polynomial which will be integrated exactly in the highest degree, cubature performed.  Values
-         above `51` are treated as equal to `51`. Note that setting `CubatureSmoothing>0` will reduce the effective maximum accuracy
-         by 2 degrees. Setting `CubatureTolerance>0` may also mean that the result does not integrate the stated degree polynomials
-         exactly as well.
+         above `51` are treated as equal to `51`. Note that setting `CubatureSmoothing>0` will reduce the effective maximum
+         accuracy by 2 degrees. Setting `CubatureTolerance>0` may also mean that the result does not integrate the stated degree
+         polynomials exactly as well.
           * `CubatureSmoothing=FLOAT_IN_UNIT_INTERVAL` (default: `0`)
-               When this is larger than 0, and less than 1, DynareOBC takes a weighted combination of the results of cubature rules
-               of adjacent degrees. Large numbers imply larger weights on lower degree rules. A good setting is often 0.01 - 0.3.
+               When this is larger than 0, and less than 1, DynareOBC takes a weighted combination of the results of cubature
+               rules of adjacent degrees. Large numbers imply larger weights on lower degree rules. A good setting is often
+               0.01 - 0.3.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
-         Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum
-         eigenvalue are "pruned" to zero, in order to increase integration speed.
+         Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the
+         maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
-         The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all
-         but the INTEGER largest eigenvalues of the covariance matrix to zero.
+         The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune"
+         all but the INTEGER largest eigenvalues of the covariance matrix to zero.
     * `CubatureTolerance=FLOAT` (default: `1e-6`)
          Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
          Setting this to zero disables adaptive cubature.
@@ -173,34 +175,34 @@ Note:
          Takes a linear approximation around the ergodic mean of the non-linear model. If specifying this option, you should set
          `order=2` or `order=3` in your mod file.
     * `FirstOrderConditionalCovariance`
-         When `order>1` (possibly with `FirstOrderAroundRSS` or `FirstOrderAroundMean`), by default, DynareOBC uses a second order
-         approximation of the conditional covariance. This option specifies that a first order approximation should be used
-         instead.
+         When `order>1` (possibly with `FirstOrderAroundRSS` or `FirstOrderAroundMean`), by default, DynareOBC uses a second
+         order approximation of the conditional covariance. This option specifies that a first order approximation should be
+         used instead.
     * `MLVSimulationMode=0|1|2|3` (default: `0`)
          If `MLVSimulationMode=0`, DynareOBC does not attempt to simulate the path of model local variables.
-         If `MLVSimulationMode>0`, DynareOBC generates simulated paths and average impulse responses for each model local variable
-         (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note that to
-         generate impulse responses, you must enable the SlowIRFs option.
+         If `MLVSimulationMode>0`, DynareOBC generates simulated paths and average impulse responses for each model local
+         variable (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note
+         that to generate impulse responses, you must enable the SlowIRFs option.
          If `MLVSimulationMode>1`, DynareOBC additionally generates simulated paths and average impulse responses for each
          non-constant MLV, used in the model, containing forward looking terms.
          If `MLVSimulationMode=2`, then DynareOBC takes the expectation of each forward looking MLV using sparse cubature.
          If `MLVSimulationMode=3`, then DynareOBC takes the expectation of each forward looking MLV using quasi-Monte Carlo
          integration.
           * `MLVSimulationAccuracy=INTEGER` (default: `9`)
-               When `MLVSimulationMode=2`, this specifies the degree of polynomial which should be integrated exactly. In this case,
-               values above 51 are treated as equal to 51. When `MLVSimulationMode=3`, `2^(1+INTEGER) - 1` is the number of points
-               used for quasi-Monte Carlo integration.
+               When `MLVSimulationMode=2`, this specifies the degree of polynomial which should be integrated exactly. In this
+               case, values above 51 are treated as equal to 51. When `MLVSimulationMode=3`, `2^(1+INTEGER) - 1` is the number
+               of points used for quasi-Monte Carlo integration.
           * `MLVSimulationSubSample=INTEGER` (default: `1`)
-               Causes DynareOBC to only calculate the value of MLVs every `INTEGER` samples. Setting this greater than 1 is useful
-               when calculating MLVs is expensive, and you want to reduce the standard error of simulated moments.
+               Causes DynareOBC to only calculate the value of MLVs every `INTEGER` samples. Setting this greater than 1 is
+               useful when calculating MLVs is expensive, and you want to reduce the standard error of simulated moments.
     * `Sparse`
          Causes DynareOBC to replace all of the elements of the decision rules by sparse matrices, which may speed up DynareOBC,
          at the cost of some slight reduction in accuracy for certain models with small coefficients.
 
  * **For controlling and performing model diagnostics**
     * `FeasibilityTestGridSize=INTEGER` (default: `0`)
-         Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for feasibility
-         is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
+         Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for
+         feasibility is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
          If `FeasibilityTestGridSize=0` then the test is disabled.
     * `FullTest=INTEGER` (default: `0`)
          Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P and/or (strictly) semi-monotone matrix.
@@ -238,8 +240,8 @@ Note:
                states and shocks of the model, which includes additional points. While this requires solving the model less far
                from the steady-state when the state dimension is large, it also requires negative weights, which may cause
                numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly
-               integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger
-               than twice the order of approximation. Values above `51` are treated as equal to `51`.
+               integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER
+               larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
           * `EstimationMinimisationFunction=[CMAESWrapper|FMinBndWrapper|FMinConWrapper|STRING]` (default: `CMAESWrapper`)
@@ -270,12 +272,12 @@ Note:
     * `OrderOverride=1|2|3`
          Overrides the order of approximation set within the call to stoch_simul.
     * `ShockSequenceFile=FILENAME.mat`
-         Specifies a MAT file to open to load shocks from. The MAT file should contain a matrix called `ShockSequence`, which should
-         have as many rows as there are shocks, and as many columns as there are simulation periods.
+         Specifies a MAT file to open to load shocks from. The MAT file should contain a matrix called `ShockSequence`, which
+         should have as many rows as there are shocks, and as many columns as there are simulation periods.
     * `SimulateOnGridPoints`
          Rather than running an actual simulation, causes DynareOBC to draw QMC points from a Gaussian approximation to the
-         stationary distribution of the model without bounds. The mean for the Gaussian approximation is accurate to the same order
-         as the order of approximation, but the variance used is always only accurate to a first order approximation. EXPERIMENTAL.
+         stationary distribution of the model without bounds. The mean for the Gaussian approximation is accurate to the same
+         order as the order of approximation, but the variance used is always only accurate to a first order approximation.
 
 See the Dynare reference manual for other available options.
 
@@ -296,9 +298,9 @@ unsupported option. Currently supported options for `stoch_simul` are:
  * `nomoments`
  * `nocorr`
 
-DynareOBC also supports a list of variables for simulation after the call to `stoch_simul`. When `MLVSimulationMode>0`, this list
-can include the names of model local variables. Any MLV included in this list will be simulated even if it does not meet the
-previous criteria.
+DynareOBC also supports a list of variables for simulation after the call to `stoch_simul`. When `MLVSimulationMode>0`, this
+list can include the names of model local variables. Any MLV included in this list will be simulated even if it does not meet
+the previous criteria.
 
 Advanced Usage
 --------------
