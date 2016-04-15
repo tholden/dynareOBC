@@ -1,4 +1,4 @@
-function RV = parallel_wrapper( objective_function, XV, varargin )
+function RV = CMAESParallelWrapper( objective_function, XV, varargin )
     n = size( XV, 2 );
     RV = zeros( 1, n );
     parfor i = 1 : n
