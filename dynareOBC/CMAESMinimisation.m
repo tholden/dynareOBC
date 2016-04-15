@@ -4,7 +4,7 @@ function [xmin, ...      % minimum search point of last iteration
       stopflag, ...  % stop criterion reached
       out, ...     % struct with various histories and solutions
       bestever ... % struct containing overall best solution (for convenience)
-     ] = CMAES( ...
+     ] = CMAESMinimisation( ...
     fitfun, ...    % name of objective/fitness function
     xstart, ...    % objective variables initial point, determines N
     insigma, ...   % initial coordinate wise standard deviation(s)
