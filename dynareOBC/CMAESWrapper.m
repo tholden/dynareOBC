@@ -1,6 +1,6 @@
 function [ x, f ] = CMAESWrapper( OptiFunction, x, lb, ub, varargin )
     try
-        pool = parpool;
+        pool = gcp;
         nw = pool.NumWorkers;
     catch
         nw = 1;
