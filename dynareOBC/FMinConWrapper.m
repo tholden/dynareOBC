@@ -9,20 +9,20 @@ function [ x, f ] = FMinConWrapper( OptiFunction, x, LB, UB, varargin )
     TypicalX( SelectNegativeX ) = -TypicalX( SelectNegativeX );
     
     for i = 1 : length( x )
-        if isfinite( lb( i ) )
-            lbTemp = lb( i ) + 2 * eps( lb( i ) );
-            x( i ) = max( x( i ), lbTemp );
+        if isfinite( LB( i ) )
+            LBTemp = LB( i ) + 2 * eps( LB( i ) );
+            x( i ) = max( x( i ), LBTemp );
         else
-            lbTemp = -Inf;
+            LBTemp = -Inf;
         end
-        if isfinite( ub( i ) )
-            ubTemp = ub( i ) - 2 * eps( ub( i ) );
-            x( i ) = min( x( i ), ubTemp );
+        if isfinite( UB( i ) )
+            UBTemp = UB( i ) - 2 * eps( UB( i ) );
+            x( i ) = min( x( i ), UBTemp );
         else
-            ubTemp = Inf;
+            UBTemp = Inf;
         end
-        if lbTemp > ubTemp
-            x( i ) = 0.5 * ( lb( i ) + ub( i ) );
+        if LBTemp > UBTemp
+            x( i ) = 0.5 * ( LB( i ) + UB( i ) );
         end
     end
     
