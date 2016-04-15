@@ -15,7 +15,7 @@ function [ x, f ] = CMAESWrapper( OptiFunction, x, lb, ub, varargin )
         cmaesOptions.( varargin{ i } ) = varargin{ i + 1 };
     end
     sigma = ( ub - lb ) * 0.2;
-    sigma( ~isfinite( sigma ) ) = 0.01;
+    sigma( ~isfinite( sigma ) ) = 0.2;
     [~,~,~,~,~,best] = cmaes( @( XV ) parallel_wrapper( OptiFunction, XV ), x, sigma, cmaesOptions );
     x = best.x;
     f = best.f;
