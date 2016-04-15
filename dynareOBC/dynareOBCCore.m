@@ -385,9 +385,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         UBTemp = dynareOBC.EstimationParameterBounds(2,:)';
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
-        OptiX0 = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
+        EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
         
-        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( OptiX0, M_, options_, oo_, dynareOBC, true );
+        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
         dynareOBC = orderfields( dynareOBC );
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
@@ -396,8 +396,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
-        FMinEstimateFunctor = str2func( dynareOBC.EstimationMinimisationFunction );
-        [ EstimatedParameters, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, OptiX0, OptiLB, OptiUB );
+        EstimationMinimisationFunctions = strsplit( dynareOBC.EstimationMinimisationFunctions, '#' );
+        for i = 1 : length( EstimationMinimisationFunctions )
+            FMinEstimateFunctor = str2func( EstimationMinimisationFunctions{ i } );
+            [ EstimatedParameters, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB );
+        end
         disp( 'Final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
  
