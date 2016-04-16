@@ -71,7 +71,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         LagValuesWithBoundsBig = sum( reshape( OldMean, NEndo, NEndoMult ), 2 ) + Constant;
         LagValuesWithBoundsLagIndices = LagValuesWithBoundsBig( OriginalVarSelect( LagIndices ) );
         
-        CurrentValuesWithBoundsBig = bsxfun( @plus, squeeze( sum( reshape( UpdateCubaturePoints, NEndo, NEndoMult, UpdateNumPoints ), 2 ) ), Constant );
+        CurrentValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( UpdateCubaturePoints, NEndo, NEndoMult, UpdateNumPoints ), 2 ), NEndo, UpdateNumPoints ), Constant );
         CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBoundsBig( OriginalVarSelect( CurrentIndices ), : );
         MLVValues = dynareOBCTempGetMLVs( [ repmat( LagValuesWithBoundsLagIndices, 1, UpdateNumPoints ); CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, UpdateNumPoints ) ], NanShock, MParams, OoDrYs, 1 );
         NewMeasurementPoints = MLVValues( Observed, : );
