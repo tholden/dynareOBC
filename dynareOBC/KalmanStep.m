@@ -112,8 +112,6 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         RootCovariance = ObtainEstimateRootCovariance( Covariance( AugStateVariables, AugStateVariables ), EstimationStdDevThreshold );
         
         TwoNLogObservationLikelihood = log( det( PredictedInnovationCovariance ) ) + ( FiniteMeasurements - PredictedMeasurements )' * ( PredictedInnovationCovariance \ ( FiniteMeasurements - PredictedMeasurements ) ) + NObs * 1.8378770664093454836;
-        
-        disp( [ PredictIntDim UpdateIntDim ] );
     else
         Mean = PredictedStateAndControl;
         RootCovariance = RootPredictedErrorCovariance;
