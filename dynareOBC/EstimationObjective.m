@@ -9,7 +9,10 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     MEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
     
     options.qz_criterium = 1 - 1e-6;
-    [ Info, M, options, oo, dynareOBC ] = ModelSolution( false, M, options, oo, dynareOBC, InitialRun );
+    try
+        [ Info, M, options, oo, dynareOBC ] = ModelSolution( false, M, options, oo, dynareOBC, InitialRun );
+    catch
+    end
     if Info ~= 0
         return
     end
