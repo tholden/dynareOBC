@@ -82,7 +82,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         end
         UpdateCubaturePoints = bsxfun( @plus, DemeanedUpdateCubaturePoints, PredictedStateAndControl );
         
-        OldMeanBig = zeros( NAugEndo );
+        OldMeanBig = zeros( NAugEndo, 1 );
         OldMeanBig( AugStateVariables ) = OldMean;
         LagValuesWithBoundsBig = sum( reshape( OldMeanBig, NEndo, NEndoMult ), 2 ) + Constant;
         LagValuesWithBounds = LagValuesWithBoundsBig( OriginalVarSelect );
@@ -112,6 +112,8 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         RootCovariance = ObtainEstimateRootCovariance( Covariance( AugStateVariables, AugStateVariables ), EstimationStdDevThreshold );
         
         TwoNLogObservationLikelihood = log( det( PredictedInnovationCovariance ) ) + ( FiniteMeasurements - PredictedMeasurements )' * ( PredictedInnovationCovariance \ ( FiniteMeasurements - PredictedMeasurements ) ) + NObs * 1.8378770664093454836;
+        
+        disp( [ PredictIntDim UpdateIntDim ] );
     else
         Mean = PredictedStateAndControl;
         RootCovariance = RootPredictedErrorCovariance;
