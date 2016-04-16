@@ -7,4 +7,5 @@ To run the estimation(s), run:
 dynareOBC UnboundedProductivityEstimation estimation [EstimationFixedParameters=[beta|gamma|beta#gamma]] [OrderOverride=1]
 dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProductivityEstimation.xlsx [EstimationFixedParameters=gamma]
 dynareOBC BoundedProductivityEstimation estimation nocubature [OrderOverride=1]
+dynareOBC BoundedProductivityEstimation estimation fastcubature periodsofuncertainty=1 [OrderOverride=1]
 dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature
