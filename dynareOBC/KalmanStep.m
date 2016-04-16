@@ -69,8 +69,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         UpdateCubaturePoints = bsxfun( @plus, DemeanedUpdateCubaturePoints, PredictedState );
         
         LagValuesWithBoundsBig = sum( reshape( OldMean, NEndo, NEndoMult ), 2 ) + Constant;
-        LagValuesWithBounds = LagValuesWithBoundsBig( OriginalVarSelect );
-        LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
+        LagValuesWithBoundsLagIndices = LagValuesWithBoundsBig( OriginalVarSelect( LagIndices ) );
         
         CurrentValuesWithBoundsBig = bsxfun( @plus, squeeze( sum( reshape( UpdateCubaturePoints, NEndo, NEndoMult, UpdateNumPoints ), 2 ) ), Constant );
         CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBoundsBig( OriginalVarSelect( CurrentIndices ), : );
