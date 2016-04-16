@@ -61,7 +61,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         dr = oo.dr;
 
         if dynareOBC.Order == 1
-            TempCovariance = full( dynareOBC.Var_z2 );
+            TempCovariance = full( dynareOBC.Var_z1 );
             TempCovarianceSelect = dr.inv_order_var( StateVariables );
         else
             TempCovariance = full( dynareOBC.Var_z2 );
