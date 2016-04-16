@@ -235,13 +235,21 @@ Note:
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * `EstimationSkipStandardErrors`
                Makes DynareOBC skip calculation of standard errors for the estimated parameters.
-          * `EstimationSparseCubatureDegree=INTEGER` (default: `0`)
-               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule for integrating over the
-               states and shocks of the model, which includes additional points. While this requires solving the model less far
-               from the steady-state when the state dimension is large, it also requires negative weights, which may cause
-               numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly
-               integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER
-               larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
+          * `EstimationPredictSparseCubatureDegree=INTEGER` (default: `0`)
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points
+               for integrating over the states and shocks of the model in the predict step. While this requires solving the
+               model less far from the steady-state when the state dimension is large, it also requires negative weights, which
+               may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature
+               method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to
+               have INTEGER larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
+          * `EstimationUpdateSparseCubatureDegree=INTEGER` (default: `0`)
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points
+               for integrating over the state of the model in the update step. While this requires evaluating the measurement
+               equations less far from the steady-state when the state dimension is large, it also requires negative weights,
+               which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature
+               method exactly integrates a polynomial of degree INTEGER. Thus, in a model with measurement equations that are a
+               polynomial of degree d, there is no need to have INTEGER larger than two times d. Values above `51` are treated
+               as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-5`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
           * `EstimationMinimisationFunctions=STRING` (default: `CMAESWrapper#FMinConWrapper`)

@@ -10,9 +10,9 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     
     PredictIntDim = NEndo2 + NExo2;
     
-    if dynareOBC.EstimationSparseCubatureDegree > 0
-        CubatureOrder = ceil( 0.5 * ( dynareOBC.EstimationSparseCubatureDegree - 1 ) );
-        [ PredictWeights, pTmp, PredictNumPoints ] = fwtpts( PredictIntDim, CubatureOrder );
+    if dynareOBC.EstimationPredictSparseCubatureDegree > 0
+        PredictCubatureOrder = ceil( 0.5 * ( dynareOBC.EstimationPredictSparseCubatureDegree - 1 ) );
+        [ PredictWeights, pTmp, PredictNumPoints ] = fwtpts( PredictIntDim, PredictCubatureOrder );
         PredictCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( NEndo1, NExo2 ); zeros( NExo1, NEndo2 ), RootQ ] * pTmp, [ OldMean; zeros( NExo1, 1 ) ] );
     else
         PredictNumPoints = 2 * PredictIntDim;
@@ -54,8 +54,9 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         
         UpdateIntDim = NEndo3; % + NExo2;
 
-        if dynareOBC.EstimationSparseCubatureDegree > 0
-            [ UpdateWeights, pTmp, UpdateNumPoints ] = fwtpts( UpdateIntDim, CubatureOrder );
+        if dynareOBC.EstimationUpdateSparseCubatureDegree > 0
+            UpdateCubatureOrder = ceil( 0.5 * ( dynareOBC.EstimationUpdateSparseCubatureDegree - 1 ) );
+            [ UpdateWeights, pTmp, UpdateNumPoints ] = fwtpts( UpdateIntDim, UpdateCubatureOrder );
             DemeanedUpdateCubaturePoints = RootPredictedErrorCovariance * pTmp;
             % DemeanedUpdateCubaturePoints = [ RootPredictedErrorCovariance, zeros( NEndo1, NExo2 ); zeros( NExo1, NEndo3 ), RootQ ] * pTmp;
         else
