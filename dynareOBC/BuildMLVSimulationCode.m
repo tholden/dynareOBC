@@ -36,7 +36,7 @@ else
     ARGS{1}{1} = coder.typeof( zeros( sum( dynareOBC.OriginalLeadLagIncidence(:) > 0 ), 1 ) );
 end
 ARGS{1}{2} = coder.typeof( zeros( 1, M.exo_nbr ) );
-if dynareOBC.Estiamtion
+if dynareOBC.Estimation
     ARGS{1}{3} = coder.typeof( M.params );
 else
     ARGS{1}{3} = coder.Constant( M.params );
