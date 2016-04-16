@@ -2,13 +2,15 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     % read in the _dynamic.m file
     FileText = fileread( [ FileName '.m' ] );
     % truncate the function after the last assignment to a MLV
-    FileText = regexprep( FileText, '(?<=[\r\n]\s*)((?!(\w+__\s*=[^;]+;)).)*$', '' );
+    FileText = regexprep( FileText, '(?<=[\r\n]\s*)((?!(\w+__\s*=[^;]+;)).)*$', 'end' );
     % rename the function
     FileText = strrep( FileText, FileName, 'dynareOBCTempGetMLVs' );
     % replace the function's return value with our MLV array
-    FileText = regexprep( FileText, '\[(\s*residual\s*)?(,)?(\s*g1\s*)?(,)?(\s*g2\s*)?(,)?(\s*g3\s*)?\]', 'MLVs' );
+    FileText = regexprep( FileText, '\[(\s*residual\s*)?(,)?(\s*g1\s*)?(,)?(\s*g2\s*)?(,)?(\s*g3\s*)?\]', 'MLVs', 'once' );
+    % make indexing into y two dimensional
+    FileText = regexprep( FileText, 'y\s*\(\s*(\d+)\s*\)', 'y($1,MLVRepeatIndex)' );
     % replace the initialisation of residual, with initialisation of our MLV array
-    FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = zeros( MLVNameIndex, 1 )' );
+    FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = zeros( MLVNameIndex, size( y, 2 ) );\nfor MLVRepeatIndex = 1 : size( y, 2 )', 'once' );
     
     % find the contemporaneous and lead variables
     ContemporaneousVariablesSearch = '\<x\(\s*it_\s*,\s*\d+\s*\)';
@@ -60,7 +62,7 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
         if ( ~EmptyVarList && ismember( VariableName( 1:(end-2) ), dynareOBC.VarList ) ) || ( EmptyVarList && ( ( ( dynareOBC.MLVSimulationMode > 1 ) && ( ContainsContemporaneous || ContainsFuture ) ) || ( ContainsContemporaneous && ( ~ContainsFuture ) ) ) )
             % add the variable to our MLV array
             MLVNameIndex = MLVNameIndex + 1;
-            FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', [ '$1$2\tMLVs(' int2str( MLVNameIndex ) ') = $1__;' ], 'lineanchors' );
+            FileLines{i} = regexprep( FileLine, '^\s*(\w+)(__\s*=[^;]+;)\s*$', [ '$1$2\tMLVs(' int2str( MLVNameIndex ) ',MLVRepeatIndex) = $1__;' ], 'lineanchors' );
             % and to dynareOBC_.MLVNames
             dynareOBC.MLVNames{ MLVNameIndex } = VariableName( 1:(end-2) );
         end
