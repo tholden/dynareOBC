@@ -291,7 +291,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     dynareOBC.ssIndices = cell( Ts, 1 );
-    dynareOBC.ParametricSolutionFound = zeros( Ts, 1 );
     SkipCalcs = false;
 
     OpenPool;

@@ -105,7 +105,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
 %     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
 
     dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
-    dynareOBC.ParametricSolutionFound = 0;
+    dynareOBC.ParametricSolutionFound = zeros( dynareOBC.TimeToEscapeBounds, 1 );
 
     if SlowMode
         if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
