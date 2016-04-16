@@ -14,8 +14,9 @@ function [ x, f ] = CMAESWrapper( OptiFunction, x, lb, ub, varargin )
     for i = 1 : 2 : length( varargin )
         cmaesOptions.( varargin{ i } ) = varargin{ i + 1 };
     end
-    sigma = ( ub - lb ) * 0.2;
-    sigma( ~isfinite( sigma ) ) = 0.2;
+    Radius = 0.5 * ( 0.2 + 0.5 );
+    sigma = ( ub - lb ) * Radius;
+    sigma( ~isfinite( sigma ) ) = max( Radius, Radius * abs( x( ~isfinite( sigma ) ) ) );
     [~,~,~,~,~,best] = CMAESMinimisation( @( XV ) CMAESParallelWrapper( OptiFunction, XV ), x, sigma, cmaesOptions );
     x = max( lb, min( ub, best.x ) );
     f = best.f;
