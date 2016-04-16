@@ -27,7 +27,11 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     NEndo = M.endo_nbr;
     NExo = dynareOBC.OriginalNumVarExo;
     NEndoMult = 2 .^ ( dynareOBC.Order - 1 );
-    Nm = NEndoMult * NEndo;
+    
+    StateVariables = oo.dr.order_var( dynareOBC.SelectState );
+    AugStateVariables = repmat( StateVariables, NEndoMult, 1 );
+    NState = sum( StateVariables );
+    NAugState = NEndoMult * NState;
    
     EstimationStdDevThreshold = dynareOBC.EstimationStdDevThreshold;
     
@@ -44,26 +48,29 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     end
     FutureValues = nan( sum( LeadIndices ), 1 );
     NanShock = nan( 1, NExo );
-
+    
     persistent FullMean;
     persistent FullRootCovariance;
     
-    RecalculateMeanAndCovariance = InitialRun || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ Nm 1 ] ) || size( FullRootCovariance, 1 ) ~= Nm || size( FullRootCovariance, 1 ) > Nm || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
+    RecalculateMeanAndCovariance = InitialRun || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ NAugState 1 ] ) || size( FullRootCovariance, 1 ) ~= NAugState || size( FullRootCovariance, 1 ) > NAugState || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
 
-    StateSelectInAugmented = dynareOBC.StateSelectInAugmented;
     if RecalculateMeanAndCovariance
         OldMean = full( dynareOBC.Mean_z );
-        OldMean = OldMean( StateSelectInAugmented );
+        OldMean = OldMean( dynareOBC.CoreSelectInAugmented );
+        OldMean = OldMean( AugStateVariables );
         dr = oo.dr;
+
         if dynareOBC.Order == 1
-            TempOldRootCovariance = ObtainEstimateRootCovariance( full( dynareOBC.Var_z1( dr.inv_order_var, dr.inv_order_var ) ), EstimationStdDevThreshold );
+            TempCovariance = full( dynareOBC.Var_z2 );
+            TempCovarianceSelect = dr.inv_order_var( StateVariables );
         else
             TempCovariance = full( dynareOBC.Var_z2 );
-            doubleInvOrderVar = [ dr.inv_order_var; NEndo + dr.inv_order_var ];
-            TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( doubleInvOrderVar, doubleInvOrderVar ), EstimationStdDevThreshold );
+            TempCovarianceSelect = [ dr.inv_order_var( StateVariables ); NEndo + dr.inv_order_var( StateVariables ) ];
         end
+        
+        TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( TempCovarianceSelect, TempCovarianceSelect ), EstimationStdDevThreshold );
 
-        OldRootCovariance = zeros( Nm, size( TempOldRootCovariance, 2 ) );
+        OldRootCovariance = zeros( NAugState, size( TempOldRootCovariance, 2 ) );
         OldRootCovariance( 1:size( TempOldRootCovariance, 1 ), : ) = TempOldRootCovariance; % handles 3rd order
     else
         OldMean = FullMean;
@@ -75,7 +82,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock, AugStateVariables );
         catch
             Mean = [];
         end
@@ -110,7 +117,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
 
     TwoNLogLikelihood = 0;
     for t = 1:T
-        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock );
+        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock, AugStateVariables );
         if isempty( Mean )
             TwoNLogLikelihood = Inf;
             return;

@@ -272,7 +272,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     else
         error( 'dynareOBC:UnsupportedOrder', 'Order %d is unsupported at present. The only currently supported orders are 1, 2 and 3.', dynareOBC.Order );
     end
-    dynareOBC.StateSelectInAugmented = any( dynareOBC.AugmentedToTotal );
+    dynareOBC.CoreSelectInAugmented = any( dynareOBC.AugmentedToTotal );
 
     % Calculate mean
     if dynareOBC.Order == 1
