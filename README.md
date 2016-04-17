@@ -231,7 +231,7 @@ Note:
                observation. There should not be a column with dates. The second sheet should contain a title row with the names
                of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as
                minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
-          * `EstimationFixedPointMaxIterations=INTEGER` (default: `100`)
+          * `EstimationFixedPointMaxIterations=INTEGER` (default: `10000`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * `EstimationSkipStandardErrors`
                Makes DynareOBC skip calculation of standard errors for the estimated parameters.

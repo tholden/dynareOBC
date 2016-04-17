@@ -67,6 +67,11 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     OldRootCovariance( 1:size( TempOldRootCovariance, 1 ), : ) = TempOldRootCovariance; % handles 3rd order
     % end getting initial mean and covariance
     
+    OldCovariance = OldRootCovariance * OldRootCovariance';
+    CompOld = [ OldCovariance(:); OldMean ];
+    ErrorOld = Inf;
+    StepSize = 1;
+    
     MParams = M.params;
     OoDrYs = oo.dr.ys( 1:dynareOBC.OriginalNumVar );
     
@@ -77,10 +82,8 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     MeasurementLHSSelect = TempRequiredForMeasurementSelect( 1:dynareOBC.OriginalNumVar );
     
     SelectStateFromStateAndControls = ismember( find( RequiredForMeasurementSelect ), find( AugStateVariables ) );
-    
-    CompOld = OldRootCovariance * OldRootCovariance';
-    CompOld = [ CompOld(:); OldMean ];
-    
+        
+    tCutOff = 100;
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
             [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
@@ -91,27 +94,32 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
             break;
         end
         
-        CompNew = RootCovariance * RootCovariance';
-        CompNew = [ CompNew(:); Mean ];
+        Covariance = RootCovariance * RootCovariance';
         
-        CompNew = CompOld + (1/t) * ( CompNew - CompOld ); % take a running average for faster convergence
+        Mean = OldMean + StepSize * ( Mean - OldMean );
+        Covariance = OldCovariance + StepSize * ( Covariance - OldCovariance );
 
-        OldMean = CompNew( :, end );
-        OldRootCovariance = ObtainEstimateRootCovariance( CompNew( :, 1:(end-1) ), EstimationStdDevThreshold );
+        CompNew = [ Covariance(:); Mean ];
         
-        LCompNew = log( abs( CompNew ) );
-        SCompNew = isfinite( LCompNew );
-        LCompOld = log( abs( CompOld ) );
-        SCompOld = isfinite( LCompOld );
+        OldMean = Mean;
+        OldRootCovariance = ObtainEstimateRootCovariance( Covariance, EstimationStdDevThreshold );
         
-        if all( SCompNew == SCompOld )
-            Error = max( max( abs( CompNew - CompOld ) ), max( abs( LCompNew( SCompNew ) - LCompOld( SCompOld ) ) ) );
-            if Error < sqrt( eps )
-                break;
+        Error = max( abs( CompNew - CompOld ) );
+        ErrorScale = sqrt( eps( max( abs( [ CompNew; CompOld ] ) ) ) );
+        if Error < ErrorScale
+            break;
+        end
+        if t > tCutOff
+            if Error < ErrorOld
+                StepSize = min( 1, StepSize * 1.01 );
+            else
+                StepSize = 0.5 * StepSize;
+                tCutOff = t + 100;
             end
         end
         
         CompOld = CompNew;
+        ErrorOld = Error;
     end
     if isempty( OldMean ) || isempty( OldRootCovariance );
         return;
