@@ -404,6 +404,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
  
+        
+        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
+        dynareOBC = orderfields( dynareOBC );
+        StoreGlobals( M_, options_, oo_, dynareOBC );
+        disp( 'Paranoid verification of final log-likelihood:' );
+        disp( -0.5 * TwoNLogLikelihood );
+        
         if dynareOBC.EstimationSkipStandardErrors
             disp( 'Final parameter estimates:' );
             for i = 1 : NumEstimatedParams
