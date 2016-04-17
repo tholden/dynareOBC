@@ -14,6 +14,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedPointMaxIterations', 1000 );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedParameters', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationStdDevThreshold', 1e-6 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'EstimationTimeOutLikelihoodEvaluation', 60 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FastCubature', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FeasibilityTestGridSize', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FirstOrderAroundRSS1OrMean2', false );

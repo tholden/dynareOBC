@@ -84,14 +84,17 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     SelectStateFromStateAndControls = ismember( find( RequiredForMeasurementSelect ), find( AugStateVariables ) );
         
     tCutOff = 100;
+    
+    StartTime = tic;
+    
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
             [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
         catch
             Mean = [];
         end
-        if isempty( Mean )
-            break;
+        if isempty( Mean ) || toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation
+            return;
         end
         
         Covariance = RootCovariance * RootCovariance';
@@ -121,14 +124,11 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         CompOld = CompNew;
         ErrorOld = Error;
     end
-    if isempty( OldMean ) || isempty( OldRootCovariance );
-        return;
-    end
 
     TwoNLogLikelihood = 0;
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
-        if isempty( Mean )
+        if isempty( Mean ) || toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation
             TwoNLogLikelihood = Inf;
             return;
         end

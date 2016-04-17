@@ -260,6 +260,9 @@ Note:
           * `EstimationFixedParameters=STRING` (default: `''`)
                A `#` deliminated list of parameters names. Any parameters in this list will not be estimated, even if they occur
                in the second sheet of the data file.
+          * `EstimationTimeOutLikelihoodEvaluation=INTEGER` (defaut: `60`)
+               Any likelihood evaluations that take longer than this number of seconds will be terminated prematurely. Beware
+               that this may bias parameter estimates.
                
  * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`
