@@ -220,11 +220,11 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                             end
                         end
                     catch Error
-                        if dynareOBC_.Estimation || dynareOBC_.IgnoreBoundFailures
+                        if dynareOBC_.IgnoreBoundFailures
                             Reshaped_yOld = reshape( yOld, Ts, ns );
                             y = [ Reshaped_yOld( 2:end, : ); zeros( 1, ns ) ];
                             y = y(:);
-                            warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to Estimation or IgnoreBoundFailures option.' ] );
+                            warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to IgnoreBoundFailures option.' ] );
                         else
                             rethrow( Error );
                         end
