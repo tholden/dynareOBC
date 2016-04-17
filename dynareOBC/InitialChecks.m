@@ -294,65 +294,68 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ssIndices = cell( Ts, 1 );
     SkipCalcs = false;
 
-    for Tss = 1 : Ts
-        ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
-        Mss = Ms( ssIndices, ssIndices );
-        
-        dynareOBC.ssIndices{ Tss } = ssIndices;
+    if ~dynareOBC.Estimation
+        OpenPool;
+        for Tss = 1 : Ts
+            ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
+            Mss = Ms( ssIndices, ssIndices );
 
-        if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || min( eig( Mss + Mss' ) ) < sqrt( eps )
-            SkipCalcs = true;
-            continue;
-        end
-        
-        PLCP = struct;
-        PLCP.M = Mss;
-        PLCP.q = zeros( Tss, 1 );
-        PLCP.Q = eye( Tss );
-        PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
-        PLCP.bth = ones( 2 * Tss, 1 );
+            dynareOBC.ssIndices{ Tss } = ssIndices;
 
-        fprintf( 1, '\n' );
-        disp( 'Solving for a parametric solution over the requested domain.' );
-        fprintf( 1, '\n' );
-        
-        strTss = int2str( Tss );
-        try
-            warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
-            warning( 'off', 'MATLAB:nargchk:deprecated' );
-            ParametricSolution = mpt_plcp( Opt( PLCP ) );
-            if ParametricSolution.exitflag == 1
-                try
-                    ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
-                    mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
-                    dynareOBC.ParametricSolutionFound( Tss ) = 2;
-                catch MPTError
-                    disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
-                    disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
+            if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || min( eig( Mss + Mss' ) ) < sqrt( eps )
+                SkipCalcs = true;
+                continue;
+            end
+
+            PLCP = struct;
+            PLCP.M = Mss;
+            PLCP.q = zeros( Tss, 1 );
+            PLCP.Q = eye( Tss );
+            PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
+            PLCP.bth = ones( 2 * Tss, 1 );
+
+            fprintf( 1, '\n' );
+            disp( 'Solving for a parametric solution over the requested domain.' );
+            fprintf( 1, '\n' );
+
+            strTss = int2str( Tss );
+            try
+                warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
+                warning( 'off', 'MATLAB:nargchk:deprecated' );
+                ParametricSolution = mpt_plcp( Opt( PLCP ) );
+                if ParametricSolution.exitflag == 1
                     try
-                        ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
-                        dynareOBC.ParametricSolutionFound( Tss ) = 1;
-                    catch MPTTMError
-                        disp( [ 'Error ' MPTTMError.identifier ' writing the MATLAB file for the parameteric solution. ' MPTTMError.message ] );
-                        SkipCalcs = true;
-                        continue;
-                    end
-                    try
-                        BuildParametricSolutionCode( Tss );
+                        ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
+                        mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
                         dynareOBC.ParametricSolutionFound( Tss ) = 2;
-                    catch CoderError
-                        disp( [ 'Error ' CoderError.identifier ' compiling the MATLAB file with MATLAB Coder. ' CoderError.message ] );
+                    catch MPTError
+                        disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
+                        disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
+                        try
+                            ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
+                            dynareOBC.ParametricSolutionFound( Tss ) = 1;
+                        catch MPTTMError
+                            disp( [ 'Error ' MPTTMError.identifier ' writing the MATLAB file for the parameteric solution. ' MPTTMError.message ] );
+                            SkipCalcs = true;
+                            continue;
+                        end
+                        try
+                            BuildParametricSolutionCode( Tss );
+                            dynareOBC.ParametricSolutionFound( Tss ) = 2;
+                        catch CoderError
+                            disp( [ 'Error ' CoderError.identifier ' compiling the MATLAB file with MATLAB Coder. ' CoderError.message ] );
+                        end
                     end
                 end
+            catch
+                disp( 'Failed to solve for a parametric solution.' );
+                SkipCalcs = true;
+                continue;
             end
-        catch
-            disp( 'Failed to solve for a parametric solution.' );
-            SkipCalcs = true;
-            continue;
         end
-    end
-    if sum( dynareOBC.ParametricSolutionFound ) > 0
-        rehash;
+        if sum( dynareOBC.ParametricSolutionFound ) > 0
+            rehash;
+        end
     end
 
     yalmip( 'clear' );
