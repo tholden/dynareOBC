@@ -1,4 +1,4 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables )
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls )
     Mean = [];
     RootCovariance = [];
     TwoNLogObservationLikelihood = NaN;
@@ -108,8 +108,8 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         Mean = PredictedStateAndControl + KalmanGain * ( FiniteMeasurements - PredictedMeasurements );
         Covariance = PredictedErrorCovariance - KalmanGain * PredictedInnovationCovariance * KalmanGain';
         
-        Mean = Mean( AugStateVariables );
-        RootCovariance = ObtainEstimateRootCovariance( Covariance( AugStateVariables, AugStateVariables ), EstimationStdDevThreshold );
+        Mean = Mean( SelectStateFromStateAndControls );
+        RootCovariance = ObtainEstimateRootCovariance( Covariance( SelectStateFromStateAndControls, SelectStateFromStateAndControls ), EstimationStdDevThreshold );
         
         TwoNLogObservationLikelihood = log( det( PredictedInnovationCovariance ) ) + ( FiniteMeasurements - PredictedMeasurements )' * ( PredictedInnovationCovariance \ ( FiniteMeasurements - PredictedMeasurements ) ) + NObs * 1.8378770664093454836;
     else
