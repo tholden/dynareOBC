@@ -21,7 +21,7 @@ end;
 
 steady_state_model;
 	g = gBar;
-	r = gamma * gBar -log( beta );
+	r = gamma * gBar - log( beta );
 end;
 
 steady;
