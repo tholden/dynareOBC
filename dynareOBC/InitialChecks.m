@@ -108,6 +108,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds.\n' );
         
         try
+            OpenPool;
             parfor GridIndex = 1 : numel( iValues )
 
                 varsigma = sdpvar( 1, 1 );
@@ -293,7 +294,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ssIndices = cell( Ts, 1 );
     SkipCalcs = false;
 
-    OpenPool;
     for Tss = 1 : Ts
         ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
         Mss = Ms( ssIndices, ssIndices );
