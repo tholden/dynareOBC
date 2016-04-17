@@ -78,6 +78,9 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     SelectStateFromStateAndControls = ismember( find( RequiredForMeasurementSelect ), find( AugStateVariables ) );
     
+    CompOld = OldRootCovariance * OldRootCovariance';
+    CompOld = [ CompOld(:); OldMean ];
+    
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
             [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
@@ -90,22 +93,25 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         
         CompNew = RootCovariance * RootCovariance';
         CompNew = [ CompNew(:); Mean ];
-        CompOld = OldRootCovariance * OldRootCovariance';
-        CompOld = [ CompOld(:); OldMean ];
+        
+        CompNew = CompOld + (1/t) * ( CompNew - CompOld ); % take a running average for faster convergence
 
-        OldMean = Mean; % 0.5 * Mean + 0.5 * OldMean;
-        OldRootCovariance = RootCovariance; % 0.5 * RootCovariance + 0.5 * OldRootCovariance;
+        OldMean = CompNew( :, end );
+        OldRootCovariance = ObtainEstimateRootCovariance( CompNew( :, 1:(end-1) ), EstimationStdDevThreshold );
         
         LCompNew = log( abs( CompNew ) );
         SCompNew = isfinite( LCompNew );
         LCompOld = log( abs( CompOld ) );
         SCompOld = isfinite( LCompOld );
+        
         if all( SCompNew == SCompOld )
             Error = max( max( abs( CompNew - CompOld ) ), max( abs( LCompNew( SCompNew ) - LCompOld( SCompOld ) ) ) );
-            if Error < 1e-4
+            if Error < sqrt( eps )
                 break;
             end
         end
+        
+        CompOld = CompNew;
     end
     if isempty( OldMean ) || isempty( OldRootCovariance );
         return;
