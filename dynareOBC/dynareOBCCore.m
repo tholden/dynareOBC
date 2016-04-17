@@ -397,6 +397,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
         EstimationMinimisationFunctions = strsplit( dynareOBC.EstimationMinimisationFunctions, '#' );
+        
+        OpenPool;
+        
         for i = 1 : length( EstimationMinimisationFunctions )
             FMinEstimateFunctor = str2func( EstimationMinimisationFunctions{ i } );
             [ EstimatedParameters, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB );
