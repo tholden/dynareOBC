@@ -231,7 +231,7 @@ Note:
                observation. There should not be a column with dates. The second sheet should contain a title row with the names
                of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as
                minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
-          * `EstimationFixedPointMaxIterations=INTEGER` (default: `10000`)
+          * `EstimationFixedPointMaxIterations=INTEGER` (default: `1000`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * `EstimationSkipStandardErrors`
                Makes DynareOBC skip calculation of standard errors for the estimated parameters.
@@ -345,5 +345,5 @@ Additionally, DynareOBC automatically downloads:
  * the Opti Toolbox, copyright Currie, and others, 2015,
  * and MPT, with its dependencies, copyright Herceg and others, 2015.
 
-The original portions of DynareOBC are copyright Holden, 2015.
+The original portions of DynareOBC are copyright Holden, 2016.
 DynareOBC is released under the GNU GPL, version 3.0, available from https://www.gnu.org/copyleft/gpl.html
