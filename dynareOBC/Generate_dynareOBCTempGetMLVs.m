@@ -20,7 +20,7 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     FutureVariablesSearch = '\<__AStringThatWillNotOccur';
     if size( M.lead_lag_incidence, 1 ) > 2
         for i = min( M.lead_lag_incidence( 3, M.lead_lag_incidence( 3, : ) > 0 ) ) : max( M.lead_lag_incidence( 3, : ) )
-            FutureVariablesSearch = [ FutureVariablesSearch '|\<y\(' int2str( i ) '\)' ]; %#ok<AGROW>
+            FutureVariablesSearch = [ FutureVariablesSearch '|\<y\(' int2str( i ) ',MLVRepeatIndex\)' ]; %#ok<AGROW>
         end
     end
     
