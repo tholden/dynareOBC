@@ -37,10 +37,8 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     RootQ = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), EstimationStdDevThreshold );
 
-    OriginalVarSelect = false( NEndo );
-    OriginalVarSelect( 1:dynareOBC.OriginalNumVar ) = true;
-    LagIndices = dynareOBC.OriginalLeadLagIncidence( 1, : ) > 0;
-    CurrentIndices = dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0;
+    LagIndices = find( dynareOBC.OriginalLeadLagIncidence( 1, : ) > 0 );
+    % CurrentIndices = find( dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0 );
     if size( dynareOBC.OriginalLeadLagIncidence, 1 ) > 2
         LeadIndices = dynareOBC.OriginalLeadLagIncidence( 3, : ) > 0;
     else
@@ -78,11 +76,17 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     end
     
     MParams = M.params;
-    OoDrYs = oo.dr.ys( OriginalVarSelect );
+    OoDrYs = oo.dr.ys( 1:dynareOBC.OriginalNumVar );
+    
+    TempRequiredForMeasurementSelect = ismember( ( 1:NEndo )', dynareOBC.RequiredCurrentVariables );
+    RequiredForMeasurementSelect = repmat( TempRequiredForMeasurementSelect, NEndoMult, 1 );
+    RequiredForMeasurementSelect = RequiredForMeasurementSelect | AugStateVariables;
+    MeasurementRHSSelect = ismember( find( RequiredForMeasurementSelect( 1:NEndo ) ), find( TempRequiredForMeasurementSelect ) );
+    MeasurementLHSSelect = TempRequiredForMeasurementSelect( 1:dynareOBC.OriginalNumVar );
     
     for t = 1:dynareOBC.EstimationFixedPointMaxIterations
         try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock, AugStateVariables );
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables );
         catch
             Mean = [];
         end
@@ -117,7 +121,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
 
     TwoNLogLikelihood = 0;
     for t = 1:T
-        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock, AugStateVariables );
+        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables );
         if isempty( Mean )
             TwoNLogLikelihood = Inf;
             return;

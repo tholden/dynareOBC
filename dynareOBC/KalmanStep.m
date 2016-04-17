@@ -1,4 +1,4 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, OriginalVarSelect, LagIndices, CurrentIndices, FutureValues, NanShock, AugStateVariables )
+function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables )
     Mean = [];
     RootCovariance = [];
     TwoNLogObservationLikelihood = NaN;
@@ -34,14 +34,15 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     NObs = length( Observed );
     
     if NObs > 0
-        RequiredFromPredict = true( NAugEndo, 1 );
-        NRequiredFromPredict = NAugEndo;
+        RequiredFromPredict = RequiredForMeasurementSelect;
     else
         RequiredFromPredict = AugStateVariables;
-        NRequiredFromPredict = sum( RequiredFromPredict );
     end
+    NAugRequiredFromPredict = sum( RequiredFromPredict );
     
-    NewStateAndControlPoints = zeros( NRequiredFromPredict, PredictNumPoints );
+    NRequiredFromPredict = NAugRequiredFromPredict / NEndoMult;
+    
+    NewStateAndControlPoints = zeros( NAugRequiredFromPredict, PredictNumPoints );
 
     for i = 1 : PredictNumPoints
         InitialFullState = GetFullStateStruct( AugPredictCubaturePoints( :, i ), dynareOBC.Order, Constant ); %#ok<*PFBNS>
@@ -85,12 +86,11 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         OldMeanBig = zeros( NAugEndo, 1 );
         OldMeanBig( AugStateVariables ) = OldMean;
         LagValuesWithBoundsBig = sum( reshape( OldMeanBig, NEndo, NEndoMult ), 2 ) + Constant;
-        LagValuesWithBounds = LagValuesWithBoundsBig( OriginalVarSelect );
-        LagValuesWithBoundsLagIndices = LagValuesWithBounds( LagIndices );
+        LagValuesWithBoundsLagIndices = LagValuesWithBoundsBig( LagIndices );
         
-        CurrentValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( UpdateCubaturePoints, NEndo, NEndoMult, UpdateNumPoints ), 2 ), NEndo, UpdateNumPoints ), Constant );
-        CurrentValuesWithBounds = CurrentValuesWithBoundsBig( OriginalVarSelect, : );
-        CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBounds( CurrentIndices, : );
+        CurrentValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( UpdateCubaturePoints, NRequiredFromPredict, NEndoMult, UpdateNumPoints ), 2 ), NRequiredFromPredict, UpdateNumPoints ), Constant( RequiredFromPredict( 1:NEndo ) ) );
+        CurrentValuesWithBoundsCurrentIndices = NaN( length( MeasurementLHSSelect ), UpdateNumPoints );
+        CurrentValuesWithBoundsCurrentIndices( MeasurementLHSSelect, : ) = CurrentValuesWithBoundsBig( MeasurementRHSSelect, : );
         MLVValues = dynareOBCTempGetMLVs( [ repmat( LagValuesWithBoundsLagIndices, 1, UpdateNumPoints ); CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, UpdateNumPoints ) ], NanShock, MParams, OoDrYs, 1 );
         NewMeasurementPoints = MLVValues( Observed, : );
         if any( any( ~isfinite( NewMeasurementPoints ) ) )
