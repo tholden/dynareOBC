@@ -28,7 +28,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     NExo = dynareOBC.OriginalNumVarExo;
     NEndoMult = 2 .^ ( dynareOBC.Order - 1 );
     
-    StateVariables = oo.dr.order_var( dynareOBC.SelectState );
+    StateVariables = ismember( ( 1:NEndo )', oo.dr.order_var( dynareOBC.SelectState ) );
     AugStateVariables = repmat( StateVariables, NEndoMult, 1 );
     NState = sum( StateVariables );
     NAugState = NEndoMult * NState;
