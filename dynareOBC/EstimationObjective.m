@@ -47,33 +47,25 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     FutureValues = nan( sum( LeadIndices ), 1 );
     NanShock = nan( 1, NExo );
     
-    persistent FullMean;
-    persistent FullRootCovariance;
-    
-    RecalculateMeanAndCovariance = InitialRun || isempty( FullMean ) || isempty( FullRootCovariance ) || any( size( FullMean ) ~= [ NAugState 1 ] ) || size( FullRootCovariance, 1 ) ~= NAugState || size( FullRootCovariance, 1 ) > NAugState || any( ~isfinite( FullMean ) ) || any( any( ~isfinite( FullRootCovariance ) ) );
+    % get initial mean and covariance
+    OldMean = full( dynareOBC.Mean_z );
+    OldMean = OldMean( dynareOBC.CoreSelectInAugmented );
+    OldMean = OldMean( AugStateVariables );
+    dr = oo.dr;
 
-    if RecalculateMeanAndCovariance
-        OldMean = full( dynareOBC.Mean_z );
-        OldMean = OldMean( dynareOBC.CoreSelectInAugmented );
-        OldMean = OldMean( AugStateVariables );
-        dr = oo.dr;
-
-        if dynareOBC.Order == 1
-            TempCovariance = full( dynareOBC.Var_z1 );
-            TempCovarianceSelect = dr.inv_order_var( StateVariables );
-        else
-            TempCovariance = full( dynareOBC.Var_z2 );
-            TempCovarianceSelect = [ dr.inv_order_var( StateVariables ); NEndo + dr.inv_order_var( StateVariables ) ];
-        end
-        
-        TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( TempCovarianceSelect, TempCovarianceSelect ), EstimationStdDevThreshold );
-
-        OldRootCovariance = zeros( NAugState, size( TempOldRootCovariance, 2 ) );
-        OldRootCovariance( 1:size( TempOldRootCovariance, 1 ), : ) = TempOldRootCovariance; % handles 3rd order
+    if dynareOBC.Order == 1
+        TempCovariance = full( dynareOBC.Var_z1 );
+        TempCovarianceSelect = dr.inv_order_var( StateVariables );
     else
-        OldMean = FullMean;
-        OldRootCovariance = FullRootCovariance;
+        TempCovariance = full( dynareOBC.Var_z2 );
+        TempCovarianceSelect = [ dr.inv_order_var( StateVariables ); NEndo + dr.inv_order_var( StateVariables ) ];
     end
+
+    TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( TempCovarianceSelect, TempCovarianceSelect ), EstimationStdDevThreshold );
+
+    OldRootCovariance = zeros( NAugState, size( TempOldRootCovariance, 2 ) );
+    OldRootCovariance( 1:size( TempOldRootCovariance, 1 ), : ) = TempOldRootCovariance; % handles 3rd order
+    % end getting initial mean and covariance
     
     MParams = M.params;
     OoDrYs = oo.dr.ys( 1:dynareOBC.OriginalNumVar );
@@ -111,8 +103,6 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         if all( SCompNew == SCompOld )
             Error = max( max( abs( CompNew - CompOld ) ), max( abs( LCompNew( SCompNew ) - LCompOld( SCompOld ) ) ) );
             if Error < 1e-4
-                FullMean = OldMean;
-                FullRootCovariance = OldRootCovariance;
                 break;
             end
         end
