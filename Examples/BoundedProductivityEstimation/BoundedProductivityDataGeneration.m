@@ -5,7 +5,6 @@ gamma = 5;
 gBar = 0.005;
 rho = 0.95;
 sigma = 0.007;
-phi = 0.001;
 
 RunLength = 1000;
 BurnIn = 100;
@@ -22,7 +21,7 @@ r = gamma * gBar -log( beta );
 for t = 1 : T
 	g = max( 0, ( 1 - rho ) * gBar + rho * g + sigma * epsilon( t ) );
 	mu = ( 1 - rho ) * gBar + rho * g;
-	Int = ( 1 - normcdf( ( mu - phi ) / sigma ) ) * exp( - gamma * phi ) + exp( ( 1 / 2 ) * sigma ^ 2 * gamma ^ 2 - gamma * mu ) * ( 1 - normcdf( ( gamma * sigma ^ 2 + phi - mu ) / sigma ) );
+	Int = ( 1 - normcdf( mu / sigma ) ) + ( 1 - normcdf( ( gamma * sigma ^ 2 - mu ) / sigma ) ) * exp( sigma ^ 2 * gamma ^ 2 / 2 - gamma * mu );
 	r = -log( beta * Int );
 	rPath( t ) = r;
 	gPath( t ) = g;
