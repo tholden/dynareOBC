@@ -41,11 +41,6 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
     if nargin < 5
         DisableParFor = false;
     end
-    if DisableParFor
-        MaxWorkers = 0;
-    else
-        MaxWorkers = Inf;
-    end
     if nargin < 3 && dynareOBC_.SimulateOnGridPoints
         %% Grid simulation
         dynareOBC_.MLVSimulationSubSample = 2;
@@ -75,26 +70,51 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         WarningGenerated = false;
         GridSimulations = cell( NumberOfGridPoints, 1 );
-        parfor ( k = 1 : NumberOfGridPoints, MaxWorkers )
-            lastwarn( '' );
-            ParallelWarningState = warning( 'off', 'all' );
-            try
-                InnerInitialFullState = struct;
-                for i = 1 : length( SimulationFieldNames )
-                    CurrentFieldName = SimulationFieldNames{i};
-                    if ~strcmp( CurrentFieldName, 'constant' )
-                        InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 ); %#ok<PFBNS>
+        if DisableParFor
+            for k = 1 : NumberOfGridPoints
+                lastwarn( '' );
+                ParallelWarningState = warning( 'off', 'all' );
+                try
+                    InnerInitialFullState = struct;
+                    for i = 1 : length( SimulationFieldNames )
+                        CurrentFieldName = SimulationFieldNames{i};
+                        if ~strcmp( CurrentFieldName, 'constant' )
+                            InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 );
+                        end
                     end
+                    GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true );
+                catch Error
+                    warning( ParallelWarningState );
+                    rethrow( Error );
                 end
-                GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true );
-            catch Error
                 warning( ParallelWarningState );
-                rethrow( Error );
+                WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
+                if ~isempty( p )
+                    p.progress;
+                end
             end
-            warning( ParallelWarningState );
-            WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
-            if ~isempty( p )
-                p.progress;
+        else
+            parfor k = 1 : NumberOfGridPoints
+                lastwarn( '' );
+                ParallelWarningState = warning( 'off', 'all' );
+                try
+                    InnerInitialFullState = struct;
+                    for i = 1 : length( SimulationFieldNames )
+                        CurrentFieldName = SimulationFieldNames{i};
+                        if ~strcmp( CurrentFieldName, 'constant' )
+                            InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 ); %#ok<PFBNS>
+                        end
+                    end
+                    GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true );
+                catch Error
+                    warning( ParallelWarningState );
+                    rethrow( Error );
+                end
+                warning( ParallelWarningState );
+                WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
+                if ~isempty( p )
+                    p.progress;
+                end
             end
         end
         if ~isempty( p )
@@ -361,28 +381,54 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         MLVValuesWithoutBounds = zeros( nMLV, 1 );
                         WarningGenerated = false;
                         NumberOfMax = dynareOBC_.NumberOfMax;
-                        parfor ( PointIndex = 1 : NumPoints, MaxWorkers )
-                            lastwarn( '' );
-                            ParallelWarningState = warning( 'off', 'all' );
-                            try
-                                InnerShockSequence = FutureShocks( :, PointIndex );
-                                InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true );
-                                InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
-                                InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
-                                NewMLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
-                                if NumberOfMax > 0
-                                    NewMLVValuesWithoutBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
-                                else
-                                    NewMLVValuesWithoutBounds = NewMLVValuesWithBounds;
+                        if DisableParFor
+                            for PointIndex = 1 : NumPoints
+                                lastwarn( '' );
+                                ParallelWarningState = warning( 'off', 'all' );
+                                try
+                                    InnerShockSequence = FutureShocks( :, PointIndex );
+                                    InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true );
+                                    InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
+                                    InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
+                                    NewMLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                                    if NumberOfMax > 0
+                                        NewMLVValuesWithoutBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                                    else
+                                        NewMLVValuesWithoutBounds = NewMLVValuesWithBounds;
+                                    end
+                                    MLVValuesWithBounds = MLVValuesWithBounds + NewMLVValuesWithBounds * Weights( PointIndex );
+                                    MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVValuesWithoutBounds * Weights( PointIndex );
+                                catch Error
+                                    warning( ParallelWarningState );
+                                    rethrow( Error );
                                 end
-                                MLVValuesWithBounds = MLVValuesWithBounds + NewMLVValuesWithBounds * Weights( PointIndex );
-                                MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVValuesWithoutBounds * Weights( PointIndex );
-                            catch Error
                                 warning( ParallelWarningState );
-                                rethrow( Error );
+                                WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
                             end
-                            warning( ParallelWarningState );
-                            WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
+                        else
+                            parfor PointIndex = 1 : NumPoints
+                                lastwarn( '' );
+                                ParallelWarningState = warning( 'off', 'all' );
+                                try
+                                    InnerShockSequence = FutureShocks( :, PointIndex );
+                                    InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true );
+                                    InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
+                                    InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
+                                    NewMLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                                    if NumberOfMax > 0
+                                        NewMLVValuesWithoutBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithoutBoundsLagIndices; CurrentValuesWithoutBoundsCurrentIndices; InnerFutureValuesWithoutBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
+                                    else
+                                        NewMLVValuesWithoutBounds = NewMLVValuesWithBounds;
+                                    end
+                                    MLVValuesWithBounds = MLVValuesWithBounds + NewMLVValuesWithBounds * Weights( PointIndex );
+                                    MLVValuesWithoutBounds = MLVValuesWithoutBounds + NewMLVValuesWithoutBounds * Weights( PointIndex );
+                                catch Error
+                                    warning( ParallelWarningState );
+                                    rethrow( Error );
+                                end
+                                warning( ParallelWarningState );
+                                WarningGenerated = WarningGenerated | ( ~isempty( lastwarn ) );
+                            end
                         end
                         if WarningGenerated
                             warning( 'dynareOBC:InnerMLVWarning', 'Warnings were generated in the inner loop responsible for evaluating expectations of model local variables.' );
