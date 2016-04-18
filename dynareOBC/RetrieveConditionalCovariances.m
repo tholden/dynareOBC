@@ -1,8 +1,11 @@
-function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, ReturnPathFirstOrder )
+function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, ReturnPathFirstOrder, DisableParFor )
     if dynareOBC.FirstOrderConditionalCovariance
         RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
         GlobalVarianceShare = dynareOBC.GlobalVarianceShare;
     else
+        if nargin < 4
+            DisableParFor = false;
+        end
         T = dynareOBC.InternalIRFPeriods;
         TM1 = T - 1;
         ns = dynareOBC.NumberOfMax;
@@ -34,29 +37,7 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         
         PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
         
-        if PeriodsOfUncertainty > 3
-            parfor i = 1 : PeriodsOfUncertainty
-                iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
-
-                CurrentSigma = iWeight * Sigma;
-                % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
-                % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
-                % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
-                [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), CurrentSigma );
-                % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
-                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma ); %#ok<PFBNS>
-                Tmpi = Tmpi + Offset3;
-                Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
-                Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
-                Cs2 = [ Vs * iWeight; Cs * iWeight * iWeight; Tmps; Tmps; Tmps2 ];
-
-                BCovXiB{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
-
-                BCovXiB{i} = B2 * BCovXiB{i} * B2';
-                BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
-
-            end
-        else
+        if DisableParFor || PeriodsOfUncertainty <= 3
             for i = 1 : PeriodsOfUncertainty
                 iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
 
@@ -78,28 +59,71 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
                 BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
 
             end
+        else
+            parfor i = 1 : PeriodsOfUncertainty
+                iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
+
+                CurrentSigma = iWeight * Sigma;
+                % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
+                % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
+                % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
+                [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), CurrentSigma );
+                % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
+                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1State{i}, CurrentSigma ); %#ok<PFBNS>
+                Tmpi = Tmpi + Offset3;
+                Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
+                Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
+                Cs2 = [ Vs * iWeight; Cs * iWeight * iWeight; Tmps; Tmps; Tmps2 ];
+
+                BCovXiB{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
+
+                BCovXiB{i} = B2 * BCovXiB{i} * B2';
+                BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
+
+            end
         end
         
         if Global
             VarianceY1StateGlobal = dynareOBC.VarianceY1StateGlobal;
             
-            parfor i = 1 : TM1
-                % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
-                % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
-                % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
-                [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), Sigma );
-                % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
-                [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1StateGlobal{i}, Sigma ); %#ok<PFBNS>
-                Tmpi = Tmpi + Offset3;
-                Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
-                Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
-                Cs2 = [ Vs; Cs; Tmps; Tmps; Tmps2 ];
+            if DisableParFor
+                for i = 1 : TM1
+                    % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
+                    % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
+                    % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
+                    [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), Sigma );
+                    % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
+                    [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1StateGlobal{i}, Sigma );
+                    Tmpi = Tmpi + Offset3;
+                    Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
+                    Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
+                    Cs2 = [ Vs; Cs; Tmps; Tmps; Tmps2 ];
 
-                BCovXiBGlobal{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
+                    BCovXiBGlobal{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
 
-                BCovXiBGlobal{i} = B2 * BCovXiBGlobal{i} * B2';
-                BCovXiBGlobal{i}( abs(BCovXiBGlobal{i})<eps ) = 0;
+                    BCovXiBGlobal{i} = B2 * BCovXiBGlobal{i} * B2';
+                    BCovXiBGlobal{i}( abs(BCovXiBGlobal{i})<eps ) = 0;
 
+                end
+            else
+                parfor i = 1 : TM1
+                    % CornerCovXi = spkron( ReturnPathFirstOrder, Sigma );
+                    % BCovXiB{i}( Jdx3, Jdx1 ) = CornerCovXi;
+                    % BCovXiB{i}( Jdx1, Jdx3 ) = CornerCovXi';
+                    [ Tmpi, Tmpj, Tmps ] = spkron( ReturnPathFirstOrder( :, i ), Sigma );
+                    % BCovXiB{i}( Jdx3, Jdx3 ) = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + dynareOBC_.VarianceY1State{i}, Sigma );
+                    [ Tmpi2, Tmpj2, Tmps2 ] = spkron( ReturnPathFirstOrder * ReturnPathFirstOrder' + VarianceY1StateGlobal{i}, Sigma ); %#ok<PFBNS>
+                    Tmpi = Tmpi + Offset3;
+                    Ci2 = [ Vi; Ci; Tmpi; Tmpj; Tmpi2 + Offset3 ];
+                    Cj2 = [ Vj; Cj; Tmpj; Tmpi; Tmpj2 + Offset3 ];
+                    Cs2 = [ Vs; Cs; Tmps; Tmps; Tmps2 ];
+
+                    BCovXiBGlobal{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
+
+                    BCovXiBGlobal{i} = B2 * BCovXiBGlobal{i} * B2';
+                    BCovXiBGlobal{i}( abs(BCovXiBGlobal{i})<eps ) = 0;
+
+                end
             end
         end
         
@@ -109,19 +133,38 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         VarianceZ2 = cell( TM1, 1 );
         VarianceZ2Global = cell( TM1, 1 );
 
-        parfor k = 1 : TM1
-            VarianceZ2{ k } = sparse( LengthZ2, LengthZ2 );
-            for i = 1 : min( k, PeriodsOfUncertainty )
-                CurrentVariance = A2Powers{ k - i + 1 } * BCovXiB{ i } * A2Powers{ k - i + 1 }'; %#ok<PFBNS>
-                CurrentVariance( abs(CurrentVariance)<eps ) = 0;
-                VarianceZ2{ k } = VarianceZ2{ k } + CurrentVariance;
-            end
-            if Global
-                VarianceZ2Global{ k } = sparse( LengthZ2, LengthZ2 );
-                for i = 1 : k
-                    CurrentVariance = A2Powers{ k - i + 1 } * BCovXiBGlobal{ i } * A2Powers{ k - i + 1 }'; %#ok<PFBNS>
+        if DisableParFor
+            for k = 1 : TM1
+                VarianceZ2{ k } = sparse( LengthZ2, LengthZ2 );
+                for i = 1 : min( k, PeriodsOfUncertainty )
+                    CurrentVariance = A2Powers{ k - i + 1 } * BCovXiB{ i } * A2Powers{ k - i + 1 }'; 
                     CurrentVariance( abs(CurrentVariance)<eps ) = 0;
-                    VarianceZ2Global{ k } = VarianceZ2Global{ k } + CurrentVariance;
+                    VarianceZ2{ k } = VarianceZ2{ k } + CurrentVariance;
+                end
+                if Global
+                    VarianceZ2Global{ k } = sparse( LengthZ2, LengthZ2 );
+                    for i = 1 : k
+                        CurrentVariance = A2Powers{ k - i + 1 } * BCovXiBGlobal{ i } * A2Powers{ k - i + 1 }'; 
+                        CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                        VarianceZ2Global{ k } = VarianceZ2Global{ k } + CurrentVariance;
+                    end
+                end
+            end
+        else
+            parfor k = 1 : TM1
+                VarianceZ2{ k } = sparse( LengthZ2, LengthZ2 );
+                for i = 1 : min( k, PeriodsOfUncertainty )
+                    CurrentVariance = A2Powers{ k - i + 1 } * BCovXiB{ i } * A2Powers{ k - i + 1 }'; %#ok<PFBNS>
+                    CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                    VarianceZ2{ k } = VarianceZ2{ k } + CurrentVariance;
+                end
+                if Global
+                    VarianceZ2Global{ k } = sparse( LengthZ2, LengthZ2 );
+                    for i = 1 : k
+                        CurrentVariance = A2Powers{ k - i + 1 } * BCovXiBGlobal{ i } * A2Powers{ k - i + 1 }'; %#ok<PFBNS>
+                        CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                        VarianceZ2Global{ k } = VarianceZ2Global{ k } + CurrentVariance;
+                    end
                 end
             end
         end
@@ -135,13 +178,24 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         LengthConditionalCovarianceTemp = 0.5 * TM1 * ( TM1 + 1 );
         ConditionalCovarianceTemp = cell( LengthConditionalCovarianceTemp, 1 );
         
-        parfor i = 1 : LengthConditionalCovarianceTemp
-            p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
-            q = i - 0.5 * p * ( p - 1 );
-            % p and q are indexes of the lower triangle of a matrix, p>=q
-            CurrentCov = A2Powers{ p - q + 1 } * VarianceZ2{ q }; %#ok<PFBNS> % * A2Powers{ p - q + 1 }' = eye
-            ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
-            ConditionalCovarianceTemp{i} = ReducedCov;
+        if DisableParFor
+            for i = 1 : LengthConditionalCovarianceTemp
+                p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
+                q = i - 0.5 * p * ( p - 1 );
+                % p and q are indexes of the lower triangle of a matrix, p>=q
+                CurrentCov = A2Powers{ p - q + 1 } * VarianceZ2{ q }; % * A2Powers{ p - q + 1 }' = eye
+                ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) );
+                ConditionalCovarianceTemp{i} = ReducedCov;
+            end
+        else
+            parfor i = 1 : LengthConditionalCovarianceTemp
+                p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
+                q = i - 0.5 * p * ( p - 1 );
+                % p and q are indexes of the lower triangle of a matrix, p>=q
+                CurrentCov = A2Powers{ p - q + 1 } * VarianceZ2{ q }; %#ok<PFBNS> % * A2Powers{ p - q + 1 }' = eye
+                ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
+                ConditionalCovarianceTemp{i} = ReducedCov;
+            end
         end
         for p = 1 : TM1
             for q = 1 : p

@@ -1,6 +1,6 @@
-function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOrderSimulation, varargin )
+function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOrderSimulation, DisableParFor, varargin )
    
-    [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
+    [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation, DisableParFor );
     d = size( RootConditionalCovariance, 2 );
     if d == 0
         return;
@@ -56,8 +56,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
     for i = 1 : CubatureOrder
     
         jv = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 );
-        if length( jv ) > 3
-            parfor j = jv
+        if DisableParFor || length( jv ) <= 3
+            for j = jv
                 lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
                 try
@@ -74,7 +74,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
                 end
             end
         else
-            for j = jv
+            parfor j = jv
                 lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
                 try

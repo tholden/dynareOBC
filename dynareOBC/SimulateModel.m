@@ -39,7 +39,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         SkipMLVSimulation = false;
     end
     if nargin < 5
-        DisableParFor = false;
+        DisableParFor = ~DisplayProgress;
     end
     if nargin < 3 && dynareOBC_.SimulateOnGridPoints
         %% Grid simulation
@@ -82,7 +82,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                             InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 );
                         end
                     end
-                    GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true );
+                    GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true, true );
                 catch Error
                     warning( ParallelWarningState );
                     rethrow( Error );
@@ -105,7 +105,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                             InnerInitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, 2 * k - 1 ); %#ok<PFBNS>
                         end
                     end
-                    GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true );
+                    GridSimulations{ k } = SimulateModel( TempShockSequence( :, k ), false, InnerInitialFullState, true, true );
                 catch Error
                     warning( ParallelWarningState );
                     rethrow( Error );
@@ -234,7 +234,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                         [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
 
                         if ~dynareOBC_.NoCubature
-                            [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first );
+                            [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first, DisableParFor );
                             if dynareOBC_.Global
                                 y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC_ );
                             end
@@ -387,7 +387,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                                 ParallelWarningState = warning( 'off', 'all' );
                                 try
                                     InnerShockSequence = FutureShocks( :, PointIndex );
-                                    InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true );
+                                    InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true, true );
                                     InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
                                     InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
                                     NewMLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
@@ -411,7 +411,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                                 ParallelWarningState = warning( 'off', 'all' );
                                 try
                                     InnerShockSequence = FutureShocks( :, PointIndex );
-                                    InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true );
+                                    InnerSimulation = SimulateModel( InnerShockSequence, false, InnerInitialFullState, true, true );
                                     InnerFutureValuesWithBounds = InnerSimulation.total_with_bounds( OriginalVarSelect, 1 );
                                     InnerFutureValuesWithoutBounds = InnerSimulation.total( OriginalVarSelect, 1 );
                                     NewMLVValuesWithBounds = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; InnerFutureValuesWithBounds( LeadIndices ) ] ), CurrentShock, ParamVec, SteadyState, 1 );
