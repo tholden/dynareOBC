@@ -10,7 +10,7 @@ sigma = 0.007;
 varexo epsilon;
 
 model;
-	g = max( phi, ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon );
+	g = max( 0, ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon );
 	#mu = ( 1 - rho ) * gBar + rho * g;
 	#Int = ( 1 - normcdf( mu / sigma ) ) + ( 1 - normcdf( ( gamma * sigma ^ 2 - mu ) / sigma ) ) * exp( sigma ^ 2 * gamma ^ 2 / 2 - gamma * mu );
 	#rObs = -log( beta * Int );
