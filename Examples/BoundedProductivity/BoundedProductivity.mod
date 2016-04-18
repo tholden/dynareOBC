@@ -11,7 +11,7 @@ varexo epsilon;
 
 model;
 	#mu = ( 1 - rho ) * gBar + rho * g;
-	#Int = (erf(sqrt(2) * (-gamma * sigma ^ 2 + mu) / sigma / 2) + 1) * exp(sigma ^ 2 * gamma ^ 2 / 2 - gamma * mu) / 2 - erf(mu / sigma * sqrt(2) / 2) / 2 + 1 / 2;
+	#Int = ( 1 - normcdf( mu / sigma ) ) + ( 1 - normcdf( ( gamma * sigma ^ 2 - mu ) / sigma ) ) * exp( sigma ^ 2 * gamma ^ 2 / 2 - gamma * mu );
 	#rTrue = -log( beta * Int );
 	#gTrue = max( 0, ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon );
 	#rError = r - rTrue;
