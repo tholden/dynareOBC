@@ -1,0 +1,416 @@
+dynareOBC UnboundedProductivityEstimation estimation OrderOverride=1
+
+	Initial log-likelihood:
+			  1991.00465348704
+
+	Final log-likelihood:
+			  2005.95955478869
+
+	Paranoid verification of final log-likelihood:
+			  2005.95955478869
+	Calculating standard errors.
+
+	Warning: Matrix is singular to working precision. 
+	> In dynareOBCCore (line 436)
+	  In dynareOBCSetup (line 141)
+	  In dynareOBC (line 122) 
+	Final parameter estimates:
+	gBar:		0.0027180080725108789		(NaN)
+	rho:		0.92429945147122983		(0.0080924588540158063)
+	sigma:		0.0070369530200549806		(2.9483981814935466e-05)
+
+	Final measurement error standard deviation estimates:
+	rObs:		9.8813129168249309e-324		(5.5263463476983859e-11)
+	
+dynareOBC UnboundedProductivityEstimation estimation
+
+    Initial log-likelihood:
+              1991.01965732716
+
+    Final log-likelihood:
+               2005.9595547887
+
+    Paranoid verification of final log-likelihood:
+              2005.95955478869
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.0028418052577297483		(NaN)
+    rho:		0.92429944606429260		(0.010683313828782725)
+    sigma:		0.0070369528354162240		(5.2580626068101463e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(1.1291924274895130e-10)
+
+dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProductivityEstimation.xlsx
+
+    Initial log-likelihood:
+              1991.01965732716
+
+    Final log-likelihood:
+              2005.95955478869
+
+    Paranoid verification of final log-likelihood:
+              2005.95955478869
+    Calculating standard errors.
+
+    Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  1.006284e-18. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.0028418065380530371		(0.15655473782399004)
+    rho:		0.92429945341117781		(25.129244266329373)
+    sigma:		0.0070369531222970374		(0.041439930794997651)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(1.7633462959065370e-07)
+
+dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProductivityEstimation.xlsx EstimationUpdateSparseCubatureDegree=51
+
+    Initial log-likelihood:
+              1991.01965732716
+
+    Final log-likelihood:
+              2005.95955478869
+
+    Paranoid verification of final log-likelihood:
+              2005.95955478869
+    Calculating standard errors.
+
+    Final parameter estimates:
+    gBar:		0.0028418031083207143		(2.6024306271162789e-05)
+    rho:		0.92429944293597155		(0.0048923837126984820)
+    sigma:		0.0070369529276452540		(4.4603034119217772e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(1.3469115743862714e-10)
+
+dynareOBC UnboundedProductivityEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta OrderOverride=1
+
+	Initial log-likelihood:
+			  2116.98769402938
+
+	Final log-likelihood:
+			  2193.82495355929
+
+	Paranoid verification of final log-likelihood:
+			  2193.82495355928
+	Calculating standard errors.
+
+	Warning: Matrix is singular to working precision. 
+	> In dynareOBCCore (line 436)
+	  In dynareOBCSetup (line 141)
+	  In dynareOBC (line 122) 
+	Final parameter estimates:
+	gBar:		0.015109804130942131		(NaN)
+	rho:		0.89798854088387670		(0.012672857305324839)
+	sigma:		0.0060034295730581159		(9.1936243720245315e-05)
+
+	Final measurement error standard deviation estimates:
+	rObs:		9.8813129168249309e-324		(3.2185391296729980e-10)
+
+dynareOBC UnboundedProductivityEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta
+
+    Initial log-likelihood:
+              2116.91606427302
+
+    Final log-likelihood:
+              2193.82495355929
+
+    Paranoid verification of final log-likelihood:
+              2193.82495355928
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.015199905390815822		(NaN)
+    rho:		0.89798852302933097		(0.023104060974638900)
+    sigma:		0.0060034298448557359		(0.00011138487158437061)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(5.0569580246750688e-10)
+
+dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta
+
+    Initial log-likelihood:
+              2116.91606427302
+
+    Final log-likelihood:
+              2193.82495355929
+
+    Paranoid verification of final log-likelihood:
+              2193.82495355928
+    Calculating standard errors.
+
+    Final parameter estimates:
+    gBar:		0.015199906592002033		(0.00012106455219944046)
+    rho:		0.89798849855100749		(0.0025690591515069275)
+    sigma:		0.0060034299466952086		(5.0871223306843429e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(1.9165415011623551e-10)
+
+dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta EstimationUpdateSparseCubatureDegree=51
+
+    Initial log-likelihood:
+              2116.91606427302
+
+    Final log-likelihood:
+              2193.82495355929
+
+    Paranoid verification of final log-likelihood:
+              2193.82495355928
+    Calculating standard errors.
+
+    Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  1.595881e-16. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.015199906265010646		(6.7080143570325714e-05)
+    rho:		0.89798851341841990		(0.017047226848084244)
+    sigma:		0.0060034297017133509		(2.8527775004763224e-06)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(9.7287005699183012e-11)
+
+dynareOBC BoundedProductivityEstimation estimation nocubature OrderOverride=1 EstimationFixedParameters=beta   
+
+    Initial log-likelihood:
+              2181.31639365468
+
+    Final log-likelihood:
+              2239.61231697939
+
+    Paranoid verification of final log-likelihood:
+              2239.61231697939
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.010203452924962634		(NaN)
+    rho:		0.92057864519824706		(0.074455546759545493)
+    sigma:		0.0062455257116995023		(9.3641430722920513e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		2.1186635179699233e-11		(1.6810546886623526e-16)
+
+dynareOBC BoundedProductivityEstimation estimation nocubature EstimationFixedParameters=beta
+
+    Initial log-likelihood:
+              2187.98110823414
+
+    Final log-likelihood:
+              2242.90944809022
+
+    Paranoid verification of final log-likelihood:
+               2242.9094480902
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.010550241190808723		(NaN)
+    rho:		0.92014707853000666		(0.0052683057799610021)
+    sigma:		0.0063077058555570066		(6.4340159174124562e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		4.2513197372976948e-11		(4.5262903824840295e-15)
+
+dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncertainty=1 OrderOverride=1 EstimationFixedParameters=beta EstimationTimeOutLikelihoodEvaluation=300
+
+    Initial log-likelihood:
+              2232.11284615375
+
+    Final log-likelihood:
+              2258.28957487177
+
+    Paranoid verification of final log-likelihood:
+              2258.28957487177
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    gBar:		0.0031250576721881889		(NaN)
+    rho:		0.94396548459412966		(0.0074657549876815631)
+    sigma:		0.0070183056518245109		(1.6481261132547003e-12)
+
+    Final measurement error standard deviation estimates:
+    rObs:		5.2258604550518328e-09		(1.0475047348053449e-10)
+
+dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationFixedParameters=beta
+
+    Initial log-likelihood:
+              2233.49721349214
+
+    Final log-likelihood:
+              2254.06323770706
+
+    Paranoid verification of final log-likelihood:
+              2254.06323770249
+    Calculating standard errors.
+
+    Final parameter estimates:
+    gBar:		0.0028918228778308363		(2.7828211713317462e-05)
+    rho:		0.94625053741526666		(0.0055134101130582796)
+    sigma:		0.0065857144177539481		(6.2294421410228324e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		3.7973312715863171e-05		(2.3823637508103644e-07)
+
+dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationUpdateSparseCubatureDegree=51 EstimationFixedParameters=beta
+
+    Initial log-likelihood:
+              2236.48049859772
+
+    Final log-likelihood:
+              2255.92183471278
+
+    Paranoid verification of final log-likelihood:
+              2255.92183471226
+    Calculating standard errors.
+
+    Final parameter estimates:
+    gBar:		0.0013604839982497136		(3.7901411784517057e-05)
+    rho:		0.94925280001569678		(0.023874666459394428)
+    sigma:		0.0066878803305668501		(0.00016042602166720592)
+
+    Final measurement error standard deviation estimates:
+    rObs:		3.7290338351970564e-05		(1.3409060066101767e-07)
+
+dynareOBC BoundedProductivityEstimation estimation nocubature OrderOverride=1 
+
+    Initial log-likelihood:
+              2181.31639365468
+
+    Final log-likelihood:
+              2253.05775195993
+
+    Paranoid verification of final log-likelihood:
+              2253.05775195992
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    beta:		0.97502631617806323		(NaN)
+    gBar:		1.0000000000000004e-06		(NaN)
+    rho:		0.94360718742952410		(0.025452213737266964)
+    sigma:		0.0063743903813771562		(0.00049690038848670189)
+
+    Final measurement error standard deviation estimates:
+    rObs:		1.3991478232801517e-09		(6.2693339911656394e-10)
+
+dynareOBC BoundedProductivityEstimation estimation nocubature 
+
+    Initial log-likelihood:
+              2187.98110823414
+
+    Final log-likelihood:
+              2253.06669758259
+
+    Paranoid verification of final log-likelihood:
+              2253.06669758258
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    beta:		0.97451860317395134		(NaN)
+    gBar:		1.0000000000000004e-06		(NaN)
+    rho:		0.94370675115109159		(0.0040152737909271230)
+    sigma:		0.0063740305446534432		(5.5727887895852691e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(1.1100299800505145e-10)
+
+dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncertainty=1 OrderOverride=1 EstimationTimeOutLikelihoodEvaluation=300
+
+    Initial log-likelihood:
+              2232.11284615375
+
+    Final log-likelihood:
+              2262.62912768763
+
+    Paranoid verification of final log-likelihood:
+              2262.62912768763
+    Calculating standard errors.
+
+    Warning: Matrix is singular to working precision. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    beta:		0.99338618569225912		(NaN)
+    gBar:		0.0065263287201656594		(NaN)
+    rho:		0.93315463535778698		(0.0084646882532483890)
+    sigma:		0.0069096843004194334		(5.5816811560584444e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		1.3791542940613211e-11		(1.5822070535915574e-11)
+
+dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature 
+
+    Initial log-likelihood:
+              2233.49721349214
+
+    Final log-likelihood:
+              2257.95072060313
+
+    Paranoid verification of final log-likelihood:
+              2257.95072060313
+    Calculating standard errors.
+
+    Warning: Matrix is close to singular or badly scaled. Results may be inaccurate. RCOND =  9.196044e-26. 
+    > In dynareOBCCore (line 436)
+      In dynareOBCSetup (line 141)
+      In dynareOBC (line 122) 
+    Final parameter estimates:
+    beta:		0.99594696830162743		(0.0019357982583416923)
+    gBar:		0.0097468115619167243		(0.00013737305881333104)
+    rho:		0.92329208761693515		(0.0039204206273786187)
+    sigma:		0.0068466832518837475		(6.7661011255482970e-05)
+
+    Final measurement error standard deviation estimates:
+    rObs:		2.1141831522667090e-11		(3.9438500803720456e-16)
+
+dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationUpdateSparseCubatureDegree=51
+
+    Initial log-likelihood:
+              2236.48049859772
+
+    Final log-likelihood:
+              2259.45557392134
+
+    Paranoid verification of final log-likelihood:
+              2259.45557392134
+    Calculating standard errors.
+
+    Final parameter estimates:
+    beta:		0.99602545171284662		(2.5016703917175193e-08)
+    gBar:		0.0095752245108842136		(2.0998647420081607e-10)
+    rho:		0.92376863236687445		(2.0284796923213159e-08)
+    sigma:		0.0069522750886009997		(1.5247843609982346e-10)
+
+    Final measurement error standard deviation estimates:
+    rObs:		9.8813129168249309e-324		(1.5613445207802226e-14)
