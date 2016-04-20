@@ -12,7 +12,7 @@ And the computational paper from here: https://github.com/tholden/dynareOBC/raw/
 A paper documenting the estimation procedure is available from here: https://github.com/tholden/dynareOBC/raw/master/EstimationPaper.pdf
 (Or here for citations: http://dx.doi.org/10.5281/zenodo.50127 )
 
-The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.48948
+The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.50132
 
 Alternatively, read the slides from here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
 
