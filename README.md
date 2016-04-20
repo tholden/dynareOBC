@@ -4,11 +4,13 @@ DynareOBC: A toolkit for handling occasionally binding constraints with Dynare, 
 Background
 ----------
 Please read the theory paper from here: https://github.com/tholden/dynareOBC/raw/master/TheoryPaper.pdf
+(Or here for citations: https://ideas.repec.org/p/zbw/esprep/130142.html )
 
 And the computational paper from here: https://github.com/tholden/dynareOBC/raw/master/ComputationalPaper.pdf
+(Or here for citations: https://ideas.repec.org/p/zbw/esprep/130143.html )
 
-A paper containing both the theoretical and computational results is available on RePEc from here (for citations):
-https://ideas.repec.org/p/zbw/esprep/127430.html
+A paper documenting the estimation procedure is available from here: https://github.com/tholden/dynareOBC/raw/master/EstimationPaper.pdf
+(Or here for citations: http://dx.doi.org/10.5281/zenodo.50127 )
 
 The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.48948
 
