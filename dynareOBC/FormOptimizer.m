@@ -23,13 +23,9 @@ function dynareOBC = FormOptimizer( dynareOBC )
     yScaled = Output( 1 : ( end - 1 ), 1 );
     alpha = Output( end );
     
-    zWeights = repmat( ( 1 : Ts )', 1, ns );
-    zWeightsReshaped = zWeights(:);
+    zWeights = repmat( ( 1 : Ts )', ns, 1 );
     
-    Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeightsReshaped <= Tss + 0.1, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
-    if ~dynareOBC.FullHorizon
-		Constraints = [ Constraints, sum( reshape( z, Ts, ns ) .* zWeights ) + 0.1 >= Tss ];
-    end
+    Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeights <= Tss, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
     Objective = -alpha;
     dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, Input, Output );
     
