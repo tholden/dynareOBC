@@ -11,23 +11,33 @@ function dynareOBC = FormOptimizer( dynareOBC )
     Ms = dynareOBC.MsMatrix;
     omega = dynareOBC.Omega;
 
-    Input = sdpvar( size( M, 1 ) + 1, 1 ); % [ qScaled; Tss ]
-    Output = sdpvar( Ts * ns + 1, 1 );     % [ yScaled; alpha ]
+    if dynareOBC.FullHorizon
+        InitTss = Ts;
+    else
+        InitTss = 1;
+    end
     
-    z = binvar( Ts * ns, 1 );
-    
-    qScaled = Input( 1 : ( end - 1 ), 1 );
+    qScaled = sdpvar( size( M, 1 ), 1 );
     qsScaled = qScaled( dynareOBC.sIndices );
-    Tss = Input( end );
+    ssIndices = dynareOBC.ssIndices;
+    
+    dynareOBC.Optimizer = cell( Ts, 1 );
+    
+    for Tss = InitTss : Ts        
+        Output = sdpvar( Tss * ns + 1, 1 );     % [ yScaled; alpha ]
+        yScaled = Output( 1 : ( end - 1 ), 1 );
+        alpha = Output( end );
 
-    yScaled = Output( 1 : ( end - 1 ), 1 );
-    alpha = Output( end );
-    
-    zWeights = repmat( ( 1 : Ts )', ns, 1 );
-    
-    Constraints = [ 0 <= yScaled, yScaled <= z, z .* zWeights <= Tss, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
-    Objective = -alpha;
-    dynareOBC.Optimizer = optimizer( Constraints, Objective, dynareOBC.MILPOptions, Input, Output );
+        z = binvar( Tss, ns );
+        sum_z = sum( z, 2 );
+        z = z(:);
+        
+        CssIndices = ssIndices{ Tss };
+
+        Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qsScaled( CssIndices ) + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
+        Objective = -alpha;
+        dynareOBC.Optimizer{ Tss } = optimizer( Constraints, Objective, dynareOBC.MILPOptions, qScaled, Output );
+    end
     
     yalmip( 'clear' );
     

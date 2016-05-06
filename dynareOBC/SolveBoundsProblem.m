@@ -4,6 +4,10 @@ function y = SolveBoundsProblem( q )
     
     Tolerance = dynareOBC_.Tolerance;
     
+    if dynareOBC_.DisplayBoundsSolutionProgress
+        disp( 0 );
+    end
+    
     if all( q >= -Tolerance ) && ~dynareOBC_.FullHorizon
         y = dynareOBC_.ZeroVecS;
         return
@@ -24,9 +28,9 @@ function y = SolveBoundsProblem( q )
     
     if sum( ParametricSolutionFound ) > 0    
         qsScaled = qScaled( sIndices );    
-        ssIndices = dynareOBC_.ssIndices;
-        ZeroVecS = dynareOBC_.ZeroVecS;
     end
+    ssIndices = dynareOBC_.ssIndices;
+    ZeroVecS = dynareOBC_.ZeroVecS;
     
     if dynareOBC_.FullHorizon
         InitTss = Ts;
@@ -36,11 +40,15 @@ function y = SolveBoundsProblem( q )
     
     for Tss = InitTss : Ts
     
+        if dynareOBC_.DisplayBoundsSolutionProgress
+            disp( Tss );
+        end
+    
         CParametricSolutionFound = ParametricSolutionFound( Tss );
+        CssIndices = ssIndices{ Tss };
         
         if CParametricSolutionFound > 0
             
-            CssIndices = ssIndices{ Tss };
             strTss = int2str( Tss );
             qssScaled = qsScaled( CssIndices );
             
@@ -60,16 +68,20 @@ function y = SolveBoundsProblem( q )
         end
         
         if CParametricSolutionFound == 0
-            OptOut = Optimizer{ [ qScaled; Tss ] };
+            OptOut = Optimizer{ Tss }{ qScaled };
             yScaled = OptOut( 1 : ( end - 1 ), : );
             alpha = OptOut( end );
-            y = yScaled / alpha;
+            y = ZeroVecS;
+            y( CssIndices ) = yScaled / alpha;
         end
         
         if all( isfinite( y ) )
-            y = max( 0, y * Norm_q );
-            w = q + M * y;
-            if all( w >= -Tolerance ) && all( abs( w( sIndices ) .* y ) <= Tolerance )
+            y = max( 0, y );
+            w = qScaled + M * y;
+            if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
+                w = reshape( w, numel( w ) / dynareOBC_.NumberOfMax, dynareOBC_.NumberOfMax );
+                disp( w( end, : ) );
+                y = y * Norm_q;
                 return;
             end
         end

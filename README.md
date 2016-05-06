@@ -280,6 +280,8 @@ Note:
  * **Advanced options**
     * `Bypass`
          Ignores all non-differentiabilities in the model. Useful for debugging.
+    * `DisplayBoundsSolutionProgress`
+	     Displays progress solving the bounds problem. Only useful for very hard to solve models under perfect foresight.
     * `CompileSimulationCode`
          Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
     * `NoCleanup`

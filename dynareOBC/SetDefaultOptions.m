@@ -6,6 +6,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureSmoothing', -eps );
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureTolerance', 1e-5 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Debug', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'DisplayBoundsSolutionProgress', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Estimation', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationSkipStandardErrors', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationPredictSparseCubatureDegree', 0 );
@@ -61,7 +62,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToSolveParametrically', 4 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToEscapeBounds', 32 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 64 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', 1e-6 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', 1e-4 );
     dynareOBC = SetDefaultOption( dynareOBC, 'UseSimulationCode', true );
     
     dynareOBC = orderfields( dynareOBC );
