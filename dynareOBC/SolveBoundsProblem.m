@@ -79,8 +79,6 @@ function y = SolveBoundsProblem( q )
             y = max( 0, y );
             w = qScaled + M * y;
             if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
-                w = reshape( w, numel( w ) / dynareOBC_.NumberOfMax, dynareOBC_.NumberOfMax );
-                disp( w( end, : ) );
                 y = y * Norm_q;
                 return;
             end
