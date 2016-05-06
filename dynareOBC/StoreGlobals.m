@@ -1,14 +1,15 @@
 function StoreGlobals( M, options, oo, dynareOBC )
     InitializeWorkers( M, options, oo, dynareOBC );
-    OpenPool;
-    WarningState = warning( 'off', 'all' );
-    try
-        spmd
-            InitializeWorkers( M, options, oo, dynareOBC );
+    if ~isempty( gcp( 'nocreate' ) )
+        WarningState = warning( 'off', 'all' );
+        try
+            spmd
+                InitializeWorkers( M, options, oo, dynareOBC );
+            end
+        catch
         end
-    catch
+        warning( WarningState );
     end
-    warning( WarningState );
 end
 
 function InitializeWorkers( M, options, oo, dynareOBC )

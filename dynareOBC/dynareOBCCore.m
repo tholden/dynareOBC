@@ -389,6 +389,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
         dynareOBC = orderfields( dynareOBC );
+        OpenPool;
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
@@ -468,6 +469,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     dynareOBC = orderfields( dynareOBC );
 
+    if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs
+        OpenPool;
+    end
     StoreGlobals( M_, options_, oo_, dynareOBC );
     
     if dynareOBC.IRFPeriods > 0
