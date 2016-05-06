@@ -49,12 +49,11 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
 
         PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
     
-        OpenPool;
-        parfor k = 1 : TM1
+        for k = 1 : TM1
             VarianceZ1{ k } = sparse( LengthZ1, LengthZ1 );
             for i = 1 : min( k, PeriodsOfUncertainty )
                 iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
-                CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }'; %#ok<PFBNS>
+                CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }';
                 CurrentVariance( abs(CurrentVariance)<eps ) = 0;
                 VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
             end
@@ -316,12 +315,12 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             LengthConditionalCovarianceTemp = 0.5 * TM1 * T;
             ConditionalCovarianceTemp = cell( LengthConditionalCovarianceTemp, 1 );
 
-            parfor i = 1 : LengthConditionalCovarianceTemp
+            for i = 1 : LengthConditionalCovarianceTemp
                 p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
                 q = i - 0.5 * p * ( p - 1 );
                 % p and q are indexes of the lower triangle of a matrix, p>=q
-                CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q }; %#ok<PFBNS> % * A1Powers{ q - q + 1 }' = eye; 
-                ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) ); %#ok<PFBNS>
+                CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q }; % * A1Powers{ q - q + 1 }' = eye; 
+                ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) );
                 ConditionalCovarianceTemp{i} = ReducedCov;
             end
 
@@ -386,7 +385,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
 				VarianceY1StateGlobal{1} = zeros( nState );
             end
 
-            parfor k = 2 : TM1
+            for k = 2 : TM1
                 VarianceY1State{k} = VarianceZ1{ k - 1 }( SelectState, SelectState );
                 if Global
 					VarianceY1StateGlobal{k} = VarianceZ1Global{ k - 1 }( SelectState, SelectState );
