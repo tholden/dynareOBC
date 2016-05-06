@@ -295,9 +295,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     SkipCalcs = false;
 
     if ~dynareOBC.Estimation
-        if dynareOBC.TimeToSolveParametrically > 0 && ~dynareOBC.FullHorizon
-            OpenPool;
-        end
+        PoolOpened = false;
         for Tss = 1 : Ts
             ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
             Mss = Ms( ssIndices, ssIndices );
@@ -307,6 +305,11 @@ function dynareOBC = InitialChecks( dynareOBC )
             if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || min( eig( Mss + Mss' ) ) < sqrt( eps )
                 SkipCalcs = true;
                 continue;
+            end
+            
+            if ~PoolOpened
+                OpenPool;
+                PoolOpened = true;
             end
 
             PLCP = struct;
