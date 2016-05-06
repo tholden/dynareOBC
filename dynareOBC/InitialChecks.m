@@ -295,7 +295,9 @@ function dynareOBC = InitialChecks( dynareOBC )
     SkipCalcs = false;
 
     if ~dynareOBC.Estimation
-        OpenPool;
+        if dynareOBC.TimeToSolveParametrically > 0 && ~dynareOBC.FullHorizon
+            OpenPool;
+        end
         for Tss = 1 : Ts
             ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
             Mss = Ms( ssIndices, ssIndices );
