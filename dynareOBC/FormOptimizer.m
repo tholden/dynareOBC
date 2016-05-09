@@ -34,7 +34,11 @@ function dynareOBC = FormOptimizer( dynareOBC )
         
         CssIndices = ssIndices{ Tss };
 
-        Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qsScaled( CssIndices ) + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
+        if dynareOBC.FullHorizon
+            Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qsScaled( CssIndices ) + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ) ];
+        else
+            Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qsScaled( CssIndices ) + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
+        end
         Objective = -alpha;
         dynareOBC.Optimizer{ Tss } = optimizer( Constraints, Objective, dynareOBC.MILPOptions, qScaled, Output );
     end
