@@ -224,7 +224,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 T = min( TM, Ts );
                 Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
                 Indices = Indices(:);
-                M = dynareOBC.MMatrix( Indices, Indices );                
+                M = dynareOBC.MsMatrix( Indices, Indices );                
                 if ptest_use_mex
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
                     if ptest_mex( M )
@@ -249,7 +249,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
     if ptestVal > 0
-        disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( dynareOBC.TimeToEscapeBounds ) ' periods.' ] );
+        disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( T ) ' periods.' ] );
         if ptest_use_mex
             DiagIsP = ptest_mex( dynareOBC.d0s );
         else

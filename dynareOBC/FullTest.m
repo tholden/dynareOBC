@@ -8,7 +8,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     O = int64( 1 );
     Indices = bsxfun( @plus, (O:T)', int64( 0 ):Ts:((ns-O)*Ts ) );
     Indices = Indices(:);
-    M = dynareOBC.MMatrix( Indices, Indices );
+    M = dynareOBC.MsMatrix( Indices, Indices );
     
     nsT = ns * T;
     
