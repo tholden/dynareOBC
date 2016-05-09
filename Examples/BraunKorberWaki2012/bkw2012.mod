@@ -16,7 +16,6 @@ rhoz = 0.96;
 sigmad = 0.0027;
 sigmaz = 0.0052;
 
-pi_STEADY = -0.001;
 
 model;
 	#Pi = exp( pi );
