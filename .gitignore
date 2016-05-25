@@ -34,6 +34,10 @@ dynareOBC/tbxmanager/
 dynareOBC/requirements/
 dynareOBC/OptiToolbox216/
 dynareOBC/JGit4MATLAB/@JGit/older-versions/*.jar
+
+Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
+Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
+
 LastUpdate.mat
 LastDependencyUpdate.mat
 FastStart.mat
