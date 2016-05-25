@@ -37,6 +37,7 @@ dynareOBC/JGit4MATLAB/@JGit/older-versions/*.jar
 
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
+Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
 
 LastUpdate.mat
 LastDependencyUpdate.mat
