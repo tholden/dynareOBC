@@ -1,15 +1,14 @@
-try
-    dynare ExtendedPathVersion.mod
-catch
-end
+dynare ExtendedPathVersion.mod
 close all force;
 try
     delete ExtendedPathVersion*.mat *.log ExtendedPathVersion.m ExtendedPathVersion_*.*
-catch
+catch Error
+    disp( Error.message );
 end
 try
     rmdir ExtendedPathVersion s
-catch
+catch Error
+    disp( Error.message );
 end
 ShockSequence = oo_.exo_simul';
 EPEndoSequence = oo_.endo_simul(:,2:end);
