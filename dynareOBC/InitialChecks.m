@@ -362,6 +362,10 @@ function dynareOBC = InitialChecks( dynareOBC )
             rehash;
         end
     end
+    
+    if ~dynareOBC.Estimation && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) )
+        ClosePool;
+    end
 
     yalmip( 'clear' );
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );

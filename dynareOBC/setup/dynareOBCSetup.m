@@ -45,6 +45,9 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
 
     %% Initialization
 
+    addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    ClosePool;
+    
     addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
@@ -68,7 +71,6 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         warning( WarningState );
     end
     
-    addpath( [ dynareOBCPath '/dynareOBC/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
 
     if Update

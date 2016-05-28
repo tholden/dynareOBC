@@ -3,17 +3,9 @@ function dynareOBCCleanUp
     disp( 'Cleaning up.' );
     fprintf( 1, '\n' );
     
+    ClosePool;
+    
     WarningState = warning( 'off', 'all' );
-    try
-        CurrentPool = gcp( 'nocreate' );
-        delete( CurrentPool );
-    catch
-    end
-    try        
-        matlabpool close force; %#ok<DPOOL>
-    catch
-    end
-
     try
         clear mex; %#ok<CLMEX>
     catch
