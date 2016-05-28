@@ -219,8 +219,8 @@ Note:
          Calculates a more accurate approximation to expected IRFs using Monte-Carlo simulation. Without this option, DynareOBC
          calculates expected IRFs via cubature (unless this is also disabled).
     * `IRFsAroundZero`
-         By default, IRFs are centred around the risky steady state with the fastirfs option, or around the approximate mean
-         without it. This option instead centres IRFs around 0.
+         By default, IRFs are centred around the risky steady state without the SlowIRFs option, or around the approximate mean
+         with it. This option instead centres IRFs around 0.
     * `ShockScale=FLOAT` (default: `1`)
          Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller than one standard deviation.
 
