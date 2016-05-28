@@ -2,6 +2,16 @@ function dynareOBCCleanUp
     fprintf( 1, '\n' );
     disp( 'Cleaning up.' );
     fprintf( 1, '\n' );
+    
+    try
+        CurrentPool = gcp( 'nocreate' );
+        delete( CurrentPool );
+    catch
+    end
+    try        
+        matlabpool close force; %#ok<DPOOL>
+    catch
+    end
 
     WarningState = warning( 'off', 'all' );
     try
