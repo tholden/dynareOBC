@@ -163,8 +163,8 @@ Note:
          The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune"
          all but the INTEGER largest eigenvalues of the covariance matrix to zero.
     * `CubatureTolerance=FLOAT` (default: `1e-6`)
-         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or cubature.
-         Setting this to zero disables adaptive cubature.
+         Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default
+         cubature. Setting this to zero disables adaptive cubature.
     * `NoCubature`
          Speeds up DynareOBC by assuming that agents are "surprised" by the existence of the bound. At `order=1`, this is
          equivalent to a perfect foresight solution to the model.
