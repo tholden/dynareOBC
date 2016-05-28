@@ -1,6 +1,6 @@
 var y pi z d r;
 parameters sigma nu beta theta gamma pi_STEADY phi_pi phi_y eta tauw rhod sigmad rhoz sigmaz;
-varexo epsilon;
+varexo epsilond epsilonz;
 
 beta = 0.997;
 theta = 7.67;
@@ -35,8 +35,8 @@ model;
 	r = max( 0, re + phi_pi * ( pi - pi_STEADY ) + phi_y * ( gdp - gdp_STEADY ) );
 	1 = beta * exp( d + r - pi(+1) + sigma * ( c - c_LEAD ) );
 	( Pi - 1 ) * Pi = theta / gamma * ( exp( w - z ) - 1 ) + beta * exp( d + sigma * ( c - c_LEAD ) + y(+1) - y ) * ( Pi_LEAD - 1 ) * Pi_LEAD;
-	d = rhod * d(-1) + sigmad * epsilon;
-	z = rhoz * z(-1) + sigmaz * epsilon;
+	d = rhod * d(-1) + sigmad * epsilond;
+	z = rhoz * z(-1) + sigmaz * epsilonz;
 end;
 
 steady_state_model;
@@ -50,7 +50,8 @@ steady_state_model;
 end;
 
 shocks;
-	var epsilon = 1;
+	var epsilond = 1;
+	var epsilonz = 1;
 end;
 
 steady;
