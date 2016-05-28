@@ -138,12 +138,21 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         return;
     end
 
-    dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
+    CoreError = [];
+    try
+        dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
+    catch CaughtCoreError
+        CoreError = CaughtCoreError;
+    end
+        
     
     %% Cleaning up
 
     if dynareOBC_.SaveMacro && ~isempty( dynareOBC_.SaveMacroName )
-        copyfile( 'dynareOBCTemp1.mod', dynareOBC_.SaveMacroName, 'f' );
+        try
+            copyfile( 'dynareOBCTemp1.mod', dynareOBC_.SaveMacroName, 'f' );
+        catch
+        end
     end
     if ~dynareOBC_.NoCleanUp
         dynareOBCCleanUp;
@@ -152,5 +161,9 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     evalin( 'base', 'global dynareOBC_' );
     
     path( OriginalPath );
+    
+    if ~isempty( CoreError )
+        rethrow( CoreError );
+    end
 
 end
