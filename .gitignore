@@ -35,6 +35,8 @@ dynareOBC/requirements/
 dynareOBC/OptiToolbox216/
 dynareOBC/JGit4MATLAB/@JGit/older-versions/*.jar
 
+Examples/*/*.eps
+
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
