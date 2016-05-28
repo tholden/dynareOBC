@@ -32,7 +32,7 @@ model;
 	#y_STEADY = ( 1 / ( sigma + nu ) ) * ( log( ( 1 - tauw ) * ( ( 1 - beta ) * ( Pi_STEADY - 1 ) * Pi_STEADY / theta * gamma + 1 ) ) - sigma * log( 1 - kappa_STEADY - eta ) );
 	#gdp = log( 1 - kappa ) + y;
 	#gdp_STEADY = log( 1 - kappa_STEADY ) + y_STEADY;
-	#r = max( 0, re + phi_pi * ( pi - pi_STEADY ) + phi_y * ( gdp - gdp_STEADY ) );
+	r = max( 0, re + phi_pi * ( pi - pi_STEADY ) + phi_y * ( gdp - gdp_STEADY ) );
 	1 = beta * exp( d + r - pi(+1) + sigma * ( c - c_LEAD ) );
 	( Pi - 1 ) * Pi = theta / gamma * ( exp( w - z ) - 1 ) + beta * exp( d + sigma * ( c - c_LEAD ) + y(+1) - y ) * ( Pi_LEAD - 1 ) * Pi_LEAD;
 	d = rhod * d(-1) + sigmad * epsilon;
@@ -55,4 +55,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 1, periods = 0, irf = 0 );
+stoch_simul( order = 1, periods = 0, irf = 40 );
