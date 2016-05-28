@@ -3,6 +3,7 @@ function dynareOBCCleanUp
     disp( 'Cleaning up.' );
     fprintf( 1, '\n' );
     
+    WarningState = warning( 'off', 'all' );
     try
         CurrentPool = gcp( 'nocreate' );
         delete( CurrentPool );
@@ -13,7 +14,6 @@ function dynareOBCCleanUp
     catch
     end
 
-    WarningState = warning( 'off', 'all' );
     try
         clear mex; %#ok<CLMEX>
     catch
