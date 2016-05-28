@@ -1,4 +1,4 @@
-var y pi z d;
+var y pi z d r;
 parameters sigma nu beta theta gamma pi_STEADY phi_pi phi_y eta tauw rhod sigmad rhoz sigmaz;
 varexo epsilon;
 
@@ -46,6 +46,7 @@ steady_state_model;
 	pi = pi_STEADY;
 	z = 0;
 	d = 0;
+	r = -log( beta ) + pi_STEADY;
 end;
 
 shocks;
