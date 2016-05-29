@@ -249,7 +249,8 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
     if ptestVal > 0
-        disp( [ 'M is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( T ) ' periods.' ] );
+        MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( TM ) ];
+        disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( TM ) ' periods. This is a necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds).' ] );
         if ptest_use_mex
             DiagIsP = ptest_mex( dynareOBC.d0s );
         else
@@ -273,7 +274,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'Running full test to see if the requested sub-matrix of M is a P and/or (strictly) semi-monotone matrix.' );
         fprintf( 1, '\n' );
         [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
-        MFTS = [ 'M( 1:' int2str( dynareOBC.FullTest ) ', 1:' int2str( dynareOBC.FullTest ) ')' ];
+        MFTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( dynareOBC.FullTest ) ];
         if MinimumDeterminant >= 1e-8
             disp( [ MFTS ' is a P-matrix.' ] );
         elseif MinimumDeterminant >= -1e-8
