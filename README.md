@@ -14,7 +14,9 @@ A paper documenting the estimation procedure is available from here: https://git
 
 The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.50132
 
-Alternatively, read the slides from here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
+Alternatively, read the presentation slides from here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
+
+Or the course slides from here: https://github.com/tholden/dynareOBC/raw/master/slidesCourse.pdf
 
 Installation
 ------------
