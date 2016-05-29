@@ -178,8 +178,8 @@ Note:
          `order=2` or `order=3` in your mod file.
     * `FirstOrderConditionalCovariance`
          When `order>1` (possibly with `FirstOrderAroundRSS` or `FirstOrderAroundMean`), by default, DynareOBC uses a second
-         order approximation of the conditional covariance. This option specifies that a first order approximation should be
-         used instead.
+         order approximation of the conditional covariance to determine the space of paths to integrate over. This option
+         specifies that a first order approximation should be used instead.
     * `MLVSimulationMode=0|1|2|3` (default: `0`)
          If `MLVSimulationMode=0`, DynareOBC does not attempt to simulate the path of model local variables.
          If `MLVSimulationMode>0`, DynareOBC generates simulated paths and average impulse responses for each model local
