@@ -237,8 +237,9 @@ Note:
           * `EstimationPrior=STRING` (default: `FlatPrior`)
                Specifies the function containing the prior to be used in maximum a posteriori estimation. The default prior
                results in maximum likelihood estimates being returned. The function should accept a single argument giving the
-               vector of parameters to be estimated, including the measumerent error variances in the final elements of the 
-               vector. The function should return the log prior density at that point (up to a constant).
+               vector of parameters to be estimated, in the order they appear in the datafile, including the measumerent error
+               variances in the final elements of the vector. The function should return the log prior density at that point
+               (up to a constant).
           * `EstimationFixedPointMaxIterations=INTEGER` (default: `1000`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * `EstimationSkipStandardErrors`
