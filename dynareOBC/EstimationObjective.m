@@ -125,6 +125,10 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         ErrorOld = Error;
     end
 
+    PriorFunc = str2func( dynareOBC.EstimationPrior );
+    PriorValue = PriorFunc( p );
+    ScaledPriorValue = -2 * PriorValue / T;
+    
     TwoNLogLikelihood = 0;
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
@@ -132,6 +136,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
             TwoNLogLikelihood = Inf;
             return;
         end
+        TwoNLogObservationLikelihood = TwoNLogObservationLikelihood + ScaledPriorValue;
         if nargout > 1
             TwoNLogObservationLikelihoods( t ) = TwoNLogObservationLikelihood;
         end

@@ -14,6 +14,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationDataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedPointMaxIterations', 1000 );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationFixedParameters', '' );
+    dynareOBC = SetDefaultOption( dynareOBC, 'EstimationPrior', 'FlatPrior' );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationStdDevThreshold', 1e-6 );
     dynareOBC = SetDefaultOption( dynareOBC, 'EstimationTimeOutLikelihoodEvaluation', 60 );
     dynareOBC = SetDefaultOption( dynareOBC, 'FastCubature', false );
