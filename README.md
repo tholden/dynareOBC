@@ -262,12 +262,12 @@ Note:
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-6`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
           * `EstimationMinimisationFunctions=STRING` (default: `CMAESWrapper#FMinConWrapper`)
-               A `#` deliminated list of minimisation function names, which will be invoked in order. DynareOBC includes the
+               A `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the
                following: `CMAESWrapper` (an evolutionary global search algorithm), `FMinConWrapper` (MATLAB's local search,
                which requires a license for the MATLAB Optimisation Toolbox), `FMinBndWrapper` (performs repeated one
                dimensional search, only viable for very low dimensional problems).
           * `EstimationFixedParameters=STRING` (default: `''`)
-               A `#` deliminated list of parameters names. Any parameters in this list will not be estimated, even if they occur
+               A `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur
                in the second sheet of the data file.
           * `EstimationTimeOutLikelihoodEvaluation=INTEGER` (defaut: `60`)
                Any likelihood evaluations that take longer than this number of seconds will be terminated prematurely. Beware
