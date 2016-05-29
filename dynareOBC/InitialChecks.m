@@ -276,8 +276,10 @@ function dynareOBC = InitialChecks( dynareOBC )
         MFTS = [ 'M( 1:' int2str( dynareOBC.FullTest ) ', 1:' int2str( dynareOBC.FullTest ) ')' ];
         if MinimumDeterminant >= 1e-8
             disp( [ MFTS ' is a P-matrix.' ] );
+        elseif MinimumDeterminant >= -1e-8
+            disp( [ MFTS ' is a P0-matrix.' ] );
         else
-            disp( [ MFTS ' is not a P-matrix.' ] );
+            disp( [ MFTS ' is not a P-matrix or a P0-matrix.' ] );
         end
         if MinimumS >= 1e-8
             disp( [ MFTS ' is a strictly semi-monotone matrix.' ] );

@@ -207,7 +207,8 @@ Note:
          feasibility is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
          If `FeasibilityTestGridSize=0` then the test is disabled.
     * `FullTest=INTEGER` (default: `0`)
-         Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P and/or (strictly) semi-monotone matrix.
+         Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P(0) and/or (strictly) semi-monotone
+         matrix.
     * `PTest=INTEGER` (default: `0`)
          Tests if the top `INTEGERxINTEGER` submatirx of M is a P matrix. Set this to 0 to disable these tests.
     * `LPSolver=STRING` (default: automatically selected based on the detected solvers)
