@@ -23,7 +23,7 @@ function dynareOBCCleanUp
     catch
     end
     try
-        delete timedProgressbar*.*
+        delete timedProgressbar_*.*
     catch
     end
     warning( WarningState );
