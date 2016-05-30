@@ -51,6 +51,9 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
         dynareOBC.MLVSimulationWithoutBounds = Simulation.MLVsWithoutBounds;
     end
     
-    DispMoments( M, options, oo, dynareOBC );
+    try
+        DispMoments( M, options, oo, dynareOBC );
+    catch
+    end
     
 end

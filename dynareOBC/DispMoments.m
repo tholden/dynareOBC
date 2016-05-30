@@ -44,7 +44,8 @@ try
     s2 = nanmean(y.*y);
     s = sqrt(s2);
     oo.mean = transpose(m);
-    oo.var = reshape( nanmean( cell2mat( cellfun( @( yv ) vec( yv' * yv )', mat2cell( y, ones( size( y, 1 ), 1 ) ), 'UniformOutput', false ) ) ), [ size( y, 2 ), size( y, 2 ) ] );
+    reshapetmp = nanmean( cell2mat( cellfun( @( yv ) vec( yv' * yv )', mat2cell( y, ones( size( y, 1 ), 1 ) ), 'UniformOutput', false ) ) );
+    oo.var = reshape( reshapetmp, [ size( reshapetmp, 2 ), size( reshapetmp, 2 ) ] );
 
     labels = deblank( char( [ dynareOBC.EndoVariables( VariableSelect ) dynareOBC.MLVNames( MLVSelect ) ] ) );
 
