@@ -26,6 +26,7 @@ try
     Drop = dynareOBC.SimulationDrop;
     y = oo.endo_simul;
     VariableSelect = dynareOBC.VariableSelect;
+    nVars = length( VariableSelect );
     y = y(VariableSelect,Drop+1:end)';
     MLVNames = dynareOBC.MLVNames;
     MLVSelect = dynareOBC.MLVSelect;
@@ -33,7 +34,7 @@ try
         MLVName = MLVNames{i};
         y = [ y, dynareOBC.MLVSimulationWithBounds.( MLVName )( Drop+1:end )' ]; %#ok<AGROW>
     end
-    m = nanmean(y);
+    m = nanmean2(y);
 
     if options.hp_filter
         [~,y] = sample_hp_filter(y,options.hp_filter);
@@ -41,15 +42,22 @@ try
         y = bsxfun(@minus, y, m);
     end
 
-    s2 = nanmean(y.*y);
+    s2 = nanmean2(y.*y);
+
     s = sqrt(s2);
     oo.mean = transpose(m);
-    oo.var = reshape( nanmean( cell2mat( cellfun( @( yv ) vec( yv' * yv )', mat2cell( y, ones( size( y, 1 ), 1 ) ), 'UniformOutput', false ) ) ), [ size( y, 2 ), size( y, 2 ) ] );
+    
+    reshapetmp = nanmean2( cell2mat( cellfun( @( yv ) vec( yv' * yv )', mat2cell( y, ones( size( y, 1 ), 1 ) ), 'UniformOutput', false ) ) );
+    if numel( reshapetmp ) == nVars * nVars
+        oo.var = reshape( reshapetmp, [ nVars, nVars ] );
+    else
+        oo.var = NaN( nVars, nVars );
+    end
 
     labels = deblank( char( [ dynareOBC.EndoVariables( VariableSelect ) dynareOBC.MLVNames( MLVSelect ) ] ) );
 
     if options.nomoments == 0
-        z = [ m' s' s2' (nanmean(y.^3)./s2.^1.5)' (nanmean(y.^4)./(s2.*s2)-3)' ];    
+        z = [ m' s' s2' (nanmean2(y.^3)./s2.^1.5)' (nanmean2(y.^4)./(s2.*s2)-3)' ];    
         title='MOMENTS OF SIMULATED VARIABLES';
         if options.hp_filter
             title = [title ' (HP filter, lambda = ' ...
