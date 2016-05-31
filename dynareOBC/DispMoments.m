@@ -30,6 +30,7 @@ try
     y = y(VariableSelect,Drop+1:end)';
     MLVNames = dynareOBC.MLVNames;
     MLVSelect = dynareOBC.MLVSelect;
+    nVars = nVars + length( MLVSelect );
     for i = MLVSelect
         MLVName = MLVNames{i};
         y = [ y, dynareOBC.MLVSimulationWithBounds.( MLVName )( Drop+1:end )' ]; %#ok<AGROW>
