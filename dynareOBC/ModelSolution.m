@@ -43,7 +43,6 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
             disp( 'Computing the first order approximation around the selected non-steady-state point.' );
             fprintf( 1, '\n' );
         end
-        dynareOBC.Order = options.order;
         deflect_ = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
         dynareOBC.Order = 1;
     else
