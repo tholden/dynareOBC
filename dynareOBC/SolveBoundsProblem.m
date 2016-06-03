@@ -62,8 +62,8 @@ function y = SolveBoundsProblem( q )
                 CParametricSolutionFound = 0;
             end
             if numel( yScaled ) ~= numel( CssIndices )
-				CParametricSolutionFound = 0;
-			end
+                CParametricSolutionFound = 0;
+            end
 			if CParametricSolutionFound == 0
 				warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
 			else
