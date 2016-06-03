@@ -251,7 +251,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.ShadowOrder = dynareOBC.Order;
     end
 
-    switch dynareOBC.Order
+    switch dynareOBC.ShadowOrder
         case 1
             dynareOBC.OrderText = 'first';
         case 2
