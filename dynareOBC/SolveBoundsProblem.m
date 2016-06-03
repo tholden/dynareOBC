@@ -59,11 +59,17 @@ function y = SolveBoundsProblem( q )
                     yScaled = feval( [ 'dynareOBCTempSolution' strTss ], qssScaled );
                 end
             catch
-                warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
                 CParametricSolutionFound = 0;
             end
-            y = ZeroVecS;
-            y( CssIndices ) = yScaled;
+            if numel( yScaled ) ~= numel( CssIndices )
+				CParametricSolutionFound = 0;
+			end
+			if CParametricSolutionFound == 0
+				warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
+			else
+				y = ZeroVecS;
+				y( CssIndices ) = yScaled;
+			end
             
         end
         
