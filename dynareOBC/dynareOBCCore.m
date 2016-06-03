@@ -469,7 +469,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     dynareOBC = orderfields( dynareOBC );
 
-    if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs
+    if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1
         OpenPool;
     end
     StoreGlobals( M_, options_, oo_, dynareOBC );

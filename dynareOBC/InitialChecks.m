@@ -368,7 +368,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
     
-    if ~dynareOBC.Estimation && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) )
+    if ~dynareOBC.Estimation && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
         ClosePool;
     end
 
