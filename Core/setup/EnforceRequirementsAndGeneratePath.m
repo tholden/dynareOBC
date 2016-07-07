@@ -19,15 +19,17 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         DLLInstalled = false;
         try
             if strcmp( Architecture, 'PCWIN' )
-                DLLInstalled = CheckRequirement( 'BD95A8CD-1D9F-35AD-981A-3E7925026EBB', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe', dynareOBCPath, '2012/vcredist_x86.exe' ) || DLLInstalled;
-                DLLInstalled = CheckRequirement( '13A4EE12-23EA-3371-91EE-EFB36DDFFF3E', 201347597, 'http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe', dynareOBCPath, '2013/vcredist_x86.exe' ) || DLLInstalled;
-                DLLInstalled = CheckRequirement( '5018D8E6-8D8E-4F76-9AFD-CB2EF1100E84', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_ia32_2013_sp1.4.237.msi' ) || DLLInstalled;
-                DLLInstalled = CheckRequirement( '71343AE0-11AC-4B7F-B15C-B9692CA3A23D', 251658419, 'https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip', dynareOBCPath, 'w_fcompxe_redist_msi_2015.2.179.zip', 'w_fcompxe_redist_ia32_2015.2.179.msi' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( 'BD95A8CD-1D9F-35AD-981A-3E7925026EBB', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe', dynareOBCPath, '2012/vcredist_x86.exe' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( '13A4EE12-23EA-3371-91EE-EFB36DDFFF3E', 201347597, 'http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe', dynareOBCPath, '2013/vcredist_x86.exe' ) || DLLInstalled;
+                DLLInstalled = CheckRequirement( 'B5FC62F5-A367-37A5-9FD2-A6E137C0096F', 234904942, 'https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe', dynareOBCPath, '2015/vcredist_x86.exe' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( '5018D8E6-8D8E-4F76-9AFD-CB2EF1100E84', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_ia32_2013_sp1.4.237.msi' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( '71343AE0-11AC-4B7F-B15C-B9692CA3A23D', 251658419, 'https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip', dynareOBCPath, 'w_fcompxe_redist_msi_2015.2.179.zip', 'w_fcompxe_redist_ia32_2015.2.179.msi' ) || DLLInstalled;
             elseif strcmp( Architecture, 'PCWIN64' )
-                DLLInstalled = CheckRequirement( 'CF2BEA3C-26EA-32F8-AA9B-331F7E34BA97', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe', dynareOBCPath, '2012/vcredist_x64.exe' ) || DLLInstalled;
-                DLLInstalled = CheckRequirement( 'A749D8E6-B613-3BE3-8F5F-045C84EBA29B', 201347597, 'http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe', dynareOBCPath, '2013/vcredist_x64.exe' ) || DLLInstalled;
-                DLLInstalled = CheckRequirement( 'B548D238-D8C7-4A36-8C4E-496F62285BB3', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_intel64_2013_sp1.4.237.msi' ) || DLLInstalled;
-                DLLInstalled = CheckRequirement( '7FD876F7-BE2A-45B2-ADDC-0316304540CF', 251658419, 'https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip', dynareOBCPath, 'w_fcompxe_redist_msi_2015.2.179.zip', 'w_fcompxe_redist_intel64_2015.2.179.msi' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( 'CF2BEA3C-26EA-32F8-AA9B-331F7E34BA97', 184610406, 'http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe', dynareOBCPath, '2012/vcredist_x64.exe' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( 'A749D8E6-B613-3BE3-8F5F-045C84EBA29B', 201347597, 'http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe', dynareOBCPath, '2013/vcredist_x64.exe' ) || DLLInstalled;
+                DLLInstalled = CheckRequirement( '7B50D081-E670-3B43-A460-0E2CDB5CE984', 234904942, 'https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe', dynareOBCPath, '2015/vcredist_x64.exe' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( 'B548D238-D8C7-4A36-8C4E-496F62285BB3', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_intel64_2013_sp1.4.237.msi' ) || DLLInstalled;
+                % DLLInstalled = CheckRequirement( '7FD876F7-BE2A-45B2-ADDC-0316304540CF', 251658419, 'https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip', dynareOBCPath, 'w_fcompxe_redist_msi_2015.2.179.zip', 'w_fcompxe_redist_intel64_2015.2.179.msi' ) || DLLInstalled;
             end
         catch
             warning( 'dynareOBC:FailedInstallingRequirement', 'Failed to install at least one requirement. Usually this means you are missing admin rights. Please see the source code above this warning to see the URLs of the requirements that should be installed by an administrator on your machine. DynareOBC will disable the OptiToolbox, though even with this change it may still not work correctly.' );
@@ -64,7 +66,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     addpath( [ dynareOBCPath '/Core/glpkmex/' ] );
 
     if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
-        OptiString = 'OptiToolbox216';
+        OptiString = 'OptiToolbox221';
         
         [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Core/' OptiString '/' ] );
         if ~MKDirStatus
@@ -72,8 +74,11 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
 
         % cleanup old versions
-        if exist( [ dynareOBCPath '/Core/OptiToolbox/' ], 'file' )
+        if exist( [ dynareOBCPath '/Core/OptiToolbox/' ], 'dir' )
             rmdir( [ dynareOBCPath '/Core/OptiToolbox/' ], 's' );
+        end
+        if exist( [ dynareOBCPath '/Core/OptiToolbox216/' ], 'dir' )
+            rmdir( [ dynareOBCPath '/Core/OptiToolbox216/' ], 's' );
         end
         if exist( [ dynareOBCPath '/Core/requirements/OptiToolbox.zip' ], 'file' )
             delete( [ dynareOBCPath '/Core/requirements/OptiToolbox.zip' ] );
@@ -92,9 +97,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                 fprintf( 1, '\n' );
 
                 if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-                    OptiURL = 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1';
+                    OptiURL = 'https://www.dropbox.com/s/gzruuky1sjbgy16/OptiToolbox_edu_v2.21.zip?dl=1';
                 else
-                    OptiURL = 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1';
+                    OptiURL = 'https://www.dropbox.com/s/l4syvt58hdtic2t/OptiToolbox_v2.21.zip?dl=1';
                 end
                 fprintf( 1, '\n' );
                 disp( 'Downloading the OptiToolbox.' );
@@ -112,9 +117,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                     fprintf( 1, '\n' );
                     disp( 'Downloading the OptiToolbox from an alternative location.' );
                     if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-                        OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.16.zip';
+                        OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.21.zip';
                     else
-                        OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.16.zip';
+                        OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.21.zip';
                     end
                     fprintf( 1, '\n' );
                     disp( 'This may take several minutes even on fast university connections.' );
