@@ -9,7 +9,8 @@ function aria_urlwrite( dynareOBCPath, URL, FilePath )
     warning( WarningState );
     
     try
-        system( [ '"' dynareOBCPath '/Core/aria2/aria2c.exe" --file-allocation=falloc -x 4 -s 4 -d "' FolderName '" ' URL ], '-echo' );
+        ArchitectureString = computer( 'arch' );
+        system( [ '"' dynareOBCPath '/Core/aria2/' ArchitectureString '/aria2c" --file-allocation=falloc -x 4 -s 4 -d "' FolderName '" ' URL ], '-echo' );
         if ~strcmp( SourceName, DestinationName )
             movefile( [ FolderName '/' SourceName ], [ FolderName '/' DestinationName ] );
         end
