@@ -35,8 +35,16 @@ function dynareOBC( InputFileName, varargin )
     CurrentFolder = pwd( );
     dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
 
+    if exist( [ dynareOBCPath '/dynareOBC/' ], 'dir' ) == 7
+        disp( 'A major update to DynareOBC is available, which requires you to download the latest release from:' );
+        disp( 'https://github.com/tholden/dynareOBC/releases' );
+        disp( 'Once you have downloaded this release, please extract it into a clean directory.' );
+        disp( 'Apologies for the inconvenience.' );
+        return;
+    end
+    
     WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
-    rmpath( genpath( [ dynareOBCPath '/dynareOBC/' ] ) );
+    rmpath( genpath( [ dynareOBCPath '/Core/' ] ) );
     warning( WarningState );
     
     addpath( dynareOBCPath );
@@ -54,7 +62,7 @@ function dynareOBC( InputFileName, varargin )
 
     OriginalPath = path;
     
-    addpath( [ dynareOBCPath '/dynareOBC/setup/' ] );
+    addpath( [ dynareOBCPath '/Core/setup/' ] );
         
     ContinueExecution = true;
     
@@ -75,7 +83,7 @@ function dynareOBC( InputFileName, varargin )
     UpdateWarningStrings = cell( 0, 1 );
     
     if Update
-        addpath( [ dynareOBCPath '/dynareOBC/JGit4MATLAB/' ] );
+        addpath( [ dynareOBCPath '/Core/JGit4MATLAB/' ] );
         WarningState = warning( 'off', 'jgit:noSSHpassphrase' );
         warning( 'off', 'jgit:noUserInfo' );
         try

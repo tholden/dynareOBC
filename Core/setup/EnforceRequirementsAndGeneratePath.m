@@ -3,15 +3,15 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
 
     if Update
-        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/' ] );
+        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Core/requirements/' ] );
         if ~MKDirStatus
             error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
         end
-        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2012/' ] );
+        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Core/requirements/2012/' ] );
         if ~MKDirStatus
             error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
         end
-        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/requirements/2013/' ] );
+        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Core/requirements/2013/' ] );
         if ~MKDirStatus
             error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
         end
@@ -60,27 +60,27 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
     end
 
-    addpath( [ dynareOBCPath '/dynareOBC/sedumi/' ] );
-    addpath( [ dynareOBCPath '/dynareOBC/glpkmex/' ] );
+    addpath( [ dynareOBCPath '/Core/sedumi/' ] );
+    addpath( [ dynareOBCPath '/Core/glpkmex/' ] );
 
     if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
         OptiString = 'OptiToolbox216';
         
-        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+        [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Core/' OptiString '/' ] );
         if ~MKDirStatus
             error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
         end
 
         % cleanup old versions
-        if exist( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 'file' )
-            rmdir( [ dynareOBCPath '/dynareOBC/OptiToolbox/' ], 's' );
+        if exist( [ dynareOBCPath '/Core/OptiToolbox/' ], 'file' )
+            rmdir( [ dynareOBCPath '/Core/OptiToolbox/' ], 's' );
         end
-        if exist( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ], 'file' )
-            delete( [ dynareOBCPath '/dynareOBC/requirements/OptiToolbox.zip' ] );
+        if exist( [ dynareOBCPath '/Core/requirements/OptiToolbox.zip' ], 'file' )
+            delete( [ dynareOBCPath '/Core/requirements/OptiToolbox.zip' ] );
         end
         
-        if Update && ~exist( [ dynareOBCPath '/dynareOBC/' OptiString '/opti_Install.m' ], 'file' )
-            if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' )
+        if Update && ~exist( [ dynareOBCPath '/Core/' OptiString '/opti_Install.m' ], 'file' )
+            if ~exist( [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ], 'file' )
                 fprintf( 1, '\n' );
                 disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
                 disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
@@ -103,12 +103,12 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                 
                 ErrCaught = false;
                 try
-                    aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
+                    aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ] );
                 catch
                     ErrCaught = true;
                 end
                 
-                if ErrCaught || exist( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], 'file' ) == 0
+                if ErrCaught || exist( [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ], 'file' ) == 0
                     fprintf( 1, '\n' );
                     disp( 'Downloading the OptiToolbox from an alternative location.' );
                     if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
@@ -119,34 +119,34 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                     fprintf( 1, '\n' );
                     disp( 'This may take several minutes even on fast university connections.' );
                     fprintf( 1, '\n' );
-                    aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ] );
+                    aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ] );
                 end
             end
 
             fprintf( 1, '\n' );
             disp( [ 'Extracting files from ' OptiString '.zip.' ] );
             fprintf( 1, '\n' );
-            unzip( [ dynareOBCPath '/dynareOBC/requirements/' OptiString '.zip' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+            unzip( [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ], [ dynareOBCPath '/Core/' OptiString '/' ] );
 
-            copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
-            addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+            copyfile( [ dynareOBCPath '/Core/clobber/' OptiString '/' ], [ dynareOBCPath '/Core/' OptiString '/' ], 'f' );
+            addpath( [ dynareOBCPath '/Core/' OptiString '/' ] );
             rehash path;
-            opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], false );
+            opti_Install( [ dynareOBCPath '/Core/' OptiString '/' ], false );
         else
-            copyfile( [ dynareOBCPath '/dynareOBC/clobber/' OptiString '/' ], [ dynareOBCPath '/dynareOBC/' OptiString '/' ], 'f' );
-            addpath( [ dynareOBCPath '/dynareOBC/' OptiString '/' ] );
+            copyfile( [ dynareOBCPath '/Core/clobber/' OptiString '/' ], [ dynareOBCPath '/Core/' OptiString '/' ], 'f' );
+            addpath( [ dynareOBCPath '/Core/' OptiString '/' ] );
             rehash path;
-            opti_Install( [ dynareOBCPath '/dynareOBC/' OptiString '/' ], true );
+            opti_Install( [ dynareOBCPath '/Core/' OptiString '/' ], true );
         end
     end
 
-    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
+    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Core/tbxmanager/' ] );
     if ~MKDirStatus
         error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
     end
 
     if Update
-        TBXManagerDetails = dir( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ] );
+        TBXManagerDetails = dir( [ dynareOBCPath '/Core/tbxmanager/tbxmanager.m' ] );
         if ~isempty( TBXManagerDetails )
             CurrentDate = now;
             TBXManagerDate = TBXManagerDetails.datenum;
@@ -162,7 +162,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
             [ NewTBXManagerContents, URLReadStatus ] = urlread( 'http://www.tbxmanager.com/tbxmanager.m' );
             if URLReadStatus
                 NewTBXManagerContents = regexprep( NewTBXManagerContents, '^\s*(\w*)\s*=\s*input\s*\(\s*\w*\s*,\s*''s''\s*\)\s*;$', '$1=''y'';\nfprintf(''Agreed automatically. Please delete this folder if you do not agree.\\n\\n'');', 'lineanchors' );
-                NewTBXManagerFile = fopen( [ dynareOBCPath '/dynareOBC/tbxmanager/tbxmanager.m' ], 'w' );
+                NewTBXManagerFile = fopen( [ dynareOBCPath '/Core/tbxmanager/tbxmanager.m' ], 'w' );
                 fprintf( NewTBXManagerFile, '%s', NewTBXManagerContents );
                 fclose( NewTBXManagerFile );    
             else
@@ -171,7 +171,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
     end
 
-    addpath( [ dynareOBCPath '/dynareOBC/tbxmanager/' ] );
+    addpath( [ dynareOBCPath '/Core/tbxmanager/' ] );
 
     fprintf( 1, '\n' );
     disp( 'Ensuring key packages are up to date.' );
@@ -188,7 +188,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     end
     tbxmanager restorepath;
 
-    addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+    addpath( [ dynareOBCPath '/Core/nlma/' ] );
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
     warning( 'off', 'optim:quadprog:WillBeRemoved' );
@@ -203,8 +203,8 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
     end
         
-    addpath( [ dynareOBCPath '/dynareOBC/eigtool/num_comp/pseudo_radius/' ] );
-    addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    addpath( [ dynareOBCPath '/Core/eigtool/num_comp/pseudo_radius/' ] );
+    addpath( [ dynareOBCPath '/Core/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
     
     if Update

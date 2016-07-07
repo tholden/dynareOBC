@@ -13,7 +13,7 @@ function CompileMEX( dynareOBCPath )
             fprintf( 1, '\n' );
             build_spkron;
             rehash path;
-            movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/dynareOBC/' ], 'f' );
+            movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
             rehash path;
             spkron_use_mex = 1;
             if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
@@ -40,7 +40,7 @@ function CompileMEX( dynareOBCPath )
             fprintf( 1, '\n' );
             build_ptest;
             rehash path;
-            movefile( which( 'ptest_mex' ), [ dynareOBCPath '/dynareOBC/' ], 'f' );
+            movefile( which( 'ptest_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
             rehash path;
             ptest_use_mex = 1;
             if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))

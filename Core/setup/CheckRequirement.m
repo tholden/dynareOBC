@@ -11,18 +11,18 @@ function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPa
         end
     end
     if Version < int32( DesiredVersion )
-        if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' SavePath ], 'file' )
+        if ~exist( [ dynareOBCPath '/Core/requirements/' SavePath ], 'file' )
             fprintf( 1, '\n' );
             disp( [ 'Downloading ' SavePath '.' ] );
             fprintf( 1, '\n' );
-            aria_urlwrite( dynareOBCPath, URL, [ dynareOBCPath '/dynareOBC/requirements/' SavePath ] );
+            aria_urlwrite( dynareOBCPath, URL, [ dynareOBCPath '/Core/requirements/' SavePath ] );
         end
         if nargin > 5
-            if ~exist( [ dynareOBCPath '/dynareOBC/requirements/' UnzipPath ], 'file' )
+            if ~exist( [ dynareOBCPath '/Core/requirements/' UnzipPath ], 'file' )
                 fprintf( 1, '\n' );
                 disp( [ 'Extracting files from ' SavePath '.' ] );
                 fprintf( 1, '\n' );
-                unzip( [ dynareOBCPath '/dynareOBC/requirements/' SavePath ], fileparts( [ dynareOBCPath '/dynareOBC/requirements/' UnzipPath ] ) );
+                unzip( [ dynareOBCPath '/Core/requirements/' SavePath ], fileparts( [ dynareOBCPath '/Core/requirements/' UnzipPath ] ) );
             end
             ExePath = UnzipPath;
         else
@@ -31,7 +31,7 @@ function DLLInstalled = CheckRequirement( GUID, DesiredVersion, URL, dynareOBCPa
         fprintf( 1, '\n' );
         disp( [ 'Running ' ExePath '.' ] );
         fprintf( 1, '\n' );
-        system( [ 'start "Installing dynareOBC requirement" /wait "' dynareOBCPath '/dynareOBC/requirements/' ExePath '" /passive /norestart' ] );
+        system( [ 'start "Installing dynareOBC requirement" /wait "' dynareOBCPath '/Core/requirements/' ExePath '" /passive /norestart' ] );
         DLLInstalled = true;
     else
         DLLInstalled = false;

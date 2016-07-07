@@ -45,10 +45,10 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
 
     %% Initialization
 
-    addpath( [ dynareOBCPath '/dynareOBC/' ] );
+    addpath( [ dynareOBCPath '/Core/' ] );
     ClosePool;
     
-    addpath( [ dynareOBCPath '/dynareOBC/nlma/' ] );
+    addpath( [ dynareOBCPath '/Core/nlma/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
