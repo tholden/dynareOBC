@@ -66,17 +66,11 @@ code compiled with either Microsoft Visual C++, the Intel C Compiler, or the Int
 
 If you are using a 64-bit version of MATLAB, please ask for the following to be installed:
 
- * http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe
- * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe
- * w_ccompxe_redist_intel64_2013_sp1.4.237.msi from within: https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip 
- * w_fcompxe_redist_intel64_2015.2.179.msi from within: https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip
+ * https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe
 
 If you are using a 32-bit version of MATLAB, please ask for the following to be installed:
 
- * http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe
- * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe
- * w_ccompxe_redist_ia32_2013_sp1.4.237.msi from within: https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip
- * w_fcompxe_redist_ia32_2015.2.179.msi from within: https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip
+ * https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe
 
 Troubleshooting
 ---------------
