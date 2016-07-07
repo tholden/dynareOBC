@@ -341,11 +341,9 @@ DynareOBC incorporates code:
  * from the nonlinear moving average toolkit that is copyright Lan and Alexander Meyer-Gohde, 2014,
  * for nested Gaussian cubature that is copyright Genz and Keister, 1996,
  * for displaying a progress bar that is copyright Cacho, "Stefan" and Scheff, 2014,
- * for calculating relative paths that is copyright Lenz and Chatfield, 2013,
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
  * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014,
- * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014,
- * for interacting with Git, from JGit4MATLAB, copyright Mikofski and Glauche, 2014.
+ * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
  
 Additionally, DynareOBC automatically downloads:
  * YALMIP, copyright Lofberg, 2015,

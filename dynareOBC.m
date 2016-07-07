@@ -83,45 +83,12 @@ function dynareOBC( InputFileName, varargin )
     UpdateWarningStrings = cell( 0, 1 );
     
     if Update
-        addpath( [ dynareOBCPath '/Core/JGit4MATLAB/' ] );
-        WarningState = warning( 'off', 'jgit:noSSHpassphrase' );
-        warning( 'off', 'jgit:noUserInfo' );
         try
-            disp( 'Initializing JGit.' );
-            jgit version;
-
-            UpdateWarningStrings{1} = UpdateRepository( [ dynareOBCPath '/' ], [ dynareOBCPath '/.git/' ], 'https://github.com/tholden/dynareOBC.git' );
-
-            GitModulesFile = fileread( [ dynareOBCPath '/.gitmodules' ] );
-            ModuleIncides = find( GitModulesFile == ']' );
-            NModules = length( ModuleIncides );
-            ModuleIncides( end + 1 ) = length( GitModulesFile );
-            for i = 1 : NModules
-                CurrentBlock = GitModulesFile( ModuleIncides( i ) : ModuleIncides( i + 1 ) );
-                ModulePath = regexp( CurrentBlock, '(?<=path\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
-                ModuleURL = regexp( CurrentBlock, '(?<=url\s*=\s*)\S+(?=\s*$)', 'once', 'match', 'lineanchors' );
-                UpdateWarningStrings{i+1} = UpdateRepository( [ dynareOBCPath '/' ModulePath '/' ], [ dynareOBCPath '/.git/modules/' ModulePath '/' ] , ModuleURL );
-            end
+            disp( 'TODO' );
             save( [ dynareOBCPath '/LastUpdate.mat' ], 'CurrentDay' );
-        catch JGitError
-            if strcmp( JGitError.identifier, 'jgit:noJGit' )
-                try
-                    RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );
-                catch
-                    disp( 'Automatically restarting MATLAB failed. Note that automatic restart is only supported on Windows.' );
-                    disp( 'Please manually restart MATLAB now.' );
-                    ContinueExecution = false;
-                end
-            else
-                disp( [ 'The JGit error ' JGitError.identifier ' was caught. We will attempt to continue anyway.' ] );
-                disp( 'Further details of the error follow:' );
-                disp( JGitError.message );
-                for i = 1 : length( JGitError.stack )
-                    disp( JGitError.stack( i ) );
-                end
-            end
+        catch
+            disp( 'TODO' );
         end
-        warning( WarningState );
         cd( CurrentFolder );
         rehash;
     end
