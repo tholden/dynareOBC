@@ -32,7 +32,7 @@ Requirements
 Requirements (to be installed and added to your Matlab path):
  * Matlab version R2013a or later, or a fully compatible clone. Note that while DynareOBC should work on all platforms, it has
    been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
- * dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
+ * Dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
  * If on Windows, either administrative rights on the computer on which you are installing DynareOBC, so that DynareOBC can
    automatically install its other dependencies, or the manual installation of the items listed in the _Additional requirements
    for people using Windows, without administrative rights_ section below.
