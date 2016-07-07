@@ -21,10 +21,13 @@ Or the course slides from here: https://github.com/tholden/dynareOBC/raw/master/
 Installation
 ------------
 
-First, either download or clone the toolkit, by pressing the download or clone button on:
-https://github.com/tholden/dynareOBC
-
-Then, add the toolkit to your MATLAB path. DynareOBC updates itself and its dependencies each time it is run.
+ 1. Download the latest release from: https://github.com/tholden/dynareOBC/releases
+ 2. Extract the release to a directory on a local drive.
+ 3. Make sure your MATLAB path does not contain any Dynare folders other than the `matlab` sub-folder of your Dynare install.
+    You should never click "add with subfolders" when adding Dynare to your MATLAB path, else Dynare will perform poorly, and
+    DynareOBC will not work at all.
+ 4. Add just the folder containing `dynareOBC.m` to your MATLAB path. Do not click with add-with subfolders!
+ 5. Relax as DynareOBC updates itself and its dependencies each time it is run.
 
 Requirements
 ------------
@@ -79,13 +82,7 @@ If you have any strange errors, first try these steps:
 
  1. Delete all `.mat` files from the DynareOBC directory.
  2. Delete all `.mex???` files from the `dynareOBC` sub-directory of your DynareOBC install (but not from its sub-directories).
- 3. Follow the following steps to do a manual update:
-    * Open a Git shell (e.g. by clicking on the gear icon from within the GitHub application).
-    * Navigate to the directory in which you installed DynareOBC.
-    * Type `git fetch --all --recurse-submodules` then press return.
-    * Type `git reset --hard origin/master` then press return.
-    * Type `git submodule foreach --recursive git deinit --force` then press return.
-    * Type `git submodule foreach --recursive git submodule update --init` then press return.
+ 3. Delete your DynareOBC directory, and then go through the installation steps above again.
 
 If after doing this, you suspect a bug, report it here: https://github.com/tholden/dynareOBC/issues
 
