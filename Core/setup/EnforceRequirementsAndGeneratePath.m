@@ -179,15 +179,16 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     if Update
         try
-            tbxmanager install yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+            tbxmanager install mpt mptdoc cddmex fourier hysdel lcp espresso;
         catch
-            tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+            tbxmanager require mpt mptdoc cddmex fourier hysdel lcp espresso;
         end
     else
-        tbxmanager require yalmip mpt mptdoc cddmex fourier hysdel lcp espresso;
+        tbxmanager require mpt mptdoc cddmex fourier hysdel lcp espresso;
     end
     tbxmanager restorepath;
 
+    addpath( genpath( [ dynareOBCPath '/Core/YALMIP/' ] ) );
     addpath( [ dynareOBCPath '/Core/nlma/' ] );
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );

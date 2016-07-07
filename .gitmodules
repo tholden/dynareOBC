@@ -1,12 +1,15 @@
-[submodule "dynareOBC/nlma"]
-	path = dynareOBC/nlma
+[submodule "Core/nlma"]
+	path = Core/nlma
 	url = https://github.com/tholden/nlma.git
-[submodule "dynareOBC/sedumi"]
-	path = dynareOBC/sedumi
+[submodule "Core/sedumi"]
+	path = Core/sedumi
 	url = https://github.com/tholden/sedumi.git
-[submodule "dynareOBC/glpkmex"]
-	path = dynareOBC/glpkmex
+[submodule "Core/glpkmex"]
+	path = Core/glpkmex
 	url = https://github.com/tholden/glpkmex.git
-[submodule "dynareOBC/eigtool"]
-	path = dynareOBC/eigtool
+[submodule "Core/eigtool"]
+	path = Core/eigtool
 	url = https://github.com/tholden/eigtool.git
+[submodule "Core/YALMIP"]
+	path = Core/YALMIP
+	url = https://github.com/tholden/YALMIP.git
