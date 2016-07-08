@@ -70,10 +70,15 @@ code compiled with either Microsoft Visual C++, the Intel C Compiler, or the Int
 If you are using a 64-bit version of MATLAB, please ask for the following to be installed:
 
  * https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe
+ * ww_ifort_redist_intel64_2016.3.207.msi from inside:
+  https://software.intel.com/sites/default/files/managed/46/54/ww_ifort_redist_msi_2016.3.207.zip
 
 If you are using a 32-bit version of MATLAB, please ask for the following to be installed:
 
+ * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe
  * https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe
+ * w_fcompxe_redist_ia32_2015.2.179.msi from inside:
+  https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip
 
 Troubleshooting
 ---------------
