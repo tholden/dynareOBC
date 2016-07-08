@@ -67,6 +67,8 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     addpath( [ dynareOBCPath '/Core/glpkmex/' ] );
 
     if ( length( Architecture ) >= 7 ) && strcmp( Architecture(1:7), 'PCWIN64' )
+        addpath( [ dynareOBCPath '/Core/glpkmex/win64/' ] );
+        
         OptiString = 'OptiToolbox221';
         
         OptiYURLs = { 'https://www.dropbox.com/s/gzruuky1sjbgy16/OptiToolbox_edu_v2.21.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.21.zip' };
@@ -74,6 +76,8 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         
         OptiInstallInternal( Update, dynareOBCPath, OptiString, OptiYURLs, OptiNURLs );
     elseif ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
+        addpath( [ dynareOBCPath '/Core/glpkmex/win32/' ] );
+        
         OptiString = 'OptiToolbox216';
         
         OptiYURLs = { 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.16.zip' };
