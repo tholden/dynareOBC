@@ -66,7 +66,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     addpath( [ dynareOBCPath '/Core/sedumi/' ] );
     addpath( [ dynareOBCPath '/Core/glpkmex/' ] );
 
-    if ( length( Architecture ) >= 7 ) && strcmp( Architecture(1:5), 'PCWIN64' )
+    if ( length( Architecture ) >= 7 ) && strcmp( Architecture(1:7), 'PCWIN64' )
         OptiString = 'OptiToolbox221';
         
         OptiYURLs = { 'https://www.dropbox.com/s/gzruuky1sjbgy16/OptiToolbox_edu_v2.21.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.21.zip' };
