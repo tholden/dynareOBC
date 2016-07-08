@@ -11,9 +11,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         end
     end
     
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Performing first dynare run to perform pre-processing.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     run1varargin = basevarargin;
     run1varargin( end + 1 : end + 2 ) = { 'savemacro=dynareOBCTemp1.mod', 'onlymacro' };
@@ -23,9 +23,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Finding non-differentiable functions
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Searching the pre-processed output for non-differentiable functions.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     try
         FileText = fileread( 'dynareOBCTemp1.mod' );
@@ -67,9 +67,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     if dynareOBC.Estimation
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Loading data for estimation.' );
-        fprintf( 1, '\n' );    
+        fprintf( '\n' );    
         
         [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC.EstimationDataFile );
         if isempty( XLSStatus )
@@ -127,9 +127,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Finding the steady-state
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Performing second dynare run to get the steady-state.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     steadystatemfilename = [ dynareOBC.BaseFileName '_steadystate.m' ];
     if exist( steadystatemfilename, 'file' )
@@ -151,9 +151,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     if dynareOBC.MLVSimulationMode > 0
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Generating code to recover MLVs.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         dynareOBC.OriginalLeadLagIncidence = M_.lead_lag_incidence;
         dynareOBC = Generate_dynareOBCTempGetMLVs( M_, dynareOBC, 'dynareOBCTemp2_dynamic' );
     else
@@ -279,9 +279,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             error( 'dynareOBC:GlobalNoCubature', 'You cannot specify both the NoCubature and the Global options.' );
         end
         
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
 
         dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
         [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
@@ -299,9 +299,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Generating the final mod file
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Generating the final mod file.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     
     dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.FullTest, dynareOBC.PeriodsOfUncertainty ] );
     dynareOBC.InternalIRFPeriods = max( dynareOBC.TimeToEscapeBounds, dynareOBC.TimeToReturnToSteadyState );
@@ -339,17 +339,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Solution
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Making the final call to dynare, as a first step in solving the full model.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     options_.solve_tolf = eps;
     options_.solve_tolx = eps;
     dynare( 'dynareOBCTemp3.mod', basevarargin{:} );
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Beginning to solve the model.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     options_.noprint = 0;
     options_.nomoments = dynareOBC.NoMoments;
@@ -373,9 +373,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
         end
         
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Beginning the estimation of the model.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         
         dynareOBC.CalculateTheoreticalVariance = true;
         [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
@@ -417,14 +417,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             for i = 1 : NumEstimatedParams
                 fprintf( '%s:\t\t%#.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ) );
             end
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Final measurement error standard deviation estimates:' );
             for i = 1 : NumObservables
                 fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ) );
             end
         else
             disp( 'Calculating standard errors.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             ObservationCount = size( dynareOBC.EstimationData, 1 );
             OneOverRootObservationCount = 1 / sqrt( ObservationCount );
             
@@ -443,7 +443,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             for i = 1 : NumEstimatedParams
                 fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ), EstimatedParameterStandardErrors( i ) );
             end
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Final measurement error standard deviation estimates:' );
             for i = 1 : NumObservables
                 fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ), EstimatedParameterStandardErrors( NumEstimatedParams + i ) );
@@ -461,9 +461,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Simulating
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Preparing to simulate the model.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     [ oo_, dynareOBC ] = SimulationPreparation( M_, oo_, dynareOBC );
 
@@ -475,9 +475,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     StoreGlobals( M_, options_, oo_, dynareOBC );
     
     if dynareOBC.IRFPeriods > 0
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Simulating IRFs.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
 
         if dynareOBC.SlowIRFs
             [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
@@ -487,9 +487,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     if dynareOBC.SimulationPeriods > 0
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Running stochastic simulation.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
 
         [ oo_, dynareOBC ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC );
     end

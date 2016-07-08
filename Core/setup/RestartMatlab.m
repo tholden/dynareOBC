@@ -2,9 +2,9 @@ function RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin )
     Architecture = computer;
     if length( Architecture ) >= 5 && strcmp( Architecture( 1:5 ), 'PCWIN' )
 
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'dynareOBC needs to restart MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         CancelString = input( 'Press return to continue, or c then return to cancel.', 's' );
         
         if strcmp( CancelString, 'c' );

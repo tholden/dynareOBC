@@ -1,5 +1,5 @@
 function CompileMEX( dynareOBCPath )
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     global spkron_use_mex ptest_use_mex;
     try
         spkron_use_mex = 1;
@@ -8,9 +8,9 @@ function CompileMEX( dynareOBCPath )
         end
     catch 
         try
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Attempting to compile spkron.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             build_spkron;
             rehash path;
             movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
@@ -35,9 +35,9 @@ function CompileMEX( dynareOBCPath )
         end
     catch
         try
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Attempting to compile ptest.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             build_ptest;
             rehash path;
             movefile( which( 'ptest_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
@@ -55,5 +55,5 @@ function CompileMEX( dynareOBCPath )
     else
         disp( 'Not using the mex version of ptest.' );
     end
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 end

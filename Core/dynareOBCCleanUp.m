@@ -1,7 +1,7 @@
 function dynareOBCCleanUp
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Cleaning up.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     
     ClosePool;
     

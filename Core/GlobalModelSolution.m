@@ -1,8 +1,8 @@
 function [ x, M, oo ] = GlobalModelSolution( M, options, oo, dynareOBC )
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Beginning to solve the fixed point problem.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     
     PI = dynareOBC.ParameterIndices_StateVariableAndShockCombinations(:);
     

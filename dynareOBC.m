@@ -50,9 +50,9 @@ function dynareOBC( InputFileName, varargin )
     addpath( dynareOBCPath );
 
     if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( fileread( [ dynareOBCPath '/README.md' ] ) );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         return;
     end
     
@@ -63,7 +63,7 @@ function dynareOBC( InputFileName, varargin )
     OriginalPath = path;
     addpath( [ dynareOBCPath '/Core/setup/' ] );
     
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     try
         if exist( [ dynareOBCPath '/CurrentVersionURL.txt' ], 'file' ) == 2
             CurrentVersionURL = strtrim( regexprep( fileread( [ dynareOBCPath '/CurrentVersionURL.txt' ] ), '\s+', ' ' ) );
@@ -81,17 +81,17 @@ function dynareOBC( InputFileName, varargin )
             else
                 disp( 'A new DynareOBC release is available. Do you wish to update?' );
                 UpdateSelection = input( 'Please type y to update, or n to skip for now: ', 's' );
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
 
                 if lower( strtrim( UpdateSelection( 1 ) ) ) == 'y'
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     disp( 'Downloading the latest release.' );
                     disp( 'This may take several minutes even on fast university connections.' );
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     aria_urlwrite( dynareOBCPath, DownloadURL, [ dynareOBCPath '/CurrentRelease.zip' ] )
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     disp( 'Extracting files from the downloaded release.' );
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     unzip(  [ dynareOBCPath '/CurrentRelease.zip' ], dynareOBCPath );
                     delete( [ dynareOBCPath '/*.mat' ] );
                     rehash;
@@ -99,7 +99,7 @@ function dynareOBC( InputFileName, varargin )
                 elseif ~isempty( CurrentVersionURL )
                     disp( 'Would you like to disable the update prompt in future?' );
                     DisableSelection = input( 'Please type y to disable automatic updating, or n to leave it enabled: ', 's' );
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
 
                     if lower( strtrim( DisableSelection( 1 ) ) ) == 'y'
                         NewCurrentVersionURL = 'DEVELOPMENT';
@@ -109,13 +109,13 @@ function dynareOBC( InputFileName, varargin )
             end
         end
     catch UpdateError
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'The error below was thrown while updating or checking for updates.' );
         disp( 'Manually updating from https://github.com/tholden/dynareOBC/releases is recommended.' );
         disp( UpdateError.message );
     end
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     if ~isempty( NewCurrentVersionURL )
         dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
     else

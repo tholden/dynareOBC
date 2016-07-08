@@ -5,9 +5,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     end
 
     if SlowMode
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Solving the model for specific parameters.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
     end
 
     % temporary work around for warning in dates object.
@@ -27,9 +27,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
         if dynareOBC.Sparse
             if SlowMode
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
                 disp( 'Converting to sparse matrices.' );
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
             end
             DRFieldNames = fieldnames( oo.dr );
             for i = 1 : length( DRFieldNames )
@@ -39,9 +39,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
         end
 
         if SlowMode
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Computing the first order approximation around the selected non-steady-state point.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
         end
         deflect_ = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
         dynareOBC.Order = 1;
@@ -58,9 +58,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
 
     if dynareOBC.Sparse
         if SlowMode
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Converting to sparse matrices.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
         end
         DRFieldNames = fieldnames( oo.dr );
         for i = 1 : length( DRFieldNames )
@@ -70,25 +70,25 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     end
 
     if SlowMode
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Saving NLMA parameters.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
     end
     [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, oo.dr, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
     
     if SlowMode
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Retrieving IRFs to shadow shocks.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
     end
 
     dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC );
 
     if SlowMode
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Pre-calculating the augmented state transition matrices and possibly conditional covariances.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
     end
 
     dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatrices( M, options, oo, dynareOBC );
@@ -96,9 +96,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     dynareOBC.FullNumVarExo = M.exo_nbr;
 
 %     if SlowMode
-%         fprintf( 1, '\n' );
+%         fprintf( '\n' );
 %         disp( 'Reducing the size of decision matrices.' );
-%         fprintf( 1, '\n' );
+%         fprintf( '\n' );
 %     end
 % 
 %     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
@@ -108,9 +108,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
 
     if SlowMode
         if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Attempting to build a custom version of the simulation code.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             try
                 BuildCustomLanMeyerGohdePrunedSimulation( M, oo, dynareOBC, dynareOBC.Estimation );
             catch Error
@@ -119,17 +119,17 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
             end
         end
 
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Performing initial checks on the model.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         
         dynareOBC = InitialChecks( dynareOBC );
     end
 
     if SlowMode
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Forming optimizer.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
     end
     dynareOBC = FormOptimizer( dynareOBC );
     

@@ -41,9 +41,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
     else
         if exist( [ dynareOBCPath '/FastStart.mat' ], 'file' )
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( [ 'Restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             FastStartStruct = load( [ dynareOBCPath filesep 'FastStart.mat' ] );
             GlobalVariables = FastStartStruct.GlobalVariables;
             GlobalVariablesList = fieldnames( GlobalVariables );
@@ -86,25 +86,25 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         
         if Update && ~exist( [ dynareOBCPath '/Core/' OptiString '/opti_Install.m' ], 'file' )
             if ~exist( [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ], 'file' )
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
                 disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
                 disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
                 disp( 'However, SCIP is only available under the ZLIB Academic License.' );
                 disp( 'Thus, you are only allowed to retrieve SCIP for research purposes,' );
                 disp( 'as a member of a non-commercial and academic institution.' );
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
                 SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
 
                 if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
                     OptiURL = 'https://www.dropbox.com/s/gzruuky1sjbgy16/OptiToolbox_edu_v2.21.zip?dl=1';
                 else
                     OptiURL = 'https://www.dropbox.com/s/l4syvt58hdtic2t/OptiToolbox_v2.21.zip?dl=1';
                 end
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
                 disp( 'Downloading the OptiToolbox.' );
                 disp( 'This may take several minutes even on fast university connections.' );
-                fprintf( 1, '\n' );
+                fprintf( '\n' );
                 
                 ErrCaught = false;
                 try
@@ -114,23 +114,23 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                 end
                 
                 if ErrCaught || exist( [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ], 'file' ) == 0
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     disp( 'Downloading the OptiToolbox from an alternative location.' );
                     if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
                         OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.21.zip';
                     else
                         OptiURL = 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.21.zip';
                     end
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     disp( 'This may take several minutes even on fast university connections.' );
-                    fprintf( 1, '\n' );
+                    fprintf( '\n' );
                     aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ] );
                 end
             end
 
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( [ 'Extracting files from ' OptiString '.zip.' ] );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             unzip( [ dynareOBCPath '/Core/requirements/' OptiString '.zip' ], [ dynareOBCPath '/Core/' OptiString '/' ] );
 
             copyfile( [ dynareOBCPath '/Core/clobber/' OptiString '/' ], [ dynareOBCPath '/Core/' OptiString '/' ], 'f' );
@@ -161,9 +161,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
 
         if isempty( TBXManagerDetails )
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Downloading the latest version of tbxmanager.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             [ NewTBXManagerContents, URLReadStatus ] = urlread( 'http://www.tbxmanager.com/tbxmanager.m' );
             if URLReadStatus
                 NewTBXManagerContents = regexprep( NewTBXManagerContents, '^\s*(\w*)\s*=\s*input\s*\(\s*\w*\s*,\s*''s''\s*\)\s*;$', '$1=''y'';\nfprintf(''Agreed automatically. Please delete this folder if you do not agree.\\n\\n'');', 'lineanchors' );
@@ -178,9 +178,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     addpath( [ dynareOBCPath '/Core/tbxmanager/' ] );
 
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Ensuring key packages are up to date.' );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
 
     if Update
         try

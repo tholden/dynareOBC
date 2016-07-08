@@ -43,35 +43,35 @@ function dynareOBC = InitialChecks( dynareOBC )
 
     vvarsigma = value( varsigma );
     if new_varsigma > 0 % && new_sum_y <= 1e-6
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
         disp( 'varsigma bounds (positive means M is an S matrix):' );
         disp( [ new_varsigma vvarsigma ] );
         disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         SkipUpperBound = true;
     elseif new_varsigma <= 1e-6 && new_sum_y > 0
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
         disp( 'varsigma bounds (positive means M is an S matrix):' );
         disp( [ new_varsigma vvarsigma ] );
         disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         ptestVal = -1;
         if new_sum_y == 0
             warning( 'dynareOBC:InconsistentSResults', 'The alternative test suggests that M is an S matrix. Results cannot be trusted. This may be caused by numerical inaccuracies.' );
         end
         SkipUpperBound = false;
     else
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Due to numerical inaccuracies, we cannot tell if M is an S matrix.' );
         disp( 'varsigma bounds (positive means M is an S matrix):' );
         disp( [ new_varsigma vvarsigma ] );
         disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         SkipUpperBound = true;
     end
     
@@ -80,7 +80,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     if isempty( dynareOBC.d0s )
         disp( 'Skipping tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
         disp( 'To run them, set FeasibilityTestGridSize=INTEGER where INTEGER>0.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
     else
         disp( 'Performing tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
         disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
@@ -250,7 +250,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     if ptestVal > 0
         MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( TM ) ];
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( TM ) ' periods.' ] );
         disp( 'This is a necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds).' );
         if ptest_use_mex
@@ -269,12 +269,12 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'M is not a P-matrix. There are multiple solutions to the model in at least some states of the world.' );
         disp( 'The one returned will depend on the chosen value of omega.' );
     end
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     
     if dynareOBC.FullTest > 0
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         disp( 'Running full test to see if the requested sub-matrix of M is a P and/or (strictly) semi-monotone matrix.' );
-        fprintf( 1, '\n' );
+        fprintf( '\n' );
         [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
         MFTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( dynareOBC.FullTest ) ];
         if MinimumDeterminant >= 1e-8
@@ -324,9 +324,9 @@ function dynareOBC = InitialChecks( dynareOBC )
             PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
             PLCP.bth = ones( 2 * Tss, 1 );
 
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
             disp( 'Solving for a parametric solution over the requested domain.' );
-            fprintf( 1, '\n' );
+            fprintf( '\n' );
 
             strTss = int2str( Tss );
             try
@@ -375,7 +375,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     yalmip( 'clear' );
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
     
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
     disp( 'Discovering and testing the installed MILP solver.' );
         
     M = dynareOBC.MMatrix;
@@ -400,6 +400,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     yalmip( 'clear' );
     
     disp( [ 'Found working solver: ' SolverString ] );
-    fprintf( 1, '\n' );
+    fprintf( '\n' );
         
 end
