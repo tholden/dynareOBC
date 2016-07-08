@@ -61,40 +61,66 @@ function dynareOBC( InputFileName, varargin )
     end
 
     OriginalPath = path;
-    
     addpath( [ dynareOBCPath '/Core/setup/' ] );
-        
-    ContinueExecution = true;
     
-    Update = true;
-    
-    CurrentDay = now;
-    if exist( [ dynareOBCPath '/LastUpdate.mat' ], 'file' ) == 2
-        LastUpdateStructure = load( [ dynareOBCPath '/LastUpdate.mat' ] );
-        if isfield( LastUpdateStructure, 'CurrentDay' )
-            if CurrentDay - LastUpdateStructure.CurrentDay < 1
-                Update = false;
+    fprintf( 1, '\n' );
+    try
+        if exist( [ dynareOBCPath '/CurrentVersionURL.txt' ], 'file' ) == 2
+            CurrentVersionURL = strtrim( regexprep( fileread( [ dynareOBCPath '/CurrentVersionURL.txt' ] ), '\s+', ' ' ) );
+        else
+            CurrentVersionURL = '';
+        end
+        NewCurrentVersionURL = CurrentVersionURL;
+        if strcmp( CurrentVersionURL, 'DEVELOPMENT' )
+            disp( 'Automatic updating is disabled as you have enabled development mode.' );
+            disp( 'To re-enable automatic updating, delete the file CurrentVersion.txt from your DynareOBC folder.' );
+        else
+            DownloadURL = regexp( urlread( 'https://api.github.com/repos/tholden/dynareOBC/releases/latest' ), 'https://github.com/tholden/dynareOBC/releases/download/[^\"]+\.zip', 'once', 'ignorecase', 'match' );
+            if strcmp( DownloadURL, CurrentVersionURL )
+                disp( 'You have the latest DynareOBC release.' );
+            else
+                disp( 'A new DynareOBC release is available. Do you wish to update?' );
+                UpdateSelection = input( 'Please type y to update, or n to skip for now: ', 's' );
+                fprintf( 1, '\n' );
+
+                if lower( strtrim( UpdateSelection( 1 ) ) ) == 'y'
+                    fprintf( 1, '\n' );
+                    disp( 'Downloading the latest release.' );
+                    disp( 'This may take several minutes even on fast university connections.' );
+                    fprintf( 1, '\n' );
+                    aria_urlwrite( dynareOBCPath, DownloadURL, [ dynareOBCPath '/CurrentRelease.zip' ] )
+                    fprintf( 1, '\n' );
+                    disp( 'Extracting files from the downloaded release.' );
+                    fprintf( 1, '\n' );
+                    unzip(  [ dynareOBCPath '/CurrentRelease.zip' ], dynareOBCPath );
+                    delete( [ dynareOBCPath '/*.mat' ] );
+                    rehash;
+                    NewCurrentVersionURL = DownloadURL;
+                elseif ~isempty( CurrentVersionURL )
+                    disp( 'Would you like to disable the update prompt in future?' );
+                    DisableSelection = input( 'Please type y to disable automatic updating, or n to leave it enabled: ', 's' );
+                    fprintf( 1, '\n' );
+
+                    if lower( strtrim( DisableSelection( 1 ) ) ) == 'y'
+                        NewCurrentVersionURL = 'DEVELOPMENT';
+                    end
+                end
+                
             end
         end
-    end
-    
-    global UpdateWarningStrings
-    
-    UpdateWarningStrings = cell( 0, 1 );
-    
-    if Update
-        try
-            disp( 'TODO' );
-            save( [ dynareOBCPath '/LastUpdate.mat' ], 'CurrentDay' );
-        catch
-            disp( 'TODO' );
-        end
-        cd( CurrentFolder );
-        rehash;
+    catch UpdateError
+        fprintf( 1, '\n' );
+        disp( 'The error below was thrown while updating or checking for updates.' );
+        disp( 'Manually updating from https://github.com/tholden/dynareOBC/releases is recommended.' );
+        disp( UpdateError.message );
     end
 
-    if ContinueExecution
+    fprintf( 1, '\n' );
+    if ~isempty( NewCurrentVersionURL )
         dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
+    else
+        disp( 'Since it does not appear that a valid DynareOBC version is installed, DynareOBC will not proceed.' );
+        disp( 'Manually updating from https://github.com/tholden/dynareOBC/releases is recommended.' );
     end
     
 end
