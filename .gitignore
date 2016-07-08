@@ -30,10 +30,13 @@ variablescmaes.mat
 dynareOBCGlobalResume.mat
 
 codegen/
-dynareOBC/tbxmanager/
-dynareOBC/requirements/
-dynareOBC/OptiToolbox216/
-dynareOBC/JGit4MATLAB/@JGit/older-versions/*.jar
+Core/tbxmanager/
+Core/requirements/
+Core/OptiToolbox216/
+Core/OptiToolbox221/
+Core/JGit4MATLAB/@JGit/older-versions/*.jar
+
+*.zip
 
 Examples/*/*.eps
 
