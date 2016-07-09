@@ -394,6 +394,9 @@ function dynareOBC = InitialChecks( dynareOBC )
     if Diagnostics.problem ~= 0
         error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
     end
+    if value( alpha ) <= 1e-5
+        warning( 'dynareOBC:IncorrectSolutionToMILPProblem', [ 'It appears your chosen solver is giving the wrong solution to the MILP problem. Double-check your DynareOBC install, or try a different solver. Internal message: ' Diagnostics.info ] );
+    end
     SolverString = regexp( Diagnostics.info, '(?<=\()\w+(?=(\)|-))', 'match', 'once' );
     dynareOBC.MILPOptions.solver = [ '+' lower( SolverString ) ];
     
