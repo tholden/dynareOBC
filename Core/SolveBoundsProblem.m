@@ -76,7 +76,7 @@ function y = SolveBoundsProblem( q )
         if CParametricSolutionFound == 0
             OptOut = Optimizer{ Tss }{ qScaled };
             yScaled = OptOut( 1 : ( end - 1 ), : );
-            alpha = OptOut( end );
+            alpha = max( eps, OptOut( end ) );
             y = ZeroVecS;
             y( CssIndices ) = yScaled / alpha;
         end
