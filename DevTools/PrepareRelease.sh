@@ -31,9 +31,9 @@ rm -f -r -d -- Core/requirements/
 rm -f -r -d -- Core/OptiToolbox216/
 rm -f -r -d -- Core/OptiToolbox221/
 
-rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
-rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
-rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
+rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*/
+rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*/
+rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*/
 
 rm -f -r -d -- **/.DS_Store
 rm -f -r -d -- **/.git
