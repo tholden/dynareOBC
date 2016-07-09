@@ -92,6 +92,12 @@ function dynareOBC( InputFileName, varargin )
                 disp( 'Deleting old DynareOBC files.' );
                 fprintf( '\n' );
                 WarningState = warning( 'off', 'all' );
+                SafeClear( 'all' );
+                SafeClear( 'classes' );
+                SafeClear( 'functions' );
+                SafeClear( 'import' );
+                SafeClear( 'java' );
+                SafeClear( 'mex' );
                 SafeRemoveDir( dynareOBCPath, '/.git/' );
                 SafeRemoveDir( dynareOBCPath, '/codegen/' );
                 SafeRemoveDir( dynareOBCPath, '/DevTools/' );
@@ -155,6 +161,13 @@ end
 function SafeDeleteFiles( dynareOBCPath, Files )
     try
         delete( [ dynareOBCPath Files ] );
+    catch
+    end
+end
+
+function SafeClear( ToClear )
+    try
+        evalin( 'base', [ 'clear ' ToClear ';' ] );
     catch
     end
 end
