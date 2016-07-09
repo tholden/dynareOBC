@@ -1,52 +1,34 @@
-#############
-## Windows detritus
-#############
-
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
 $RECYCLE.BIN/
-
-# Mac crap
-.DS_Store
 
 *.asv
 *.mex*
 *.bak
 *.log
+*.db
+*.ini
+*.zip
+*.eps
 
 dynareOBCTemp*
 *deleteThis*
 ~*
-
 outcmaes*.*
-variablescmaes.mat
-
-dynareOBCGlobalResume.mat
 
 codegen/
 Core/tbxmanager/
 Core/requirements/
 Core/OptiToolbox216/
 Core/OptiToolbox221/
-Core/JGit4MATLAB/@JGit/older-versions/*.jar
-
-*.zip
-
-Examples/*/*.eps
 
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
 
+.DS_Store
+dynareOBCGlobalResume.mat
+variablescmaes.mat
 CurrentVersionURL.txt
 LastDependencyUpdate.mat
 FastStart.mat
-
 pou.mat
 time.mat
