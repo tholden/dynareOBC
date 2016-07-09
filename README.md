@@ -41,7 +41,7 @@ Requirements (to be installed and added to your Matlab path):
    for people using Windows, without administrative rights_ section below.
 
 Recommended additional installations:
- * MATLAB R2015a or later.
+ * MATLAB R2016a or later.
  * The MATLAB Parallel Toolbox, or a fully compatible clone.
  * The MATLAB Optimization Toolbox, or an alternative non-linear least squares routine, which is required for the experimental 
    `global` option. (To use an alternative routine, you must set `dynareOBC.FSolveFunctor`.) This toolbox is also required for
@@ -52,13 +52,13 @@ Recommended additional installations:
    by clicking on "Add-Ons" in the MATLAB toolbar, then searching for MinGW. Be sure to untick the "check for updated files" in
    the installer that opens.
  * MATLAB Coder, or a fully compatible clone (only used with MATLAB R2015a or later).
- * A competitive mixed integer linear programming solver, such as one of the below, each of which is available for free to
-   academics:
-    * FICO Xpress, from https://community.fico.com/download.jspa
+ * A competitive mixed integer linear programming solver, such as one of the below (listed in rough order of performance),
+   each of which is available for free to academics:
     * GUROBI Optimizer, from http://www.gurobi.com/academia/for-universities
-    * MOSEK, from https://mosek.com/resources/academic-license and https://mosek.com/resources/downloads
     * IBM CPLEX, by following the instructions here:
       https://www.ibm.com/developerworks/community/blogs/jfp/entry/cplex_studio_in_ibm_academic_initiative?lang=en
+    * FICO Xpress, from https://community.fico.com/download.jspa
+    * MOSEK, from https://mosek.com/resources/academic-license and https://mosek.com/resources/downloads
 
 Additional requirements for people using Windows, without administrative rights
 -------------------------------------------------------------------------------
@@ -124,10 +124,10 @@ Note:
     * `Omega=FLOAT` (default: `1000`)
          The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be
          returned when there are multiple solutions.
-    * `MILPSolver=STRING` (default: automatically selected based on the detected solvers)
+    * `MILPSolver=STRING` (default: `gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*`)
          DynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's
-         solver. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by
-         YALMIP.
+         preferred solvers. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list
+         displayed by YALMIP.
     * `FullHorizon`
          By default, DynareOBC finds a solution for which the last period at the bound is as soon as possible. This option
          makes DynareOBC just solve the bounds problem at the longest horizon (i.e. `TimeToEscapeBounds`).
@@ -209,9 +209,10 @@ Note:
          matrix.
     * `PTest=INTEGER` (default: `0`)
          Tests if the top `INTEGERxINTEGER` submatirx of M is a P matrix. Set this to 0 to disable these tests.
-    * `LPSolver=STRING` (default: automatically selected based on the detected solvers)
-         Specifies the solver to use for the linear programming problem that is solved when checking whether matrices are S/S_0.
-         To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
+    * `LPSolver=STRING` (default: `xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*`)
+         Specifies the preferred solver to use for the linear programming problem that is solved when checking whether matrices
+         are S/S_0. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed
+         by YALMIP. 
 
  * **For controlling IRFs**
     * `SlowIRFs`
@@ -347,7 +348,6 @@ DynareOBC incorporates code:
  * for nested Gaussian cubature that is copyright Genz and Keister, 1996,
  * for displaying a progress bar that is copyright Cacho, "Stefan" and Scheff, 2014,
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
- * for semi-definite programming, from the SeDuMi solver, copyright Sturm, Terlaky, Polik and Pomanko, 2014,
  * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
  
 Additionally, DynareOBC automatically downloads:
