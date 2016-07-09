@@ -34,6 +34,8 @@ function dynareOBC( InputFileName, varargin )
 
     CurrentFolder = pwd( );
     dynareOBCPath = fileparts( mfilename( 'fullpath' ) );
+    
+    SafeRemoveDir( dynareOBCPath, '/dynareOBC/' );
 
     if exist( [ dynareOBCPath '/dynareOBC/' ], 'dir' ) == 7
         disp( 'A major update to DynareOBC is available, which requires you to download the latest release from:' );
@@ -90,10 +92,38 @@ function dynareOBC( InputFileName, varargin )
                     fprintf( '\n' );
                     aria_urlwrite( dynareOBCPath, DownloadURL, [ dynareOBCPath '/CurrentRelease.zip' ] )
                     fprintf( '\n' );
+                    NewCurrentVersionURL = '';
+                    disp( 'Deleting old DynareOBC files.' );
+                    fprintf( '\n' );
+                    SafeRemoveDir( dynareOBCPath, '/.git/' );
+                    SafeRemoveDir( dynareOBCPath, '/codegen/' );
+                    SafeRemoveDir( dynareOBCPath, '/DevTools/' );
+                    SafeRemoveDir( dynareOBCPath, '/Examples/' );
+                    SafeRemoveDir( dynareOBCPath, '/Tests/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/aria2/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/clobber/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/eigtool/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/glpkmex/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/nlma/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/setup/' );
+                    SafeRemoveDir( dynareOBCPath, '/Core/YALMIP/' );
+                    SafeDeleteFiles( dynareOBCPath, '/.git*' );
+                    SafeDeleteFiles( dynareOBCPath, '/*.pdf' );
+                    SafeDeleteFiles( dynareOBCPath, '/*.m' );
+                    SafeDeleteFiles( dynareOBCPath, '/*.asv' );
+                    SafeDeleteFiles( dynareOBCPath, '/*.md' );
+                    SafeDeleteFiles( dynareOBCPath, '/*.txt' );
+                    SafeDeleteFiles( dynareOBCPath, '/*.mat' );
+                    SafeDeleteFiles( dynareOBCPath, '/LICENSE' );
+                    SafeDeleteFiles( dynareOBCPath, '/Core/*.m' );
+                    SafeDeleteFiles( dynareOBCPath, '/Core/*.asv' );
+                    SafeDeleteFiles( dynareOBCPath, '/Core/*.mex*' );
+                    SafeDeleteFiles( dynareOBCPath, '/Core/*.prj' );
+                    SafeDeleteFiles( dynareOBCPath, '/Core/*.txt' );
+                    SafeDeleteFiles( dynareOBCPath, '/Core/*.mat' );
                     disp( 'Extracting files from the downloaded release.' );
                     fprintf( '\n' );
                     unzip(  [ dynareOBCPath '/CurrentRelease.zip' ], dynareOBCPath );
-                    delete( [ dynareOBCPath '/*.mat' ] );
                     rehash;
                     NewCurrentVersionURL = DownloadURL;
                 elseif ~isempty( CurrentVersionURL )
@@ -123,4 +153,18 @@ function dynareOBC( InputFileName, varargin )
         disp( 'Manually updating from https://github.com/tholden/dynareOBC/releases is recommended.' );
     end
     
+end
+
+function SafeRemoveDir( dynareOBCPath, Directory )
+    try
+        rmdir( [ dynareOBCPath Directory ], 's' );
+    catch
+    end
+end
+
+function SafeDeleteFiles( dynareOBCPath, Files )
+    try
+        delete( [ dynareOBCPath Files ] );
+    catch
+    end
 end
