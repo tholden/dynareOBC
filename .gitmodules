@@ -1,9 +1,6 @@
 [submodule "Core/nlma"]
 	path = Core/nlma
 	url = https://github.com/tholden/nlma.git
-[submodule "Core/sedumi"]
-	path = Core/sedumi
-	url = https://github.com/tholden/sedumi.git
 [submodule "Core/glpkmex"]
 	path = Core/glpkmex
 	url = https://github.com/tholden/glpkmex.git
