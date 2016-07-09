@@ -63,7 +63,6 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         end
     end
 
-    addpath( [ dynareOBCPath '/Core/sedumi/' ] );
     addpath( [ dynareOBCPath '/Core/glpkmex/' ] );
 
     if ( length( Architecture ) >= 7 ) && strcmp( Architecture(1:7), 'PCWIN64' )
