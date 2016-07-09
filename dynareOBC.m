@@ -72,7 +72,6 @@ function dynareOBC( InputFileName, varargin )
         else
             CurrentVersionURL = '';
         end
-        NewCurrentVersionURL = CurrentVersionURL;
 
         DownloadURL = regexp( urlread( 'https://api.github.com/repos/tholden/dynareOBC/releases/latest' ), 'https://github.com/tholden/dynareOBC/releases/download/[^\"]+\.zip', 'once', 'ignorecase', 'match' );
         if strcmp( DownloadURL, CurrentVersionURL )
@@ -89,7 +88,7 @@ function dynareOBC( InputFileName, varargin )
                 fprintf( '\n' );
                 aria_urlwrite( dynareOBCPath, DownloadURL, [ dynareOBCPath '/CurrentRelease.zip' ] )
                 fprintf( '\n' );
-                NewCurrentVersionURL = '';
+                CurrentVersionURL = '';
                 disp( 'Deleting old DynareOBC files.' );
                 fprintf( '\n' );
                 WarningState = warning( 'off', 'all' );
@@ -125,7 +124,7 @@ function dynareOBC( InputFileName, varargin )
                 unzip(  [ dynareOBCPath '/CurrentRelease.zip' ], dynareOBCPath );
                 addpath( [ dynareOBCPath '/Core/setup/' ] );
                 rehash;
-                NewCurrentVersionURL = DownloadURL;
+                CurrentVersionURL = DownloadURL;
             end
 
         end
@@ -137,7 +136,7 @@ function dynareOBC( InputFileName, varargin )
     end
 
     fprintf( '\n' );
-    if ~isempty( NewCurrentVersionURL )
+    if ~isempty( CurrentVersionURL )
         dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
     else
         disp( 'Since it does not appear that a valid DynareOBC version is installed, DynareOBC will not proceed.' );
