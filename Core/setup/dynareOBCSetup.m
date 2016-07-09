@@ -132,10 +132,13 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
                 warning( 'dynareOBC:TestSolversError', Error.message );
             end
         end
-        try
-            opti_Install_Test;
-        catch Error
-            warning( 'dynareOBC:TestSolversError', Error.message );
+        Architecture = computer;
+        if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
+            try
+                opti_Install_Test;
+            catch Error
+                warning( 'dynareOBC:TestSolversError', Error.message );
+            end
         end
         return;
     end
