@@ -392,17 +392,22 @@ function dynareOBC = InitialChecks( dynareOBC )
     Objective = -alpha;
     Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
     if Diagnostics.problem ~= 0
-        error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+        error( 'dynareOBC:FailedToSolveMILPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver.\nInternal error message: ' Diagnostics.info ] );
     end
     if value( alpha ) <= 1e-5
-        warning( 'dynareOBC:IncorrectSolutionToMILPProblem', [ 'It appears your chosen solver is giving the wrong solution to the MILP problem. Double-check your DynareOBC install, or try a different solver. Internal message: ' Diagnostics.info ] );
+        warning( 'dynareOBC:IncorrectSolutionToMILPProblem', [ 'It appears your chosen solver is giving the wrong solution to the MILP problem. Double-check your DynareOBC install, or try a different solver.\nInternal message: ' Diagnostics.info ] );
     end
     SolverString = regexp( Diagnostics.info, '(?<=\()\w+(?=(\)|-))', 'match', 'once' );
-    dynareOBC.MILPOptions.solver = [ '+' lower( SolverString ) ];
+    lSolverString = lower( SolverString );
+    dynareOBC.MILPOptions.solver = [ '+' lSolverString ];
     
     yalmip( 'clear' );
     
     disp( [ 'Found working solver: ' SolverString ] );
     fprintf( '\n' );
+    
+    if ~ismember( lSolverString, { 'gurobi', 'cplex', 'xpress', 'mosek', 'scip' } );
+        warning( 'dynareOBC:PoorQualitySolver', 'You are using a low quality MILP solver. This may result in incorrect results, solution failures and slow performance.\nIt is strongly recommended that you install one of the commercial solvers listed in the read-me document (all of which are free to academia).' );
+    end
         
 end
