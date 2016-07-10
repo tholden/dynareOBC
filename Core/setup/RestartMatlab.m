@@ -11,8 +11,15 @@ function RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin )
             error( 'dynareOBC:RestartMATLAB', 'Please manually restart MATLAB.' );
         end
         
-        system( [ 'start matlab.exe -sd "' CurrentFolder '" -r "try;matlabrc;catch;end;try;startup;catch;end; cd( ''' CurrentFolder ''' ); path( ''' OriginalPath ''' ); dynareOBC ' InputFileName ' ' strjoin( varargin ) '"' ] );
-        system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] ); 
+        try
+            StartUpScript = fopen( [ CurrentFolder '/DynareOBCStartUpScriptPleaseDelete.m' ], 'w' );
+            fprintf( StartUpScript, 'try;\nmatlabrc;\ncatch;\nend;\ntry;\nstartup;\ncatch;\nend;\ncd( ''%s'' );\npath( ''%s'' );\ndynareOBC %s %s\n', CurrentFolder, OriginalPath, InputFileName, strjoin( varargin ) );
+            fclose( StartUpScript );
+            system( [ 'start matlab.exe -sd "' CurrentFolder '" -r "cd( ''' CurrentFolder ''' );DynareOBCStartUpScriptPleaseDelete;delete DynareOBCStartUpScriptPleaseDelete;"' ] );
+            system( [ 'taskkill /f /t /pid ' num2str( feature( 'getpid' ) ) ] );
+        catch
+            error( 'dynareOBC:RestartMATLAB', 'Please manually restart MATLAB.' );
+        end
         
     else
         
