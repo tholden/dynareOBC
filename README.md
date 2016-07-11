@@ -69,7 +69,7 @@ code compiled with either Microsoft Visual C++, the Intel C Compiler, or the Int
 
 If you are using a 64-bit version of MATLAB, please ask for the following to be installed:
 
- * https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x64.exe
+ * https://download.microsoft.com/download/4/2/F/42FF78CE-8DE0-4C88-AD7A-5F8DFFB49F74/vc_redist.x64.exe
  * ww_ifort_redist_intel64_2016.3.207.msi from inside:
   https://software.intel.com/sites/default/files/managed/46/54/ww_ifort_redist_msi_2016.3.207.zip
 
