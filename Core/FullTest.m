@@ -40,7 +40,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             MDet = det( MSub );
             if MDet < 1e-8
                 fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
-                disp( Indices( Set ) );
+                fprintf( '%d\n', Indices( Set ) );
                 fprintf( '\n' );
             end
             MinimumDeterminant = min( MinimumDeterminant, MDet );
@@ -56,7 +56,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             STestVal = value( varsigma );
             if STestVal < 1e-8
                 fprintf( '\nSet found with S test value: %.15g\nSet indices follow:\n', STestVal );
-                disp( Indices( Set ) );
+                fprintf( '%d\n', Indices( Set ) );
                 fprintf( '\n' );
             end
             MinimumS = min( MinimumS, STestVal );
@@ -72,7 +72,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             S0TestVal = -value( Objective );
             if S0TestVal < 1e-8
                 fprintf( '\nSet found with S0 test value: %.15g\nSet indices follow:\n', S0TestVal );
-                disp( Indices( Set ) );
+                fprintf( '%d\n', Indices( Set ) );
                 fprintf( '\n' );
             end
             MinimumS0 = min( MinimumS0, S0TestVal );
@@ -86,11 +86,11 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
         
             % Increment Set
             
-            K = find( Set == EndSet, O );
+            K = int64( find( Set == EndSet, O ) );
             
             if isempty( K )
                 Set( end ) = Set( end ) + O;
-            elseif K == 1
+            elseif numel( K ) == 1 && K( 1 ) == O
                 break;
             else
                 Set( ( K - O ):SetSize ) = ( Set( K - O ) + O ):( Set( K - O ) + O + SetSize - ( K - O ) );
@@ -98,8 +98,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
         
         end
 
-        fprintf( 'Completed set size %d.\nCurrent minimum determinant, S test val and S0 test val, respectively:', SetSize );
-        disp( [ MinimumDeterminant, MinimumS, MinimumS0 ] );
+        fprintf( 'Completed set size %d.\nCurrent minimum determinant: %.15g\nCurrent S test val: %.15g\nCurrent S0 test val: %.15g\n', SetSize, MinimumDeterminant, MinimumS, MinimumS0 );
         
         if BreakFlag
             break;
