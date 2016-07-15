@@ -73,9 +73,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     
     addpath( fileparts( which( 'dynare' ) ) );
 
-    if Update
-        CompileMEX( dynareOBCPath );
-    end
+    CompileMEX( dynareOBCPath, Update );
     
     if strcmpi( InputFileName, 'addpath' )
         EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );

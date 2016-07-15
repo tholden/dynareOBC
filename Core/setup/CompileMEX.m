@@ -1,4 +1,4 @@
-function CompileMEX( dynareOBCPath )
+function CompileMEX( dynareOBCPath, Update )
     fprintf( '\n' );
     global spkron_use_mex ptest_use_mex;
     try
@@ -6,20 +6,24 @@ function CompileMEX( dynareOBCPath )
         if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
             spkron_use_mex = [];
         end
-    catch 
-        try
-            fprintf( '\n' );
-            disp( 'Attempting to compile spkron.' );
-            fprintf( '\n' );
-            build_spkron;
-            rehash path;
-            movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
-            rehash path;
-            spkron_use_mex = 1;
-            if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
+    catch
+        if Update
+            try
+                fprintf( '\n' );
+                disp( 'Attempting to compile spkron.' );
+                fprintf( '\n' );
+                build_spkron;
+                rehash path;
+                movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
+                rehash path;
+                spkron_use_mex = 1;
+                if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
+                    spkron_use_mex = [];
+                end
+            catch
                 spkron_use_mex = [];
             end
-        catch
+        else
             spkron_use_mex = [];
         end
     end
@@ -34,19 +38,23 @@ function CompileMEX( dynareOBCPath )
             ptest_use_mex = [];
         end
     catch
-        try
-            fprintf( '\n' );
-            disp( 'Attempting to compile ptest.' );
-            fprintf( '\n' );
-            build_ptest;
-            rehash path;
-            movefile( which( 'ptest_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
-            rehash path;
-            ptest_use_mex = 1;
-            if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
+        if Update
+            try
+                fprintf( '\n' );
+                disp( 'Attempting to compile ptest.' );
+                fprintf( '\n' );
+                build_ptest;
+                rehash path;
+                movefile( which( 'ptest_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
+                rehash path;
+                ptest_use_mex = 1;
+                if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
+                    ptest_use_mex = [];
+                end
+            catch
                 ptest_use_mex = [];
             end
-        catch
+        else
             ptest_use_mex = [];
         end
     end
