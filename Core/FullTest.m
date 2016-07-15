@@ -90,10 +90,10 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             
             if isempty( K )
                 Set( end ) = Set( end ) + O;
-            elseif numel( K ) == 1 && K( 1 ) == O
+            elseif K( 1 ) == O
                 break;
             else
-                Set( ( K - O ):SetSize ) = ( Set( K - O ) + O ):( Set( K - O ) + O + SetSize - ( K - O ) );
+                Set( ( K( 1 ) - O ):SetSize ) = ( Set( K( 1 ) - O ) + O ):( Set( K( 1 ) - O ) + O + SetSize - ( K( 1 ) - O ) );
             end
         
         end
