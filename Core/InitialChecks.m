@@ -234,6 +234,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                     end
                 else
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
+                    OpenPool;
                     if ptest( M )
                         ptestVal = 1;
                     else
