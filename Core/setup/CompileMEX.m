@@ -65,7 +65,7 @@ function CompileMEX( dynareOBCPath, Update )
     end
     try
         AltPTestUseMex = 1;
-        if AltPTest_mex(magic(4)*magic(4)') || ~(AltPTest_mex(magic(5)*magic(5)'))
+        if AltPTest_mex( magic(4)*magic(4)', false ) || ~( AltPTest_mex( magic(5)*magic(5)', false ) )
             AltPTestUseMex = [];
         end
     catch

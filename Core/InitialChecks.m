@@ -227,14 +227,14 @@ function dynareOBC = InitialChecks( dynareOBC )
                 M = dynareOBC.MsMatrix( Indices, Indices );                
                 if AltPTestUseMex
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
-                    if AltPTest_mex( M )
+                    if AltPTest_mex( M, true )
                         ptestVal = 1;
                     else
                         ptestVal = -1;
                     end
                 else
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
-                    if AltPTest( M )
+                    if AltPTest( M, true )
                         ptestVal = 1;
                     else
                         ptestVal = -1;

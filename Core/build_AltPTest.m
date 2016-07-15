@@ -27,8 +27,9 @@ cfg.GlobalDataSyncMethod = 'NoSync';
 
 %% Define argument types for entry-point 'AltPTest'.
 ARGS = cell(1,1);
-ARGS{1} = cell(1,1);
+ARGS{1} = cell(2,1);
 ARGS{1}{1} = coder.typeof(0,[Inf Inf],[1 1]);
+ARGS{1}{2} = coder.typeof(false);
 
 %% Invoke MATLAB Coder.
 codegen -config cfg AltPTest -args ARGS{1}

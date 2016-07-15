@@ -1,4 +1,4 @@
-function IsPMatrix = AltPTest( Input )
+function IsPMatrix = AltPTest( Input, Verbose )
    
     O = int64( 1 );
     Length = int64( min( size( Input, 1 ), size( Input, 2 ) ) );
@@ -7,11 +7,15 @@ function IsPMatrix = AltPTest( Input )
 
     BreakFlag = false;
 
-    fprintf( '\n' );
+    if Verbose
+        fprintf( '\n' );
+    end
     
     for SetSize = O:Length
         
-        fprintf( '\nStarting set size %d.', SetSize );
+        if Verbose
+            fprintf( '\nStarting set size %d.', SetSize );
+        end
         
         Set = O:SetSize;
         EndSet = Set + Length - SetSize;
@@ -25,11 +29,13 @@ function IsPMatrix = AltPTest( Input )
             MDet = det( MSub );
             MinimumDeterminant = min( MinimumDeterminant, MDet );
             if MDet < 1e-6
-                fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
-                for idx = O : int64( numel( Set ) )
-                    fprintf( '%d\n', Set( idx ) );
+                if Verbose
+                    fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
+                    for idx = O : int64( numel( Set ) )
+                        fprintf( '%d\n', Set( idx ) );
+                    end
+                    fprintf( '\n' );
                 end
-                fprintf( '\n' );
                 BreakFlag = true;
                 break;
             end
@@ -48,7 +54,9 @@ function IsPMatrix = AltPTest( Input )
         
         end
 
-        fprintf( 'Completed set size %d.\nCurrent minimum determinant: %.15g\n', SetSize, MinimumDeterminant );
+        if Verbose
+            fprintf( 'Completed set size %d.\nCurrent minimum determinant: %.15g\n', SetSize, MinimumDeterminant );
+        end
         
         if BreakFlag
             break;
