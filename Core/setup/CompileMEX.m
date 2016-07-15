@@ -79,7 +79,7 @@ function CompileMEX( dynareOBCPath, Update )
                 movefile( which( 'AltPTest_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
                 rehash path;
                 AltPTestUseMex = 1;
-                if ( AltPTest( magic(4)*magic(4)' ) >= 1e-8 ) || ~( AltPTest( magic(5)*magic(5)' ) < 1e-8 )
+                if AltPTest_mex( magic(4)*magic(4)', false ) || ~( AltPTest_mex( magic(5)*magic(5)', false ) )
                     AltPTestUseMex = [];
                 end
             catch
