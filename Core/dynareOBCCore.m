@@ -461,47 +461,51 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Simulating
 
-    fprintf( '\n' );
-    disp( 'Preparing to simulate the model.' );
-    fprintf( '\n' );
-
-    [ oo_, dynareOBC ] = SimulationPreparation( M_, oo_, dynareOBC );
-
-    dynareOBC = orderfields( dynareOBC );
-
-    if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1
-        OpenPool;
-    end
-    StoreGlobals( M_, options_, oo_, dynareOBC );
+    if dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0
     
-    if dynareOBC.IRFPeriods > 0
         fprintf( '\n' );
-        disp( 'Simulating IRFs.' );
+        disp( 'Preparing to simulate the model.' );
         fprintf( '\n' );
 
-        if dynareOBC.SlowIRFs
-            [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
-        else
-            [ oo_, dynareOBC ] = FastIRFs( M_, oo_, dynareOBC );
+        [ oo_, dynareOBC ] = SimulationPreparation( M_, oo_, dynareOBC );
+
+        dynareOBC = orderfields( dynareOBC );
+
+        if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1
+            OpenPool;
         end
-    end
+        StoreGlobals( M_, options_, oo_, dynareOBC );
 
-    if dynareOBC.SimulationPeriods > 0
-        fprintf( '\n' );
-        disp( 'Running stochastic simulation.' );
-        fprintf( '\n' );
+        if dynareOBC.IRFPeriods > 0
+            fprintf( '\n' );
+            disp( 'Simulating IRFs.' );
+            fprintf( '\n' );
 
-        [ oo_, dynareOBC ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC );
-    end
-
-    if ( dynareOBC.IRFPeriods > 0 ) && ( ~dynareOBC.NoGraph )
-        if dynareOBC.IRFsAroundZero
-            IRFOffsetFieldNames = fieldnames( dynareOBC.IRFOffsets );
-            for i = 1 : length( IRFOffsetFieldNames )
-                dynareOBC.IRFOffsets.( IRFOffsetFieldNames{i} ) = zeros( size( dynareOBC.IRFOffsets.( IRFOffsetFieldNames{i} ) ) );
+            if dynareOBC.SlowIRFs
+                [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
+            else
+                [ oo_, dynareOBC ] = FastIRFs( M_, oo_, dynareOBC );
             end
         end
-        PlotIRFs( M_, options_, oo_, dynareOBC );
+
+        if dynareOBC.SimulationPeriods > 0
+            fprintf( '\n' );
+            disp( 'Running stochastic simulation.' );
+            fprintf( '\n' );
+
+            [ oo_, dynareOBC ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC );
+        end
+
+        if ( dynareOBC.IRFPeriods > 0 ) && ( ~dynareOBC.NoGraph )
+            if dynareOBC.IRFsAroundZero
+                IRFOffsetFieldNames = fieldnames( dynareOBC.IRFOffsets );
+                for i = 1 : length( IRFOffsetFieldNames )
+                    dynareOBC.IRFOffsets.( IRFOffsetFieldNames{i} ) = zeros( size( dynareOBC.IRFOffsets.( IRFOffsetFieldNames{i} ) ) );
+                end
+            end
+            PlotIRFs( M_, options_, oo_, dynareOBC );
+        end
+    
     end
 
     dynareOBC = orderfields( dynareOBC );
