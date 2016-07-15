@@ -48,7 +48,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
             FastStartStruct = load( [ dynareOBCPath filesep 'FastStart.mat' ] );
             GlobalVariables = FastStartStruct.GlobalVariables;
             GlobalVariablesList = fieldnames( GlobalVariables );
-            IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptest_use_mex', 'spkron_use_mex', 'MatlabPoolSize' };
+            IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptestUseMex', 'spkronUseMex', 'MatlabPoolSize' };
             for i = 1 : length( GlobalVariablesList )
                 GlobalVariableName = GlobalVariablesList{i};
                 if ismember( GlobalVariableName, IgnoreList )
@@ -160,7 +160,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     GlobalVariables = struct; %#ok<NASGU>
     GlobalVariablesList = who( 'global' );
-    IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptest_use_mex', 'spkron_use_mex', 'MatlabPoolSize' };
+    IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'ptestUseMex', 'spkronUseMex', 'MatlabPoolSize' };
     for i = 1 : length( GlobalVariablesList )
         GlobalVariableName = GlobalVariablesList{i};
         if ismember( GlobalVariableName, IgnoreList )

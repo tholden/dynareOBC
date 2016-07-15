@@ -1,11 +1,11 @@
 function OpenPool
-    global spkron_use_mex
-    value_spkron_use_mex = spkron_use_mex;
+    global spkronUseMex
+    value_spkronUseMex = spkronUseMex;
     WarningState = warning( 'off', 'all' );
     OpenPoolInternal;
     try
         spmd
-            InitializeWorkers( value_spkron_use_mex );
+            InitializeWorkers( value_spkronUseMex );
         end
     catch
     end
@@ -37,9 +37,9 @@ function OpenPoolInternal
     MatlabPoolSize = 0;
 end
 
-function InitializeWorkers( value_spkron_use_mex )
-    global spkron_use_mex
-    spkron_use_mex = value_spkron_use_mex;
+function InitializeWorkers( value_spkronUseMex )
+    global spkronUseMex
+    spkronUseMex = value_spkronUseMex;
     warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
     warning( 'off', 'MATLAB:nargchk:deprecated' );
 end

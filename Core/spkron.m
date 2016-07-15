@@ -2,7 +2,7 @@ function [ ix, jx, sx, rx, cx ] = spkron( A, B )
     
     % derived from alt_kron.m
     
-    global spkron_use_mex
+    global spkronUseMex
 
     [I, J] = size(A);
     [K, L] = size(B);
@@ -18,9 +18,9 @@ function [ ix, jx, sx, rx, cx ] = spkron( A, B )
         jx = [];
         sx = [];
     else
-        if isempty( spkron_use_mex )
+        if isempty( spkronUseMex )
             [ ix, jx, sx ] = spkron_internal( K,a, L,b );
-        elseif spkron_use_mex
+        elseif spkronUseMex
             [ ix, jx, sx ] = spkron_internal_mex_mex( int32(K),a, int32(L),b );
         else
             [ ix, jx, sx ] = spkron_internal_mex( int32(K),a, int32(L),b );

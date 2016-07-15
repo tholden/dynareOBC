@@ -1,10 +1,10 @@
 function CompileMEX( dynareOBCPath, Update )
     fprintf( '\n' );
-    global spkron_use_mex ptest_use_mex;
+    global spkronUseMex ptestUseMex;
     try
-        spkron_use_mex = 1;
+        spkronUseMex = 1;
         if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
-            spkron_use_mex = [];
+            spkronUseMex = [];
         end
     catch
         if Update
@@ -16,26 +16,26 @@ function CompileMEX( dynareOBCPath, Update )
                 rehash path;
                 movefile( which( 'spkron_internal_mex_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
                 rehash path;
-                spkron_use_mex = 1;
+                spkronUseMex = 1;
                 if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
-                    spkron_use_mex = [];
+                    spkronUseMex = [];
                 end
             catch
-                spkron_use_mex = [];
+                spkronUseMex = [];
             end
         else
-            spkron_use_mex = [];
+            spkronUseMex = [];
         end
     end
-    if ~isempty( spkron_use_mex )
+    if ~isempty( spkronUseMex )
         disp( 'Using the mex version of spkron.' );
     else
         disp( 'Not using the mex version of spkron.' );
     end
     try
-        ptest_use_mex = 1;
+        ptestUseMex = 1;
         if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
-            ptest_use_mex = [];
+            ptestUseMex = [];
         end
     catch
         if Update
@@ -47,18 +47,18 @@ function CompileMEX( dynareOBCPath, Update )
                 rehash path;
                 movefile( which( 'ptest_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
                 rehash path;
-                ptest_use_mex = 1;
+                ptestUseMex = 1;
                 if ptest_mex(magic(4)*magic(4)') || ~(ptest_mex(magic(5)*magic(5)'))
-                    ptest_use_mex = [];
+                    ptestUseMex = [];
                 end
             catch
-                ptest_use_mex = [];
+                ptestUseMex = [];
             end
         else
-            ptest_use_mex = [];
+            ptestUseMex = [];
         end
     end
-    if ~isempty( ptest_use_mex )
+    if ~isempty( ptestUseMex )
         disp( 'Using the mex version of ptest.' );
     else
         disp( 'Not using the mex version of ptest.' );

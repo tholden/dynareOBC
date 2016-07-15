@@ -206,7 +206,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n%s\n', LoopMessage );
     end
     
-    global ptest_use_mex
+    global ptestUseMex
 
     if ptestVal >= 0
         AbsArguments = abs( angle( eig( Ms ) ) );
@@ -225,7 +225,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
                 Indices = Indices(:);
                 M = dynareOBC.MsMatrix( Indices, Indices );                
-                if ptest_use_mex
+                if ptestUseMex
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
                     if ptest_mex( M )
                         ptestVal = 1;
@@ -254,7 +254,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( '\n' );
         disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( TM ) ' periods.' ] );
         disp( 'This is a necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds).' );
-        if ptest_use_mex
+        if ptestUseMex
             DiagIsP = ptest_mex( dynareOBC.d0s );
         else
             DiagIsP = ptest( dynareOBC.d0s );
