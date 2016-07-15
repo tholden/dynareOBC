@@ -19,6 +19,8 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     BreakFlag = false;
 
     varsigma = sdpvar( 1, 1 );
+    
+    fprintf( '\n' );
 
     for SetSize = O:nsT
         
@@ -36,6 +38,11 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             MSub = M( Indices( Set ), Indices( Set ) );
             
             MDet = det( MSub );
+            if MDet < 1e-8
+                fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
+                disp( Indices( Set ) );
+                fprintf( '\n' );
+            end
             MinimumDeterminant = min( MinimumDeterminant, MDet );
             
             Constraints = [ 0 <= y, y <= 1, varsigma <= MSub * y ];
@@ -46,7 +53,13 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
                 error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
 
-            MinimumS = min( MinimumS, value( varsigma ) );
+            STestVal = value( varsigma );
+            if STestVal < 1e-8
+                fprintf( '\nSet found with S test value: %.15g\nSet indices follow:\n', STestVal );
+                disp( Indices( Set ) );
+                fprintf( '\n' );
+            end
+            MinimumS = min( MinimumS, STestVal );
             
             Constraints = [ 0 <= y, y <= 1, 0 <= MSub * y ];
             Objective = -sum( y );
@@ -56,7 +69,13 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
                 error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
 
-            MinimumS0 = min( MinimumS0, -value( Objective ) );
+            S0TestVal = -value( Objective );
+            if S0TestVal < 1e-8
+                fprintf( '\nSet found with S0 test value: %.15g\nSet indices follow:\n', S0TestVal );
+                disp( Indices( Set ) );
+                fprintf( '\n' );
+            end
+            MinimumS0 = min( MinimumS0, S0TestVal );
 
             % Early Exit
             
@@ -79,7 +98,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
         
         end
 
-        disp( [ 'Completed set size ' int2str( SetSize ) '. Current values:' ] );
+        fprintf( 'Completed set size %d.\nCurrent minimum determinant, S test val and S0 test val, respectively:', int2str( SetSize ) );
         disp( [ MinimumDeterminant, MinimumS, MinimumS0 ] );
         
         if BreakFlag
