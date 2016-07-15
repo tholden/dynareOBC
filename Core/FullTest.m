@@ -35,7 +35,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
         
             % Test Set
             
-            MSub = M( Indices( Set ), Indices( Set ) );
+            MSub = M( Set, Set );
             
             MDet = abs( det( MSub ) );
             if MDet < 1e-8
