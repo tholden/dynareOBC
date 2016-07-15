@@ -12,9 +12,9 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     
     nsT = ns * T;
     
-    MinimumDeterminant = Inf;
-    MinimumS = Inf;
-    MinimumS0 = Inf;
+    MinimumDeterminant = realmax;
+    MinimumS = realmax;
+    MinimumS0 = realmax;
     
     BreakFlag = false;
 
