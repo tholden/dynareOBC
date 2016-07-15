@@ -206,7 +206,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n%s\n', LoopMessage );
     end
     
-    global ptestUseMex
+    global ptestUseMex AltPTestUseMex
 
     if ptestVal >= 0
         AbsArguments = abs( angle( eig( Ms ) ) );
