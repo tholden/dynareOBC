@@ -37,7 +37,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             
             MSub = M( Indices( Set ), Indices( Set ) );
             
-            MDet = det( MSub );
+            MDet = abs( det( MSub ) );
             if MDet < 1e-8
                 fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
                 fprintf( '%d\n', Indices( Set ) );
