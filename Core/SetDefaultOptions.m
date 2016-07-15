@@ -1,4 +1,5 @@
 function dynareOBC = SetDefaultOptions( dynareOBC )
+    dynareOBC = SetDefaultOption( dynareOBC, 'AltPTest', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Bypass', false );    
     dynareOBC = SetDefaultOption( dynareOBC, 'CalculateTheoreticalVariance', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'CompileSimulationCode', false );

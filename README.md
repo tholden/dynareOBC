@@ -204,11 +204,15 @@ Note:
          Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for
          feasibility is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
          If `FeasibilityTestGridSize=0` then the test is disabled.
+    * `PTest=INTEGER` (default: `0`)
+         Runs a fast as possible test to see if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to 0 to
+         disable these tests.
+    * `AltPTest=INTEGER` (default: `0`)
+         Uses a slower, more verbose procedure to est if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to
+         0 to disable these tests.
     * `FullTest=INTEGER` (default: `0`)
          Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P(0) and/or (strictly) semi-monotone
          matrix.
-    * `PTest=INTEGER` (default: `0`)
-         Tests if the top `INTEGERxINTEGER` submatirx of M is a P matrix. Set this to 0 to disable these tests.
     * `LPSolver=STRING` (default: `xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*`)
          Specifies the preferred solver to use for the linear programming problem that is solved when checking whether matrices
          are S/S_0. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed

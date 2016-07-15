@@ -215,9 +215,31 @@ function dynareOBC = InitialChecks( dynareOBC )
             disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
             disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
             disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
-            if dynareOBC.PTest == 0
+            if dynareOBC.PTest == 0 && dynareOBC.AltPTest == 0
                 disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
                 disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
+            elseif dynareOBC.AltPTest ~= 0
+                TM = dynareOBC.PTest;
+
+                T = min( TM, Ts );
+                Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
+                Indices = Indices(:);
+                M = dynareOBC.MsMatrix( Indices, Indices );                
+                if AltPTestUseMex
+                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
+                    if AltPTest_mex( M )
+                        ptestVal = 1;
+                    else
+                        ptestVal = -1;
+                    end
+                else
+                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
+                    if AltPTest( M )
+                        ptestVal = 1;
+                    else
+                        ptestVal = -1;
+                    end
+                end
             else
                 TM = dynareOBC.PTest;
 
