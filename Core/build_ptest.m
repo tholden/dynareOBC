@@ -14,6 +14,7 @@ cfg.GenerateReport = true;
 cfg.ConstantFoldingTimeout = 2147483647;
 cfg.DynamicMemoryAllocation = 'AllVariableSizeArrays';
 cfg.SaturateOnIntegerOverflow = false;
+cfg.EnableAutoExtrinsicCalls = false;
 cfg.InlineThreshold = 2147483647;
 cfg.InlineThresholdMax = 2147483647;
 cfg.InlineStackLimit = 2147483647;
