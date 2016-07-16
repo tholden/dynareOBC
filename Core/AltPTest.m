@@ -3,7 +3,7 @@ function IsPMatrix = AltPTest( Input, Verbose )
     O = int64( 1 );
     Length = int64( min( size( Input, 1 ), size( Input, 2 ) ) );
     
-    MinimumDeterminant = realmax;
+    MinimumDeterminant = Inf;
 
     BreakFlag = false;
 
@@ -26,7 +26,7 @@ function IsPMatrix = AltPTest( Input, Verbose )
             
             MSub = Input( Set, Set );
             
-            MDet = det( MSub );
+            MDet = RobustDeterminant( MSub );
             if MDet < MinimumDeterminant
                 MinimumDeterminant = MDet;
                 if MDet < 1e-6
@@ -68,6 +68,6 @@ function IsPMatrix = AltPTest( Input, Verbose )
         
     end 
     
-    IsPMatrix =  MinimumDeterminant >= 1e-6;
+    IsPMatrix =  MinimumDeterminant > 0;
         
 end

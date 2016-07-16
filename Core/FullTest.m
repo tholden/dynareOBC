@@ -12,9 +12,9 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     
     nsT = ns * T;
     
-    MinimumDeterminant = realmax;
-    MinimumS = realmax;
-    MinimumS0 = realmax;
+    MinimumDeterminant = Inf;
+    MinimumS = Inf;
+    MinimumS0 = Inf;
     
     BreakFlag = false;
 
@@ -37,7 +37,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             
             MSub = M( Set, Set );
             
-            MDet = det( MSub );
+            MDet = RobustDeterminant( MSub );
             if MDet < MinimumDeterminant
                 MinimumDeterminant = MDet;
                 if MDet < 1e-6

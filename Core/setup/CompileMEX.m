@@ -1,6 +1,6 @@
 function CompileMEX( dynareOBCPath, Update )
     fprintf( '\n' );
-    global spkronUseMex ptestUseMex AltPTestUseMex;
+    global spkronUseMex ptestUseMex AltPTestUseMex QuickPCheckUseMex;
     try
         spkronUseMex = 1;
         if any( any( spkron( eye( 2 ), eye( 3 ) ) ~= eye( 6 ) ) )
@@ -93,6 +93,37 @@ function CompileMEX( dynareOBCPath, Update )
         disp( 'Using the mex version of AltPTest.' );
     else
         disp( 'Not using the mex version of AltPTest.' );
+    end
+    try
+        QuickPCheckUseMex = 1;
+        if QuickPCheck_mex( magic(4)*magic(4)' ) || ~( QuickPCheck_mex( magic(5)*magic(5)' ) )
+            QuickPCheckUseMex = [];
+        end
+    catch
+        if Update
+            try
+                fprintf( '\n' );
+                disp( 'Attempting to compile QuickPCheck.' );
+                fprintf( '\n' );
+                build_QuickPCheck;
+                rehash path;
+                movefile( which( 'QuickPCheck_mex' ), [ dynareOBCPath '/Core/' ], 'f' );
+                rehash path;
+                QuickPCheckUseMex = 1;
+                if QuickPCheck_mex( magic(4)*magic(4)' ) || ~( QuickPCheck_mex( magic(5)*magic(5)' ) )
+                    QuickPCheckUseMex = [];
+                end
+            catch
+                QuickPCheckUseMex = [];
+            end
+        else
+            QuickPCheckUseMex = [];
+        end
+    end
+    if ~isempty( QuickPCheckUseMex )
+        disp( 'Using the mex version of QuickPCheck.' );
+    else
+        disp( 'Not using the mex version of QuickPCheck.' );
     end
     fprintf( '\n' );
 end

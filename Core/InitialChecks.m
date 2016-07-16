@@ -206,6 +206,25 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n%s\n', LoopMessage );
     end
     
+    global QuickPCheckUseMex
+    
+               
+    if QuickPCheckUseMex
+        disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
+        [ CouldBePMatrix, StartEndDet ] = QuickPCheck_mex( dynareOBC.MsMatrix );
+        if ~CouldBePMatrix
+            ptestVal = -1;
+            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
+        end
+    else
+        disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
+        [ CouldBePMatrix, StartEndDet ] = QuickPCheck( dynareOBC.MsMatrix );
+        if ~CouldBePMatrix
+            ptestVal = -1;
+            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
+        end
+    end
+    
     global ptestUseMex AltPTestUseMex
 
     if ptestVal >= 0
