@@ -27,17 +27,21 @@ function IsPMatrix = AltPTest( Input, Verbose )
             MSub = Input( Set, Set );
             
             MDet = det( MSub );
-            MinimumDeterminant = min( MinimumDeterminant, MDet );
-            if MDet < 1e-6
-                if Verbose
-                    fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
-                    for idx = O : int64( numel( Set ) )
-                        fprintf( '%d\n', Set( idx ) );
+            if MDet < MinimumDeterminant
+                MinimumDeterminant = MDet;
+                if MDet < 1e-6
+                    if Verbose
+                        fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
+                        for idx = O : int64( numel( Set ) )
+                            fprintf( '%d\n', Set( idx ) );
+                        end
+                        fprintf( '\n' );
                     end
-                    fprintf( '\n' );
+                    if MDet < 0
+                        BreakFlag = true;
+                        break;
+                    end
                 end
-                BreakFlag = true;
-                break;
             end
                    
             % Increment Set
@@ -64,6 +68,6 @@ function IsPMatrix = AltPTest( Input, Verbose )
         
     end 
     
-    IsPMatrix = ~BreakFlag;
+    IsPMatrix =  MinimumDeterminant < 1e-6;
         
 end
