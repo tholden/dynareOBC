@@ -38,12 +38,14 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             MSub = M( Set, Set );
             
             MDet = det( MSub );
-            if MDet < 1e-6
-                fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
-                fprintf( '%d\n', Indices( Set ) );
-                fprintf( '\n' );
+            if MDet < MinimumDeterminant
+                MinimumDeterminant = MDet;
+                if MDet < 1e-6
+                    fprintf( '\nSet found with determinant: %.15g\nSet indices follow:\n', MDet );
+                    fprintf( '%d\n', Indices( Set ) );
+                    fprintf( '\n' );
+                end
             end
-            MinimumDeterminant = min( MinimumDeterminant, MDet );
             
             Constraints = [ 0 <= y, y <= 1, varsigma <= MSub * y ];
             Objective = -varsigma;
@@ -54,12 +56,14 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             end
 
             STestVal = value( varsigma );
-            if STestVal < 1e-6
-                fprintf( '\nSet found with S test value: %.15g\nSet indices follow:\n', STestVal );
-                fprintf( '%d\n', Indices( Set ) );
-                fprintf( '\n' );
+            if STestVal < MinimumS
+                MinimumS = STestVal;
+                if STestVal < 1e-6
+                    fprintf( '\nSet found with S test value: %.15g\nSet indices follow:\n', STestVal );
+                    fprintf( '%d\n', Indices( Set ) );
+                    fprintf( '\n' );
+                end
             end
-            MinimumS = min( MinimumS, STestVal );
             
             Constraints = [ 0 <= y, y <= 1, 0 <= MSub * y ];
             Objective = -sum( y );
@@ -70,16 +74,18 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
             end
 
             S0TestVal = -value( Objective );
-            if S0TestVal < 1e-6
-                fprintf( '\nSet found with S0 test value: %.15g\nSet indices follow:\n', S0TestVal );
-                fprintf( '%d\n', Indices( Set ) );
-                fprintf( '\n' );
+            if S0TestVal < MinimumS0
+                MinimumS0 = S0TestVal;
+                if S0TestVal < 1e-6
+                    fprintf( '\nSet found with S0 test value: %.15g\nSet indices follow:\n', S0TestVal );
+                    fprintf( '%d\n', Indices( Set ) );
+                    fprintf( '\n' );
+                end
             end
-            MinimumS0 = min( MinimumS0, S0TestVal );
 
             % Early Exit
             
-            if MinimumDeterminant < 1e-6 && MinimumS < 1e-6 && MinimumS0 < 1e-6
+            if MinimumDeterminant < 0 && MinimumS < 1e-6 && MinimumS0 < 1e-6
                 BreakFlag = true;
                 break;
             end
