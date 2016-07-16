@@ -14,7 +14,7 @@ function IsPMatrix = AltPTest( Input, Verbose )
     for SetSize = O:Length
         
         if Verbose
-            fprintf( '\nStarting set size %d.', SetSize );
+            fprintf( '\nStarting set size %d.\n', SetSize );
         end
         
         Set = O:SetSize;
