@@ -23,7 +23,7 @@ var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
     kpf habf kp hab;
  
-varexo ea epsilon_b eg els eqs einv epinf ew em er;
+varexo epsilon;
 
 parameters calfa ctou cbeta chab ccs cinvs csadjcost 
            csigma chabb cprobw clandaw csigl cprobp cindw cindp cfc cinvdyn 
@@ -36,7 +36,7 @@ parameters calfa ctou cbeta chab ccs cinvs csadjcost
 calfa       = 0.3;
 ctou        = 0.025;
 cbeta       = 0.99;
-chab        = 0;
+chab        = 0.0;
 ccs         = 0.6;
 cinvs       = 0.22;
 
@@ -85,7 +85,7 @@ cscaleer     = 0.081;
 
 model;
 
-r = max(-1000,crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+0*(pinf-pinf(-1))+0*(ygap-ygap(-1))+cscaleer*er); // the value of the ZLB doesn't actually matter for the sake of existence calculations
+r = (crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+0*(pinf-pinf(-1))+0*(ygap-ygap(-1))) + 0.01 * epsilon(-19); // the value of the ZLB doesn't actually matter for the sake of existence calculations
 
 mcf      =   calfa*rkf + (1-calfa)*wf - a;
 zcapf    =   (1/czcap)*rkf;
@@ -138,15 +138,15 @@ pinfLAG2 =   pinfLAG1(-1);
 pinf4    =   pinf + pinfLAG1 + pinfLAG2 + pinfLAG2(-1);
 ygap     =   y - yf;
 as       =   0;
-a        =   crhoa*a(-1) + cscaleea*ea;
-b        =   crhob*b(-1) - cscaleeb*epsilon_b;
-g        =   crhog*g(-1) + cscaleeg*eg;
-ls       =   crhols*ls(-1) + cscaleels*els;
-qs       =   crhoqs*qs(-1) + cscaleeqs*eqs;
-ms       =   cscaleem*em; //Monetary policy innovation
-sinv     =   cscaleeinv*einv;
-spinf    =   cscaleepinf*epinf;
-sw       =   cscaleew*ew;
+a        =   0;
+b        =   0;
+g        =   0;
+ls       =   0;
+qs       =   0;
+ms       =   0; //Monetary policy innovation
+sinv     =   0;
+spinf    =   0;
+sw       =   0;
 kpf      =   (1-ctou)*kpf(-1) + ctou*invef(-1);
 habf     =   chab*habf(-1) + (1-chab)*cf(-1);
 kp       =   (1-ctou)*kp(-1) + ctou*inve(-1);
@@ -156,16 +156,7 @@ end;
 
 shocks;
 
-var ea       = 1;	//Productivity Shock
-var epsilon_b= 1;   //Risk Premium Shock
-var eg       = 1;   //Fiscal Policy Shock
-var els      = 1;   //Labor Supply Shock
-var eqs      = 1;   //Equity Premium Shock
-var em       = 1;   //Monetary Innovation
-var einv     = 1;   //Investment Shock
-var epinf    = 1;   //Price Mark Up Shock
-var ew       = 1;	//Wage Mark Up Shock
-var er       = 1;	//Monetary Policy Shock
+var epsilon = 1;
 
 end;
 
@@ -230,4 +221,4 @@ steady;
 
 check;
 
-stoch_simul(order=1,irf=0,periods=0);
+stoch_simul(order=1,irf=40,periods=0);
