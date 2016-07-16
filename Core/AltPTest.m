@@ -68,6 +68,6 @@ function IsPMatrix = AltPTest( Input, Verbose )
         
     end 
     
-    IsPMatrix =  MinimumDeterminant < 1e-6;
+    IsPMatrix =  MinimumDeterminant >= 1e-6;
         
 end
