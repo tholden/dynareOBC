@@ -219,7 +219,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
                 disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
             elseif dynareOBC.AltPTest ~= 0
-                TM = dynareOBC.AltPTest;
+                TM = dynareOBC.PTest;
 
                 T = min( TM, Ts );
                 Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );

@@ -85,7 +85,7 @@ cscaleer     = 0.081;
 
 model;
 
-r = max(-1000,crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+0*(pinf-pinf(-1))+0*(ygap-ygap(-1))+cscaleer*er); // the value of the ZLB doesn't actually matter for the sake of existence calculations
+r = max(-1000,crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+cscaleer*er); // the value of the ZLB doesn't actually matter for the sake of existence calculations
 
 mcf      =   calfa*rkf + (1-calfa)*wf - a;
 zcapf    =   (1/czcap)*rkf;
