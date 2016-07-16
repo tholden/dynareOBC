@@ -215,52 +215,32 @@ function dynareOBC = InitialChecks( dynareOBC )
             disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
             disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
             disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
-            if dynareOBC.PTest == 0 && dynareOBC.AltPTest == 0
-                disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
-                disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
-            elseif dynareOBC.AltPTest ~= 0
-                TM = dynareOBC.AltPTest;
-
-                T = min( TM, Ts );
-                Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
-                Indices = Indices(:);
-                M = dynareOBC.MsMatrix( Indices, Indices );                
-                if AltPTestUseMex
-                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
-                    if AltPTest_mex( M, true )
-                        ptestVal = 1;
-                    else
-                        ptestVal = -1;
-                    end
+            if  dynareOBC.AltPTest == 0
+                if dynareOBC.PTest == 0
+                    disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
+                    disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
                 else
-                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
-                    if AltPTest( M, true )
-                        ptestVal = 1;
-                    else
-                        ptestVal = -1;
-                    end
-                end
-            else
-                TM = dynareOBC.PTest;
+                    TM = dynareOBC.PTest;
 
-                T = min( TM, Ts );
-                Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
-                Indices = Indices(:);
-                M = dynareOBC.MsMatrix( Indices, Indices );                
-                if ptestUseMex
-                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
-                    if ptest_mex( M )
-                        ptestVal = 1;
+                    T = min( TM, Ts );
+                    Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
+                    Indices = Indices(:);
+                    M = dynareOBC.MsMatrix( Indices, Indices );                
+                    if ptestUseMex
+                        disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
+                        if ptest_mex( M )
+                            ptestVal = 1;
+                        else
+                            ptestVal = -1;
+                        end
                     else
-                        ptestVal = -1;
-                    end
-                else
-                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
-                    OpenPool;
-                    if ptest( M )
-                        ptestVal = 1;
-                    else
-                        ptestVal = -1;
+                        disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
+                        OpenPool;
+                        if ptest( M )
+                            ptestVal = 1;
+                        else
+                            ptestVal = -1;
+                        end
                     end
                 end
             end
@@ -271,6 +251,37 @@ function dynareOBC = InitialChecks( dynareOBC )
             ptestVal = -1;
         end
     end
+    
+    if dynareOBC.AltPTest ~= 0
+        TM = dynareOBC.AltPTest;
+
+        T = min( TM, Ts );
+        Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
+        Indices = Indices(:);
+        M = dynareOBC.MsMatrix( Indices, Indices );                
+        if AltPTestUseMex
+            disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
+            if AltPTest_mex( M, true )
+                if ptestVal < 0
+                    warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
+                end
+                ptestVal = 1;
+            else
+                ptestVal = -1;
+            end
+        else
+            disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
+            if AltPTest( M, true )
+                if ptestVal < 0
+                    warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
+                end
+                ptestVal = 1;
+            else
+                ptestVal = -1;
+            end
+        end
+    end
+    
     if ptestVal > 0
         MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( TM ) ];
         fprintf( '\n' );
