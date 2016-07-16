@@ -15,6 +15,7 @@ function [ CouldBePMatrix, StartEndDet ] = QuickPCheck( Input )
             
             MSub = Input( Set, Set );
             
+            MDet = RobustDeterminant( MSub );
             
             if MDet <= 0
                 CouldBePMatrix = false;
