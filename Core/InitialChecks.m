@@ -280,6 +280,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 ptestVal = -1;
             end
         end
+        fprintf( '\n' );
     end
     
     if ptestVal > 0
