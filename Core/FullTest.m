@@ -85,7 +85,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
 
             % Early Exit
             
-            if MinimumDeterminant < 0 && MinimumS < 1e-6 && MinimumS0 < 1e-6
+            if MinimumDeterminant < 0 && MinimumS < eps && MinimumS0 < eps
                 BreakFlag = true;
                 break;
             end
