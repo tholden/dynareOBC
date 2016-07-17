@@ -212,14 +212,18 @@ function dynareOBC = InitialChecks( dynareOBC )
     if QuickPCheckUseMex
         disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
         [ CouldBePMatrix, StartEndDet ] = QuickPCheck_mex( dynareOBC.MsMatrix );
-        if ~CouldBePMatrix
+        if CouldBePMatrix
+            fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
+        else
             ptestVal = -1;
             fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
         end
     else
         disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
         [ CouldBePMatrix, StartEndDet ] = QuickPCheck( dynareOBC.MsMatrix );
-        if ~CouldBePMatrix
+        if CouldBePMatrix
+            fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
+        else
             ptestVal = -1;
             fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
         end
@@ -231,7 +235,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         AbsArguments = abs( angle( eig( Ms ) ) );
 
         if all( AbsArguments < pi - pi / size( Ms, 1 ) )
-            disp( 'Necessary condition for M to be a P-matrix is satisfied.' );
+            disp( 'Additional necessary condition for M to be a P-matrix is satisfied.' );
             disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
             disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
             if  dynareOBC.AltPTest == 0
@@ -264,7 +268,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 end
             end
         else
-            disp( 'Necessary condition for M to be a P-matrix is not satisfied.' );
+            disp( 'Additional necessary condition for M to be a P-matrix is not satisfied.' );
             disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
             disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
             ptestVal = -1;
