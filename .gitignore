@@ -1,24 +1,36 @@
 $RECYCLE.BIN/
 
-*.asv
 *.mex*
+
+Examples/FernandezVillaverdeEtAl2012/*.m
+Examples/FernandezVillaverdeEtAl2012/*.mat
+Examples/SmetsWouters*/*.m
+Examples/SmetsWouters*/*.mat
+
+*.asv
 *.bak
 *.log
 *.db
 *.ini
 *.zip
 *.eps
+*.jnl
 
 dynareOBCTemp*
 *deleteThis*
 ~*
 outcmaes*.*
+*_static.m
+*_dynamic.m
+*_steadystate2.m
+*_set_auxiliary_variables.m
 
 codegen/
 Core/tbxmanager/
 Core/requirements/
 Core/OptiToolbox216/
 Core/OptiToolbox221/
+Output/
 
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
@@ -32,3 +44,4 @@ LastDependencyUpdate.mat
 FastStart.mat
 pou.mat
 time.mat
+checksum
