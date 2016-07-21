@@ -15,7 +15,7 @@ model;
 	#ee = 0.01 * e;
 	y = 0.97 * y(+1) - 1 / sigma * ( i - i_bar - pi(+1) - ee );
 	pi = beta * pi(+1) + gamma * y;
-	i = max( 0, i_bar + 1.5 * pi + 1.05 * ( y - y(-1) ) );
+	i = max( 0, i_bar + 1.5 * pi + 1.6 * ( y - y(-1) ) );
 end;
 
 steady_state_model;
