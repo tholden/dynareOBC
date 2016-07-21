@@ -86,6 +86,7 @@ function y = SolveBoundsProblem( q )
             w = qScaled + M * y;
             if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                 y = y * Norm_q;
+                % disp( full( y ) );
                 return;
             end
         end
