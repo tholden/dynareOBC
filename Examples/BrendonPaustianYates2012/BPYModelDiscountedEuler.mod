@@ -13,7 +13,7 @@ model;
 	#gamma = ( 1 - theta ) * ( 1 - theta * beta ) / theta * ( sigma + phi );
 	#i_bar = 1 - beta;
 	#ee = 0.01 * e;
-	y = 0.97 * y(+1) - 1 / sigma * ( i - i_bar - pi(+1) - ee );
+	y = 0.97 * y(+1) - 0.75 / sigma * ( i - i_bar - pi(+1) - ee );
 	pi = beta * pi(+1) + gamma * y;
 	i = max( 0, i_bar + 1.5 * pi + 1.6 * ( y - y(-1) ) );
 end;
