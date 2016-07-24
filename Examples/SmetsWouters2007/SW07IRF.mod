@@ -197,4 +197,4 @@ steady;
 
 check;
 
-stoch_simul( order = 1, periods = 0, irf = 40 ) robs;
+stoch_simul( order = 1, periods = 0, irf = 40 ) y c pinf robs;
