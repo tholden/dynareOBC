@@ -128,8 +128,12 @@ Note:
          DynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's
          preferred solvers. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list
          displayed by YALMIP.
+    * `ReverseSearch`
+         By default, DynareOBC finds a solution in which the last period at the bound is as soon as possible. This option
+         makes DynareOBC find a solution in which the last period at the bound is as remote as possible, subject to being less
+         than the longest horizon (i.e. `TimeToEscapeBounds`).
     * `FullHorizon`
-         By default, DynareOBC finds a solution for which the last period at the bound is as soon as possible. This option
+         By default, DynareOBC finds a solution in which the last period at the bound is as soon as possible. This option
          makes DynareOBC just solve the bounds problem at the longest horizon (i.e. `TimeToEscapeBounds`).
     * `IgnoreBoundFailures`
          Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability.

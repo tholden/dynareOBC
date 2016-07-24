@@ -38,7 +38,13 @@ function y = SolveBoundsProblem( q )
         InitTss = 1;
     end
     
-    for Tss = InitTss : Ts
+    if dynareOBC_.ReverseSearch
+        TssSet = Ts : -1 : InitTss;
+    else
+        TssSet = InitTss : Ts;
+    end
+    
+    for Tss = TssSet
     
         if dynareOBC_.DisplayBoundsSolutionProgress
             disp( Tss );
@@ -86,7 +92,9 @@ function y = SolveBoundsProblem( q )
             w = qScaled + M * y;
             if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                 y = y * Norm_q;
-                % disp( full( y ) );
+                if dynareOBC_.DisplayBoundsSolutionProgress
+                    disp( full( y ) );
+                end
                 return;
             end
         end
