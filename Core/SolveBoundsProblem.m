@@ -4,13 +4,17 @@ function y = SolveBoundsProblem( q )
     
     Tolerance = dynareOBC_.Tolerance;
     
-    if dynareOBC_.DisplayBoundsSolutionProgress
-        disp( 0 );
-    end
+    if ~dynareOBC_.FullHorizon && ~dynareOBC_.ReverseSearch
     
-    if all( q >= -Tolerance ) && ~dynareOBC_.FullHorizon
-        y = dynareOBC_.ZeroVecS;
-        return
+        if dynareOBC_.DisplayBoundsSolutionProgress
+            disp( 0 );
+        end
+
+        if all( q >= -Tolerance )
+            y = dynareOBC_.ZeroVecS;
+            return
+        end
+    
     end
     
     Ts = dynareOBC_.TimeToEscapeBounds;
@@ -100,6 +104,20 @@ function y = SolveBoundsProblem( q )
         end
         
     end
+    
+    if ~dynareOBC_.FullHorizon && dynareOBC_.ReverseSearch
+    
+        if dynareOBC_.DisplayBoundsSolutionProgress
+            disp( 0 );
+        end
+
+        if all( q >= -Tolerance )
+            y = dynareOBC_.ZeroVecS;
+            return
+        end
+    
+    end
+    
     error( 'dynareOBC:InfeasibleProblem', 'Impossible problem encountered. Try increasing TimeToEscapeBounds, or reducing the magnitude of shocks.' );
     
 end
