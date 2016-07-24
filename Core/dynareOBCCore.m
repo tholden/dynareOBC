@@ -303,7 +303,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     disp( 'Generating the final mod file.' );
     fprintf( '\n' );
     
-    dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.AltPTest, dynareOBC.FullTest, dynareOBC.PeriodsOfUncertainty ] );
+    dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.AltPTest, dynareOBC.FullTest ] );
+    if ~dynareOBC.NoCubature
+        dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PeriodsOfUncertainty ] );
+    end
     dynareOBC.InternalIRFPeriods = max( dynareOBC.TimeToEscapeBounds, dynareOBC.TimeToReturnToSteadyState );
     if ~dynareOBC.SlowIRFs
         dynareOBC.InternalIRFPeriods = max( dynareOBC.InternalIRFPeriods, dynareOBC.IRFPeriods );
