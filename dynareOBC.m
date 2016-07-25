@@ -52,9 +52,34 @@ function dynareOBC( InputFileName, varargin )
     addpath( dynareOBCPath );
 
     if nargin < 1 || strcmpi( InputFileName, 'help' ) || strcmpi( InputFileName, '-help' ) || strcmpi( InputFileName, '-h' ) || strcmpi( InputFileName, '/h' ) || strcmpi( InputFileName, '-?' ) || strcmpi( InputFileName, '/?' )
-        fprintf( '\n' );
-        disp( fileread( [ dynareOBCPath '/README.md' ] ) );
-        fprintf( '\n' );
+        try
+            fprintf( '\n' );
+            ReadMeText = fileread( [ dynareOBCPath '/README.md' ] );
+            ReadMeLines = strsplit( ReadMeText, { '\f', '\n', '\r', '\v' }, 'CollapseDelimiters', false );
+            for StrIdx = 1 : length( ReadMeLines )
+                ReadMeLine = ReadMeLines{ StrIdx };
+                SpaceString = regexp( ReadMeLine, '^\s*(\*\s*|\d+\.\s*)?', 'emptymatch', 'once', 'match' );
+                SpaceLength = length( SpaceString );
+                ReadMeLineWords = strsplit( ReadMeLine( SpaceLength+1:end ), { ' ', '\t' } );
+                fprintf( '%s', SpaceString );
+                LinePosition = SpaceLength;
+                for WrdIdx = 1 : length( ReadMeLineWords )
+                    ReadMeLineWord = ReadMeLineWords{ WrdIdx };
+                    ReadMeLineWordLength = length( ReadMeLineWord );
+                    if LinePosition + 1 + ReadMeLineWordLength > 100
+                        SpaceString = regexprep( SpaceString, '\S', ' ' );
+                        fprintf( '\n%s', SpaceString );
+                        LinePosition = SpaceLength;
+                    end
+                    fprintf( '%s ', ReadMeLineWord );
+                    LinePosition = LinePosition + 1 + ReadMeLineWordLength;
+                end
+                fprintf( '\n' );
+            end
+            fprintf( '\n' );
+        catch
+            error( 'dynareOBC:ReadMeDisplay', 'Error displaying read-me.' );
+        end
         return;
     end
     
