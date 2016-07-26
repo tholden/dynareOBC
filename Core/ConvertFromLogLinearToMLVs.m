@@ -1,4 +1,4 @@
-function [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, EndoVariables, M )
+function [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, Indices, EndoVariables, M )
     ToInsertInModelAtStart = { };
     for j = 1 : length( EndoVariables )
         for k = 1 : M.maximum_endo_lead

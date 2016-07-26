@@ -223,7 +223,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     if LogLinear
-        [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, dynareOBC.EndoVariables, M_ );
+        [ ToInsertInModelAtStart, FileLines ] = ConvertFromLogLinearToMLVs( FileLines, Indices, dynareOBC.EndoVariables, M_ );
         options_.loglinear = 0;
     else
         ToInsertInModelAtStart = { };
