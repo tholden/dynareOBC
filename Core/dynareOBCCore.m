@@ -145,7 +145,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTemp2_static' );
 
-    MaxArgValues = dynareOBCTempGetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
+    if LogLinear
+        MaxArgValues = dynareOBCTempGetMaxArgValues( exp( oo_.steady_state ), [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
+    else
+        MaxArgValues = dynareOBCTempGetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
+    end
     if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
         error( 'dynareOBC:JustBinding', 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
     end
