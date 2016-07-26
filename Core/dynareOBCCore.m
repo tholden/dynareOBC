@@ -240,9 +240,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
        
     % Other common set-up
 
-    if ~( isoctave || user_has_matlab_license( 'optimization_toolbox' ) )
-        error( 'dynareOBC:MissingOptimizationToolbox', 'The optimization toolbox is required.' );
-    end
     SolveAlgo = 0;
 
     if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
