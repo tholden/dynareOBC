@@ -105,6 +105,8 @@ Note:
          By default, DynareOBC finds a solution in which the last period at the bound is as soon as possible. This option makes DynareOBC find a solution in which the last period at the bound is as remote as possible, subject to being less than the longest horizon (i.e. `TimeToEscapeBounds`).
     * `FullHorizon`
          By default, DynareOBC finds a solution in which the last period at the bound is as soon as possible. This option makes DynareOBC just solve the bounds problem at the longest horizon (i.e. `TimeToEscapeBounds`).
+    * `SkipFirstSolutions=INTEGER` (default: `0`)
+         If this is greater than 0, then DynareOBC ignores the first `INTEGER` solutions it finds, unless no other solutions are found, in which case it takes the last found one. Thus, without `ReverseSearch`, this tends to find solutions at the bound for longer. With `ReverseSearch`, this tends to find solutions at the bound for less time.
     * `IgnoreBoundFailures`
          Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability. This will severely compromise accuracy.
 

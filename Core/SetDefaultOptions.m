@@ -60,6 +60,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulateOnGridPoints', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulationDrop', 100 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulationPeriods', 0 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'SkipFirstSolutions', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'SlowIRFs', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Sparse', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToSolveParametrically', 4 );
