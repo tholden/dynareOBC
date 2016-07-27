@@ -15,6 +15,8 @@ varexo epsilon_m;
 
 var log_P;
 
+var y pi r nu;
+
 model;
 	@#include "InsertNewModelEquations.mod"
 	#Y = (A/NU) * L;
@@ -47,6 +49,10 @@ steady_state_model;
 	@#include "NKTransSteadyState.mod"
 	@#include "InsertNewSteadyStateEquations.mod"
     log_P = 0;
+    y = log( Y_ );
+    pi = log( PI_STEADY );
+    r = log( R_ );
+    nu = log( NU_ );
 end;
 
 shocks;
