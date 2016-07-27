@@ -21,7 +21,7 @@
 var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     rf mc zcap rk k pk mu c inve y lab pinf w empl ww effort pinf4 r dr 
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
-    kpf habf kp hab;
+    kpf habf kp hab yobs cobs piobs robs;
  
 varexo ea epsilon_b eg els eqs einv epinf ew em er;
 
@@ -154,6 +154,11 @@ habf     =   chab*habf(-1) + (1-chab)*cf(-1);
 kp       =   (1-ctou)*kp(-1) + ctou*inve(-1);
 hab      =   chab*hab(-1) + (1-chab)*c(-1);
 
+yobs = y * scale;
+cobs = c * scale;
+piobs = 4 * pinf * scale;
+robs = r / 100 + log( 1.021605136 );
+
 end;
 
 shocks;
@@ -226,10 +231,15 @@ habf = 0;
 kp = 0;
 hab = 0;
 
+yobs = 0;
+cobs = 0;
+piobs = 0;
+robs = log( 1.021605136 );
+
 end;
 
 steady;
 
 check;
 
-stoch_simul( order=1, irf=40, periods=0 ) dynareOBCZeroLowerBounded1 y;
+stoch_simul( order=1, irf=40, periods=0 ) yobs cobs piobs robs;
