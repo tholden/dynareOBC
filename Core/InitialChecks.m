@@ -356,79 +356,78 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     dynareOBC.ssIndices = cell( Ts, 1 );
     
-    if dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
         SkipCalcs = true;
+        dynareOBC.TimeToSolveParametrically = 0;
     else
         SkipCalcs = false;
     end
 
-    if ~dynareOBC.Estimation
-        PoolOpened = false;
-        for Tss = 1 : Ts
-            ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
-            Mss = Ms( ssIndices, ssIndices );
+    PoolOpened = false;
+    for Tss = 1 : Ts
+        ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
+        Mss = Ms( ssIndices, ssIndices );
 
-            dynareOBC.ssIndices{ Tss } = ssIndices;
+        dynareOBC.ssIndices{ Tss } = ssIndices;
 
-            if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || min( eig( Mss + Mss' ) ) < sqrt( eps )
-                SkipCalcs = true;
-                continue;
-            end
-            
-            if ~PoolOpened
-                OpenPool;
-                PoolOpened = true;
-            end
+        if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || min( eig( Mss + Mss' ) ) < sqrt( eps )
+            SkipCalcs = true;
+            continue;
+        end
 
-            PLCP = struct;
-            PLCP.M = Mss;
-            PLCP.q = zeros( Tss, 1 );
-            PLCP.Q = eye( Tss );
-            PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
-            PLCP.bth = ones( 2 * Tss, 1 );
+        if ~PoolOpened
+            OpenPool;
+            PoolOpened = true;
+        end
 
-            fprintf( '\n' );
-            disp( 'Solving for a parametric solution over the requested domain.' );
-            fprintf( '\n' );
+        PLCP = struct;
+        PLCP.M = Mss;
+        PLCP.q = zeros( Tss, 1 );
+        PLCP.Q = eye( Tss );
+        PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
+        PLCP.bth = ones( 2 * Tss, 1 );
 
-            strTss = int2str( Tss );
-            try
-                warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
-                warning( 'off', 'MATLAB:nargchk:deprecated' );
-                ParametricSolution = mpt_plcp( Opt( PLCP ) );
-                if ParametricSolution.exitflag == 1
+        fprintf( '\n' );
+        disp( 'Solving for a parametric solution over the requested domain.' );
+        fprintf( '\n' );
+
+        strTss = int2str( Tss );
+        try
+            warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
+            warning( 'off', 'MATLAB:nargchk:deprecated' );
+            ParametricSolution = mpt_plcp( Opt( PLCP ) );
+            if ParametricSolution.exitflag == 1
+                try
+                    ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
+                    mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
+                    dynareOBC.ParametricSolutionFound( Tss ) = 2;
+                catch MPTError
+                    disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
+                    disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
                     try
-                        ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
-                        mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
+                        ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
+                        dynareOBC.ParametricSolutionFound( Tss ) = 1;
+                    catch MPTTMError
+                        disp( [ 'Error ' MPTTMError.identifier ' writing the MATLAB file for the parameteric solution. ' MPTTMError.message ] );
+                        SkipCalcs = true;
+                        continue;
+                    end
+                    try
+                        BuildParametricSolutionCode( Tss );
                         dynareOBC.ParametricSolutionFound( Tss ) = 2;
-                    catch MPTError
-                        disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
-                        disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
-                        try
-                            ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
-                            dynareOBC.ParametricSolutionFound( Tss ) = 1;
-                        catch MPTTMError
-                            disp( [ 'Error ' MPTTMError.identifier ' writing the MATLAB file for the parameteric solution. ' MPTTMError.message ] );
-                            SkipCalcs = true;
-                            continue;
-                        end
-                        try
-                            BuildParametricSolutionCode( Tss );
-                            dynareOBC.ParametricSolutionFound( Tss ) = 2;
-                        catch CoderError
-                            disp( [ 'Error ' CoderError.identifier ' compiling the MATLAB file with MATLAB Coder. ' CoderError.message ] );
-                        end
+                    catch CoderError
+                        disp( [ 'Error ' CoderError.identifier ' compiling the MATLAB file with MATLAB Coder. ' CoderError.message ] );
                     end
                 end
-            catch
-                disp( 'Failed to solve for a parametric solution.' );
-                SkipCalcs = true;
-                continue;
             end
+        catch
+            disp( 'Failed to solve for a parametric solution.' );
+            SkipCalcs = true;
+            continue;
         end
-        if sum( dynareOBC.ParametricSolutionFound ) > 0
-            rehash;
-        end
+    end
+    if sum( dynareOBC.ParametricSolutionFound ) > 0
+        rehash;
     end
     
     if ~dynareOBC.Estimation && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
