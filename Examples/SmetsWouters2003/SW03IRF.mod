@@ -157,7 +157,7 @@ hab      =   chab*hab(-1) + (1-chab)*c(-1);
 #scale = 1 / 100;
 yobs = y * scale;
 cobs = c * scale;
-piobs = 4 * pinf * scale;
+piobs = pinf * scale;
 robs = r / 100 + log( 1.021605136 );
 
 end;
