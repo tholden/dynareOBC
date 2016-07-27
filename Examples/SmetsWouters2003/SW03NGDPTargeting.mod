@@ -86,7 +86,7 @@ cscaleer     = 0.081;
 model;
 
 p = p(-1) + pinf - STEADY_STATE(pinf);
-r = max( -log( 1.005 * 1.006 ^ csigma / cbeta ), crr*r(-1) + (1-crr)*(p+y) );
+r = max( -log( 1.005 * 1.006 ^ csigma / cbeta ) * 100, crr*r(-1) + (1-crr)*(p+y) );
 
 mcf      =   calfa*rkf + (1-calfa)*wf - a;
 zcapf    =   (1/czcap)*rkf;
