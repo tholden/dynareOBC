@@ -104,6 +104,9 @@ function y = SolveBoundsProblem( q )
             w = qScaled + M * y;
             if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                 y = y * Norm_q;
+                if ~isempty( ySaved ) && max( abs( y - ySaved ) ) <= Tolerance
+                    continue;
+                end
                 if dynareOBC_.DisplayBoundsSolutionProgress
                     disp( full( y ) );
                 end
