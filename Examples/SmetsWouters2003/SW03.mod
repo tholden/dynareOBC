@@ -85,9 +85,9 @@ cscaleer     = 0.081;
 
 model;
 
-r = max( -log( 1.005 * 1.006 ^ csigma / cbeta ) * 100, crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+cscaleer*er);
-// the exact value of the ZLB doesn't matter for the sake of existence calculations
-// here we make a plausible guess anyway, assuming 0.5% per quarter inflation, and 0.6% per quarter real growth
+r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+cscaleer*er);
+// The exact value of the ZLB doesn't matter for the sake of existence calculations.
+// Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
 
 mcf      =   calfa*rkf + (1-calfa)*wf - a;
 zcapf    =   (1/czcap)*rkf;
