@@ -154,6 +154,7 @@ habf     =   chab*habf(-1) + (1-chab)*cf(-1);
 kp       =   (1-ctou)*kp(-1) + ctou*inve(-1);
 hab      =   chab*hab(-1) + (1-chab)*c(-1);
 
+#scale = 1 / 100;
 yobs = y * scale;
 cobs = c * scale;
 piobs = 4 * pinf * scale;
