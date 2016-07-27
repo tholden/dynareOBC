@@ -99,7 +99,8 @@ Note:
          The number of periods in which to verify that the constraints are not being violated. If this is lower than TimeToEscapeBounds, or the requested number of IRF periods, or PeriodsOfUncertainty + 1, then that value will be used instead.
     * `Omega=FLOAT` (default: `1000`)
          The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be returned when there are multiple solutions.
-    * `MILPSolver=STRING` (default: `gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*`)
+    * `MILPSolver=STRING`
+      (default: `gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*`)
          DynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's preferred solvers. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP.
     * `ReverseSearch`
          By default, DynareOBC finds a solution in which the last period at the bound is as soon as possible. This option makes DynareOBC find a solution in which the last period at the bound is as remote as possible, subject to being less than the longest horizon (i.e. `TimeToEscapeBounds`).
@@ -160,7 +161,8 @@ Note:
          Uses a slower, more verbose procedure to est if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to 0 to disable these tests.
     * `FullTest=INTEGER` (default: `0`)
          Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P(0) and/or (strictly) semi-monotone matrix.
-    * `LPSolver=STRING` (default: `xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*`)
+    * `LPSolver=STRING`
+      (default: `xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*`)
          Specifies the preferred solver to use for the linear programming problem that is solved when checking whether matrices are S/S_0. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
 
  * **For controlling IRFs**
@@ -188,7 +190,8 @@ Note:
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the state of the model in the update step. While this requires evaluating the measurement equations less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model with measurement equations that are a polynomial of degree d, there is no need to have INTEGER larger than two times d. Values above `51` are treated as equal to `51`.
           * `EstimationStdDevThreshold=FLOAT` (default: `1e-6`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
-          * `EstimationMinimisationFunctions=STRING` (default: `CMAESWrapper#FMinConWrapper`)
+          * `EstimationMinimisationFunctions=STRING`
+            (default: `CMAESWrapper#FMinConWrapper`)
                A `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox), `FMinBndWrapper` (performs repeated one dimensional search, only viable for very low dimensional problems).
           * `EstimationFixedParameters=STRING` (default: `''`)
                A `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur in the second sheet of the data file.
