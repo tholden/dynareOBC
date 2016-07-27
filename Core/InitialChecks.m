@@ -355,7 +355,12 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     dynareOBC.ssIndices = cell( Ts, 1 );
-    SkipCalcs = false;
+    
+    if dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+        SkipCalcs = true;
+    else
+        SkipCalcs = false;
+    end
 
     if ~dynareOBC.Estimation
         PoolOpened = false;
@@ -365,7 +370,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
             dynareOBC.ssIndices{ Tss } = ssIndices;
 
-            if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || min( eig( Mss + Mss' ) ) < sqrt( eps ) || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+            if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || min( eig( Mss + Mss' ) ) < sqrt( eps )
                 SkipCalcs = true;
                 continue;
             end
