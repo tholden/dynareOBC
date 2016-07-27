@@ -365,7 +365,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
             dynareOBC.ssIndices{ Tss } = ssIndices;
 
-            if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || min( eig( Mss + Mss' ) ) < sqrt( eps ) || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+            if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || min( eig( Mss + Mss' ) ) < sqrt( eps ) || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
                 SkipCalcs = true;
                 continue;
             end
