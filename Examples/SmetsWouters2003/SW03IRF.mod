@@ -243,4 +243,4 @@ steady;
 
 check;
 
-stoch_simul( order=1, irf=40, periods=0 ) yobs cobs piobs robs;
+stoch_simul( order=1, irf=40, periods=0, irf_shocks = ( epsilon_b ) ) yobs cobs piobs robs;
