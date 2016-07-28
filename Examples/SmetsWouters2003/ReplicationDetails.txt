@@ -1,5 +1,9 @@
 This folder contains the MOD files for the Smets Wouters (2003) model, and a variant of it with price level targeting.
 
-They can be run (e.g.) with:
+The tests can be run (e.g.) with:
 
 dynareOBC SW03.mod timetoescapebounds=1000 FeasibilityTestGridSize=10 sparse timetosolveparametrically=0
+
+The IRF file can be run with:
+
+dynareOBC SW03IRF nocubature shockscale=22.5 skipfirstsolutions=1
