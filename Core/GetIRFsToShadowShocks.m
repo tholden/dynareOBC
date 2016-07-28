@@ -36,7 +36,11 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     B = zeros( endo_nbr );
     C = zeros( endo_nbr );
     
-    [ ~, cols_a ] = find(lead_lag_incidence(maximum_lag, order_var));
+    if maximum_lag > 0
+        [ ~, cols_a ] = find(lead_lag_incidence(maximum_lag, order_var));
+    else
+        cols_a = [];
+    end
     [ ~, cols_b ] = find(lead_lag_incidence(maximum_lag+1, order_var));
     if size( lead_lag_incidence, 1 ) > 2
         [ ~, cols_c ] = find(lead_lag_incidence(maximum_lag+2, order_var));
