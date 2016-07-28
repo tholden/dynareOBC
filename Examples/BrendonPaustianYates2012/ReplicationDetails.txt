@@ -3,3 +3,8 @@ This folder contains the MOD files for the assorted variants of the Brendon, Pau
 They can be run (e.g.) with:
 
 dynareOBC BPYModel.mod NoCubature
+
+For the tests run, e.g.:
+
+dynareOBC bpymodelpersistentlow nocubature ptest=20 timetoescapebounds=50 feasibilitytestgridsize=20
+dynareOBC bpymodelpersistenthigh nocubature timetoescapebounds=200 feasibilitytestgridsize=20
