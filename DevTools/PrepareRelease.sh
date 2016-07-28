@@ -37,12 +37,13 @@ rm -f -r -d -- **/*_steadystate2.m
 rm -f -r -d -- **/*_set_auxiliary_variables.m
 
 rm -f -r -d -- DevTools/
-rm -f -r -d -- codegen/
 rm -f -r -d -- Core/tbxmanager/
 rm -f -r -d -- Core/requirements/
 rm -f -r -d -- Core/OptiToolbox216/
 rm -f -r -d -- Core/OptiToolbox221/
-rm -f -r -d -- Output/
+
+rm -f -r -d -- **/codegen/
+rm -f -r -d -- **/Output/
 
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*/
@@ -58,6 +59,8 @@ rm -f -r -d -- **/FastStart.mat
 rm -f -r -d -- **/pou.mat
 rm -f -r -d -- **/time.mat
 rm -f -r -d -- **/checksum
+
+find . -empty -type d -delete
 
 echo https://github.com/tholden/dynareOBC/releases/download/TODO/dynareOBC.zip > CurrentVersionURL.txt
 echo Now update CurrentVersionURL.txt
