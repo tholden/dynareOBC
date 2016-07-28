@@ -142,6 +142,7 @@ function dynareOBC( InputFileName, varargin )
                 SafeDeleteFiles( dynareOBCPath, '/*.md' );
                 SafeDeleteFiles( dynareOBCPath, '/*.txt' );
                 SafeDeleteFiles( dynareOBCPath, '/*.mat' );
+                SafeDeleteFiles( dynareOBCPath, '/*.bak' );
                 SafeDeleteFiles( dynareOBCPath, '/LICENSE' );
                 SafeDeleteFiles( dynareOBCPath, '/Core/*.m' );
                 SafeDeleteFiles( dynareOBCPath, '/Core/*.asv' );
@@ -149,6 +150,7 @@ function dynareOBC( InputFileName, varargin )
                 SafeDeleteFiles( dynareOBCPath, '/Core/*.prj' );
                 SafeDeleteFiles( dynareOBCPath, '/Core/*.txt' );
                 SafeDeleteFiles( dynareOBCPath, '/Core/*.mat' );
+                SafeDeleteFiles( dynareOBCPath, '/Core/*.bak' );
                 warning( WarningState );
                 disp( 'Extracting files from the downloaded release.' );
                 fprintf( '\n' );
