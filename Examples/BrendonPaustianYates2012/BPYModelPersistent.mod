@@ -16,7 +16,7 @@ model;
 	#ee = 0.01 * e;
 	y = y(+1) - 1 / sigma * ( i - i_bar - pi(+1) - ee );
 	pi = beta * pi(+1) + gamma * y;
-	d =  ( 1 - rho ) * ( i_bar + 1.5 * pi + 1.49 * ( y - y(-1) ) ) + rho * d(-1);
+	d =  ( 1 - rho ) * ( i_bar + 1.5 * pi + 1.05 * ( y - y(-1) ) ) + rho * d(-1);
 	i = max( 0, d );
 end;
 
