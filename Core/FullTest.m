@@ -1,4 +1,4 @@
-function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
+function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, MakeSymmetric )
 
     Ts = int64( dynareOBC.TimeToEscapeBounds );
     ns = int64( dynareOBC.NumberOfMax );
@@ -9,6 +9,9 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC )
     Indices = bsxfun( @plus, (O:T)', int64( 0 ):Ts:((ns-O)*Ts ) );
     Indices = Indices(:);
     M = dynareOBC.MsMatrix( Indices, Indices );
+    if MakeSymmetric
+        M = 0.5 * ( M + M' );
+    end
     
     nsT = ns * T;
     

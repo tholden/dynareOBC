@@ -330,28 +330,32 @@ function dynareOBC = InitialChecks( dynareOBC )
     fprintf( '\n' );
     
     if dynareOBC.FullTest > 0
-        fprintf( '\n' );
-        disp( 'Running full test to see if the requested sub-matrix of M is a P and/or (strictly) semi-monotone matrix.' );
-        fprintf( '\n' );
-        [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
-        MFTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( dynareOBC.FullTest ) ];
-        if MinimumDeterminant >= 1e-8
-            disp( [ MFTS ' is a P-matrix.' ] );
-        elseif MinimumDeterminant >= -1e-8
-            disp( [ MFTS ' is a P0-matrix.' ] );
-        else
-            disp( [ MFTS ' is not a P-matrix or a P0-matrix.' ] );
+        TmpMStrings = { 'M', '0.5 * ( M + M'' )' };
+        for MakeSymmetric = 0:1
+            TmpMString = TmpMStrings{ MakeSymmetric + 1 };
+            fprintf( '\n' );
+            disp( [ 'Running full test to see if the requested sub-matrix of ' TmpMString ' is a P and/or (strictly) semi-monotone matrix.' ] );
+            fprintf( '\n' );
+            [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
+            MFTS = [ 'The ' TmpMString ' matrix with T (TimeToEscapeBounds) equal to ' int2str( dynareOBC.FullTest ) ];
+            if MinimumDeterminant >= 1e-8
+                disp( [ MFTS ' is a P-matrix.' ] );
+            elseif MinimumDeterminant >= -1e-8
+                disp( [ MFTS ' is a P0-matrix.' ] );
+            else
+                disp( [ MFTS ' is not a P-matrix or a P0-matrix.' ] );
+            end
+            if MinimumS >= 1e-8
+                disp( [ MFTS ' is a strictly semi-monotone matrix.' ] );
+            else
+                disp( [ MFTS ' is not a strictly semi-monotone matrix.' ] );
+            end
+            if MinimumS0 >= 1e-8
+                disp( [ MFTS ' is a semi-monotone matrix.' ] );
+            else
+                disp( [ MFTS ' is not a semi-monotone matrix.' ] );
+            end
         end
-        if MinimumS >= 1e-8
-            disp( [ MFTS ' is a strictly semi-monotone matrix.' ] );
-        else
-            disp( [ MFTS ' is not a strictly semi-monotone matrix.' ] );
-        end
-        if MinimumS0 >= 1e-8
-            disp( [ MFTS ' is a semi-monotone matrix.' ] );
-        else
-            disp( [ MFTS ' is not a semi-monotone matrix.' ] );
-        end        
     end
     
     dynareOBC.ssIndices = cell( Ts, 1 );
