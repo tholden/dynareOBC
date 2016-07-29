@@ -336,7 +336,7 @@ function dynareOBC = InitialChecks( dynareOBC )
             fprintf( '\n' );
             disp( [ 'Running full test to see if the requested sub-matrix of ' TmpMString ' is a P and/or (strictly) semi-monotone matrix.' ] );
             fprintf( '\n' );
-            [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC );
+            [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( dynareOBC.FullTest, dynareOBC, MakeSymmetric );
             MFTS = [ 'The ' TmpMString ' matrix with T (TimeToEscapeBounds) equal to ' int2str( dynareOBC.FullTest ) ];
             if MinimumDeterminant >= 1e-8
                 disp( [ MFTS ' is a P-matrix.' ] );
