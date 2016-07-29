@@ -3,8 +3,16 @@
 // copy van usmodel_hist_dsge_f19_7_71
 
 var   labobs robs pinfobs dy dc dinve dw  ewma epinfma  zcapf rkf kf pkf    cf invef yf labf wf rrf mc zcap rk k pk    c inve y lab pinf w r a  b g qs  ms  spinf sw kpf kp ;    
- 
-varexo epsilon;  
+
+var y_obs c_obs pi_obs r_obs;
+
+@#define IndividualShocks = 0
+
+@#if IndividualShocks
+varexo ea eb eg  eqs  em  epinf ew  ;  
+@#else
+varexo epsilon;
+@#endif
  
 parameters curvw cgy curvp constelab constepinf constebeta cmaw cmap calfa 
 czcap csadjcost ctou csigma chabb cfc 
@@ -116,13 +124,15 @@ model;
                +crdy*(y-yf-y(-1)+yf(-1))
                +crr*r(-1)
                +ms  );
-#ea    = 0.451788281662122 * 1 * epsilon;
-#eb    = 0.242460701013770 * 1 * epsilon;
-#eg    = 0.520010319208288 * 1 * epsilon;
-#eqs   = 0.450106906080831 * 1 * epsilon;
-#em    = 0.239839325484002 * 1 * epsilon;
-#epinf = 0.141123850778673 * 1 * epsilon;
-#ew    = 0.244391601233500 * 1 * epsilon;
+@#if !IndividualShocks
+#ea    = 0.451788281662122 * 3.55515886805135 * epsilon;
+#eb    = 0.242460701013770 * 2.70266536991112 * epsilon;
+#eg    = 0.520010319208288 * 1.63122368058574 * epsilon;
+#eqs   = 0.450106906080831 * 4.43054037338488 * epsilon;
+#em    = 0.239839325484002 * 2.81419385410711 * epsilon;
+#epinf = 0.141123850778673 * 3.18699420535093 * epsilon;
+#ew    = 0.244391601233500 * 4.14331499076251 * epsilon;
+@#endif
 	      a = crhoa*a(-1)  + ea;
 	      b = crhob*b(-1) - eb;
 	      g = crhog*(g(-1)) - eg + cgy*ea;
@@ -144,10 +154,32 @@ pinfobs = 1*(pinf) + constepinf;
 robs =    1*(r) + conster;
 labobs = lab + constelab;
 
+y_obs = y / 100;
+c_obs = c / 100;
+pi_obs = pinfobs / 100;
+r_obs = robs / 100;
+
 end; 
 
 shocks;
+@#if IndividualShocks
+var ea;
+stderr 0.451788281662122;
+var eb;
+stderr 0.242460701013770;
+var eg;
+stderr 0.520010319208288;
+var eqs;
+stderr 0.450106906080831;
+var em;
+stderr 0.239839325484002;
+var epinf;
+stderr 0.141123850778673;
+var ew;
+stderr 0.244391601233500;
+@#else
 var epsilon = 1;
+@#endif
 end;
 
 steady_state_model;
@@ -191,10 +223,14 @@ steady_state_model;
 	sw = 0;
 	kpf = 0;
 	kp = 0;
+y_obs = 0;
+c_obs = 0;
+pi_obs = pinfobs / 100;
+r_obs = robs / 100;
 end;
 
 steady;
 
 check;
 
-stoch_simul( order = 1, periods = 0, irf = 40 ) y c pinf robs;
+stoch_simul( order = 1, periods = 0, irf = 40 ) y_obs c_obs pi_obs r_obs;
