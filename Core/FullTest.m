@@ -27,7 +27,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, 
 
     for SetSize = O:nsT
         
-        fprintf( '\nStarting set size %d.', SetSize );
+        fprintf( '\nStarting set size %d.\n', SetSize );
         
         Set = O:SetSize;
         EndSet = Set + nsT - SetSize;
@@ -107,7 +107,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, 
         
         end
 
-        fprintf( 'Completed set size %d.\nCurrent minimum determinant: %.15g\nCurrent S test val: %.15g\nCurrent S0 test val: %.15g\n', SetSize, MinimumDeterminant, MinimumS, MinimumS0 );
+        fprintf( '\nCompleted set size %d.\nCurrent minimum determinant: %.15g\nCurrent S test val: %.15g\nCurrent S0 test val: %.15g\n', SetSize, MinimumDeterminant, MinimumS, MinimumS0 );
         
         if BreakFlag
             break;

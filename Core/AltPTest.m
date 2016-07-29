@@ -59,7 +59,7 @@ function IsPMatrix = AltPTest( Input, Verbose )
         end
 
         if Verbose
-            fprintf( 'Completed set size %d.\nCurrent minimum determinant: %.15g\n', SetSize, MinimumDeterminant );
+            fprintf( '\nCompleted set size %d.\nCurrent minimum determinant: %.15g\n', SetSize, MinimumDeterminant );
         end
         
         if BreakFlag
