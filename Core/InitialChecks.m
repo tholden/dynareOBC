@@ -213,24 +213,33 @@ function dynareOBC = InitialChecks( dynareOBC )
                
     if QuickPCheckUseMex
         disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
-        [ CouldBePMatrix, StartEndDet ] = QuickPCheck_mex( dynareOBC.MsMatrix );
-        if CouldBePMatrix
-            fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
-        else
-            ptestVal = -1;
-            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
-        end
+        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( dynareOBC.MsMatrix );
     else
         disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
-        [ CouldBePMatrix, StartEndDet ] = QuickPCheck( dynareOBC.MsMatrix );
-        if CouldBePMatrix
-            fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
-        else
-            ptestVal = -1;
-            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
+        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck( dynareOBC.MsMatrix );
+    end
+    if UseVPA
+        QuickPCheckResult = true;
+        for i = 1 : 3
+            if any( IndicesToCheck <= 0 )
+                continue;
+            end
+            TmpSet = IndicesToCheck(1):IndicesToCheck(2);
+            TmpDet = double( det( vpa( dynareOBC.MsMatrix( TmpSet, TmpSet ) ) ) );
+            if TmpDet <= 0
+                QuickPCheckResult = false;
+                StartEndDet = [ IndicesToCheck, TmpDet ];
+                break;
+            end
         end
     end
-    
+    if QuickPCheckResult
+        fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
+    else
+        ptestVal = -1;
+        fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
+    end
+        
     global ptestUseMex AltPTestUseMex
 
     if ptestVal >= 0
@@ -286,24 +295,28 @@ function dynareOBC = InitialChecks( dynareOBC )
         M = dynareOBC.MsMatrix( Indices, Indices );                
         if AltPTestUseMex
             disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
-            if AltPTest_mex( M, true )
-                if ptestVal < 0
-                    warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
-                end
-                ptestVal = 1;
-            else
-                ptestVal = -1;
-            end
+            [ AltPTestResult, IndicesToCheck ] = AltPTest_mex( M, true );
         else
             disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
-            if AltPTest( M, true )
-                if ptestVal < 0
-                    warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
+            [ AltPTestResult, IndicesToCheck ] = AltPTest( M, true );
+        end
+        if UseVPA
+            AltPTestResult = true;
+            for i = 1 : 3
+                TmpSet = IndicesToCheck{i};
+                if ~isempty( TmpSet ) && double( det( vpa( M( IndicesToCheck{i}, IndicesToCheck{i} ) ) ) ) <= 0
+                    AltPTestResult = false;
+                    break;
                 end
-                ptestVal = 1;
-            else
-                ptestVal = -1;
             end
+        end
+        if AltPTestResult
+            if ptestVal < 0
+                warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
+            end
+            ptestVal = 1;
+        else
+            ptestVal = -1;
         end
         fprintf( '\n' );
     end

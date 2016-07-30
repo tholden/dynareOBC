@@ -6,4 +6,4 @@ The other MOD files are from the Dynare transformation engine available from her
 To test the properties of these models, run:
 
 dynareOBC NK.mod timetoescapebounds=200 FeasibilityTestGridSize=10 timetosolveparametrically=0
-dynareOBC NKPriceTargeting.mod timetoescapebounds=200 FeasibilityTestGridSize=10 timetosolveparametrically=0 
+dynareOBC NKPriceTargeting.mod timetoescapebounds=200 FeasibilityTestGridSize=10 timetosolveparametrically=0 ptest=20 usevpa
