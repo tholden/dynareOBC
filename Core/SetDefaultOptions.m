@@ -68,6 +68,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 64 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', 1e-4 );
     dynareOBC = SetDefaultOption( dynareOBC, 'UseSimulationCode', true );
+    dynareOBC = SetDefaultOption( dynareOBC, 'UseVPA', false );
     
     dynareOBC = orderfields( dynareOBC );
 end

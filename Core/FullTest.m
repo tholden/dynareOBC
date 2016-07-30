@@ -1,4 +1,4 @@
-function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, MakeSymmetric )
+function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, MakeSymmetric, UseVPA )
 
     Ts = int64( dynareOBC.TimeToEscapeBounds );
     ns = int64( dynareOBC.NumberOfMax );
@@ -40,7 +40,11 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, 
             
             MSub = M( Set, Set );
             
-            MDet = RobustDeterminant( MSub );
+            if UseVPA
+                MDet = double( RobustDeterminant( vpa( MSub ) ) );
+            else
+                MDet = RobustDeterminant( MSub );
+            end
             if MDet < MinimumDeterminant
                 MinimumDeterminant = MDet;
                 if MDet < 1e-6

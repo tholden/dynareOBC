@@ -38,8 +38,9 @@ Requirements (to be installed and added to your Matlab path):
 
 Recommended additional installations:
  * MATLAB R2016a or later.
- * The MATLAB Parallel Toolbox, or a fully compatible clone.
+ * The MATLAB Parallel Toolbox, or a fully compatible clone, which speeds up assorted routines.
  * The MATLAB Optimization Toolbox, or an alternative non-linear least squares routine, which is required for the experimental `global` option. (To use an alternative routine, you must set `dynareOBC.FSolveFunctor`.) This toolbox is also required for some options of estimation, as detailed below.
+ * The MATLAB Symbolic Toolbox, which is required for the UseVPA option.
  * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, a free compiler meeting these requirements is available from: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx . Alternatively, on Windows, with MATLAB r2015b, another free compiler meeting these requirements (which uses much less disk space) is available by clicking on "Add-Ons" in the MATLAB toolbar, then searching for MinGW. Be sure to untick the "check for updated files" in the installer that opens.
  * MATLAB Coder, or a fully compatible clone (only used with MATLAB R2015a or later).
  * A competitive mixed integer linear programming solver, such as one of the below (listed in rough order of performance), each of which is available for free to academics:
@@ -161,6 +162,8 @@ Note:
          Uses a slower, more verbose procedure to est if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to 0 to disable these tests.
     * `FullTest=INTEGER` (default: `0`)
          Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P(0) and/or (strictly) semi-monotone matrix.
+    * `UseVPA`
+         Enables more accurate evaluation of determinants using the symbolic toolbox.     
     * `LPSolver=STRING`
       (default: `xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*`)
          Specifies the preferred solver to use for the linear programming problem that is solved when checking whether matrices are S/S_0. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
