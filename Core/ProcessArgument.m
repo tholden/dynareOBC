@@ -13,7 +13,7 @@ function [ basevarargin, dynareOBC ] = ProcessArgument( Argument, basevarargin, 
             dynareOBC.FirstOrderAroundRSS1OrMean2 = double( bitor( int32( dynareOBC.FirstOrderAroundRSS1OrMean2 ), int32( 2 ) ) );
         case 'savemacro='
             error( 'dynareOBC:Arguments', 'SaveMacro was found without a file name. Please do not put a space between the equals sign and the file name.' );
-        case 'DataFile='
+        case 'datafile='
             error( 'dynareOBC:Arguments', 'DataFile was found without a file name. Please do not put a space between the equals sign and the file name.' );
 
         otherwise
