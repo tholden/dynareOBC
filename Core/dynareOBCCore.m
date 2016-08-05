@@ -66,28 +66,32 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         LogLinearString = '';
     end
 
-    if dynareOBC.Estimation
+    if dynareOBC.Estimation || dynareOBC.Smoothing
         fprintf( '\n' );
-        disp( 'Loading data for estimation.' );
+        disp( 'Loading data for estimation and/or smoothing.' );
         fprintf( '\n' );    
         
         [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC.DataFile );
         if isempty( XLSStatus )
             error( 'dynareOBC:UnsupportedSpreadsheet', 'The given estimation data is in a format that cannot be read.' );
         end
-        if length( XLSSheets ) < 2
-            error( 'dynareOBC:MissingSpreadsheet', 'The data file does not contain a spreadsheet with observations and a spreadsheet with parameters.' );
-        end
-        XLSParameterSheetName = XLSSheets{2};
-        [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.DataFile, XLSParameterSheetName );
-        dynareOBC.EstimationParameterNames = XLSText( 1, : );
-        FixedParameters = strsplit( dynareOBC.FixedParameters, { ',', ';', '#' } );
-        for i = 1 : length( FixedParameters )
-            EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, FixedParameters( i ) ), 1 );
-            if ~isempty( EFPIndex )
-                dynareOBC.EstimationParameterNames( EFPIndex ) = [];
-                dynareOBC.EstimationParameterBounds( :, EFPIndex ) = [];
+        if dynareOBC.Estimation
+            if length( XLSSheets ) < 2
+                error( 'dynareOBC:MissingSpreadsheet', 'The data file does not contain a spreadsheet with observations and a spreadsheet with parameters.' );
             end
+            XLSParameterSheetName = XLSSheets{2};
+            [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.DataFile, XLSParameterSheetName );
+            dynareOBC.EstimationParameterNames = XLSText( 1, : );
+            FixedParameters = strsplit( dynareOBC.FixedParameters, { ',', ';', '#' } );
+            for i = 1 : length( FixedParameters )
+                EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, FixedParameters( i ) ), 1 );
+                if ~isempty( EFPIndex )
+                    dynareOBC.EstimationParameterNames( EFPIndex ) = [];
+                    dynareOBC.EstimationParameterBounds( :, EFPIndex ) = [];
+                end
+            end
+            dynareOBC.PTest = 0;
+            dynareOBC.TimeToSolveParametrically = 0;
         end
         if isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
             warning( 'dynareOBC:OverwritingVarList', 'The variable list passed to stoch_simul will be replaced with the list of observable variables.' );
@@ -95,7 +99,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         [ dynareOBC.EstimationData, XLSText ] = xlsread( dynareOBC.DataFile );
         dynareOBC.VarList = XLSText( 1, : );
         if dynareOBC.MLVSimulationMode > 1
-            warning( 'dynareOBC:UnsupportedMLVSimulationModeWithEstimation', 'With estimation, MLV simulation modes greater than 1 are not currently supported.' );
+            warning( 'dynareOBC:UnsupportedMLVSimulationModeWithEstimation', 'With estimation or smoothing, MLV simulation modes greater than 1 are not currently supported.' );
         end
         dynareOBC.MLVSimulationMode = 1;
         dynareOBC.Sparse = false;
@@ -369,12 +373,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.MLVSelect = 1 : length( dynareOBC.MLVNames );
     end
 
+    if ( dynareOBC.Estimation || dynareOBC.Smoothing ) && any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
+        error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
+    end
     if dynareOBC.Estimation
         if dynareOBC.Global
             error( 'dynareOBC:UnsupportedGlobalEstimation', 'Estimation of models solved globally is not currently supported.' );
-        end
-        if any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
-            error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
         end
         
         fprintf( '\n' );
@@ -465,7 +469,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Simulating
 
-    if dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0
+    if dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0 || dynareOBC.Smoothing
     
         fprintf( '\n' );
         disp( 'Preparing to simulate the model.' );

@@ -375,7 +375,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     dynareOBC.ssIndices = cell( Ts, 1 );
     
-    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
         SkipCalcs = true;
         dynareOBC.TimeToSolveParametrically = 0;
     else
@@ -449,7 +449,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         rehash;
     end
     
-    if ~dynareOBC.Estimation && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
+    if ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
         ClosePool;
     end
 

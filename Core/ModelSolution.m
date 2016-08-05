@@ -107,7 +107,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     dynareOBC.ParametricSolutionFound = zeros( dynareOBC.TimeToEscapeBounds, 1 );
 
     if SlowMode
-        if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation )
+        if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation || dynareOBC.Smoothing )
             fprintf( '\n' );
             disp( 'Attempting to build a custom version of the simulation code.' );
             fprintf( '\n' );

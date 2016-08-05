@@ -133,7 +133,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
     else
         %% Standard simulation
-        if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation )
+        if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation || dynareOBC_.Smoothing )
             try
                 if dynareOBC_.Estimation
                     if dynareOBC_.Sparse

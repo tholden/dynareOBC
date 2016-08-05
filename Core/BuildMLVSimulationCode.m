@@ -9,7 +9,7 @@ cfg.MATLABSourceComments = true;
 cfg.ConstantInputs = 'IgnoreValues';
 cfg.GenerateReport = true;
 cfg.ConstantFoldingTimeout = 2147483647;
-if dynareOBC.Estimation
+if dynareOBC.Estimation || dynareOBC.Smoothing
     cfg.EnableVariableSizing = true;
     cfg.DynamicMemoryAllocation = 'AllVariableSizeArrays';
 else
@@ -30,7 +30,7 @@ cfg.GlobalDataSyncMethod = 'NoSync';
 %% Define argument types for entry-point 'dynareOBCTempGetMLVs'.
 ARGS = cell(1,1);
 ARGS{1} = cell(5,1);
-if dynareOBC.Estimation
+if dynareOBC.Estimation || dynareOBC.Smoothing
     ARGS{1}{1} = coder.typeof( 0, [ sum( dynareOBC.OriginalLeadLagIncidence(:) > 0 ), Inf ], [ 0 1 ] );
 else
     ARGS{1}{1} = coder.typeof( zeros( sum( dynareOBC.OriginalLeadLagIncidence(:) > 0 ), 1 ) );
