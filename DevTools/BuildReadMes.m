@@ -1,33 +1,48 @@
 cd ..;
 OldPath = path;
 try
+    DOBCText = fileread( 'dynareOBC.m' );
+    DOBCText = regexprep( DOBCText, '^%.*$', '', 'lineanchors', 'dotexceptnewline' );
+    DOBCFirstLine = regexp( DOBCText, 'function .*$', 'lineanchors', 'dotexceptnewline', 'once', 'match' );
+    DOBCText = regexprep( DOBCText, 'function .*$', '', 'lineanchors', 'dotexceptnewline', 'once' );
+    DOBCText = regexprep( DOBCText, '^[\r\n]*', '' );
+    
     ReadMeText = fileread( 'README.md' );
     ReadMeText = strrep( ReadMeText, '`', '' );
     ReadMeText = strrep( ReadMeText, '**', '' );
     ReadMeLines = strsplit( ReadMeText, { '\f', '\n', '\r', '\v' }, 'CollapseDelimiters', false );
-    FileID = fopen( 'ReadMe.txt', 'w' );
+    TxtFileID = fopen( 'ReadMe.txt', 'w' );
+    DOBCFileID = fopen( 'dynareOBC.m', 'w' );
+    fprintf( DOBCFileID, '%s\n', DOBCFirstLine );
+    
     for StrIdx = 1 : length( ReadMeLines )
         ReadMeLine = ReadMeLines{ StrIdx };
         SpaceString = regexp( ReadMeLine, '^\s*(\*\s*|\d+\.\s*)?', 'emptymatch', 'once', 'match' );
         SpaceLength = length( SpaceString );
         ReadMeLineWords = strsplit( ReadMeLine( SpaceLength+1:end ), { ' ', '\t' } );
-        fprintf( FileID, '%s', SpaceString );
+        fprintf( TxtFileID, '%s', SpaceString );
+        fprintf( DOBCFileID, '%% %s', SpaceString );
         LinePosition = SpaceLength;
         for WrdIdx = 1 : length( ReadMeLineWords )
             ReadMeLineWord = ReadMeLineWords{ WrdIdx };
             ReadMeLineWordLength = length( ReadMeLineWord );
             if LinePosition + 1 + ReadMeLineWordLength > 100 && SpaceLength + 1 + ReadMeLineWordLength <= 100
                 SpaceString = regexprep( SpaceString, '\S', ' ' );
-                fprintf( FileID, '\n%s', SpaceString );
+                fprintf( TxtFileID, '\n%s', SpaceString );
+                fprintf( DOBCFileID, '\n%% %s', SpaceString );
                 LinePosition = SpaceLength;
             end
-            fprintf( FileID, '%s ', ReadMeLineWord );
+            fprintf( TxtFileID, '%s ', ReadMeLineWord );
+            fprintf( DOBCFileID, '%s ', ReadMeLineWord );
             LinePosition = LinePosition + 1 + ReadMeLineWordLength;
         end
-        fprintf( FileID, '\n' );
+        fprintf( TxtFileID, '\n' );
+        fprintf( DOBCFileID, '\n' );
     end
-    fclose( FileID );
-    
+    fprintf( DOBCFileID, '%s', DOBCText );
+    fclose( TxtFileID );
+    fclose( DOBCFileID );
+        
     delete ReadMe.pdf;
     try
         addpath( 'C:\Program Files (x86)\Pandoc' );
