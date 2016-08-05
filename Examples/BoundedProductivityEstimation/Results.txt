@@ -46,7 +46,7 @@ dynareOBC UnboundedProductivityEstimation estimation
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(1.1291924274895130e-10)
 
-dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProductivityEstimation.xlsx
+dynareOBC UnboundedProductivityExactEstimation DataFile=UnboundedProductivityEstimation.xlsx
 
     Initial log-likelihood:
               1991.01965732716
@@ -70,7 +70,7 @@ dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProdu
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(1.7633462959065370e-07)
 
-dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProductivityEstimation.xlsx EstimationUpdateSparseCubatureDegree=51
+dynareOBC UnboundedProductivityExactEstimation DataFile=UnboundedProductivityEstimation.xlsx UpdateSparseCubatureDegree=51
 
     Initial log-likelihood:
               1991.01965732716
@@ -90,7 +90,7 @@ dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=UnboundedProdu
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(1.3469115743862714e-10)
 
-dynareOBC UnboundedProductivityEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta OrderOverride=1
+dynareOBC UnboundedProductivityEstimation DataFile=BoundedProductivityEstimation.xlsx FixedParameters=beta OrderOverride=1
 
 	Initial log-likelihood:
 			  2116.98769402938
@@ -114,7 +114,7 @@ dynareOBC UnboundedProductivityEstimation EstimationDataFile=BoundedProductivity
 	Final measurement error standard deviation estimates:
 	rObs:		9.8813129168249309e-324		(3.2185391296729980e-10)
 
-dynareOBC UnboundedProductivityEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta
+dynareOBC UnboundedProductivityEstimation DataFile=BoundedProductivityEstimation.xlsx FixedParameters=beta
 
     Initial log-likelihood:
               2116.91606427302
@@ -138,7 +138,7 @@ dynareOBC UnboundedProductivityEstimation EstimationDataFile=BoundedProductivity
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(5.0569580246750688e-10)
 
-dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta
+dynareOBC UnboundedProductivityExactEstimation DataFile=BoundedProductivityEstimation.xlsx FixedParameters=beta
 
     Initial log-likelihood:
               2116.91606427302
@@ -158,7 +158,7 @@ dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=BoundedProduct
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(1.9165415011623551e-10)
 
-dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx EstimationFixedParameters=beta EstimationUpdateSparseCubatureDegree=51
+dynareOBC UnboundedProductivityExactEstimation DataFile=BoundedProductivityEstimation.xlsx FixedParameters=beta UpdateSparseCubatureDegree=51
 
     Initial log-likelihood:
               2116.91606427302
@@ -182,7 +182,7 @@ dynareOBC UnboundedProductivityExactEstimation EstimationDataFile=BoundedProduct
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(9.7287005699183012e-11)
 
-dynareOBC BoundedProductivityEstimation estimation nocubature OrderOverride=1 EstimationFixedParameters=beta   
+dynareOBC BoundedProductivityEstimation estimation nocubature OrderOverride=1 FixedParameters=beta   
 
     Initial log-likelihood:
               2181.31639365468
@@ -206,7 +206,7 @@ dynareOBC BoundedProductivityEstimation estimation nocubature OrderOverride=1 Es
     Final measurement error standard deviation estimates:
     rObs:		2.1186635179699233e-11		(1.6810546886623526e-16)
 
-dynareOBC BoundedProductivityEstimation estimation nocubature EstimationFixedParameters=beta
+dynareOBC BoundedProductivityEstimation estimation nocubature FixedParameters=beta
 
     Initial log-likelihood:
               2187.98110823414
@@ -230,7 +230,7 @@ dynareOBC BoundedProductivityEstimation estimation nocubature EstimationFixedPar
     Final measurement error standard deviation estimates:
     rObs:		4.2513197372976948e-11		(4.5262903824840295e-15)
 
-dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncertainty=1 OrderOverride=1 EstimationFixedParameters=beta EstimationTimeOutLikelihoodEvaluation=300
+dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncertainty=1 OrderOverride=1 FixedParameters=beta TimeOutLikelihoodEvaluation=300
 
     Initial log-likelihood:
               2232.11284615375
@@ -254,7 +254,7 @@ dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncerta
     Final measurement error standard deviation estimates:
     rObs:		5.2258604550518328e-09		(1.0475047348053449e-10)
 
-dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationFixedParameters=beta
+dynareOBC BoundedProductivityExactEstimation DataFile=BoundedProductivityEstimation.xlsx nocubature FixedParameters=beta
 
     Initial log-likelihood:
               2233.49721349214
@@ -274,7 +274,7 @@ dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductiv
     Final measurement error standard deviation estimates:
     rObs:		3.7973312715863171e-05		(2.3823637508103644e-07)
 
-dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationUpdateSparseCubatureDegree=51 EstimationFixedParameters=beta
+dynareOBC BoundedProductivityExactEstimation DataFile=BoundedProductivityEstimation.xlsx nocubature UpdateSparseCubatureDegree=51 FixedParameters=beta
 
     Initial log-likelihood:
               2236.48049859772
@@ -344,7 +344,7 @@ dynareOBC BoundedProductivityEstimation estimation nocubature
     Final measurement error standard deviation estimates:
     rObs:		9.8813129168249309e-324		(1.1100299800505145e-10)
 
-dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncertainty=1 OrderOverride=1 EstimationTimeOutLikelihoodEvaluation=300
+dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncertainty=1 OrderOverride=1 TimeOutLikelihoodEvaluation=300
 
     Initial log-likelihood:
               2232.11284615375
@@ -369,7 +369,7 @@ dynareOBC BoundedProductivityEstimation estimation FastCubature PeriodsOfUncerta
     Final measurement error standard deviation estimates:
     rObs:		1.3791542940613211e-11		(1.5822070535915574e-11)
 
-dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature 
+dynareOBC BoundedProductivityExactEstimation DataFile=BoundedProductivityEstimation.xlsx nocubature 
 
     Initial log-likelihood:
               2233.49721349214
@@ -394,7 +394,7 @@ dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductiv
     Final measurement error standard deviation estimates:
     rObs:		2.1141831522667090e-11		(3.9438500803720456e-16)
 
-dynareOBC BoundedProductivityExactEstimation EstimationDataFile=BoundedProductivityEstimation.xlsx nocubature EstimationUpdateSparseCubatureDegree=51
+dynareOBC BoundedProductivityExactEstimation DataFile=BoundedProductivityEstimation.xlsx nocubature UpdateSparseCubatureDegree=51
 
     Initial log-likelihood:
               2236.48049859772

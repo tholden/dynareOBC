@@ -10,8 +10,8 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     
     PredictIntDim = NAugState2 + NExo2;
     
-    if dynareOBC.EstimationPredictSparseCubatureDegree > 0
-        PredictCubatureOrder = ceil( 0.5 * ( dynareOBC.EstimationPredictSparseCubatureDegree - 1 ) );
+    if dynareOBC.PredictSparseCubatureDegree > 0
+        PredictCubatureOrder = ceil( 0.5 * ( dynareOBC.PredictSparseCubatureDegree - 1 ) );
         [ PredictWeights, pTmp, PredictNumPoints ] = fwtpts( PredictIntDim, PredictCubatureOrder );
         PredictCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( NAugState1, NExo2 ); zeros( NExo1, NAugState2 ), RootQ ] * pTmp, [ OldMean; zeros( NExo1, 1 ) ] );
     else
@@ -64,20 +64,20 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         end
     end
 
-    EstimationStdDevThreshold = dynareOBC.EstimationStdDevThreshold;
+    StdDevThreshold = dynareOBC.StdDevThreshold;
 
     PredictedStateAndControl = sum( bsxfun( @times, NewStateAndControlPoints, PredictWeights ), 2 );
     DemeanedNewStateAndControlPoints = bsxfun( @minus, NewStateAndControlPoints, PredictedStateAndControl );
     PredictedErrorCovariance = bsxfun( @times, DemeanedNewStateAndControlPoints, PredictWeights ) * DemeanedNewStateAndControlPoints';
-    RootPredictedErrorCovariance = ObtainEstimateRootCovariance( PredictedErrorCovariance, EstimationStdDevThreshold );
+    RootPredictedErrorCovariance = ObtainEstimateRootCovariance( PredictedErrorCovariance, StdDevThreshold );
         
     if NObs > 0
         NEndo3 = size( RootPredictedErrorCovariance, 2 );
         
         UpdateIntDim = NEndo3;
 
-        if dynareOBC.EstimationUpdateSparseCubatureDegree > 0
-            UpdateCubatureOrder = ceil( 0.5 * ( dynareOBC.EstimationUpdateSparseCubatureDegree - 1 ) );
+        if dynareOBC.UpdateSparseCubatureDegree > 0
+            UpdateCubatureOrder = ceil( 0.5 * ( dynareOBC.UpdateSparseCubatureDegree - 1 ) );
             [ UpdateWeights, pTmp, UpdateNumPoints ] = fwtpts( UpdateIntDim, UpdateCubatureOrder );
             DemeanedUpdateCubaturePoints = RootPredictedErrorCovariance * pTmp;
         else
@@ -113,7 +113,7 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
         Covariance = PredictedErrorCovariance - KalmanGain * PredictedInnovationCovariance * KalmanGain';
         
         Mean = Mean( SelectStateFromStateAndControls );
-        RootCovariance = ObtainEstimateRootCovariance( Covariance( SelectStateFromStateAndControls, SelectStateFromStateAndControls ), EstimationStdDevThreshold );
+        RootCovariance = ObtainEstimateRootCovariance( Covariance( SelectStateFromStateAndControls, SelectStateFromStateAndControls ), StdDevThreshold );
         
         TwoNLogObservationLikelihood = log( det( PredictedInnovationCovariance ) ) + ( FiniteMeasurements - PredictedMeasurements )' * ( PredictedInnovationCovariance \ ( FiniteMeasurements - PredictedMeasurements ) ) + NObs * 1.8378770664093454836;
     else

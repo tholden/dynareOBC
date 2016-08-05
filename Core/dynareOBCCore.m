@@ -71,7 +71,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Loading data for estimation.' );
         fprintf( '\n' );    
         
-        [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC.EstimationDataFile );
+        [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC.DataFile );
         if isempty( XLSStatus )
             error( 'dynareOBC:UnsupportedSpreadsheet', 'The given estimation data is in a format that cannot be read.' );
         end
@@ -79,11 +79,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             error( 'dynareOBC:MissingSpreadsheet', 'The data file does not contain a spreadsheet with observations and a spreadsheet with parameters.' );
         end
         XLSParameterSheetName = XLSSheets{2};
-        [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.EstimationDataFile, XLSParameterSheetName );
+        [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.DataFile, XLSParameterSheetName );
         dynareOBC.EstimationParameterNames = XLSText( 1, : );
-        EstimationFixedParameters = strsplit( dynareOBC.EstimationFixedParameters, '#' );
-        for i = 1 : length( EstimationFixedParameters )
-            EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, EstimationFixedParameters( i ) ), 1 );
+        FixedParameters = strsplit( dynareOBC.FixedParameters, '#' );
+        for i = 1 : length( FixedParameters )
+            EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, FixedParameters( i ) ), 1 );
             if ~isempty( EFPIndex )
                 dynareOBC.EstimationParameterNames( EFPIndex ) = [];
                 dynareOBC.EstimationParameterBounds( :, EFPIndex ) = [];
@@ -92,7 +92,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         if isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
             warning( 'dynareOBC:OverwritingVarList', 'The variable list passed to stoch_simul will be replaced with the list of observable variables.' );
         end
-        [ dynareOBC.EstimationData, XLSText ] = xlsread( dynareOBC.EstimationDataFile );
+        [ dynareOBC.EstimationData, XLSText ] = xlsread( dynareOBC.DataFile );
         dynareOBC.VarList = XLSText( 1, : );
         if dynareOBC.MLVSimulationMode > 1
             warning( 'dynareOBC:UnsupportedMLVSimulationModeWithEstimation', 'With estimation, MLV simulation modes greater than 1 are not currently supported.' );
@@ -401,9 +401,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
-        EstimationMinimisationFunctions = strsplit( dynareOBC.EstimationMinimisationFunctions, '#' );
-        for i = 1 : length( EstimationMinimisationFunctions )
-            FMinEstimateFunctor = str2func( EstimationMinimisationFunctions{ i } );
+        MinimisationFunctions = strsplit( dynareOBC.MinimisationFunctions, '#' );
+        for i = 1 : length( MinimisationFunctions )
+            FMinEstimateFunctor = str2func( MinimisationFunctions{ i } );
             [ EstimatedParameters, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB );
         end
         disp( 'Final log-likelihood:' );
@@ -416,7 +416,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Paranoid verification of final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
         
-        if dynareOBC.EstimationSkipStandardErrors
+        if dynareOBC.SkipStandardErrors
             disp( 'Final parameter estimates:' );
             for i = 1 : NumEstimatedParams
                 fprintf( '%s:\t\t%#.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ) );

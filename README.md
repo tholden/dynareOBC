@@ -176,30 +176,42 @@ Note:
     * `ShockScale=FLOAT` (default: `1`)
          Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller than one standard deviation.
 
- * **Settings for controlling estimation**
+ * **Settings for controlling estimation or smoothing**
     * `Estimation`
          Enables estimation of the model's parameters
-          * `EstimationDataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
+          * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
                Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates. The second sheet should contain a title row with the names of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
-          * `EstimationPrior=STRING` (default: `FlatPrior`)
+          * `Prior=STRING` (default: `FlatPrior`)
                Specifies the function containing the prior to be used in maximum a posteriori estimation. The default prior results in maximum likelihood estimates being returned. The function should accept a single argument giving the vector of parameters to be estimated, in the order they appear in the datafile, including the measumerent error variances in the final elements of the vector. The function should return the log prior density at that point (up to a constant).
-          * `EstimationFixedPointMaxIterations=INTEGER` (default: `1000`)
+          * `StationaryDistMaxIterations=INTEGER` (default: `1000`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
-          * `EstimationSkipStandardErrors`
+          * `SkipStandardErrors`
                Makes DynareOBC skip calculation of standard errors for the estimated parameters.
-          * `EstimationPredictSparseCubatureDegree=INTEGER` (default: `0`)
+          * `PredictSparseCubatureDegree=INTEGER` (default: `0`)
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the predict step. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
-          * `EstimationUpdateSparseCubatureDegree=INTEGER` (default: `0`)
+          * `UpdateSparseCubatureDegree=INTEGER` (default: `0`)
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the state of the model in the update step. While this requires evaluating the measurement equations less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model with measurement equations that are a polynomial of degree d, there is no need to have INTEGER larger than two times d. Values above `51` are treated as equal to `51`.
-          * `EstimationStdDevThreshold=FLOAT` (default: `1e-6`)
+          * `StdDevThreshold=FLOAT` (default: `1e-6`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
-          * `EstimationMinimisationFunctions=STRING`
+          * `MinimisationFunctions=STRING`
             (default: `CMAESWrapper#FMinConWrapper`)
                A `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox), `FMinBndWrapper` (performs repeated one dimensional search, only viable for very low dimensional problems).
-          * `EstimationFixedParameters=STRING` (default: `''`)
+          * `FixedParameters=STRING` (default: `''`)
                A `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur in the second sheet of the data file.
-          * `EstimationTimeOutLikelihoodEvaluation=INTEGER` (defaut: `60`)
+          * `TimeOutLikelihoodEvaluation=INTEGER` (defaut: `60`)
                Any likelihood evaluations that take longer than this number of seconds will be terminated prematurely. Beware that this may bias parameter estimates.
+    * `Smoothing`
+         Performs smoothing to estimate the model's state variables and shocks. Enabling this option disables estimation, so smoothing should be invoked in a separate DynareOBC run after estimation has completed.
+          * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
+               Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain at least one worksheet. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates.
+          * `StationaryDistMaxIterations=INTEGER` (default: `1000`)
+               The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
+          * `PredictSparseCubatureDegree=INTEGER` (default: `0`)
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the predict step. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
+          * `UpdateSparseCubatureDegree=INTEGER` (default: `0`)
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the state of the model in the update step. While this requires evaluating the measurement equations less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model with measurement equations that are a polynomial of degree d, there is no need to have INTEGER larger than two times d. Values above `51` are treated as equal to `51`.
+          * `StdDevThreshold=FLOAT` (default: `1e-6`)
+               Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
                
  * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`

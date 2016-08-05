@@ -33,9 +33,9 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     NState = sum( StateVariables );
     NAugState = NEndoMult * NState;
    
-    EstimationStdDevThreshold = dynareOBC.EstimationStdDevThreshold;
+    StdDevThreshold = dynareOBC.StdDevThreshold;
     
-    RootQ = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), EstimationStdDevThreshold );
+    RootQ = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), StdDevThreshold );
 
     LagIndices = find( dynareOBC.OriginalLeadLagIncidence( 1, : ) > 0 );
     % CurrentIndices = find( dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0 );
@@ -61,7 +61,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         TempCovarianceSelect = [ dr.inv_order_var( StateVariables ); NEndo + dr.inv_order_var( StateVariables ) ];
     end
 
-    TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( TempCovarianceSelect, TempCovarianceSelect ), EstimationStdDevThreshold );
+    TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( TempCovarianceSelect, TempCovarianceSelect ), StdDevThreshold );
 
     OldRootCovariance = zeros( NAugState, size( TempOldRootCovariance, 2 ) );
     OldRootCovariance( 1:size( TempOldRootCovariance, 1 ), : ) = TempOldRootCovariance; % handles 3rd order
@@ -87,13 +87,13 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     StartTime = tic;
     
-    for t = 1:dynareOBC.EstimationFixedPointMaxIterations
+    for t = 1:dynareOBC.StationaryDistMaxIterations
         try
             [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
         catch
             Mean = [];
         end
-        if isempty( Mean ) || toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation
+        if isempty( Mean ) || toc( StartTime ) > dynareOBC.TimeOutLikelihoodEvaluation
             return;
         end
         
@@ -105,7 +105,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         CompNew = [ Covariance(:); Mean ];
         
         OldMean = Mean;
-        OldRootCovariance = ObtainEstimateRootCovariance( Covariance, EstimationStdDevThreshold );
+        OldRootCovariance = ObtainEstimateRootCovariance( Covariance, StdDevThreshold );
         
         Error = max( abs( CompNew - CompOld ) );
         ErrorScale = sqrt( eps( max( abs( [ CompNew; CompOld ] ) ) ) );
@@ -125,14 +125,14 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         ErrorOld = Error;
     end
 
-    PriorFunc = str2func( dynareOBC.EstimationPrior );
+    PriorFunc = str2func( dynareOBC.Prior );
     PriorValue = PriorFunc( p );
     ScaledPriorValue = -2 * PriorValue / T;
     
     TwoNLogLikelihood = 0;
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
-        if isempty( Mean ) || toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation
+        if isempty( Mean ) || toc( StartTime ) > dynareOBC.TimeOutLikelihoodEvaluation
             TwoNLogLikelihood = Inf;
             return;
         end
