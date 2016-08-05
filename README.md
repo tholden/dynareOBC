@@ -272,11 +272,12 @@ Acknowledgements and copyright information
 ------------------------------------------
 
 DynareOBC incorporates code:
- * for calculating risky first order approximations that is copyright Meyer-Gohde, 2014.
+ * from Dynare, that is copyright Adjemian, Bastani, Juillard, Mihoubi, Perendia, Pfeifer, Ratto, Villemot, and the rest of the Dynare Team, 2011-2016,
+ * for calculating risky first order approximations, that is copyright Meyer-Gohde, 2014.
    More information is contained in his paper describing the algorithm, available here: http://enim.wiwi.hu-berlin.de/vwl/wtm2/mitarbeiter/meyer-gohde/stochss_main.pdf
- * from the nonlinear moving average toolkit that is copyright Lan and Alexander Meyer-Gohde, 2014,
- * for nested Gaussian cubature that is copyright Genz and Keister, 1996,
- * for displaying a progress bar that is copyright Cacho, "Stefan" and Scheff, 2014,
+ * from the nonlinear moving average toolkit, that is copyright Lan and Alexander Meyer-Gohde, 2014,
+ * for nested Gaussian cubature, that is copyright Genz and Keister, 1996,
+ * for displaying a progress bar, that is copyright Cacho, "Stefan" and Scheff, 2014,
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
  * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
  
