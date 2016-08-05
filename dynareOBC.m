@@ -337,9 +337,8 @@ function dynareOBC( InputFileName, varargin )
 %                Any likelihood evaluations that take longer than this number of seconds will be 
 %                terminated prematurely. Beware that this may bias parameter estimates. 
 %     * Smoothing 
-%          Performs smoothing to estimate the model's state variables and shocks. Enabling this 
-%          option disables estimation, so smoothing should be invoked in a separate DynareOBC run 
-%          after estimation has completed. 
+%          Performs smoothing to estimate the model's state variables and shocks. It is recommended 
+%          that smoothing is invoked in a separate DynareOBC run after estimation has completed. 
 %           * DataFile=STRING (default: MOD-FILE-NAME.xlsx) 
 %                Specifies the spreadsheet containing the data to estimate. This spreadsheet should 
 %                contain at least one worksheet. The first sheet should have a title row containing 
