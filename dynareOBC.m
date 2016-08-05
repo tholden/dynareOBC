@@ -12,7 +12,7 @@ function dynareOBC( InputFileName, varargin )
 %        
 % SPECIAL REQUIREMENTS
 %   none
-
+%
 % Copyright (C) 2001-2015 Dynare Team and Tom Holden
 %
 % This file is part of dynareOBC.
