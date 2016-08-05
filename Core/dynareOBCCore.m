@@ -81,7 +81,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         XLSParameterSheetName = XLSSheets{2};
         [ dynareOBC.EstimationParameterBounds, XLSText ] = xlsread( dynareOBC.DataFile, XLSParameterSheetName );
         dynareOBC.EstimationParameterNames = XLSText( 1, : );
-        FixedParameters = strsplit( dynareOBC.FixedParameters, '#' );
+        FixedParameters = strsplit( dynareOBC.FixedParameters, { ',', ';', '#' } );
         for i = 1 : length( FixedParameters )
             EFPIndex = find( strcmp( dynareOBC.EstimationParameterNames, FixedParameters( i ) ), 1 );
             if ~isempty( EFPIndex )
@@ -401,7 +401,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
-        MinimisationFunctions = strsplit( dynareOBC.MinimisationFunctions, '#' );
+        MinimisationFunctions = strsplit( dynareOBC.MinimisationFunctions, { ',', ';', '#' } );
         for i = 1 : length( MinimisationFunctions )
             FMinEstimateFunctor = str2func( MinimisationFunctions{ i } );
             [ EstimatedParameters, TwoNLogLikelihood ] = FMinEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB );
