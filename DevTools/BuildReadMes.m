@@ -39,7 +39,7 @@ try
         fprintf( TxtFileID, '\n' );
         fprintf( DOBCFileID, '\n' );
     end
-    fprintf( DOBCFileID, '%s', DOBCText );
+    fprintf( DOBCFileID, '\n%s', DOBCText );
     fclose( TxtFileID );
     fclose( DOBCFileID );
         
