@@ -478,7 +478,8 @@ function dynareOBC( InputFileName, varargin )
 %  
 % You should have received a copy of the GNU General Public License along with dynareOBC. If not, see 
 % http://www.gnu.org/licenses/. 
-%  
+% 
+
     %% Initialization
 
     CurrentFolder = pwd( );
