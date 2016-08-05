@@ -12,7 +12,6 @@ function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
     [ startindex, endindex ] = regexp( Argument, '(?<=(^datafile\=)).*$', 'once', 'ignorecase' );
     if ~isempty( startindex )
         dynareOBC.DataFile = Argument( startindex:endindex );
-        dynareOBC.Estimation = true;
         Matched = true;
         return
     end
