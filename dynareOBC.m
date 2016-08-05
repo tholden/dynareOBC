@@ -55,6 +55,7 @@ function dynareOBC( InputFileName, varargin )
         try
             fprintf( '\n' );
             ReadMeText = fileread( [ dynareOBCPath '/README.md' ] );
+            ReadMeText = strrep( ReadMeText, '`', '' );
             ReadMeLines = strsplit( ReadMeText, { '\f', '\n', '\r', '\v' }, 'CollapseDelimiters', false );
             for StrIdx = 1 : length( ReadMeLines )
                 ReadMeLine = ReadMeLines{ StrIdx };
