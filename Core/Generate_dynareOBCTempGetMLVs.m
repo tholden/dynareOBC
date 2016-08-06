@@ -9,11 +9,15 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     FileText = regexprep( FileText, '\[(\s*residual\s*)?(,)?(\s*g1\s*)?(,)?(\s*g2\s*)?(,)?(\s*g3\s*)?\]', 'MLVs', 'once' );
     % make indexing into y two dimensional
     FileText = regexprep( FileText, '\<y\s*\(\s*(\d+)\s*\)', 'y($1,MLVRepeatIndex)' );
+    % make indexing into x two dimensional (without it_)
+    FileText = regexprep( FileText, '\<x\s*\(\s*it_\s*,\s*(\d+)\s*\)', 'x($1,MLVRepeatIndex)' );
     % replace the initialisation of residual, with initialisation of our MLV array
     FileText = regexprep( FileText, 'residual\s*=\s*zeros\(\s*\d+\s*,\s*\d+\s*\)', 'MLVs = zeros( MLVNameIndex, size( y, 2 ) );\nfor MLVRepeatIndex = 1 : size( y, 2 )', 'once' );
+    % remove it_ from signature
+    FileText = regexprep( FileText, ',\s*it_', '', 'once' );
     
     % find the contemporaneous and lead variables
-    ContemporaneousVariablesSearch = '\<x\(\s*it_\s*,\s*\d+\s*\)';
+    ContemporaneousVariablesSearch = '\<x\(\d+,MLVRepeatIndex\)';
     for i = min( M.lead_lag_incidence( 2, M.lead_lag_incidence( 2, : ) > 0 ) ) : max( M.lead_lag_incidence( 2, : ) )
         ContemporaneousVariablesSearch = [ ContemporaneousVariablesSearch '|\<y\(' int2str( i ) ',MLVRepeatIndex\)' ]; %#ok<AGROW>
     end

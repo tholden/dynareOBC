@@ -29,7 +29,7 @@ cfg.GlobalDataSyncMethod = 'NoSync';
 
 %% Define argument types for entry-point 'dynareOBCTempGetMLVs'.
 ARGS = cell(1,1);
-ARGS{1} = cell(5,1);
+ARGS{1} = cell(4,1);
 if dynareOBC.Estimation || dynareOBC.Smoothing
     ARGS{1}{1} = coder.typeof( 0, [ sum( dynareOBC.OriginalLeadLagIncidence(:) > 0 ), Inf ], [ 0 1 ] );
 else
@@ -42,7 +42,6 @@ else
     ARGS{1}{3} = coder.Constant( M.params );
 end
 ARGS{1}{4} = coder.typeof( zeros( M.endo_nbr, 1 ) );
-ARGS{1}{5} = coder.Constant( 1 ); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
 codegen -config cfg dynareOBCTempGetMLVs -args ARGS{1} -o dynareOBCTempGetMLVs
