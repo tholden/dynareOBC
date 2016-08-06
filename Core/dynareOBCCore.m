@@ -373,9 +373,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.MLVSelect = 1 : length( dynareOBC.MLVNames );
     end
 
-    if ( dynareOBC.Estimation || dynareOBC.Smoothing ) && any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
-        error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
-    end
     if dynareOBC.Estimation
         if dynareOBC.Global
             error( 'dynareOBC:UnsupportedGlobalEstimation', 'Estimation of models solved globally is not currently supported.' );
