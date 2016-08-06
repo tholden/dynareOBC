@@ -41,7 +41,7 @@ if dynareOBC.Estimation
 else
     ARGS{1}{3} = coder.Constant( M.params );
 end
-ARGS{1}{4} = coder.typeof( zeros( M.endo_nbr, 1 ) );
+ARGS{1}{4} = coder.typeof( zeros( M.endo_nbr, 1 ) ); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
 codegen -config cfg dynareOBCTempGetMLVs -args ARGS{1} -o dynareOBCTempGetMLVs
