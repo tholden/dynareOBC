@@ -395,14 +395,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
         EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
         
-        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
+        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
         OpenPool;
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
         
-        OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
+        OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
         MinimisationFunctions = strsplit( dynareOBC.MinimisationFunctions, { ',', ';', '#' } );
@@ -414,7 +414,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( -0.5 * TwoNLogLikelihood );
  
         
-        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
+        [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Paranoid verification of final log-likelihood:' );
@@ -439,7 +439,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, M_, options_, oo_, dynareOBC ), EstimatedParameters, ObservationCount );
             [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
             
-            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, M_, options_, oo_, dynareOBC, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
+            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, M_, options_, oo_, dynareOBC, false, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
             HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
             
             RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );

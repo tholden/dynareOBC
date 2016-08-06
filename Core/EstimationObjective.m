@@ -1,4 +1,4 @@
-function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun )
+function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun, Smoothing )
     TwoNLogLikelihood = Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
     if nargout > 1
@@ -89,7 +89,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     for t = 1:dynareOBC.StationaryDistMaxIterations
         try
-            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
+            [ Mean, RootCovariance ] = KalmanStep( nan( 1, N ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls, Smoothing );
         catch
             Mean = [];
         end
@@ -131,7 +131,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     TwoNLogLikelihood = 0;
     for t = 1:T
-        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
+        [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls, Smoothing );
         if isempty( Mean ) || toc( StartTime ) > dynareOBC.TimeOutLikelihoodEvaluation
             TwoNLogLikelihood = Inf;
             return;
