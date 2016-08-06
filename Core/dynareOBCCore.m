@@ -503,6 +503,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
             [ oo_, dynareOBC ] = RunStochasticSimulation( M_, options_, oo_, dynareOBC );
         end
+        
+        if dynareOBC.Smoothing
+            fprintf( '\n' );
+            disp( 'Running smoothing.' );
+            fprintf( '\n' );
+
+            [ oo_, dynareOBC ] = RunSmoothing( M_, options_, oo_, dynareOBC );
+        end
 
         if ( dynareOBC.IRFPeriods > 0 ) && ( ~dynareOBC.NoGraph )
             if dynareOBC.IRFsAroundZero
