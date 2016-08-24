@@ -118,6 +118,8 @@ function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
     
     FileText = strjoin( FileLines, '\n' );
     
+    dynareOBC.RequiredExogenousVariables = cellfun( @( c ) str2double( c ), regexp( FileLines, '(?<=\<x\()\d+(?=,MLVRepeatIndex\))', 'match' ) );
+    
     dynareOBC.RequiredLaggedVariables = find( ismember( M.lead_lag_incidence( 1, : ), RequiredIndices ) );
     dynareOBC.RequiredCurrentVariables = find( ismember( M.lead_lag_incidence( 2, : ), RequiredIndices ) );
     if size( M.lead_lag_incidence, 1 ) > 2

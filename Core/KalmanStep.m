@@ -1,23 +1,31 @@
-function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Measurement, OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls, Smoothing )
-    Mean = [];
-    RootCovariance = [];
+function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRootUpdatedXVariance, UpdatedW, RootUpdatedWVariance, SmootherGain, PredictedX, RootPredictedXVariance ] = ...
+    KalmanStep( Measurement, OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing )
+
     TwoNLogObservationLikelihood = NaN;
+    UpdatedX = [];
+    RootUpdatedXVariance = [];
+    InvRootUpdatedXVariance = [];
+    UpdatedW = [];
+    RootUpdatedWVariance = [];
+    SmootherGain = [];
+    PredictedX = [];
+    RootPredictedXVariance = [];
     
-    NAugState1 = size( OldRootCovariance, 1 );
-    NAugState2 = size( OldRootCovariance, 2 );
+    NAugState1 = size( RootOldXVariance, 1 );
+    NAugState2 = size( RootOldXVariance, 2 );
     NExo1 = size( RootQ, 1 );
     NExo2 = size( RootQ, 2 );
     
-    PredictIntDim = NAugState2 + NExo2;
+    IntDim = NAugState2 + NExo2;
     
-    if dynareOBC.PredictSparseCubatureDegree > 0
-        PredictCubatureOrder = ceil( 0.5 * ( dynareOBC.PredictSparseCubatureDegree - 1 ) );
-        [ PredictWeights, pTmp, PredictNumPoints ] = fwtpts( PredictIntDim, PredictCubatureOrder );
-        PredictCubaturePoints = bsxfun( @plus, [ OldRootCovariance, zeros( NAugState1, NExo2 ); zeros( NExo1, NAugState2 ), RootQ ] * pTmp, [ OldMean; zeros( NExo1, 1 ) ] );
+    if dynareOBC.FilterCubatureDegree > 0
+        CubatureOrder = ceil( 0.5 * ( dynareOBC.FilterCubatureDegree - 1 ) );
+        [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
+        CubaturePoints = bsxfun( @plus, [ RootOldXVariance, zeros( NAugState1, NExo2 ); zeros( NExo1, NAugState2 ), RootQ ] * pTmp, [ OldX; zeros( NExo1, 1 ) ] );
     else
-        PredictNumPoints = 2 * PredictIntDim;
-        PredictCubaturePoints = [ bsxfun( @plus, [ OldRootCovariance, -OldRootCovariance ] * sqrt( PredictIntDim ), OldMean ), repmat( OldMean, 1, 2 * NExo2 ); zeros( NExo1, 2 * NAugState2 ),  [ RootQ -RootQ ] * sqrt( PredictIntDim ) ];
-        PredictWeights = 1 / PredictNumPoints;
+        NCubaturePoints = 2 * IntDim;
+        CubaturePoints = [ bsxfun( @plus, [ RootOldXVariance, -RootOldXVariance ] * sqrt( IntDim ), OldX ), repmat( OldX, 1, 2 * NExo2 ); zeros( NExo1, 2 * NAugState2 ),  [ RootQ -RootQ ] * sqrt( IntDim ) ];
+        CubatureWeights = 1 / NCubaturePoints;
     end
     
     Constant = dynareOBC.Constant;
@@ -25,102 +33,123 @@ function [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( Me
     NEndoMult = 2 .^ ( dynareOBC.Order - 1 );
     
     NAugEndo = NEndo * NEndoMult;
-           
-    AugPredictCubaturePoints = zeros( NAugEndo, PredictNumPoints );
-    AugPredictCubaturePoints( AugStateVariables, : ) = PredictCubaturePoints( 1:NAugState1, : );
 
+    StatePoints = CubaturePoints( 1:NAugState1, : );
+    ExoPoints = CubaturePoints( (NAugState1+1):end, : );
+
+    OldAugEndoPoints = zeros( NAugEndo, NCubaturePoints );
+    OldAugEndoPoints( SelectAugStateVariables, : ) = StatePoints;
+    
     Observed = find( isfinite( Measurement ) );
     FiniteMeasurements = Measurement( Observed )';
     NObs = length( Observed );
+       
+    NewAugEndoPoints = zeros( NAugEndo, NCubaturePoints );
     
-    if NObs > 0
-        RequiredFromPredict = RequiredForMeasurementSelect;
-    else
-        RequiredFromPredict = AugStateVariables;
-    end
-    NAugRequiredFromPredict = sum( RequiredFromPredict );
-    
-    NRequiredFromPredict = NAugRequiredFromPredict / NEndoMult;
-    
-    NewStateAndControlPoints = zeros( NAugRequiredFromPredict, PredictNumPoints );
-
-    for i = 1 : PredictNumPoints
-        InitialFullState = GetFullStateStruct( AugPredictCubaturePoints( :, i ), dynareOBC.Order, Constant ); %#ok<*PFBNS>
+    for i = 1 : NCubaturePoints
+        InitialFullState = GetFullStateStruct( OldAugEndoPoints( :, i ), dynareOBC.Order, Constant ); %#ok<*PFBNS>
         try
-            Simulation = SimulateModel( PredictCubaturePoints( (NAugState1+1):end, i ), false, InitialFullState, true, true );
+            Simulation = SimulateModel( ExoPoints( :, i ), false, InitialFullState, true, true );
         catch
             return
         end
+        
         if dynareOBC.Order == 1
-            TempNewStateAndControlPoints = Simulation.first + Simulation.bound_offset;
+            NewAugEndoPoints( :, i ) = Simulation.first + Simulation.bound_offset;
         elseif dynareOBC.Order == 2
-            TempNewStateAndControlPoints = [ Simulation.first; Simulation.second + Simulation.bound_offset ];
+            NewAugEndoPoints( :, i ) = [ Simulation.first; Simulation.second + Simulation.bound_offset ];
         else
-            TempNewStateAndControlPoints = [ Simulation.first; Simulation.second; Simulation.first_sigma_2; Simulation.third + Simulation.bound_offset ];
+            NewAugEndoPoints( :, i ) = [ Simulation.first; Simulation.second; Simulation.first_sigma_2; Simulation.third + Simulation.bound_offset ];
         end
-        NewStateAndControlPoints( :, i ) = TempNewStateAndControlPoints( RequiredFromPredict );
-        if any( ~isfinite( NewStateAndControlPoints( :, i ) ) )
+        if any( ~isfinite( NewAugEndoPoints( :, i ) ) )
             return
         end
     end
-
-    StdDevThreshold = dynareOBC.StdDevThreshold;
-
-    PredictedStateAndControl = sum( bsxfun( @times, NewStateAndControlPoints, PredictWeights ), 2 );
-    DemeanedNewStateAndControlPoints = bsxfun( @minus, NewStateAndControlPoints, PredictedStateAndControl );
-    PredictedErrorCovariance = bsxfun( @times, DemeanedNewStateAndControlPoints, PredictWeights ) * DemeanedNewStateAndControlPoints';
-    RootPredictedErrorCovariance = ObtainEstimateRootCovariance( PredictedErrorCovariance, StdDevThreshold );
-        
+    
     if NObs > 0
-        NEndo3 = size( RootPredictedErrorCovariance, 2 );
+        LagValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( OldAugEndoPoints, NEndo, NEndoMult, NCubaturePoints ), 2 ), NEndo, NCubaturePoints ), Constant );
+        LagValuesWithBoundsLagIndices = LagValuesWithBoundsBig( LagIndices, : );
         
-        UpdateIntDim = NEndo3;
-
-        if dynareOBC.UpdateSparseCubatureDegree > 0
-            UpdateCubatureOrder = ceil( 0.5 * ( dynareOBC.UpdateSparseCubatureDegree - 1 ) );
-            [ UpdateWeights, pTmp, UpdateNumPoints ] = fwtpts( UpdateIntDim, UpdateCubatureOrder );
-            DemeanedUpdateCubaturePoints = RootPredictedErrorCovariance * pTmp;
-        else
-            UpdateNumPoints = 2 * UpdateIntDim;
-            DemeanedUpdateCubaturePoints = [ RootPredictedErrorCovariance, -RootPredictedErrorCovariance ] * sqrt( UpdateIntDim );
-            UpdateWeights = 1 / UpdateNumPoints;
-        end
-        UpdateCubaturePoints = bsxfun( @plus, DemeanedUpdateCubaturePoints, PredictedStateAndControl );
+        CurrentValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( NewAugEndoPoints, NEndo, NEndoMult, NCubaturePoints ), 2 ), NEndo, NCubaturePoints ), Constant );
+        CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBoundsBig( CurrentIndices, : );
         
-        OldMeanBig = zeros( NAugEndo, 1 );
-        OldMeanBig( AugStateVariables ) = OldMean;
-        LagValuesWithBoundsBig = sum( reshape( OldMeanBig, NEndo, NEndoMult ), 2 ) + Constant;
-        LagValuesWithBoundsLagIndices = LagValuesWithBoundsBig( LagIndices );
-        
-        CurrentValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( UpdateCubaturePoints, NRequiredFromPredict, NEndoMult, UpdateNumPoints ), 2 ), NRequiredFromPredict, UpdateNumPoints ), Constant( RequiredFromPredict( 1:NEndo ) ) );
-        CurrentValuesWithBoundsCurrentIndices = NaN( length( MeasurementLHSSelect ), UpdateNumPoints );
-        CurrentValuesWithBoundsCurrentIndices( MeasurementLHSSelect, : ) = CurrentValuesWithBoundsBig( MeasurementRHSSelect, : );
-        MLVValues = dynareOBCTempGetMLVs( [ repmat( LagValuesWithBoundsLagIndices, 1, UpdateNumPoints ); CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, UpdateNumPoints ) ], NanShock, MParams, OoDrYs, 1 );
+        MLVValues = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, NCubaturePoints ) ], ExoPoints, MParams, OoDrYs );
         NewMeasurementPoints = MLVValues( Observed, : );
         if any( any( ~isfinite( NewMeasurementPoints ) ) )
             return
         end
-        
-        PredictedMeasurements = sum( bsxfun( @times, NewMeasurementPoints, UpdateWeights ), 2 );
-        DemeanedPredictedMeasurements = bsxfun( @minus, NewMeasurementPoints, PredictedMeasurements );
-        
-        PredictedInnovationCovariance = bsxfun( @times, DemeanedPredictedMeasurements, UpdateWeights ) * DemeanedPredictedMeasurements' + diag( MEVar );       
-        CrossCovariance = bsxfun( @times, DemeanedUpdateCubaturePoints, UpdateWeights ) * DemeanedPredictedMeasurements';
-        
-        KalmanGain = CrossCovariance / PredictedInnovationCovariance;
-        
-        Mean = PredictedStateAndControl + KalmanGain * ( FiniteMeasurements - PredictedMeasurements );
-        Covariance = PredictedErrorCovariance - KalmanGain * PredictedInnovationCovariance * KalmanGain';
-        
-        Mean = Mean( SelectStateFromStateAndControls );
-        RootCovariance = ObtainEstimateRootCovariance( Covariance( SelectStateFromStateAndControls, SelectStateFromStateAndControls ), StdDevThreshold );
-        
-        TwoNLogObservationLikelihood = log( det( PredictedInnovationCovariance ) ) + ( FiniteMeasurements - PredictedMeasurements )' * ( PredictedInnovationCovariance \ ( FiniteMeasurements - PredictedMeasurements ) ) + NObs * 1.8378770664093454836;
     else
-        Mean = PredictedStateAndControl;
-        RootCovariance = RootPredictedErrorCovariance;
-        TwoNLogObservationLikelihood = 0;
+        NewMeasurementPoints = zeros( 0, NCubaturePoints );
     end
+
+    StdDevThreshold = dynareOBC.StdDevThreshold;
+
+    WM = [ NewAugEndoPoints; ExoPoints; zeros( NObs, NCubaturePoints ); NewMeasurementPoints ];
+    
+    NWM = size( WM, 1 );
+    
+    PredictedWM = sum( bsxfun( @times, WM, CubatureWeights ), 2 );
+    DemeanedWM = bsxfun( @minus, WM, PredictedWM );
+    WeightedDemeanedWM = bsxfun( @times, DemeanedWM, CubatureWeights );
+    
+    PredictedWMVariance = zeros( NWM, NWM );
+    ZetaBlock = ( NWM - 2 * NObs + 1 ) : NWM;
+    diagMEVar = diag( MEVar );
+    PredictedWMVariance( ZetaBlock, ZetaBlock ) = [ diagMEVar, diagMEVar; diagMEVar, diagMEVar ];
+    
+    PredictedWMVariance = PredictedWMVariance + DemeanedWM' * WeightedDemeanedWM;
+    PredictedWMVariance = 0.5 * ( PredictedWMVariance + PredictedWMVariance' );
+    
+    if Smoothing
+        CovOldNewX = StatePoints' * WeightedDemeanedWM( SelectAugStateVariables, : ); % C_{t|t-1} in the paper
+    end
+    
+    WBlock = 1 : ( NAugEndo + NExo + NObs );
+    PredictedW = PredictedWM( WBlock );                                           % w_{t|t-1} in the paper
+    PredictedWVariance = PredictedWMVariance( WBlock, WBlock );                   % V_{t|t-1} in the paper
+    
+    MBlock = ( NWM - NObs + 1 ) : NWM;
+    PredictedM = PredictedWM( MBlock );                                           % m_{t|t-1} in the paper
+    PredictedMVariance = PredictedWMVariance( MBlock, MBlock );                   % Q_{t|t-1} in the paper
+    PredictedWMCovariance = PredictedWMVariance( WBlock, MBlock );                % R_{t|t-1} in the paper
+    
+    if NObs > 0
+    
+        [ ~, InvRootPredictedMVariance, LogDetPredictedMVariance ] = ObtainEstimateRootCovariance( PredictedMVariance, 0 );
+        ScaledPredictedWMCovariance = PredictedWMCovariance * InvRootPredictedMVariance';
+        ScaledResiduals = InvRootPredictedMVariance * ( FiniteMeasurements - PredictedM );
+
+        UpdatedW = PredictedW + ScaledPredictedWMCovariance * ScaledResiduals;                              % w_{t|t} in the paper
+        UpdatedWVariance = PredictedWVariance - ScaledPredictedWMCovariance * ScaledPredictedWMCovariance'; % V_{t|t} in the paper
+
+        UpdatedX = UpdatedW( SelectAugStateVariables );                                                     % x_{t|t} in the paper
+        UpdatedXVariance = UpdatedWVariance( SelectAugStateVariables, SelectAugStateVariables );            % P_{t|t} in the paper
+    
+        TwoNLogObservationLikelihood = LogDetPredictedMVariance + ScaledResiduals' * ScaledResiduals + NObs * 1.8378770664093454836;
+
+    else
+        
+        UpdatedW = PredictedW;
+        UpdatedWVariance = PredictedWVariance;
+
+        UpdatedX = PredictedW( SelectAugStateVariables );
+        UpdatedXVariance = PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables );
+        
+        TwoNLogObservationLikelihood = 0;
+        
+    end
+    
+    
+    if Smoothing
+        [ RootUpdatedXVariance, InvRootUpdatedXVariance ] = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
+        RootUpdatedWVariance = ObtainEstimateRootCovariance( UpdatedWVariance, 0 );
+        SmootherGain = ( RootOldWVariance * RootOldWVariance( 1:NAugState1, : )' ) * ( InvRootOldXVariance' * InvRootOldXVariance ) * CovOldNewX * ( InvRootUpdatedXVariance' * InvRootUpdatedXVariance ); % B_{t|t-1} * S_{t|t-1}^- in the paper
+        PredictedX = PredictedW( SelectAugStateVariables );
+        RootPredictedXVariance = ObtainEstimateRootCovariance( PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables ), 0 );
+    else
+        RootUpdatedXVariance = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
+    end
+        
 end
 
 function FullStateStruct = GetFullStateStruct( CurrentState, Order, Constant )
