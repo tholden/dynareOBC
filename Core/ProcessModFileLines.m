@@ -24,9 +24,9 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLi
                     if Indices.ModelStart > 0
                         error( 'dynareOBC:DuplicateBlock', 'Duplicate model blocks detected.' );
                     end
-                    line = regexprep( line, ',(use_dll|block|bytecode)(?!\w)', '' );
-                    line = regexprep( line, '(?<!\w)(use_dll|block|bytecode),', '' );
-                    line = regexprep( line, '\((use_dll|block|bytecode)\)', '' );
+                    line = regexprep( line, ',(use_dll|block|bytecode|linear)(?!\w)', '' );
+                    line = regexprep( line, '(?<!\w)(use_dll|block|bytecode|linear),', '' );
+                    line = regexprep( line, '\((use_dll|block|bytecode|linear)\)', '' );
                     FileLines{ write_i } = line;
                     SearchState = 1;
                     Indices.ModelStart = i;
