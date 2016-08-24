@@ -81,14 +81,14 @@ the Intel C Compiler, or the Intel Fortran Compiler.
  
 If you are using a 64-bit version of MATLAB, please ask for the following to be installed: 
  
- * https://download.microsoft.com/download/4/2/F/42FF78CE-8DE0-4C88-AD7A-5F8DFFB49F74/vc_redist.x64.exe 
+ * http://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x64.exe 
  * ww_ifort_redist_intel64_2016.3.207.msi from inside: 
    https://software.intel.com/sites/default/files/managed/46/54/ww_ifort_redist_msi_2016.3.207.zip 
  
 If you are using a 32-bit version of MATLAB, please ask for the following to be installed: 
  
  * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe 
- * https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.x86.exe 
+ * http://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x86.exe 
  * w_fcompxe_redist_ia32_2015.2.179.msi from inside: 
    https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip 
  
@@ -300,25 +300,15 @@ OPTIONS (NOT CASE SENSITIVE!) include:
                non-linear filter. 
           * SkipStandardErrors 
                Makes DynareOBC skip calculation of standard errors for the estimated parameters. 
-          * PredictSparseCubatureDegree=INTEGER (default: 0) 
+          * FilterCubatureDegree=INTEGER (default: 0) 
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature 
                rule including additional points for integrating over the states and shocks of the 
-               model in the predict step. While this requires solving the model less far from the 
+               model in the filter. While this requires solving the model less far from the 
                steady-state when the state dimension is large, it also requires negative weights, 
                which may cause numerical issues e.g. with the positive definiteness of the state 
                covariance matrix. The cubature method exactly integrates a polynomial of degree 
                INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger 
                than twice the order of approximation. Values above 51 are treated as equal to 51. 
-          * UpdateSparseCubatureDegree=INTEGER (default: 0) 
-               If this is greater than zero, then DynareOBC uses an alternative sparse cubature 
-               rule including additional points for integrating over the state of the model in the 
-               update step. While this requires evaluating the measurement equations less far from 
-               the steady-state when the state dimension is large, it also requires negative 
-               weights, which may cause numerical issues e.g. with the positive definiteness of the 
-               state covariance matrix. The cubature method exactly integrates a polynomial of 
-               degree INTEGER. Thus, in a model with measurement equations that are a polynomial of 
-               degree d, there is no need to have INTEGER larger than two times d. Values above 51 
-               are treated as equal to 51. 
           * StdDevThreshold=FLOAT (default: 1e-6) 
                Specifies the threshold below which the standard deviation of the state is set to 
                zero, for dimension reduction. 
@@ -346,7 +336,7 @@ OPTIONS (NOT CASE SENSITIVE!) include:
           * StationaryDistMaxIterations=INTEGER (default: 1000) 
                The maximum number of iterations used to evaluate the stationary distribution of the 
                non-linear filter. 
-          * PredictSparseCubatureDegree=INTEGER (default: 0) 
+          * FilterCubatureDegree=INTEGER (default: 0) 
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature 
                rule including additional points for integrating over the states and shocks of the 
                model in the predict step. While this requires solving the model less far from the 
@@ -355,16 +345,6 @@ OPTIONS (NOT CASE SENSITIVE!) include:
                covariance matrix. The cubature method exactly integrates a polynomial of degree 
                INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger 
                than twice the order of approximation. Values above 51 are treated as equal to 51. 
-          * UpdateSparseCubatureDegree=INTEGER (default: 0) 
-               If this is greater than zero, then DynareOBC uses an alternative sparse cubature 
-               rule including additional points for integrating over the state of the model in the 
-               update step. While this requires evaluating the measurement equations less far from 
-               the steady-state when the state dimension is large, it also requires negative 
-               weights, which may cause numerical issues e.g. with the positive definiteness of the 
-               state covariance matrix. The cubature method exactly integrates a polynomial of 
-               degree INTEGER. Thus, in a model with measurement equations that are a polynomial of 
-               degree d, there is no need to have INTEGER larger than two times d. Values above 51 
-               are treated as equal to 51. 
           * StdDevThreshold=FLOAT (default: 1e-6) 
                Specifies the threshold below which the standard deviation of the state is set to 
                zero, for dimension reduction. 
