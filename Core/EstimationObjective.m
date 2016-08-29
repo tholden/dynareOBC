@@ -7,7 +7,8 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     end
 
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
-    MEVar = p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):end );
+    MEVar = exp( p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):( end - 1 ) ) );
+    TDoF = 2 + exp( p( end ) );
     
     options.qz_criterium = 1 - 1e-6;
     try
@@ -81,7 +82,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     for t = 1:dynareOBC.StationaryDistMaxIterations
         try
-            [ ~, X, RootXVariance, InvRootXVariance, ~, RootWVariance ] = KalmanStep( nan( 1, N ), OldX, RootOldXVariance, [], [], RootQ, MEVar, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, false );
+            [ ~, X, RootXVariance, InvRootXVariance, ~, RootWVariance ] = KalmanStep( nan( 1, N ), OldX, RootOldXVariance, [], [], RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, false );
         catch
             X = [];
         end
@@ -135,7 +136,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         RootOldWVariance = RootWVariance;
         if Smoothing
             [ TwoNLogObservationLikelihood, X, RootXVariance, InvRootXVariance, W, RootWVariance, SmootherGain, PredictedX, RootPredictedXVariance ] = ...
-                KalmanStep( dynareOBC.EstimationData( t, : ), OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing );
+                KalmanStep( dynareOBC.EstimationData( t, : ), OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing );
             FilteredWs{ t } = W;
             RootFilteredWVariances{ t } = RootWVariance;
             SmootherGains{ t } = SmootherGain;
@@ -143,7 +144,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
             RootPredictedXVariances{ t } = RootPredictedXVariance;
         else
             [ TwoNLogObservationLikelihood, X, RootXVariance ] = ...
-                KalmanStep( dynareOBC.EstimationData( t, : ), OldX, RootOldXVariance, [], [], RootQ, MEVar, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing );
+                KalmanStep( dynareOBC.EstimationData( t, : ), OldX, RootOldXVariance, [], [], RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing );
             if isempty( X ) || toc( StartTime ) > dynareOBC.TimeOutLikelihoodEvaluation
                 TwoNLogLikelihood = Inf;
                 return;

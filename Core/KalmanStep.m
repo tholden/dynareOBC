@@ -1,5 +1,5 @@
 function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRootUpdatedXVariance, UpdatedW, RootUpdatedWVariance, SmootherGain, PredictedX, RootPredictedXVariance ] = ...
-    KalmanStep( Measurement, OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing )
+    KalmanStep( Measurement, OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing )
 
     TwoNLogObservationLikelihood = NaN;
     UpdatedX = [];
@@ -23,8 +23,9 @@ function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRoot
         [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
         CubaturePoints = bsxfun( @plus, [ RootOldXVariance, zeros( NAugState1, NExo2 ); zeros( NExo1, NAugState2 ), RootQ ] * pTmp, [ OldX; zeros( NExo1, 1 ) ] );
     else
-        NCubaturePoints = 2 * IntDim;
-        CubaturePoints = [ bsxfun( @plus, [ RootOldXVariance, -RootOldXVariance ] * sqrt( IntDim ), OldX ), repmat( OldX, 1, 2 * NExo2 ); zeros( NExo1, 2 * NAugState2 ),  [ RootQ -RootQ ] * sqrt( IntDim ) ];
+        NCubaturePoints = 2 * IntDim + 1;
+        wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
+        CubaturePoints = [ OldX, bsxfun( @plus, [ RootOldXVariance, -RootOldXVariance ] * wTemp, OldX ), repmat( OldX, 1, 2 * NExo2 ); zeros( NExo1, 1 + 2 * NAugState2 ),  [ RootQ -RootQ ] * wTemp ];
         CubatureWeights = 1 / NCubaturePoints;
     end
     
@@ -112,6 +113,12 @@ function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRoot
     PredictedM = PredictedWM( MBlock );                                           % m_{t|t-1} in the paper
     PredictedMVariance = PredictedWMVariance( MBlock, MBlock );                   % Q_{t|t-1} in the paper
     PredictedWMCovariance = PredictedWMVariance( WBlock, MBlock );                % R_{t|t-1} in the paper
+    
+    if dynareOBC.NoSkewLikelihood
+        LocationM = PredictedM;
+    else
+        LocationM = WM( MBlock, 1 );
+    end
     
     if NObs > 0
     

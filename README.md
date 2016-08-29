@@ -191,6 +191,10 @@ Note:
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the filter. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
           * `StdDevThreshold=FLOAT` (default: `1e-6`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
+          * `NoSkewLikelihood`
+               Disables the skewing of the distribution used to approximate the likelihood.
+          * `NoTLikelihood`
+               Disables the use of a (skew) t-distribution to approximate the likelihood. Instead a (skew) normal distribution will be used.
           * `MinimisationFunctions=STRING`
             (default: `CMAESWrapper,FMinConWrapper`)
                A `,` `;` or `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox), `FMinBndWrapper` (performs repeated one dimensional search, only viable for very low dimensional problems).

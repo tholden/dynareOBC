@@ -390,7 +390,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         UBTemp = dynareOBC.EstimationParameterBounds(2,:)';
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
-        EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
+        EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); log( 0.0001 ) * ones( NumObservables, 1 ) ];
+        TLikelihood = ~dynareOBC.NoTLikelihood;
+        if TLikelihood
+            EstimatedParameters( end + 1 ) = log( 10 );
+        end
         
         [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
@@ -399,9 +403,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Initial log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
         
-        OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false, false );
-        OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
-        OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
+        if TLikelihood
+            OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false, false );
+        else
+            OptiFunction = @( p ) EstimationObjective( [ p; Inf ], M_, options_, oo_, dynareOBC, false, false );
+        end
+        OptiLB = [ LBTemp; -Inf( NumObservables + TLikelihood, 1 ) ];
+        OptiUB = [ UBTemp; Inf( NumObservables + TLikelihood, 1 ) ];
         MinimisationFunctions = strsplit( dynareOBC.MinimisationFunctions, { ',', ';', '#' } );
         for i = 1 : length( MinimisationFunctions )
             FMinEstimateFunctor = str2func( MinimisationFunctions{ i } );
@@ -425,7 +433,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             fprintf( '\n' );
             disp( 'Final measurement error standard deviation estimates:' );
             for i = 1 : NumObservables
-                fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ) );
+                fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, exp( EstimatedParameters( NumEstimatedParams + i ) ) );
+            end
+            if TLikelihood
+                fprintf( '\n' );
+                disp( 'Final measurement degrees of freedom parameter:' );
+                fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, 2 + exp( EstimatedParameters( end ) ) );
             end
         else
             disp( 'Calculating standard errors.' );
@@ -451,7 +464,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             fprintf( '\n' );
             disp( 'Final measurement error standard deviation estimates:' );
             for i = 1 : NumObservables
-                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ), EstimatedParameterStandardErrors( NumEstimatedParams + i ) );
+                TmpEstimatedParameter = exp( EstimatedParameters( NumEstimatedParams + i ) );
+                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, TmpEstimatedParameter, TmpEstimatedParameter * EstimatedParameterStandardErrors( NumEstimatedParams + i ) ); % delta method
+            end
+            if TLikelihood
+                fprintf( '\n' );
+                disp( 'Final measurement degrees of freedom parameter:' );
+                TmpEstimatedParameter = exp( EstimatedParameters( end ) );
+                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, 2 + TmpEstimatedParameter, TmpEstimatedParameter * EstimatedParameterStandardErrors( end ) ); % delta method
             end
         end
         
