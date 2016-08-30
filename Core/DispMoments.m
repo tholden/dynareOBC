@@ -1,4 +1,4 @@
-function DispMoments(M, options, oo, dynareOBC)
+function DispMoments(~, options, oo, dynareOBC)
 % Derived from disp_moments.m in Dynare. Original file follows.
 
 % Displays moments of simulated variables
@@ -57,6 +57,10 @@ try
 
     labels = deblank( char( [ dynareOBC.EndoVariables( VariableSelect ) dynareOBC.MLVNames( MLVSelect ) ] ) );
 
+    sDynareVersion = dynare_version;
+    sDynareVersion = sDynareVersion( 1:3 );
+    DynareVersion = str2double( sDynareVersion );
+
     if options.nomoments == 0
         z = [ m' s' s2' (nanmean2(y.^3)./s2.^1.5)' (nanmean2(y.^4)./(s2.*s2)-3)' ];    
         title='MOMENTS OF SIMULATED VARIABLES';
@@ -66,7 +70,11 @@ try
         end
         headers=char('VARIABLE','MEAN','STD. DEV.','VARIANCE','SKEWNESS', ...
                      'KURTOSIS');
-        dyntable(title,headers,labels,z,size(labels,2)+2,16,6);
+        if DynareVersion >= 4.5
+            dyntable(options,title,headers,labels,z,size(labels,2)+2,16,6);
+        else
+            dyntable(title,headers,labels,z,size(labels,2)+2,16,6);
+        end
     end
 
     if options.nocorr == 0
@@ -78,7 +86,11 @@ try
                          num2str(options.hp_filter) ')'];
             end
             headers = char( 'VARIABLE', labels );
-            dyntable(title,headers,labels,corr,size(labels,2)+2,8,4);
+            if DynareVersion >= 4.5
+                dyntable(options,title,headers,labels,corr,size(labels,2)+2,8,4);
+            else
+                dyntable(title,headers,labels,corr,size(labels,2)+2,8,4);
+            end
         end
     end
 
@@ -99,8 +111,12 @@ try
                 title = [title ' (HP filter, lambda = ' ...
                          num2str(options.hp_filter) ')'];
             end
-            headers = char('VARIABLE',int2str([1:ar]'));
-            dyntable(title,headers,labels,autocorr,size(labels,2)+2,8,4);
+            headers = char('VARIABLE',int2str((1:ar)'));
+            if DynareVersion >= 4.5
+                dyntable(options,title,headers,labels,autocorr,size(labels,2)+2,8,4);
+            else
+                dyntable(title,headers,labels,autocorr,size(labels,2)+2,8,4);
+            end
         end
     end
 catch Error
