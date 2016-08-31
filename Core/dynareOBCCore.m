@@ -135,11 +135,16 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     disp( 'Performing second dynare run to get the steady-state.' );
     fprintf( '\n' );
 
-    steadystatemfilename = [ dynareOBC.BaseFileName '_steadystate.m' ];
-    if exist( steadystatemfilename, 'file' )
-        copyfile( steadystatemfilename, 'dynareOBCTemp2_steadystate.m', 'f' );
+    SteadyStateMFileName = [ dynareOBC.BaseFileName '_steadystate.m' ];
+    if exist( SteadyStateMFileName, 'file' )
+        copyfile( SteadyStateMFileName, 'dynareOBCTemp2_steadystate.m', 'f' );
     end
-
+    
+    SteadyState2MFileName = [ dynareOBC.BaseFileName '_steadystate2.m' ];
+    if exist( SteadyState2MFileName, 'file' )
+        copyfile( SteadyState2MFileName, 'dynareOBCTemp2_steadystate2.m', 'f' );
+    end
+    
     global options_
     options_.solve_tolf = eps;
     options_.solve_tolx = eps;
