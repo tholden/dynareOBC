@@ -144,6 +144,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     options_.solve_tolf = eps;
     options_.solve_tolx = eps;
     dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
+    
     global oo_ M_
     oo_.steady_state = oo_.dr.ys;
 
@@ -242,7 +243,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     [ FileLines, Indices ] = PerformDeletion( Indices.InitValStart, Indices.InitValEnd, FileLines, Indices );
     [ FileLines, Indices ] = PerformDeletion( Indices.SteadyStateModelStart, Indices.SteadyStateModelEnd, FileLines, Indices );
 
-    ToInsertBeforeModel = { };
+    ToInsertBeforeModel = cell( 1, M_.param_nbr );
+    for ParamIndex = 1 : M_.param_nbr
+        ToInsertBeforeModel{ ParamIndex } = sprintf( '%s=%.17e;', strtrim( M_.param_names( ParamIndex, : ) ), M_.params( ParamIndex ) );
+    end
+
     ToInsertInModelAtEnd = { };
     ToInsertInShocks = { };
        
