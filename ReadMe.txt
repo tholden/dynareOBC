@@ -260,7 +260,7 @@ OPTIONS (NOT CASE SENSITIVE!) include:
     * UseVPA 
          Enables more accurate evaluation of determinants using the symbolic toolbox.  
     * LPSolver=STRING 
-      (default: xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*) 
+      (default: xpress,gurobi,cplex,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*) 
          Specifies the preferred solver to use for the linear programming problem that is solved 
          when checking whether matrices are S/S_0. To find out what solvers are available to you, 
          run dynareOBC TestSolvers, and examine the list displayed by YALMIP.  
