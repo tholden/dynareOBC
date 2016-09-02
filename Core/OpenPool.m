@@ -26,7 +26,7 @@ function OpenPoolInternal
     catch
     end
     try
-        if matlabpool('size') == 0 %#ok<DPOOL>
+        if matlabpool( 'size' ) == 0 %#ok<DPOOL>
             PreOpen;
             matlabpool; %#ok<DPOOL>
         end
