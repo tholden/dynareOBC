@@ -30,7 +30,7 @@ function OpenPoolInternal
             PreOpen;
             matlabpool; %#ok<DPOOL>
         end
-        MatlabPoolSize = matlabpool('size'); %#ok<DPOOL>
+        MatlabPoolSize = matlabpool( 'size' ); %#ok<DPOOL>
         return
     catch
     end
