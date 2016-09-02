@@ -1,10 +1,18 @@
 function [ x, f ] = CMAESWrapper( OptiFunction, x, lb, ub, varargin )
+
+    OpenPool;
+
     try
         pool = gcp;
         nw = pool.NumWorkers;
     catch
-        nw = 1;
+        try
+            nw = matlabpool( 'size' ); %#ok<DPOOL>
+        catch
+            nw = 1;
+        end
     end
+    
     cmaesOptions = cmaes;
     cmaesOptions.EvalParallel = 1;
     cmaesOptions.PopSize = [ 'max( ' int2str( nw ) ', (4 + floor(3*log(N))) )' ];
@@ -20,5 +28,6 @@ function [ x, f ] = CMAESWrapper( OptiFunction, x, lb, ub, varargin )
     [~,~,~,~,~,best] = CMAESMinimisation( @( XV ) CMAESParallelWrapper( OptiFunction, XV ), x, sigma, cmaesOptions );
     x = max( lb, min( ub, best.x ) );
     f = best.f;
+    
 end
 
