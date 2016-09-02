@@ -93,7 +93,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         catch
             Mean = [];
         end
-        if isempty( Mean ) || toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation
+        if isempty( Mean ) || ( ~InitialRun && toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation )
             return;
         end
         
@@ -132,7 +132,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     TwoNLogLikelihood = 0;
     for t = 1:T
         [ Mean, RootCovariance, TwoNLogObservationLikelihood ] = KalmanStep( dynareOBC.EstimationData( t, : ), OldMean, OldRootCovariance, RootQ, MEVar, MParams, OoDrYs, dynareOBC, RequiredForMeasurementSelect, LagIndices, MeasurementLHSSelect, MeasurementRHSSelect, FutureValues, NanShock, AugStateVariables, SelectStateFromStateAndControls );
-        if isempty( Mean ) || toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation
+        if isempty( Mean ) || ( ~InitialRun && toc( StartTime ) > dynareOBC.EstimationTimeOutLikelihoodEvaluation )
             TwoNLogLikelihood = Inf;
             return;
         end
