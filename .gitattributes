@@ -2,26 +2,59 @@
 * text=auto
 
 # Custom for Visual Studio
-*.cs     diff=csharp
-*.sln    merge=union
-*.csproj merge=union
-*.vbproj merge=union
-*.fsproj merge=union
-*.dbproj merge=union
+*.cs        diff=csharp
+*.sln       merge=union
+*.csproj    merge=union
+*.vbproj    merge=union
+*.fsproj    merge=union
+*.dbproj    merge=union
 
 # Standard to msysgit
-*.doc	 diff=astextplain
-*.DOC	 diff=astextplain
-*.docx diff=astextplain
-*.DOCX diff=astextplain
-*.dot  diff=astextplain
-*.DOT  diff=astextplain
-*.pdf  diff=astextplain
-*.PDF	 diff=astextplain
-*.rtf	 diff=astextplain
-*.RTF	 diff=astextplain
+*.doc       diff=astextplain
+*.DOC       diff=astextplain
+*.docx      diff=astextplain
+*.DOCX      diff=astextplain
+*.dot       diff=astextplain
+*.DOT       diff=astextplain
+*.pdf       diff=astextplain
+*.PDF       diff=astextplain
+*.rtf       diff=astextplain
+*.RTF       diff=astextplain
 
-*.m text eol=lf
-*.md text eol=lf
+*.m         text eol=lf
+*.md        text eol=lf
+*.sh        text eol=lf
+*.c         text eol=lf
+*.cpp       text eol=lf
+*.h         text eol=lf
+*.hpp       text eol=lf
+*.css       text eol=lf
+*.js        text eol=lf
+*.html      text eol=lf
+*.xml       text eol=lf
 
+*.bat       text eol=crlf
 
+*.mod       text=auto
+*.txt       text=auto
+
+*.dll       binary
+*.emf       binary
+*.eps       binary
+*.exe       binary
+*.fig       binary
+*.gif       binary
+*.jpg       binary
+*.lib       binary
+*.mat       binary
+*.mexa64    binary
+*.mexglx    binary
+*.mexmaci64 binary
+*.mexw32    binary
+*.mexw64    binary
+*.pdf       binary
+*.png       binary
+*.prj       binary
+*.ps        binary
+*.xlsx      binary
+*.zip       binary

@@ -260,7 +260,7 @@ OPTIONS (NOT CASE SENSITIVE!) include:
     * UseVPA 
          Enables more accurate evaluation of determinants using the symbolic toolbox.  
     * LPSolver=STRING 
-      (default: xpress,gurobi,cplex,mosek,clp,scip,linprog,glpk,lpsolve,cdd,qsopt,*) 
+      (default: xpress,gurobi,cplex,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*) 
          Specifies the preferred solver to use for the linear programming problem that is solved 
          when checking whether matrices are S/S_0. To find out what solvers are available to you, 
          run dynareOBC TestSolvers, and examine the list displayed by YALMIP.  
@@ -312,6 +312,11 @@ OPTIONS (NOT CASE SENSITIVE!) include:
           * StdDevThreshold=FLOAT (default: 1e-6) 
                Specifies the threshold below which the standard deviation of the state is set to 
                zero, for dimension reduction. 
+          * NoSkewLikelihood 
+               Disables the skewing of the distribution used to approximate the likelihood. 
+          * NoTLikelihood 
+               Disables the use of a (skew) t-distribution to approximate the likelihood. Instead a 
+               (skew) normal distribution will be used. 
           * MinimisationFunctions=STRING 
             (default: CMAESWrapper,FMinConWrapper) 
                A , ; or # delimitated list of minimisation function names, which will be invoked in 

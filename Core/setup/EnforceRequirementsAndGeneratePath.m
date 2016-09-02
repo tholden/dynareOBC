@@ -41,25 +41,37 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
             RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin{:} );
         end
     else
-        if exist( [ dynareOBCPath '/FastStart.mat' ], 'file' )
-            fprintf( '\n' );
-            disp( [ 'Restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
-            fprintf( '\n' );
-            FastStartStruct = load( [ dynareOBCPath filesep 'FastStart.mat' ] );
-            GlobalVariables = FastStartStruct.GlobalVariables;
-            GlobalVariablesList = fieldnames( GlobalVariables );
-            IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'QuickPCheckUseMex', 'AltPTestUseMex', 'ptestUseMex', 'spkronUseMex', 'MatlabPoolSize' };
-            for i = 1 : length( GlobalVariablesList )
-                GlobalVariableName = GlobalVariablesList{i};
-                if ismember( GlobalVariableName, IgnoreList )
-                    continue;
+        try
+            if exist( [ dynareOBCPath '/FastStart.mat' ], 'file' )
+                FastStartStruct = load( [ dynareOBCPath filesep 'FastStart.mat' ] );
+                if ~isempty( FastStartStruct ) && isstruct( FastStartStruct ) && isfield( FastStartStruct, 'GlobalVariables' ) && isfield( FastStartStruct, 'PathsToAdd' ) && ~isempty( FastStartStruct.GlobalVariables ) && ~isempty( FastStartStruct.PathsToAdd )
+                    fprintf( '\n' );
+                    disp( [ 'Restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
+                    fprintf( '\n' );
+                    GlobalVariables = FastStartStruct.GlobalVariables;
+                    GlobalVariablesList = fieldnames( GlobalVariables );
+                    IgnoreList = { 'dynareOBC_', 'UpdateWarningStrings', 'M_', 'options_', 'oo_', 'QuickPCheckUseMex', 'AltPTestUseMex', 'ptestUseMex', 'spkronUseMex', 'MatlabPoolSize' };
+                    for i = 1 : length( GlobalVariablesList )
+                        GlobalVariableName = GlobalVariablesList{i};
+                        if ismember( GlobalVariableName, IgnoreList )
+                            continue;
+                        end
+                        eval( [ 'global ' GlobalVariableName '; ' GlobalVariableName ' = GlobalVariables.' GlobalVariableName ';' ] );
+                    end
+                    PathsToAdd = FastStartStruct.PathsToAdd;
+                    addpath( PathsToAdd{:} );
+                    rehash path;
+                    return;
+                else
+                    fprintf( '\n' );
+                    disp( [ 'Failed restoring paths and globals from: ' dynareOBCPath '/FastStart.mat due to apparent file corruption.' ] );
+                    fprintf( '\n' );
                 end
-                eval( [ 'global ' GlobalVariableName '; ' GlobalVariableName ' = GlobalVariables.' GlobalVariableName ';' ] );
             end
-            PathsToAdd = FastStartStruct.PathsToAdd;
-            addpath( PathsToAdd{:} );
-            rehash path;
-            return;
+        catch Error
+            fprintf( '\n' );
+            disp( [ 'Error: ' Error.message ' restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
+            fprintf( '\n' );
         end
     end
 
