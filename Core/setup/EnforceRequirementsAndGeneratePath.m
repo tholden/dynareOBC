@@ -62,9 +62,16 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
                     addpath( PathsToAdd{:} );
                     rehash path;
                     return;
+                else
+                    fprintf( '\n' );
+                    disp( [ 'Failed restoring paths and globals from: ' dynareOBCPath '/FastStart.mat due to apparent file corruption.' ] );
+                    fprintf( '\n' );
                 end
             end
-        catch
+        catch Error
+            fprintf( '\n' );
+            disp( [ 'Error: ' Error.message ' restoring paths and globals from: ' dynareOBCPath '/FastStart.mat' ] );
+            fprintf( '\n' );
         end
     end
 
