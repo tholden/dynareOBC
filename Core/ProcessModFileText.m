@@ -1,8 +1,9 @@
 function FileText = ProcessModFileText( FileText )
     % remove comments and latex, imperfect, but should be fine in practice
+    FileText = regexprep( FileText, '^(.*?)//(.*)$', '$1', 'lineanchors', 'dotexceptnewline' );
     FileText = regexprep( FileText, '/\*.*?\*/', '' );
-    FileText = regexprep( FileText, '^(.*?)(//|%)(.*)$', '$1', 'lineanchors', 'dotexceptnewline' );
     FileText = regexprep( FileText, '\$.*?\$', '', 'dotexceptnewline' );
+    FileText = regexprep( FileText, '^(.*?)%(.*)$', '$1', 'lineanchors', 'dotexceptnewline' );
     % some mathematical normalisation
     FileText = regexprep( FileText, '(\-\-)+', '\+' );
     FileText = regexprep( FileText, '\+*\-\+*', '\-' );
