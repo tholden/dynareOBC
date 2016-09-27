@@ -46,7 +46,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     %% Initialization
 
     addpath( [ dynareOBCPath '/Core/' ] );
-    ClosePool;
+    dynareOBCCleanUp;
     
     addpath( [ dynareOBCPath '/Core/nlma/' ] );
     
