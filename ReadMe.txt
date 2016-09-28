@@ -18,7 +18,10 @@ https://github.com/tholden/dynareOBC/raw/master/EstimationPaper.pdf
  
 The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.50132 
  
-Alternatively, read the non-technical slides from here: 
+Alternatively, read the technical slides from here: 
+https://github.com/tholden/dynareOBC/raw/master/TechnicalSlides.pdf 
+ 
+Or the non-technical slides from here: 
 https://github.com/tholden/dynareOBC/raw/master/NonTechnicalSlides.pdf 
  
 Or the course slides from here: https://github.com/tholden/dynareOBC/raw/master/CourseSlides.pdf 
