@@ -177,8 +177,8 @@ OPTIONS (NOT CASE SENSITIVE!) include:
          If this is non-zero, then Gaussian cubature is not used (so the MaxCubatureDegree option 
          is ignored). Instead, quasi- Monte Carlo integration with at most 2^(1+INTEGER) - 1 
          samples is used. 
-    * MaxCubatureDegree=INTEGER (default: 7) 
-         Specifies the degree of polynomial which will be integrated exactly in the highest degree, 
+    * MaxCubatureDegree=INTEGER (default: 5) 
+         Specifies the degree of polynomial which will be integrated exactly in the highest degree 
          cubature performed. Values above 51 are treated as equal to 51. Note that setting 
          CubatureSmoothing>0 will reduce the effective maximum accuracy by 2 degrees. Setting 
          CubatureTolerance>0 may also mean that the result does not integrate the stated degree 
