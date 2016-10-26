@@ -47,6 +47,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if dynareOBC.NumberOfMax == 0
         dynareOBC.NoCubature = true;
         dynareOBC.Global = false;
+        dynareOBC.FullHorizon = false;
     end
     
     [ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
