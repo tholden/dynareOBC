@@ -10,7 +10,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.UseSimulationCode = false;
         end
     end
-    
+
     fprintf( '\n' );
     disp( 'Performing first dynare run to perform pre-processing.' );
     fprintf( '\n' );
@@ -49,7 +49,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.Global = false;
         dynareOBC.FullHorizon = false;
     end
-    
+
     [ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
     if dynareOBC.OrderOverride > 0
         dynareOBC.Order = dynareOBC.OrderOverride;
@@ -70,8 +70,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if dynareOBC.Estimation
         fprintf( '\n' );
         disp( 'Loading data for estimation.' );
-        fprintf( '\n' );    
-        
+        fprintf( '\n' );
+
         [ XLSStatus, XLSSheets ] = xlsfinfo( dynareOBC.EstimationDataFile );
         if isempty( XLSStatus )
             error( 'dynareOBC:UnsupportedSpreadsheet', 'The given estimation data is in a format that cannot be read.' );
@@ -136,17 +136,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if exist( SteadyStateMFileName, 'file' )
         copyfile( SteadyStateMFileName, 'dynareOBCTemp2_steadystate.m', 'f' );
     end
-    
+
     SteadyState2MFileName = [ dynareOBC.BaseFileName '_steadystate2.m' ];
     if exist( SteadyState2MFileName, 'file' )
         copyfile( SteadyState2MFileName, 'dynareOBCTemp2_steadystate2.m', 'f' );
     end
-    
+
     global options_
     options_.solve_tolf = eps;
     options_.solve_tolx = eps;
     dynare( 'dynareOBCTemp2.mod', basevarargin{:} );
-    
+
     global oo_ M_
     oo_.steady_state = oo_.dr.ys;
 
@@ -176,7 +176,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     %% Preparation for the final runs
-    
+
     if dynareOBC.NumberOfMax > 0
         EnforceRequirementsAndGeneratePathFunctor( );
         LPOptions = sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.LPSolver );
@@ -252,7 +252,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     ToInsertInModelAtEnd = { };
     ToInsertInShocks = { };
-       
+
     % Other common set-up
 
     SolveAlgo = 0;
@@ -271,7 +271,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         case 3
             dynareOBC.OrderText = 'third';
     end
-    
+
     CurrentNumParams = M_.param_nbr;
     CurrentNumVar = M_.endo_nbr;
     CurrentNumVarExo = M_.exo_nbr;
@@ -290,7 +290,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         if dynareOBC.NoCubature
             error( 'dynareOBC:GlobalNoCubature', 'You cannot specify both the NoCubature and the Global options.' );
         end
-        
+
         fprintf( '\n' );
         disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
         fprintf( '\n' );
@@ -302,19 +302,19 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         GlobalApproximationParameters = [];
         AmpValues = ones( dynareOBC.NumberOfMax, 1 );
     end
-    
+
     if dynareOBC.Global || dynareOBC.Estimation
         SteadyStateBlockDeclaration = 'initval;';
     else
         SteadyStateBlockDeclaration = 'steady_state_model;';
-    end       
+    end
 
     %% Generating the final mod file
 
     fprintf( '\n' );
     disp( 'Generating the final mod file.' );
     fprintf( '\n' );
-    
+
     dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.AltPTest, dynareOBC.FullTest ] );
     if ~dynareOBC.NoCubature
         dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PeriodsOfUncertainty ] );
@@ -326,7 +326,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if ~dynareOBC.NoCubature
         dynareOBC.InternalIRFPeriods = max( dynareOBC.InternalIRFPeriods, dynareOBC.PeriodsOfUncertainty + 1 );
     end
-    
+
     if dynareOBC.Global
         dynareOBC.OriginalTimeToEscapeBounds = dynareOBC.TimeToEscapeBounds;
         dynareOBC.TimeToEscapeBounds = dynareOBC.InternalIRFPeriods;
@@ -352,7 +352,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     else
         KOrderSolverString = '';
     end
-    
+
     FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC.Order ) ',solve_algo=' int2str( SolveAlgo ) KOrderSolverString ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
     newmodfile = fopen( 'dynareOBCTemp3.mod', 'w' );
     fprintf( newmodfile, '%s', FileText );
@@ -393,11 +393,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         if any( any( M_.Sigma_e - eye( size( M_.Sigma_e ) ) ~= 0 ) )
             error( 'dynareOBC:UnsupportedCovariance', 'For estimation, all shocks must be given unit variance in the shocks block. If you want a non-unit variance, multiply the shock within the model block.' );
         end
-        
+
         fprintf( '\n' );
         disp( 'Beginning the estimation of the model.' );
         fprintf( '\n' );
-        
+
         dynareOBC.CalculateTheoreticalVariance = true;
         [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
         NumObservables = length( dynareOBC.VarList );
@@ -407,14 +407,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
         EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); 0.0001 * ones( NumObservables, 1 ) ];
-        
+
         [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
         dynareOBC = orderfields( dynareOBC );
         OpenPool;
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
-        
+
         OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false );
         OptiLB = [ LBTemp; zeros( NumObservables, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables, 1 ) ];
@@ -425,14 +425,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         end
         disp( 'Final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
- 
-        
+
+
         [ TwoNLogLikelihood, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, M_, options_, oo_, dynareOBC, true );
         dynareOBC = orderfields( dynareOBC );
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Paranoid verification of final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
-        
+
         if dynareOBC.EstimationSkipStandardErrors
             disp( 'Final parameter estimates:' );
             for i = 1 : NumEstimatedParams
@@ -448,13 +448,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             fprintf( '\n' );
             ObservationCount = size( dynareOBC.EstimationData, 1 );
             OneOverRootObservationCount = 1 / sqrt( ObservationCount );
-            
+
             JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, M_, options_, oo_, dynareOBC ), EstimatedParameters, ObservationCount );
             [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
-            
+
             HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, M_, options_, oo_, dynareOBC, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
             HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
-            
+
             RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );
             EstimatedParameterCovarianceMatrix = RootEstimatedParameterCovarianceMatrix * RootEstimatedParameterCovarianceMatrix';
             dynareOBC.EstimatedParameterCovarianceMatrix = EstimatedParameterCovarianceMatrix;
@@ -470,7 +470,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, EstimatedParameters( NumEstimatedParams + i ), EstimatedParameterStandardErrors( NumEstimatedParams + i ) );
             end
         end
-        
+
         M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters( 1 : NumEstimatedParams );
     end
 
@@ -483,7 +483,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     %% Simulating
 
     if dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0
-    
+
         fprintf( '\n' );
         disp( 'Preparing to simulate the model.' );
         fprintf( '\n' );
@@ -526,7 +526,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             end
             PlotIRFs( M_, options_, oo_, dynareOBC );
         end
-    
+
     end
 
     dynareOBC = orderfields( dynareOBC );
