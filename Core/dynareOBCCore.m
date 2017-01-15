@@ -445,6 +445,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Paranoid verification of final log-likelihood:' );
         disp( -0.5 * TwoNLogLikelihood );
         
+        dynareOBC.EstimationPersistentState = EstimationPersistentState;
+        
         if dynareOBC.SkipStandardErrors
             disp( 'Final parameter estimates:' );
             for i = 1 : NumEstimatedParams
