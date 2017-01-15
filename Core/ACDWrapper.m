@@ -19,7 +19,7 @@ function [ x, f, PersistentState ] = ACDWrapper( OptiFunction, x, lb, ub, OldPer
     
     InitialTimeOutLikelihoodEvaluation = 200;
     
-    ProductSearchDimension = max( 1, floor( log( 1 + nw ) / log( 3 ) ) );
+    ProductSearchDimension = max( 1, floor( sqrt( nw ) ) );
     Order = max( 1, ceil( ( -log( 2 ) + log( ( 20 * nw + 1 ) ^ ( 1 / ProductSearchDimension ) + 1 ) ) / log( 2 ) ) );
     
     [ x, f, PersistentState ] = ACDMinimisation( ...

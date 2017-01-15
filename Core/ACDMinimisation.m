@@ -141,6 +141,11 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     stream = RandStream( 'mt19937ar', 'Seed', 0 );
     ixPerm = randperm( stream, N );
 
+    mu = 2 * SearchDimension + 2 * SearchDimension * ( SearchDimension - 1 );
+    
+    disp( 'Minimal alpha:' );
+    disp( alpha( :, 1:mu ) );
+    
     % -------------------- Generation Loop --------------------------------
 
     while (NEvaluations < MaxEvaluations) && (BestFitness > StopFitness)
@@ -170,7 +175,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
             x( :, iPoint ) = clamp( xMean, dx * alpha( :, iPoint ), LB, UB, A, b );       % first point to test along qix'th principal component
 
         end
-        [ Fit, TmpPersistentState ] = FitnessFunction( x, PersistentState, (2^(NonProductSearchDimension+1)-1)^ProductSearchDimension-1 );
+        [ Fit, TmpPersistentState ] = FitnessFunction( x, PersistentState, mu );
         NEvaluations = NEvaluations + NPoints;
 
         %%% Who is the next mean point?  
