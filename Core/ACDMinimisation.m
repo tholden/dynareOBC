@@ -108,17 +108,29 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     UNPoints = 2 .^ ( NonProductSearchDimension + Order ) - 1;
     NPoints = UNPoints .^ ProductSearchDimension - 1;
     
-    SobolPoints = SobolSequence( NonProductSearchDimension, UNPoints )';
+    SobolPoints = nsobol( UNPoints, NonProductSearchDimension );
     assert( all( mean( SobolPoints ) < 1e-12 ) );
     SobolPoints = bsxfun( @minus, SobolPoints, mean( SobolPoints ) );
     RootCovSobolPoints = sqrtm( cov( SobolPoints ) );
     assert( std( diag( RootCovSobolPoints ) ) ./ mean( diag( RootCovSobolPoints ) ) < 1e-6 );
     SobolPoints = ( SobolPoints / RootCovSobolPoints )';
+    assert( size( SobolPoints, 1 ) == NonProductSearchDimension );
     
-    IdxCell_alpha = repmat( { 1:UNPoints }, 1, ProductSearchDimension );
+    VAbsSobolPoints = unique( abs( SobolPoints(:) ), 'stable' );
+    assert( size( VAbsSobolPoints, 2 ) == 1 );
+    DVAbsSobolPoints = abs( bsxfun( @minus, VAbsSobolPoints, VAbsSobolPoints' ) ) + eye( length( VAbsSobolPoints ) );
+    seps = sqrt( eps );
+    [ fi, fj ] = find( DVAbsSobolPoints < seps );
+    fij = unique( max( fi, fj ) );
+    VAbsSobolPoints( fij ) = [];
+    
+    IdxSobolPoints = arrayfun( @(spc) find( abs( VAbsSobolPoints - abs( spc ) ) < seps, 1 ), SobolPoints );
+    
+    IdxCell_alpha = repmat( { 1 : UNPoints }, 1, ProductSearchDimension );
     [ IdxCell_alpha{:} ] = ndgrid( IdxCell_alpha{:} );
     AllIdxUalpha = cell2mat( cellfun( @(alphaCoord) reshape( alphaCoord( 2:end ), 1, NPoints ), IdxCell_alpha, 'UniformOutput', false )' );
-    [ ~, SortIdx_alpha ] = sortrows( sort( AllIdxUalpha, 1, 'descend' )' );
+    AllIdx_alpha = cell2mat( arrayfun( @( idx ) { IdxSobolPoints( :, idx ) }, AllIdxUalpha ) );
+    [ ~, SortIdx_alpha ] = sortrows( [ sort( AllIdx_alpha, 1, 'descend' )', sort( AllIdxUalpha, 1, 'descend' )' ] );
     alpha = cell2mat( arrayfun( @( idx ) { SobolPoints( :, idx ) }, AllIdxUalpha( :, SortIdx_alpha ) ) );
     
     allx = NaN( N, NPoints*NoD );
