@@ -130,7 +130,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     [ IdxCell_alpha{:} ] = ndgrid( IdxCell_alpha{:} );
     AllIdxUalpha = cell2mat( cellfun( @(alphaCoord) reshape( alphaCoord( 2:end ), 1, NPoints ), IdxCell_alpha, 'UniformOutput', false )' );
     AllIdx_alpha = cell2mat( arrayfun( @( idx ) { IdxSobolPoints( :, idx ) }, AllIdxUalpha ) );
-    [ ~, SortIdx_alpha ] = sortrows( [ sort( AllIdx_alpha, 1, 'descend' )', sort( AllIdxUalpha, 1, 'descend' )' ] );
+    [ ~, SortIdx_alpha ] = sortrows( [ sort( AllIdx_alpha, 1, 'descend' )', sort( AllIdxUalpha, 1, 'descend' )', ( 1 : NPoints )' ] );
     alpha = cell2mat( arrayfun( @( idx ) { SobolPoints( :, idx ) }, AllIdxUalpha( :, SortIdx_alpha ) ) );
     
     allx = NaN( N, NPoints*NoD );
