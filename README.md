@@ -199,11 +199,9 @@ Note:
                Disables the use of a (skew) t-distribution to approximate the likelihood. Instead a (skew) normal distribution will be used.
           * `MinimisationFunctions=STRING`
             (default: `CMAESWrapper,FMinConWrapper`)
-               A `,` `;` or `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `CMAESResumeWrapper` (an evolutionary global search algorithm, resuming an interrupted CMAES run), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox), `FMinBndWrapper` (performs repeated one dimensional search, only viable for very low dimensional problems).
+               A `,` `;` or `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `CMAESResumeWrapper` (an evolutionary global search algorithm, resuming an interrupted CMAES run), `ACDWrapper` (an adaptive coordinate descent algorithm), `ACDResumeWrapper` (an adaptive coordinate descent algorithm, resuming an interrupted ACD run), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox).
           * `FixedParameters=STRING` (default: `''`)
                A `,` `;` or `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur in the second sheet of the data file.
-          * `TimeOutLikelihoodEvaluation=INTEGER` (defaut: `60`)
-               Any likelihood evaluations that take longer than this number of seconds will be terminated prematurely. Beware that this may bias parameter estimates.
     * `Smoothing`
          Performs smoothing to estimate the model's state variables and shocks. It is recommended that smoothing is invoked in a separate DynareOBC run after estimation has completed.
           * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)

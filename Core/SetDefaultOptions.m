@@ -64,7 +64,6 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'Sparse', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'StationaryDistMaxIterations', 1000 );
     dynareOBC = SetDefaultOption( dynareOBC, 'StdDevThreshold', 1e-6 );
-    dynareOBC = SetDefaultOption( dynareOBC, 'TimeOutLikelihoodEvaluation', 60 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToEscapeBounds', 32 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToReturnToSteadyState', 64 );
     dynareOBC = SetDefaultOption( dynareOBC, 'TimeToSolveParametrically', 4 );

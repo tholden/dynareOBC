@@ -15,6 +15,7 @@ Examples/SmetsWouters*/*.mat
 *.zip
 *.eps
 *.jnl
+*.orig
 
 dynareOBCTemp*
 *deleteThis*

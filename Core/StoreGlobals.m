@@ -1,5 +1,9 @@
 function StoreGlobals( M, options, oo, dynareOBC )
-    InitializeWorkers( M, options, oo, dynareOBC );
+    if nargin == 0
+        [ M, options, oo, dynareOBC ] = ReverseInitializeWorkers;
+    else
+        InitializeWorkers( M, options, oo, dynareOBC );
+    end
     try
         if ~isempty( gcp( 'nocreate' ) )
             WarningState = warning( 'off', 'all' );
@@ -36,4 +40,12 @@ function InitializeWorkers( M, options, oo, dynareOBC )
     options_ = options;
     oo_ = oo;
     dynareOBC_ = dynareOBC;
+end
+
+function [ M, options, oo, dynareOBC ] = ReverseInitializeWorkers
+    global M_ options_ oo_ dynareOBC_
+    M = M_;
+    options = options_;
+    oo = oo_;
+    dynareOBC = dynareOBC_;
 end

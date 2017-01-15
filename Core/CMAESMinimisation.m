@@ -1,13 +1,14 @@
 function [xmin, ...      % minimum search point of last iteration
-      fmin, ...      % function value of xmin
-      counteval, ... % number of function evaluations done
-      stopflag, ...  % stop criterion reached
-      out, ...     % struct with various histories and solutions
-      bestever ... % struct containing overall best solution (for convenience)
-     ] = CMAESMinimisation( ...
+	  fmin, ...      % function value of xmin
+	  counteval, ... % number of function evaluations done
+	  stopflag, ...  % stop criterion reached
+	  out, ...     % struct with various histories and solutions
+	  bestever ... % struct containing overall best solution (for convenience)
+	 ] = CMAESMinimisation( ...
     fitfun, ...    % name of objective/fitness function
     xstart, ...    % objective variables initial point, determines N
     insigma, ...   % initial coordinate wise standard deviation(s)
+    PersistentState, ... % initial PersistentState
     inopts, ...    % options struct, see defopts below
     varargin )     % arguments passed to objective function 
 % cmaes.m, Version 3.61.beta, last change: April, 2012 
@@ -59,7 +60,7 @@ function [xmin, ...      % minimum search point of last iteration
 %     abbreviations can be used for the field names. If a string is
 %     given where a numerical value is needed, the string is evaluated
 %     by eval, where 'N' expands to the problem dimension
-%     (==size(X0,1)) and 'popsize' to the population size. 
+%     (==size(X0,1)) and 'lambda' to the population size. 
 %
 % [XMIN, FMIN, COUNTEVAL, STOPFLAG, OUT, BESTEVER] = ...
 %    CMAES(FITFUN, X0, SIGMA)
@@ -145,7 +146,7 @@ function [xmin, ...      % minimum search point of last iteration
 %   scalar from a 10D column vector.
 %
 %     opts.LBounds = 0; opts.UBounds = 10; 
-%     opts.Restarts = 3;  % doubles the popsize for each restart
+%     opts.Restarts = 3;  % doubles the lambda for each restart
 %     X = cmaes('myfun', 10*rand(10,1), 5, opts);
 %
 %   searches within lower bound of 0 and upper bound of 10. Bounds can
@@ -169,21 +170,16 @@ function [xmin, ...      % minimum search point of last iteration
 %       write dispcmaesdat for Matlab (and Octave)
 %       control savemodulo and plotmodulo via signals.par 
 
-
-cmaVersion = '3.62.beta'; 
+OldF = Inf;
+sigma = NaN;
 
 % ----------- Set Defaults for Input Parameters and Options -------------
 % These defaults may be edited for convenience
 
-% Input Defaults (obsolete, these are obligatory now)
-definput.fitfun = 'felli'; % frosen; fcigar; see end of file for more
-definput.xstart = rand(10,1); % 0.50*ones(10,1);
-definput.sigma = 0.3;
-
 % Options defaults: Stopping criteria % (value of stop flag)
 defopts.StopFitness  = '-Inf % stop if f(xmin) < stopfitness, minimization';
 defopts.MaxFunEvals  = 'Inf  % maximal number of fevals';
-defopts.MaxIter      = '1e3*(N+5)^2/sqrt(popsize) % maximal number of iterations';
+defopts.MaxIter      = '1e3*(N+5)^2/sqrt(lambda) % maximal number of iterations';
 defopts.StopFunEvals = 'Inf  % stop after resp. evaluation, possibly resume later';
 defopts.StopIter     = 'Inf  % stop after resp. iteration, possibly resume later';
 defopts.TolX         = '1e-9*max(insigma) % stop if x-change smaller TolX';
@@ -192,9 +188,11 @@ defopts.TolFun       = '1e-10 % stop if fun-changes smaller TolFun';
 defopts.TolHistFun   = '1e-11 % stop if back fun-changes smaller TolHistFun';
 defopts.StopOnStagnation = 'on  % stop when fitness stagnates for a long time';
 % TODO: stagnation has four parameters for the period: min = 120, const = 30N/lam, rel = 0.2, max = 2e5
-% defopts.StopOnStagnation = '[120 30*N/popsize 0.2 2e5]  % [min const rel_iter max] measuring period';
+% defopts.StopOnStagnation = '[120 30*N/lambda 0.2 2e5]  % [min const rel_iter max] measuring period';
 defopts.StopOnWarnings = 0; % 'yes  % ''no''==''off''==0, ''on''==''yes''==1 ';
 defopts.StopOnEqualFunctionValues = '2 + N/3  % number of iterations';  
+
+defopts.ExtraEvalScale = 1;
 
 % Options defaults: Other
 defopts.DiffMaxChange = 'Inf  % maximal variable change(s), can be Nx1-vector';
@@ -203,25 +201,18 @@ defopts.WarnOnEqualFunctionValues = ...
     'yes  % ''no''==''off''==0, ''on''==''yes''==1 ';
 defopts.LBounds = '-Inf % lower bounds, scalar or Nx1-vector'; 
 defopts.UBounds = 'Inf  % upper bounds, scalar or Nx1-vector'; 
-defopts.EvalParallel = 'no   % objective function FUN accepts NxM matrix, with M>1?';
 defopts.EvalInitialX = 'yes  % evaluation of initial solution';
 defopts.Restarts     = '0    % number of restarts ';
 defopts.IncPopSize   = '2    % multiplier for population size before each restart';
+defopts.ScaleOnResume = '1    % scale sigma by this much after resuming';
+defopts.ResumeFromBest = 'false   % resume from bestever?';
+
+defopts.AlwaysAroundBest = 'false   % set xmean is bestever?';
 
 defopts.PopSize      = '(4 + floor(3*log(N)))  % population size, lambda'; 
-defopts.ParentNumber = 'floor(popsize/2)       % AKA mu, popsize equals lambda';
+defopts.ParentNumber = 'floor(lambda/2)       % AKA mu';
 defopts.RecombinationWeights = 'superlinear decrease % or linear, or equal';
-defopts.DiagonalOnly = '0*(1+100*N/sqrt(popsize))+(N>=1000)  % C is diagonal for given iterations, 1==always'; 
-defopts.Noise.on = '0  % uncertainty handling is off by default'; 
-defopts.Noise.reevals  = '1*ceil(0.05*lambda)  % nb. of re-evaluated for uncertainty measurement';
-defopts.Noise.theta = '0.5  % threshold to invoke uncertainty treatment'; % smaller: more likely to diverge
-defopts.Noise.cum = '0.3  % cumulation constant for uncertainty'; 
-defopts.Noise.cutoff = '2*lambda/3  % rank change cutoff for summation';
-defopts.Noise.alphasigma  = '1+2/(N+10)  % factor for increasing sigma'; % smaller: slower adaptation
-defopts.Noise.epsilon  = '1e-7  % additional relative perturbation before reevaluation';
-defopts.Noise.minmaxevals = '[1 inf]  % min and max value of 2nd arg to fitfun, start value is 5th arg to cmaes'; 
-defopts.Noise.alphaevals  = '1+2/(N+10)  % factor for increasing 2nd arg to fitfun'; 
-defopts.Noise.callback = '[]  % callback function when uncertainty threshold is exceeded';
+defopts.DiagonalOnly = '(1+100*N/sqrt(lambda))+(N>=1000)  % C is diagonal for given iterations, 1==always'; 
 % defopts.TPA = 0; 
 defopts.CMA.cs = '(mueff+2)/(N+mueff+3)  % cumulation constant for step-size'; 
    %qqq defopts.CMA.cs = (mueff^0.5)/(N^0.5+mueff^0.5) % the short time horizon version
@@ -231,37 +222,9 @@ defopts.CMA.ccum = '(4 + mueff/N) / (N+4 + 2*mueff/N)  % cumulation constant for
 defopts.CMA.ccov1 = '2 / ((N+1.3)^2+mueff)  % learning rate for rank-one update'; 
 defopts.CMA.ccovmu = '2 * (mueff-2+1/mueff) / ((N+2)^2+mueff) % learning rate for rank-mu update'; 
 defopts.CMA.on     = 'yes'; 
-defopts.CMA.active = '0  % active CMA, 1: neg. updates with pos. def. check, 2: neg. updates'; 
+defopts.CMA.active = '1  % active CMA, 1: neg. updates with pos. def. check, 2: neg. updates'; 
 
-flg_future_setting = 1;  % testing for possible future variant(s)
-if flg_future_setting    
-  disp('CMAES future settings enabled.');
-
-  % damps setting from Brockhoff et al 2010
-  %   this damps diverges with popsize 400:
-  %     defopts.CMA.damps = '2*mueff/lambda + 0.3 + cs  % damping for step-size'; 
-  %   cmaeshtml('benchmarkszero', ones(20,1)*2, 5, o, 15);
-  % how about:
-  % defopts.CMA.damps = '2*mueff/lambda + 0.3 + 2*max(0,sqrt((mueff-1)/(N+1))-1) + cs  % damping for step-size';
-  defopts.CMA.damps = '0.5 + 0.5*min(1, (0.27*lambda/mueff-1)^2) + 2*max(0,sqrt((mueff-1)/(N+1))-1) + cs  % damping for step-size';
-
-  if 11 < 3 
-      defopts.CMA.damps = '0.5 + 0.5*min(1,(lam_mirr/(0.159*lambda)-1)^2) + 2*max(0,sqrt((mueff-1)/(N+1))-1) + cs  % damping for step-size';
-
-      defopts.mirrored_offspring = 'floor(0.5 + 0.159 * lambda)'; 
-    % TODO: this should also depend on diagonal option!?  
-    defopts.CMA.active = 'floor(int8(lam_mirr>0))  % active CMA 1: neg. updates with pos. def. check, 2: neg. updates'; 
-  end
-  
-  % ccum adjusted for large mueff, better on schefelmult? 
-  % TODO: this should also depend on diagonal option!?  
-  defopts.CMA.ccum = '(4 + mueff/N) / (N+4 + 2*mueff/N)  % cumulation constant for pc';
-
-  defopts.CMA.active = '1  % active CMA 1: neg. updates with pos. def. check, 2: neg. updates'; 
-end
-  
-defopts.Resume   = 'no   % resume former run from SaveFile'; 
-defopts.Science  = 'on  % off==do some additional (minor) problem capturing, NOT IN USE'; 
+defopts.ResumeRun   = 'no   % resume former run from SaveFile'; 
 defopts.ReadSignals = 'on  % from file signals.par for termination, yet a stumb';
 defopts.Seed = 'sum(100*clock)  % evaluated if it is a string';
 defopts.DispFinal  = 'on   % display messages like initial and final message';
@@ -300,11 +263,10 @@ if isequal(fitfun, 'displayoptions')
  return; 
 end
 
-input.fitfun = fitfun; % record used input
 if isempty(fitfun)
   % fitfun = definput.fitfun; 
   % warning(['Objective function not determined, ''' fitfun ''' used']);
-  error(['Objective function not determined']);
+  error('Objective function not determined');
 end
 if ischar(fitfun)
     fitfunname = fitfun;
@@ -320,7 +282,6 @@ if nargin < 2
   xstart = [];
 end
 
-input.xstart = xstart;
 if isempty(xstart)
   % xstart = definput.xstart;  % objective variables initial point
   % warning('Initial search point, and problem dimension, not determined');
@@ -332,14 +293,13 @@ if nargin < 3
 end
 if isa(insigma, 'struct')
   error(['Third argument SIGMA must be (or eval to) a scalar '...
-       'or a column vector of size(X0,1)']);
+	   'or a column vector of size(X0,1)']);
 end
-input.sigma = insigma;
 if isempty(insigma)
   if all(size(myeval(xstart)) > 1)
     insigma = std(xstart, 0, 2); 
     if any(insigma == 0)
-      error(['Initial search volume is zero, choose SIGMA or X0 appropriate']);
+      error('Initial search volume is zero, choose SIGMA or X0 appropriate');
     end
   else
     % will be captured later
@@ -349,7 +309,6 @@ end
 
 % Compose options opts
 if nargin < 4 || isempty(inopts) % no input options available
-  inopts = []; 
   opts = defopts;
 else
   opts = getoptions(inopts, defopts);
@@ -369,7 +328,7 @@ while irun <= myeval(opts.Restarts) % for-loop does not work with resume
 % ------------------------ Initialization -------------------------------
 
 % Handle resuming of old run
-flgresume = myevalbool(opts.Resume);
+flgresume = myevalbool(opts.ResumeRun);
 xmean = myeval(xstart); 
 if all(size(xmean) > 1)
    xmean = mean(xmean, 2); % in case if xstart is a population
@@ -378,10 +337,9 @@ elseif size(xmean, 2) > 1
 end 
 if ~flgresume % not resuming a former run
   % Assign settings from input parameters and options for myeval...
-  N = size(xmean, 1); numberofvariables = N; 
+  N = size(xmean, 1);
   lambda0 = floor(myeval(opts.PopSize) * myeval(opts.IncPopSize)^(irun-1)); 
   % lambda0 = floor(myeval(opts.PopSize) * 3^floor((irun-1)/2)); 
-  popsize = lambda0;
   lambda = lambda0;
   insigma = myeval(insigma);
   if all(size(insigma) == [N 2]) 
@@ -396,7 +354,8 @@ else % flgresume is true, do resume former run
   end
   local.opts = opts; % keep stopping and display options
   local.varargin = varargin;
-  load(opts.SaveFilename); 
+  local.fitfun = fitfun;
+  load(opts.SaveFilename);
   varargin = local.varargin;
   flgresume = 1;
 
@@ -419,6 +378,10 @@ else % flgresume is true, do resume former run
   opts.SaveVariables = local.opts.SaveVariables;
   opts.LogModulo = local.opts.LogModulo;
   opts.LogTime = local.opts.LogTime;
+  opts.ScaleOnResume = local.opts.ScaleOnResume;
+  opts.ResumeFromBest = local.opts.ResumeFromBest;
+  opts.AlwaysAroundBest = local.opts.AlwaysAroundBest;
+  fitfun = local.fitfun;
   clear local; % otherwise local would be overwritten during load
 end
   
@@ -429,30 +392,28 @@ stopMaxFunEvals = myeval(opts.MaxFunEvals);
 stopMaxIter = myeval(opts.MaxIter);  
 stopFunEvals = myeval(opts.StopFunEvals);  
 stopIter = myeval(opts.StopIter); 
+ScaleOnResume = myeval(opts.ScaleOnResume);
+ResumeFromBest = myevalbool(opts.ResumeFromBest);
+AlwaysAroundBest = myevalbool(opts.AlwaysAroundBest);
 if flgresume
-    stopIter = stopIter + countiter
+    stopIter = stopIter + countiter;
 end
 stopTolX = myeval(opts.TolX);
 stopTolUpX = myeval(opts.TolUpX);
 stopTolFun = myeval(opts.TolFun);
+ExtraEvalScale = myeval(opts.ExtraEvalScale);
 stopTolHistFun = myeval(opts.TolHistFun);
 stopOnStagnation = myevalbool(opts.StopOnStagnation); 
 stopOnWarnings = myevalbool(opts.StopOnWarnings);
 flgreadsignals = myevalbool(opts.ReadSignals);
 flgWarnOnEqualFunctionValues = myevalbool(opts.WarnOnEqualFunctionValues);
-flgEvalParallel = myevalbool(opts.EvalParallel);
 stopOnEqualFunctionValues = myeval(opts.StopOnEqualFunctionValues);
 arrEqualFunvals = zeros(1, 10+N);
 flgDiagonalOnly = myeval(opts.DiagonalOnly); 
 flgActiveCMA = myeval(opts.CMA.active); 
-noiseHandling = myevalbool(opts.Noise.on);
-noiseMinMaxEvals = myeval(opts.Noise.minmaxevals);
-noiseAlphaEvals = myeval(opts.Noise.alphaevals);
-noiseCallback = myeval(opts.Noise.callback); 
 flgdisplay = myevalbool(opts.DispFinal);
 flgplotting = myevalbool(opts.LogPlot);
 verbosemodulo = myeval(opts.DispModulo);
-flgscience = myevalbool(opts.Science);
 flgsaving = [];
 strsaving = [];
 if strfind(opts.SaveVariables, '-v6') 
@@ -495,20 +456,28 @@ if flgresume % resume is on
     disp(['  resumed from ' opts.SaveFilename ]); 
   end
   if counteval >= stopMaxFunEvals 
-    error(['MaxFunEvals exceeded, use StopFunEvals as stopping ' ...
-      'criterion before resume']);
+    error('MaxFunEvals exceeded, use StopFunEvals as stopping criterion before resume');
   end
   if countiter >= stopMaxIter 
-    error(['MaxIter exceeded, use StopIter as stopping criterion ' ...
-      'before resume']);
+    error('MaxIter exceeded, use StopIter as stopping criterion before resume');
   end
-  
+ 
+  if isempty( sigma )
+      disp( 'This should never happen.' );
+      sigma = ScaleOnResume;
+  else
+      sigma = sigma * ScaleOnResume;
+  end
+  if ResumeFromBest
+      xmean = bestever.x;
+      PersistentState = bestever.PersistentState;
+  end  
 else % flgresume
   % xmean = mean(myeval(xstart), 2); % evaluate xstart again, because of irun
   maxdx = myeval(opts.DiffMaxChange); % maximal sensible variable change
   mindx = myeval(opts.DiffMinChange); % minimal sensible variable change 
-                      % can both also be defined as Nx1 vectors
-  lbounds = myeval(opts.LBounds);            
+				      % can both also be defined as Nx1 vectors
+  lbounds = myeval(opts.LBounds);		     
   ubounds = myeval(opts.UBounds);
   if length(lbounds) == 1
     lbounds = repmat(lbounds, N, 1);
@@ -519,49 +488,49 @@ else % flgresume
   if isempty(insigma) % last chance to set insigma
     if all(lbounds > -Inf) && all(ubounds < Inf)
       if any(lbounds>=ubounds)
-    error('upper bound must be greater than lower bound');
+	error('upper bound must be greater than lower bound');
       end
       insigma = 0.3*(ubounds-lbounds);
       stopTolX = myeval(opts.TolX);  % reevaluate these
       stopTolUpX = myeval(opts.TolUpX);
     else
-      error(['Initial step sizes (SIGMA) not determined']);
+      error('Initial step sizes (SIGMA) not determined');
     end
   end
 
   % Check all vector sizes
   if size(xmean, 2) > 1 || size(xmean,1) ~= N
     error(['intial search point should be a column vector of size ' ...
-       num2str(N)]);
+	   num2str(N)]);
   elseif ~(all(size(insigma) == [1 1]) || all(size(insigma) == [N 1]))
     error(['input parameter SIGMA should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   elseif size(stopTolX, 2) > 1 || ~ismember(size(stopTolX, 1), [1 N])
     error(['option TolX should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   elseif size(stopTolUpX, 2) > 1 || ~ismember(size(stopTolUpX, 1), [1 N])
     error(['option TolUpX should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   elseif size(maxdx, 2) > 1 || ~ismember(size(maxdx, 1), [1 N])
     error(['option DiffMaxChange should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   elseif size(mindx, 2) > 1 || ~ismember(size(mindx, 1), [1 N])
     error(['option DiffMinChange should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   elseif size(lbounds, 2) > 1 || ~ismember(size(lbounds, 1), [1 N])
     error(['option lbounds should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   elseif size(ubounds, 2) > 1 || ~ismember(size(ubounds, 1), [1 N])
     error(['option ubounds should be (or eval to) a scalar '...
-       'or a column vector of size ' num2str(N)] );
+	   'or a column vector of size ' num2str(N)] );
   end
   
   % Initialize dynamic internal state parameters
   if any(insigma <= 0) 
-    error(['Initial search volume (SIGMA) must be greater than zero']);
+    error('Initial search volume (SIGMA) must be greater than zero');
   end
   if max(insigma)/min(insigma) > 1e6
-    warning(['Initial search volume (SIGMA) badly conditioned']);
+    warning('Initial search volume (SIGMA) badly conditioned');
   end
   sigma = max(insigma);              % overall standard deviation
   pc = zeros(N,1); ps = zeros(N,1);  % evolution paths for C and sigma
@@ -591,7 +560,7 @@ else % flgresume
     if any(lbounds>ubounds)
       error('lower bound found to be greater than upper bound');
     end
-    [xmean ti] = xintobounds(xmean, lbounds, ubounds); % just in case
+    [xmean, ti] = xintobounds(xmean, lbounds, ubounds); % just in case
     if any(ti)
       warning('Initial point was out of bounds, corrected');
     end
@@ -606,28 +575,28 @@ else % flgresume
     
     idx = (lbounds > -Inf) | (ubounds < Inf);
     if length(idx) == 1
-      idx = idx * ones(N,1);
+      idx = idx * true(N,1);
     end
-    bnd.isbounded = zeros(N,1);
-    bnd.isbounded(find(idx)) = 1; 
+    bnd.isbounded = false(N,1);
+    bnd.isbounded(idx) = true; 
     maxdx = min(maxdx, (ubounds - lbounds)/2);
     if any(sigma*sqrt(diagC) > maxdx)
       fac = min(maxdx ./ sqrt(diagC))/sigma;
       sigma = min(maxdx ./ sqrt(diagC));
       warning(['Initial SIGMA multiplied by the factor ' num2str(fac) ...
-           ', because it was larger than half' ...
-           ' of one of the boundary intervals']);
+	       ', because it was larger than half' ...
+	       ' of one of the boundary intervals']);
     end
     idx = (lbounds > -Inf) & (ubounds < Inf);
     dd = diagC;
     if any(5*sigma*sqrt(dd(idx)) < ubounds(idx) - lbounds(idx))
       warning(['Initial SIGMA is, in at least one coordinate, ' ...
-           'much smaller than the '...
-           'given boundary intervals. For reasonable ' ...
-           'global search performance SIGMA should be ' ...
-           'between 0.2 and 0.5 of the bounded interval in ' ...
-           'each coordinate. If all coordinates have ' ... 
-           'lower and upper bounds SIGMA can be empty']);
+	       'much smaller than the '...
+	       'given boundary intervals. For reasonable ' ...
+	       'global search performance SIGMA should be ' ...
+	       'between 0.2 and 0.5 of the bounded interval in ' ...
+	       'each coordinate. If all coordinates have ' ... 
+	       'lower and upper bounds SIGMA can be empty']);
     end
     bnd.dfithist = 1;              % delta fit for setting weights
     bnd.aridxpoints = [];          % remember complete outside points
@@ -644,14 +613,22 @@ else % flgresume
     bestever = out.solutions.bestever;
   end
   if myevalbool(opts.EvalInitialX)
-    fitness.hist(1)=feval(fitfun, xmean, varargin{:}); 
+    [ fitness.hist(1), tmpPersistentState ]=feval(fitfun, xmean, PersistentState, 1, varargin{:}); 
     fitness.histsel(1)=fitness.hist(1);
     counteval = counteval + 1;
+    if fitness.hist(1) < OldF && ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
+    OldF = fitness.hist(1);
     if fitness.hist(1) < out.solutions.bestever.f 
-    out.solutions.bestever.x = xmean;
-    out.solutions.bestever.f = fitness.hist(1);
-    out.solutions.bestever.evals = counteval;
-    bestever = out.solutions.bestever;
+	out.solutions.bestever.x = xmean;
+	out.solutions.bestever.f = fitness.hist(1);
+	out.solutions.bestever.evals = counteval;
+    if ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
+    out.solutions.bestever.PersistentState = PersistentState;
+	bestever = out.solutions.bestever;
     end
   else
     fitness.hist(1)=NaN; 
@@ -672,7 +649,7 @@ else % flgresume
 
   % Initialize further constants
   chiN=N^0.5*(1-1/(4*N)+1/(21*N^2));  % expectation of 
-                      %   ||N(0,I)|| == norm(randn(N,1))
+				      %   ||N(0,I)|| == norm(randn(N,1))
   
   countiter = 0;
   % Initialize records and output
@@ -688,61 +665,56 @@ else % flgresume
     % Write headers to output data files 
     filenameprefix = opts.LogFilenamePrefix; 
     if savemodulo && savetime
-      filenames = {};
-      filenames(end+1) = {'axlen'};
-      filenames(end+1) = {'fit'};
-      filenames(end+1) = {'stddev'};
-      filenames(end+1) = {'xmean'};
-      filenames(end+1) = {'xrecentbest'};
+      filenames = {'axlen','fit','stddev','xmean','xrecentbest'};
       str = [' (startseed=' num2str(startseed.Seed) ...
              ', ' num2str(clock, '%d/%02d/%d %d:%d:%2.2f') ')'];
       for namecell = filenames(:)'
         name = namecell{:};
 
-    [fid, err] = fopen(['./' filenameprefix name '.dat'], 'w');
-    if fid < 1 % err ~= 0 
-      warning(['could not open ' filenameprefix name '.dat']);
-      filenames(find(strcmp(filenames,name))) = [];
-    else
-%     fprintf(fid, '%s\n', ...
-%         ['<CMAES-OUTPUT version="' cmaVersion '">']);
-%     fprintf(fid, ['  <NAME>' name '</NAME>\n']);
-%     fprintf(fid, ['  <DATE>' date() '</DATE>\n']);
-%     fprintf(fid, '  <PARAMETERS>\n');
-%     fprintf(fid, ['    dimension=' num2str(N) '\n']);
-%     fprintf(fid, '  </PARAMETERS>\n');
-      % different cases for DATA columns annotations here
-%     fprintf(fid, '  <DATA');
-      if strcmp(name, 'axlen')
-         fprintf(fid, ['%%  columns="iteration, evaluation, sigma, ' ...
-         'max axis length, min axis length, ' ...
-         'all principal axes lengths (sorted square roots ' ...
+	[fid, ~] = fopen(['./' filenameprefix name '.dat'], 'w');
+	if fid < 1 % err ~= 0 
+	  warning(['could not open ' filenameprefix name '.dat']);
+	  filenames((strcmp(filenames,name))) = [];
+	else
+%	  fprintf(fid, '%s\n', ...
+%	      ['<CMAES-OUTPUT version="' cmaVersion '">']);
+%	  fprintf(fid, ['  <NAME>' name '</NAME>\n']);
+%	  fprintf(fid, ['  <DATE>' date() '</DATE>\n']);
+%	  fprintf(fid, '  <PARAMETERS>\n');
+%	  fprintf(fid, ['    dimension=' num2str(N) '\n']);
+%	  fprintf(fid, '  </PARAMETERS>\n');
+	  % different cases for DATA columns annotations here
+%	  fprintf(fid, '  <DATA');
+	  if strcmp(name, 'axlen')
+	     fprintf(fid, ['%%  columns="iteration, evaluation, sigma, ' ...
+		 'max axis length, min axis length, ' ...
+		 'all principal axes lengths (sorted square roots ' ...
                   'of eigenvalues of C)"' str]);
-      elseif strcmp(name, 'fit')
-        fprintf(fid, ['%%  columns="iteration, evaluation, sigma, axis ratio, bestever,' ...
-        ' best, median, worst fitness function value,' ...
-        ' further objective values of best"' str]);
-      elseif strcmp(name, 'stddev')
-        fprintf(fid, ['%%  columns=["iteration, evaluation, sigma, void, void, ' ...
-        'stds==sigma*sqrt(diag(C))"' str]);
-      elseif strcmp(name, 'xmean')
-        fprintf(fid, ['%%  columns="iteration, evaluation, void, ' ...
+	  elseif strcmp(name, 'fit')
+	    fprintf(fid, ['%%  columns="iteration, evaluation, sigma, axis ratio, bestever,' ...
+		' best, median, worst fitness function value,' ...
+		' further objective values of best"' str]);
+	  elseif strcmp(name, 'stddev')
+	    fprintf(fid, ['%%  columns=["iteration, evaluation, sigma, void, void, ' ...
+		'stds==sigma*sqrt(diag(C))"' str]);
+	  elseif strcmp(name, 'xmean')
+	    fprintf(fid, ['%%  columns="iteration, evaluation, void, ' ...
                           'void, void, xmean"' str]);
-      elseif strcmp(name, 'xrecentbest')
-        fprintf(fid, ['%%  columns="iteration, evaluation, fitness, ' ...
+	  elseif strcmp(name, 'xrecentbest')
+	    fprintf(fid, ['%%  columns="iteration, evaluation, fitness, ' ...
                           'void, void, xrecentbest"' str]);
-      end
-      fprintf(fid, '\n'); % DATA
-      if strcmp(name, 'xmean')
-        fprintf(fid, '%ld %ld 0 0 0 ', 0, counteval); 
-        % fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
-%qqq        fprintf(fid, msprintf('%e ', genophenotransform(out.genopheno, xmean)) + '\n'); 
-        fprintf(fid, '%e ', xmean);
+	  end
+	  fprintf(fid, '\n'); % DATA
+	  if strcmp(name, 'xmean')
+	    fprintf(fid, '%ld %ld 0 0 0 ', 0, counteval); 
+	    % fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
+%qqq	    fprintf(fid, msprintf('%e ', genophenotransform(out.genopheno, xmean)) + '\n'); 
+	    fprintf(fid, '%e ', xmean);
             fprintf(fid, '\n'); 
-      end
-      fclose(fid); 
+	  end
+	  fclose(fid); 
           clear fid; % preventing 
-    end
+	end
       end % for files
     end % savemodulo
   end % irun == 1
@@ -757,18 +729,18 @@ while isempty(stopflag)
     if countiter > 0 && floor(log10(lambda)) ~= floor(log10(lambda_last)) ...
           && flgdisplay
       disp(['  lambda = ' num2str(lambda)]);
-      lambda_hist(:,end+1) = [countiter+1; lambda];
+      lambda_hist(:,end+1) = [countiter+1; lambda]; %#ok<AGROW>
     else
       lambda_hist = [countiter+1; lambda]; 
     end
     lambda_last = lambda;
     % Strategy internal parameter setting: Selection  
     mu = myeval(opts.ParentNumber); % number of parents/points for recombination
-    if strncmp(lower(opts.RecombinationWeights), 'equal', 3)
+    if strncmpi((opts.RecombinationWeights), 'equal', 3)
       weights = ones(mu,1); % (mu_I,lambda)-CMA-ES
-    elseif strncmp(lower(opts.RecombinationWeights), 'linear', 3)
+    elseif strncmpi((opts.RecombinationWeights), 'linear', 3)
       weights = mu+0.5-(1:mu)'; 
-    elseif strncmp(lower(opts.RecombinationWeights), 'superlinear', 3)
+    elseif strncmpi((opts.RecombinationWeights), 'superlinear', 3)
       % use (lambda+1)/2 as reference if mu < lambda/2
       weights = log(max(mu, lambda/2) + 1/2)-log(1:mu)'; % muXone array for weighted recombination
     else
@@ -820,16 +792,8 @@ while isempty(stopflag)
     %    * max(0.3, ... % reduce damps, if max. iteration number is small
     %          1 - N/min(stopMaxIter,stopMaxFunEvals/lambda)) + cs; 
     damps = myeval(opts.CMA.damps); 
-    if noiseHandling
-      noiseReevals = min(myeval(opts.Noise.reevals), lambda); 
-      noiseAlpha = myeval(opts.Noise.alphasigma); 
-      noiseEpsilon = myeval(opts.Noise.epsilon); 
-      noiseTheta = myeval(opts.Noise.theta); 
-      noisecum = myeval(opts.Noise.cum);
-      noiseCutOff = myeval(opts.Noise.cutoff);  % arguably of minor relevance
-    else
+
       noiseReevals = 0; % more convenient in later coding
-    end
 
     %qqq hacking of a different parameter setting, e.g. for ccov or damps,
     %  can be done here, but is not necessary anymore, see opts.CMA. 
@@ -876,30 +840,20 @@ while isempty(stopflag)
 
   % Generate and evaluate lambda offspring
  
-  fitness.raw = repmat(NaN, 1, lambda + noiseReevals);
+  fitness.raw = NaN( 1, lambda + noiseReevals);
+  
+  if AlwaysAroundBest
+      xmean = bestever.x;
+      PersistentState = bestever.PersistentState;
+  end
 
   % parallel evaluation
-  if flgEvalParallel
-      arz = randn(N,lambda);
+      arz = randn(N,lambda*ExtraEvalScale);
 
       if ~flgDiagonalOnly
-        arx = repmat(xmean, 1, lambda) + sigma * (BD * arz); % Eq. (1)
+        arx = bsxfun( @plus, xmean, sigma * (BD * arz) ); % Eq. (1)
       else
-        arx = repmat(xmean, 1, lambda) + repmat(sigma * diagD, 1, lambda) .* arz; 
-      end
-
-      if noiseHandling 
-        if noiseEpsilon == 0
-          arx = [arx arx(:,1:noiseReevals)]; 
-        elseif flgDiagonalOnly
-          arx = [arx arx(:,1:noiseReevals) + ...
-                 repmat(noiseEpsilon * sigma * diagD, 1, noiseReevals) ...
-                 .* randn(N,noiseReevals)]; 
-        else 
-          arx = [arx arx(:,1:noiseReevals) + ...
-                 noiseEpsilon * sigma * ...
-                 (BD * randn(N,noiseReevals))]; 
-        end
+        arx = bsxfun( @plus, xmean, bsxfun( @times, sigma * diagD, arz ) ); 
       end
 
       % You may handle constraints here. You may either resample
@@ -916,66 +870,24 @@ while isempty(stopflag)
       % You may handle constraints here.  You may copy and alter
       % (columns of) arxvalid(:,k) only for the evaluation of the
       % fitness function. arx and arxvalid should not be changed.
-      fitness.raw = feval(fitfun, arxvalid, varargin{:}); 
-      countevalNaN = countevalNaN + sum(isnan(fitness.raw));
-      counteval = counteval + sum(~isnan(fitness.raw)); 
-  end
+      
+      [ fitness.raw, tmpPersistentState ] = feval(fitfun, arxvalid, PersistentState, mu, varargin{:});
+      
+      [ ~, FitnessIndices ] = sort( fitness.raw );
+      FitnessIndices = FitnessIndices( 1 : lambda );
+      arz = arz( :, FitnessIndices );
+      arx = arx( :, FitnessIndices );
+      arxvalid = arxvalid( :, FitnessIndices );
+      fitness.raw = fitness.raw( FitnessIndices );
+      
+      countevalNaN = countevalNaN + 0; % sum(isnan(fitness.raw));
+      counteval = counteval + lambda; % sum(~isnan(fitness.raw));
 
   % non-parallel evaluation and remaining NaN-values
   % set also the reevaluated solution to NaN
   fitness.raw(lambda + find(isnan(fitness.raw(1:noiseReevals)))) = NaN;
-  while any(isnan(fitness.raw))
-      current_kvec = find(isnan(fitness.raw));
-      for k=current_kvec
-        % fitness.raw(k) = NaN; 
-        % Resample, until fitness is not NaN
-          if k <= lambda  % regular samples (not the re-evaluation-samples)
-            arz(:,k) = randn(N,1); % (re)sample
-
-            if flgDiagonalOnly  
-              arx(:,k) = xmean + sigma * diagD .* arz(:,k);              % Eq. (1)
-            else
-              arx(:,k) = xmean + sigma * (BD * arz(:,k));                % Eq. (1)
-            end
-          else % re-evaluation solution with index > lambda
-            if flgDiagonalOnly  
-              arx(:,k) = arx(:,k-lambda) + (noiseEpsilon * sigma) * diagD .* randn(N,1);
-            else
-              arx(:,k) = arx(:,k-lambda) + (noiseEpsilon * sigma) * (BD * randn(N,1));
-            end
-          end
-
-          % You may handle constraints here. You may either resample
-          % arz(:,k) and/or multiply it with a factor between -1 and 1
-          % (the latter will decrease the overall step size) and
-          % recalculate arx accordingly. Do not change arx or arz in any
-          % other way.
-
-          if ~bnd.isactive
-            arxvalid(:,k) = arx(:,k);
-          else
-            arxvalid(:,k) = xintobounds(arx(:,k), lbounds, ubounds);
-          end
-          % You may handle constraints here.  You may copy and alter
-          % (columns of) arxvalid(:,k) only for the evaluation of the
-          % fitness function. arx should not be changed.
-      end
-      if flgEvalParallel
-          fitness.raw(current_kvec) = feval(fitfun, arxvalid(:,current_kvec), varargin{:}); 
-      else
-          for k=current_kvec
-              fitness.raw(k) = feval(fitfun, arxvalid(:,k), varargin{:}); 
-          end
-      end
-      for k=current_kvec
-          if isnan(fitness.raw(k))
-              countevalNaN = countevalNaN + 1;
-          else
-              counteval = counteval + 1; % retries due to NaN are not counted
-          end
-      end
-  end
-
+  assert( all(isfinite(fitness.raw)) );
+  
   fitness.sel = fitness.raw; 
 
   % ----- handle boundaries -----
@@ -1004,21 +916,21 @@ while isempty(stopflag)
       bnd.dfithist = [bnd.dfithist(2:end) val];
     end
 
-    [tx ti]  = xintobounds(xmean, lbounds, ubounds);
+    [tx, ti]  = xintobounds(xmean, lbounds, ubounds);
 
     % Set initial weights
     if bnd.iniphase 
       if any(ti) 
-        bnd.weights(find(bnd.isbounded)) = 2.0002 * median(bnd.dfithist);
-    if bnd.flgscale == 0 % scale only initial weights then
-      dd = diagC; 
-      idx = find(bnd.isbounded); 
-      dd = dd(idx) / mean(dd); %  remove mean scaling
-      bnd.weights(idx) = bnd.weights(idx) ./ dd; 
-    end
-    if bnd.validfitval && countiter > 2
+        bnd.weights((bnd.isbounded)) = 2.0002 * median(bnd.dfithist);
+	if bnd.flgscale == 0 % scale only initial weights then
+	  dd = diagC; 
+	  idx = find(bnd.isbounded); 
+	  dd = dd(idx) / mean(dd); %  remove mean scaling
+	  bnd.weights(idx) = bnd.weights(idx) ./ dd; 
+	end
+	if bnd.validfitval && countiter > 2
           bnd.iniphase = 0;
-    end
+	end
       end
     end
 
@@ -1027,7 +939,7 @@ while isempty(stopflag)
       % judge distance of xmean to boundary
       tx = xmean - tx;
       idx = (ti ~= 0 & abs(tx) > 3*max(1,sqrt(N)/mueff) ... 
-         * sigma*sqrt(diagC)) ;
+	     * sigma*sqrt(diagC)) ;
       % only increase if xmean is moving away
       idx = idx & (sign(tx) == sign(xmean - xold));
       if ~isempty(idx) % increase
@@ -1049,35 +961,7 @@ while isempty(stopflag)
 
   end % handle boundaries
   % ----- end handle boundaries -----
-  
-  % compute noise measurement and reduce fitness arrays to size lambda
-  if noiseHandling 
-    [noiseS] = local_noisemeasurement(fitness.sel(1:lambda), ...
-                                      fitness.sel(lambda+(1:noiseReevals)), ...
-                                      noiseReevals, noiseTheta, noiseCutOff); 
-    if countiter == 1 % TODO: improve this very rude way of initialization
-      noiseSS = 0;
-      noiseN = 0;  % counter for mean
-    end
-    noiseSS = noiseSS + noisecum * (noiseS - noiseSS); 
-
-    % noise-handling could be done here, but the original sigma is still needed
-    % disp([noiseS noiseSS noisecum])
-
-    fitness.rawar12 = fitness.raw; % just documentary
-    fitness.selar12 = fitness.sel; % just documentary
-    % qqq refine fitness based on both values
-    if 11 < 3  % TODO: in case of outliers this mean is counterproductive 
-               % median out of three would be ok 
-      fitness.raw(1:noiseReevals) = ... % not so raw anymore
-          (fitness.raw(1:noiseReevals) + fitness.raw(lambda+(1:noiseReevals))) / 2; 
-      fitness.sel(1:noiseReevals) = ... 
-          (fitness.sel(1:noiseReevals) + fitness.sel(lambda+(1:noiseReevals))) / 2; 
-    end      
-    fitness.raw = fitness.raw(1:lambda); 
-    fitness.sel = fitness.sel(1:lambda); 
-  end
-  
+   
   % Sort by fitness 
   [fitness.raw, fitness.idx] = sort(fitness.raw); 
   [fitness.sel, fitness.idxsel] = sort(fitness.sel);  % minimization
@@ -1105,8 +989,6 @@ while isempty(stopflag)
     fmean = fitness.sel(1);
   else
     fmean = NaN; % [] does not work in the latter assignment
-    % fmean = feval(fitfun, xintobounds(xmean, lbounds, ubounds), varargin{:});
-    % counteval = counteval + 1;
   end
   
   % Cumulation: update evolution paths
@@ -1166,8 +1048,8 @@ while isempty(stopflag)
         % i-th longest becomes i-th shortest
         % TODO: this is not in compliance with the paper Hansen&Ros2010, 
         %       where simply arnorms = arnorms(end:-1:1) ? 
-        [arnorms idxnorms] = sort(sqrt(sum(arzneg.^2, 1))); 
-        [ignore idxnorms] = sort(idxnorms);  % inverse index 
+        [arnorms, idxnorms] = sort(sqrt(sum(arzneg.^2, 1))); 
+        [~, idxnorms] = sort(idxnorms);  % inverse index 
         arnormfacs = arnorms(end:-1:1) ./ arnorms; 
         % arnormfacs = arnorms(randperm(neg.mu)) ./ arnorms;
         arnorms = arnorms(end:-1:1); % for the record
@@ -1183,10 +1065,10 @@ while isempty(stopflag)
           Cneg = artmp * diag(weights) * artmp';
         else  % simple sum
           if mod(flgActiveCMA, 10) == 1
-            Ccheck = (1/neg.mu) * arzneg*arzneg';  % in order to check largest EV
+            Ccheck = (1/neg.mu) * ( arzneg*arzneg' );  % in order to check largest EV
           end
           artmp = BD * arzneg;
-          Cneg = (1/neg.mu) * artmp*artmp';
+          Cneg = (1/neg.mu) * ( artmp*artmp' );
 
         end
 
@@ -1215,13 +1097,13 @@ while isempty(stopflag)
         % xmean = xold;  % the distribution does not degenerate!? 
         % update C
         C = (1-ccov1-ccovmu+neg.alphaold*neg.ccovfinal+(1-hsig)*ccov1*cc*(2-cc)) * C ... % regard old matrix 
-            + ccov1 * pc*pc' ...     % plus rank one update
+            + ccov1 * ( pc*pc' ) ...     % plus rank one update
             + (ccovmu + (1-neg.alphaold)*neg.ccovfinal) ...  % plus rank mu update
               * arpos * (repmat(weights,1,N) .* arpos') ...
               - neg.ccovfinal * Cneg;                        % minus rank mu update
       else  % no active (negative) update
         C = (1-ccov1-ccovmu+(1-hsig)*ccov1*cc*(2-cc)) * C ... % regard old matrix 
-            + ccov1 * pc*pc' ...     % plus rank one update
+            + ccov1 * ( pc*pc' ) ...     % plus rank one update
             + ccovmu ...             % plus rank mu update
               * arpos * (repmat(weights,1,N) .* arpos');
         % is now O(mu*N^2 + mu*N), was O(mu*N^2 + mu^2*N) when using diag(weights)
@@ -1231,22 +1113,6 @@ while isempty(stopflag)
     end
   end
   
-  % the following is de-preciated and will be removed in future
-  % better setting for cc makes this hack obsolete
-  if 11 < 2 && ~flgscience  
-    % remove momentum in ps, if ps is large and fitness is getting worse.
-    % this should rarely happen. 
-    % this might very well be counterproductive in dynamic environments
-    if sum(ps.^2)/N > 1.5 + 10*(2/N)^.5 && ...
-        fitness.histsel(1) > max(fitness.histsel(2:3))
-      ps = ps * sqrt(N*(1+max(0,log(sum(ps.^2)/N))) / sum(ps.^2));
-      if flgdisplay
-        disp(['Momentum in ps removed at [niter neval]=' ...
-              num2str([countiter counteval]) ']']);
-      end
-    end
-  end
-
   % Adapt sigma
   if flg_future_setting  % according to a suggestion from Dirk Arnold (2000)
     % exp(1) is still not reasonably small enough, maybe 2/3?
@@ -1256,23 +1122,7 @@ while isempty(stopflag)
     sigma = sigma * exp(min(1, (sqrt(sum(ps.^2))/chiN - 1) * cs/damps));             % Eq. (5)
   end
   % disp([countiter norm(ps)/chiN]);
-  
-  if 11 < 3   % testing with optimal step-size
-      if countiter == 1
-          disp('*********** sigma set to const * ||x|| ******************');
-      end
-      sigma = 0.04 * mueff * sqrt(sum(xmean.^2)) / N; % 20D,lam=1000:25e3
-      sigma = 0.3 * mueff * sqrt(sum(xmean.^2)) / N; % 20D,lam=(40,1000):17e3
-                                                     %      75e3 with def (1.5)
-                                                     %      35e3 with damps=0.25
-  end
-  if 11 < 3 
-          if countiter == 1
-              disp('*********** xmean set to const ******************');
-          end
-      xmean = ones(N,1);
-  end
-  
+    
   % Update B and D from C
 
   if ~flgDiagonalOnly && (ccov1+ccovmu+neg.ccov) > 0 && mod(countiter, 1/(ccov1+ccovmu+neg.ccov)/N/10) < 1
@@ -1285,35 +1135,35 @@ while isempty(stopflag)
       clear idx; % prevents error under octave 
       save(['tmp' opts.SaveFilename]);
       error(['function eig returned non-finited eigenvalues, cond(C)=' ...
-         num2str(cond(C)) ]);
+	     num2str(cond(C)) ]);
     end
     if any(any(~isfinite(B)))
       clear idx; % prevents error under octave
       save(['tmp' opts.SaveFilename]);
       error(['function eig returned non-finited eigenvectors, cond(C)=' ...
-         num2str(cond(C)) ]);
+	     num2str(cond(C)) ]);
     end
 
     % limit condition of C to 1e14 + 1
     if min(diagD) <= 0
-    if stopOnWarnings
-      stopflag(end+1) = {'warnconditioncov'};
-    else
-      warning(['Iteration ' num2str(countiter) ...
-           ': Eigenvalue (smaller) zero']);
-      diagD(diagD<0) = 0;
-      tmp = max(diagD)/1e14;
-      C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
-    end
+	if stopOnWarnings
+	  stopflag(end+1) = {'warnconditioncov'}; %#ok<AGROW>
+	else
+	  warning(['Iteration ' num2str(countiter) ...
+		   ': Eigenvalue (smaller) zero']);
+	  diagD(diagD<0) = 0;
+	  tmp = max(diagD)/1e14;
+	  C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
+	end
     end
     if max(diagD) > 1e14*min(diagD) 
-    if stopOnWarnings
-      stopflag(end+1) = {'warnconditioncov'};
-    else
-      % warning(['Iteration ' num2str(countiter) ': condition of C at upper limit' ]);
-      tmp = max(diagD)/1e14 - min(diagD);
-      C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
-    end
+	if stopOnWarnings
+	  stopflag(end+1) = {'warnconditioncov'}; %#ok<AGROW>
+	else
+	  % warning(['Iteration ' num2str(countiter) ': condition of C at upper limit' ]);
+	  tmp = max(diagD)/1e14 - min(diagD);
+	  C = C + tmp*eye(N,N); diagD = diagD + tmp*ones(N,1); 
+	end
     end
 
     diagC = diag(C); 
@@ -1345,47 +1195,6 @@ while isempty(stopflag)
     C = diag(diagC); % is better, because correlations are spurious anyway
   end
 
-  if noiseHandling 
-   if countiter == 1  % assign firstvarargin for noise treatment e.g. as #reevaluations
-     if ~isempty(varargin) && length(varargin{1}) == 1 && isnumeric(varargin{1})
-       if irun == 1
-         firstvarargin = varargin{1};
-       else
-         varargin{1} =  firstvarargin;  % reset varargin{1}
-       end
-     else
-       firstvarargin = 0;
-     end
-   end
-   if noiseSS < 0 && noiseMinMaxEvals(2) > noiseMinMaxEvals(1) && firstvarargin
-     varargin{1} = max(noiseMinMaxEvals(1), varargin{1} / noiseAlphaEvals^(1/4));  % still experimental
-   elseif noiseSS > 0
-    if ~isempty(noiseCallback)  % to be removed? 
-      res = feval(noiseCallback); % should also work without output argument!?
-      if ~isempty(res) && res > 1 % TODO: decide for interface of callback
-                                  %       also a dynamic popsize could be done here 
-        sigma = sigma * noiseAlpha;
-      end
-    else
-      if noiseMinMaxEvals(2) > noiseMinMaxEvals(1) && firstvarargin
-        varargin{1} = min(noiseMinMaxEvals(2), varargin{1} * noiseAlphaEvals);
-      end
-    
-      sigma = sigma * noiseAlpha; 
-      % lambda = ceil(0.1 * sqrt(lambda) + lambda);
-      % TODO: find smallest increase of lambda with log-linear
-      %       convergence in iterations
-    end
-    % qqq experimental: take a mean to estimate the true optimum
-    noiseN = noiseN + 1;
-    if noiseN == 1
-      noiseX = xmean; 
-    else
-      noiseX = noiseX + (3/noiseN) * (xmean - noiseX); 
-    end
-   end
-  end
-
   % ----- numerical error management -----
   % Adjust maximal coordinate axis deviations
   if any(sigma*sqrt(diagC) > maxdx)
@@ -1404,7 +1213,7 @@ while isempty(stopflag)
   % Adjust too low coordinate axis deviations
   if any(xmean == xmean + 0.2*sigma*sqrt(diagC)) 
     if stopOnWarnings
-      stopflag(end+1) = {'warnnoeffectcoord'};
+      stopflag(end+1) = {'warnnoeffectcoord'}; %#ok<AGROW>
     else
       warning(['Iteration ' num2str(countiter) ': coordinate axis std ' ...
                 'deviation too low' ]);
@@ -1427,11 +1236,11 @@ while isempty(stopflag)
   if all(xmean == xmean + tmp)
     i = 1+floor(mod(countiter,N));
     if stopOnWarnings
-    stopflag(end+1) = {'warnnoeffectaxis'};
+	stopflag(end+1) = {'warnnoeffectaxis'}; %#ok<AGROW>
     else
       warning(['Iteration ' num2str(countiter) ...
-           ': main axis standard deviation ' ...
-           num2str(sigma*diagD(i)) ' has no effect' ]);
+	       ': main axis standard deviation ' ...
+	       num2str(sigma*diagD(i)) ' has no effect' ]);
       sigma = sigma * exp(0.2+cs/damps); 
     end
   end
@@ -1443,13 +1252,13 @@ while isempty(stopflag)
       arrEqualFunvals = [countiter arrEqualFunvals(1:end-1)];
       % stop if this happens in more than 33%
       if arrEqualFunvals(end) > countiter - 3 * length(arrEqualFunvals)
-        stopflag(end+1) = {'equalfunvals'}; 
+        stopflag(end+1) = {'equalfunvals'};  %#ok<AGROW>
       end
     else
       if flgWarnOnEqualFunctionValues
         warning(['Iteration ' num2str(countiter) ...
-         ': equal function values f=' num2str(fitness.sel(1)) ...
-         ' at maximal main axis sigma ' ...
+		 ': equal function values f=' num2str(fitness.sel(1)) ...
+		 ' at maximal main axis sigma ' ...
         num2str(sigma*max(diagD))]);
       end
       sigma = sigma * exp(0.2+cs/damps); 
@@ -1458,11 +1267,11 @@ while isempty(stopflag)
   % Adjust step size in case of equal function values
   if countiter > 2 && myrange([fitness.hist fitness.sel(1)]) == 0  
     if stopOnWarnings
-    stopflag(end+1) = {'warnequalfunvalhist'};
+	stopflag(end+1) = {'warnequalfunvalhist'}; %#ok<AGROW>
     else
       warning(['Iteration ' num2str(countiter) ...
-           ': equal function values in history at maximal main ' ...
-           'axis sigma ' num2str(sigma*max(diagD))]);
+	       ': equal function values in history at maximal main ' ...
+	       'axis sigma ' num2str(sigma*max(diagD))]);
       sigma = sigma * exp(0.2+cs/damps); 
     end
   end
@@ -1481,31 +1290,43 @@ while isempty(stopflag)
   out.solutions.recentworst.x = arxvalid(:, fitness.idx(end));
   out.solutions.recentworst.f = fitness.raw(end);
   out.solutions.recentworst.evals = counteval + fitness.idx(end) - lambda;
+    if fitness.hist(1) < OldF && ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
+    OldF = fitness.hist(1);
   if fitness.hist(1) < out.solutions.bestever.f
     out.solutions.bestever.x = arxvalid(:, fitness.idx(1));
     out.solutions.bestever.f = fitness.hist(1);
     out.solutions.bestever.evals = counteval + fitness.idx(1) - lambda;
+    if ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
+    out.solutions.bestever.PersistentState = PersistentState;
     bestever = out.solutions.bestever;
+  elseif isempty( PersistentState )
+    if ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
   end
 
   % Set stop flag
-  if fitness.raw(1) <= stopFitness, stopflag(end+1) = {'fitness'}; end
-  if counteval >= stopMaxFunEvals, stopflag(end+1) = {'maxfunevals'}; end
-  if countiter >= stopMaxIter, stopflag(end+1) = {'maxiter'}; end
+  if fitness.raw(1) <= stopFitness, stopflag(end+1) = {'fitness'}; end %#ok<AGROW>
+  if counteval >= stopMaxFunEvals, stopflag(end+1) = {'maxfunevals'}; end %#ok<AGROW>
+  if countiter >= stopMaxIter, stopflag(end+1) = {'maxiter'}; end %#ok<AGROW>
   if all(sigma*(max(abs(pc), sqrt(diagC))) < stopTolX) 
-    stopflag(end+1) = {'tolx'};
+    stopflag(end+1) = {'tolx'}; %#ok<AGROW>
   end
   if any(sigma*sqrt(diagC) > stopTolUpX) 
-    stopflag(end+1) = {'tolupx'};
+    stopflag(end+1) = {'tolupx'}; %#ok<AGROW>
   end
   if sigma*max(diagD) == 0  % should never happen
-    stopflag(end+1) = {'bug'};
+    stopflag(end+1) = {'bug'}; %#ok<AGROW>
   end
   if countiter > 2 && myrange([fitness.sel fitness.hist]) <= stopTolFun 
-    stopflag(end+1) = {'tolfun'};
+    stopflag(end+1) = {'tolfun'}; %#ok<AGROW>
   end
   if countiter >= length(fitness.hist) && myrange(fitness.hist) <= stopTolHistFun 
-    stopflag(end+1) = {'tolhistfun'};
+    stopflag(end+1) = {'tolhistfun'}; %#ok<AGROW>
   end
   l = floor(length(fitness.histbest)/3);
   if 1 < 2 && stopOnStagnation && ...  % leads sometimes early stop on ftablet, fcigtab
@@ -1513,11 +1334,11 @@ while isempty(stopflag)
       length(fitness.histbest) > 100 && ... 
       median(fitness.histmedian(1:l)) >= median(fitness.histmedian(end-l:end)) && ...
       median(fitness.histbest(1:l)) >= median(fitness.histbest(end-l:end))
-    stopflag(end+1) = {'stagnation'};
+    stopflag(end+1) = {'stagnation'}; %#ok<AGROW>
   end
 
   if counteval >= stopFunEvals || countiter >= stopIter
-    stopflag(end+1) = {'stoptoresume'};
+    stopflag(end+1) = {'stoptoresume'}; %#ok<AGROW>
     if length(stopflag) == 1 && flgsaving == 0
       error('To resume later the saving option needs to be set');
     end
@@ -1533,7 +1354,7 @@ while isempty(stopflag)
       % 'stop filename' sets stopflag to manual
       str = sscanf(strline, ' %s %s', 2);
       if strcmp(str, ['stop' opts.LogFilenamePrefix]) 
-        stopflag(end+1) = {'manual'};
+        stopflag(end+1) = {'manual'}; %#ok<AGROW>
         break;
       end
       % 'skip filename run 3' skips a run, but not the last
@@ -1541,7 +1362,7 @@ while isempty(stopflag)
       if strcmp(str, ['skip' opts.LogFilenamePrefix 'run'])
         i = strfind(strline, 'run');
         if irun == sscanf(strline(i+3:end), ' %d ', 1) && irun <= myeval(opts.Restarts)
-          stopflag(end+1) = {'skipped'};
+          stopflag(end+1) = {'skipped'}; %#ok<AGROW>
         end      
       end
     end % while, break 
@@ -1557,28 +1378,28 @@ while isempty(stopflag)
   if verbosemodulo > 0 && isfinite(verbosemodulo)
     if countiter == 1 || mod(countiter, 10*verbosemodulo) < 1 
       disp(['Iterat, #Fevals:   Function Value    (median,worst) ' ...
-        '|Axis Ratio|' ...
-        'idx:Min SD idx:Max SD']); 
+	    '|Axis Ratio|' ...
+	    'idx:Min SD idx:Max SD']); 
     end
     if mod(countiter, verbosemodulo) < 1 ...
-      || (verbosemodulo > 0 && isfinite(verbosemodulo) && ...
-          (countiter < 3 || ~isempty(stopflag)))
-      [minstd minstdidx] = min(sigma*sqrt(diagC));
-      [maxstd maxstdidx] = max(sigma*sqrt(diagC));
+	  || (verbosemodulo > 0 && isfinite(verbosemodulo) && ...
+	      (countiter < 3 || ~isempty(stopflag)))
+      [minstd, minstdidx] = min(sigma*sqrt(diagC));
+      [maxstd, maxstdidx] = max(sigma*sqrt(diagC));
       % format display nicely
       disp([repmat(' ',1,4-floor(log10(countiter))) ...
-        num2str(countiter) ' , ' ...
-        repmat(' ',1,5-floor(log10(counteval))) ...
-        num2str(counteval) ' : ' ...
+	    num2str(countiter) ' , ' ...
+	    repmat(' ',1,5-floor(log10(counteval))) ...
+	    num2str(counteval) ' : ' ...
             num2str(fitness.hist(1), '%.13e') ...
-        ' +(' num2str(median(fitness.raw)-fitness.hist(1), '%.0e ') ...
-        ',' num2str(max(fitness.raw)-fitness.hist(1), '%.0e ') ...
-        ') | ' ...
-        num2str(max(diagD)/min(diagD), '%4.2e') ' | ' ...
-        repmat(' ',1,1-floor(log10(minstdidx))) num2str(minstdidx) ':' ...
-        num2str(minstd, ' %.1e') ' ' ...
-        repmat(' ',1,1-floor(log10(maxstdidx))) num2str(maxstdidx) ':' ...
-        num2str(maxstd, ' %.1e')]);
+	    ' +(' num2str(median(fitness.raw)-fitness.hist(1), '%.0e ') ...
+	    ',' num2str(max(fitness.raw)-fitness.hist(1), '%.0e ') ...
+	    ') | ' ...
+	    num2str(max(diagD)/min(diagD), '%4.2e') ' | ' ...
+	    repmat(' ',1,1-floor(log10(minstdidx))) num2str(minstdidx) ':' ...
+	    num2str(minstd, ' %.1e') ' ' ...
+	    repmat(' ',1,1-floor(log10(maxstdidx))) num2str(maxstdidx) ':' ...
+	    num2str(maxstd, ' %.1e')]);
     end
   end
 
@@ -1606,51 +1427,51 @@ while isempty(stopflag)
   
   % record output data, concerning time issues
   if savemodulo && savetime && (countiter < 1e2 || ~isempty(stopflag) || ...
-    countiter >= outiter + savemodulo)
+	countiter >= outiter + savemodulo)
     outiter = countiter; 
       % Save output data to files  
-      for namecell = filenames(:)'
+  for namecell = filenames(:)'
         name = namecell{:};
 
-    [fid, err] = fopen(['./' filenameprefix name '.dat'], 'a');
-    if fid < 1 % err ~= 0 
-      warning(['could not open ' filenameprefix name '.dat']);
-    else
-      if strcmp(name, 'axlen')
-        fprintf(fid, '%d %d %e %e %e ', countiter, counteval, sigma, ...
-        max(diagD), min(diagD)); 
+	[fid, ~] = fopen(['./' filenameprefix name '.dat'], 'a');
+	if fid < 1 % err ~= 0 
+	  warning(['could not open ' filenameprefix name '.dat']);
+	else
+	  if strcmp(name, 'axlen')
+	    fprintf(fid, '%d %d %e %e %e ', countiter, counteval, sigma, ...
+		max(diagD), min(diagD)); 
             fprintf(fid, '%e ', sort(diagD)); 
             fprintf(fid, '\n');
-      elseif strcmp(name, 'disp') % TODO
-      elseif strcmp(name, 'fit')
-        fprintf(fid, '%ld %ld %e %e %25.18e %25.18e %25.18e %25.18e', ...
+	  elseif strcmp(name, 'disp') % TODO
+	  elseif strcmp(name, 'fit')
+	    fprintf(fid, '%ld %ld %e %e %25.18e %25.18e %25.18e %25.18e', ...
                     countiter, counteval, sigma, max(diagD)/min(diagD), ...
                     out.solutions.bestever.f, ...
                     fitness.raw(1), median(fitness.raw), fitness.raw(end)); 
             if ~isempty(varargin) && length(varargin{1}) == 1 && isnumeric(varargin{1}) && varargin{1} ~= 0
               fprintf(fid, ' %f', varargin{1});
             end                    
-        fprintf(fid, '\n');
-      elseif strcmp(name, 'stddev')
-        fprintf(fid, '%ld %ld %e 0 0 ', countiter, counteval, sigma); 
-        fprintf(fid, '%e ', sigma*sqrt(diagC)); 
+	    fprintf(fid, '\n');
+	  elseif strcmp(name, 'stddev')
+	    fprintf(fid, '%ld %ld %e 0 0 ', countiter, counteval, sigma); 
+	    fprintf(fid, '%e ', sigma*sqrt(diagC)); 
             fprintf(fid, '\n');
-      elseif strcmp(name, 'xmean')
-        if isnan(fmean)
-          fprintf(fid, '%ld %ld 0 0 0 ', countiter, counteval); 
-        else
-          fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
-        end
-        fprintf(fid, '%e ', xmean); 
+	  elseif strcmp(name, 'xmean')
+	    if isnan(fmean)
+	      fprintf(fid, '%ld %ld 0 0 0 ', countiter, counteval); 
+	    else
+	      fprintf(fid, '%ld %ld 0 0 %e ', countiter, counteval, fmean); 
+	    end
+	    fprintf(fid, '%e ', xmean); 
             fprintf(fid, '\n');
-      elseif strcmp(name, 'xrecentbest')
+	  elseif strcmp(name, 'xrecentbest')
             % TODO: fitness is inconsistent with x-value
-        fprintf(fid, '%ld %ld %25.18e 0 0 ', countiter, counteval, fitness.raw(1)); 
-        fprintf(fid, '%e ', arx(:,fitness.idx(1))); 
+	    fprintf(fid, '%ld %ld %25.18e 0 0 ', countiter, counteval, fitness.raw(1)); 
+	    fprintf(fid, '%e ', arx(:,fitness.idx(1))); 
             fprintf(fid, '\n');
-      end
-      fclose(fid); 
-    end
+	  end
+	  fclose(fid); 
+	end
   end
 
     % get average time for recording data
@@ -1677,7 +1498,7 @@ while isempty(stopflag)
     end
     if countiter > 100 + 20 && savemodulo && ...
           time.recording * countiter > 0.1 && ...  % absolute time larger 0.1 second
-      time.recording > savetime * (time.nonoutput+time.recording) / 100 
+	  time.recording > savetime * (time.nonoutput+time.recording) / 100 
       savemodulo = floor(1.02 * savemodulo) + 1;
       % disp(['++savemodulo == ' num2str(savemodulo) ' at ' num2str(countiter)]); %qqq
     end
@@ -1686,15 +1507,15 @@ while isempty(stopflag)
   % save everything
   time.t3 = clock;
   if ~isempty(stopflag) || time.saving < 0.05 * time.nonoutput || countiter == 100
-    xmin = arxvalid(:, fitness.idx(1));
-    fmin = fitness.raw(1);
+    %xmin = arxvalid(:, fitness.idx(1));
+    %fmin = fitness.raw(1);
     if flgsaving && countiter > 2
       clear idx; % prevents error under octave
       % -v6 : non-compressed non-unicode for version 6 and earlier
       if ~isempty(strsaving) && ~isoctave
-    save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart   
+	save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart	
       else 
-    save('-mat', opts.SaveFilename); % for inspection and possible restart
+	save('-mat', opts.SaveFilename); % for inspection and possible restart
       end
       time.saving = time.saving + time.c * max(0,etime(clock, time.t3)); 
     end
@@ -1711,26 +1532,38 @@ end % while, end generation loop
 fmin = fitness.raw(1);
 xmin = arxvalid(:, fitness.idx(1)); % Return best point of last generation.
 if length(stopflag) > sum(strcmp(stopflag, 'stoptoresume')) % final stopping
-  out.solutions.mean.f = ...
-      feval(fitfun, xintobounds(xmean, lbounds, ubounds), varargin{:});
+  [ out.solutions.mean.f, tmpPersistentState ] = ...
+      feval(fitfun, xintobounds(xmean, lbounds, ubounds), PersistentState, 1, varargin{:});
   counteval = counteval + 1;
   out.solutions.mean.evals = counteval;
   if out.solutions.mean.f < fitness.raw(1)
     fmin = out.solutions.mean.f;
     xmin = xintobounds(xmean, lbounds, ubounds); % Return xmean as best point
   end
+    if out.solutions.mean.f < OldF && ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
+    OldF = out.solutions.mean.f;
   if out.solutions.mean.f < out.solutions.bestever.f
     out.solutions.bestever = out.solutions.mean; % Return xmean as bestever point
     out.solutions.bestever.x = xintobounds(xmean, lbounds, ubounds); 
+    if ~isempty( tmpPersistentState )
+        PersistentState = tmpPersistentState;
+    end
+    out.solutions.bestever.PersistentState = PersistentState;
     bestever = out.solutions.bestever;
   end
 end
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Save everything and display final message
 if flgsavingfinal
   clear idx; % prevents error under octave
   if ~isempty(strsaving) && ~isoctave
-    save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart   
+    save('-mat', strsaving, opts.SaveFilename); % for inspection and possible restart	
   else 
     save('-mat', opts.SaveFilename);    % for inspection and possible restart
   end
@@ -1742,20 +1575,16 @@ end
 if flgdisplay
   disp(['#Fevals:   f(returned x)   |    bestever.f     | stopflag' ...
         message]);
-  if isoctave
-    strstop = stopflag(:); 
-  else
-      strcat(stopflag(:), '.');
-  end
+
   strstop = stopflag(:); %strcat(stopflag(:), '.');
   disp([repmat(' ',1,6-floor(log10(counteval))) ...
         num2str(counteval, '%6.0f') ': ' num2str(fmin, '%.11e') ' | ' ...
         num2str(out.solutions.bestever.f, '%.11e') ' | ' ...
-    strstop{1:end}]);
+	strstop{1:end}]);
   if N < 102
      disp(['mean solution:' sprintf(' %+.1e', xmean)]);
      disp(['std deviation:' sprintf('  %.1e', sigma*sqrt(diagC))]);
-     disp(sprintf('use plotcmaesdat.m for plotting the output at any time (option LogModulo must not be zero)'));
+     fprintf('use plotcmaesdat.m for plotting the output at any time (option LogModulo must not be zero)\n');
   end
   if exist('sfile', 'var') 
     disp(['Results saved in ' sfile]); 
@@ -1764,9 +1593,9 @@ end
 
   out.arstopflags{irun} = stopflag;
   if any(strcmp(stopflag, 'fitness')) ...
-    || any(strcmp(stopflag, 'maxfunevals')) ...
-    || any(strcmp(stopflag, 'stoptoresume')) ...
-    || any(strcmp(stopflag, 'manual'))
+	|| any(strcmp(stopflag, 'maxfunevals')) ...
+	|| any(strcmp(stopflag, 'stoptoresume')) ...
+	|| any(strcmp(stopflag, 'manual'))
     break; 
   end
 end % while irun <= Restarts
@@ -1879,48 +1708,39 @@ end
   defnames = fieldnames(defopts);
   idxmatched = []; % indices of defopts that already matched
   for name = fieldnames(inopts)'
-    name = name{1}; % name of i-th inopts-field
+    name1 = name{1}; % name of i-th inopts-field
     if isoctave
+        idx = false( size(defnames, 1), 1 );
       for i = 1:size(defnames, 1)
-        idx(i) = strncmpi(defnames(i), name, length(name));
+        idx(i) = strncmpi(defnames(i), name1, length(name1));
       end
     else
-    idx = strncmpi(defnames, name, length(name));
+	idx = strncmpi(defnames, name1, length(name1));
     end
     if sum(idx) > 1
-      error(['option "' name '" is not an unambigous abbreviation. ' ...
-         'Use opts=RMFIELD(opts, ''' name, ...
-         ''') to remove the field from the struct.']);
+      error(['option "' name1 '" is not an unambigous abbreviation. ' ...
+	     'Use opts=RMFIELD(opts, ''' name1, ...
+	     ''') to remove the field from the struct.']);
     end
     if sum(idx) == 1
-      defname  = defnames{find(idx)}; 
+      defname  = defnames{(idx)}; 
       if ismember(find(idx), idxmatched)
-    error(['input options match more than ones with "' ...
-           defname '". ' ...
-           'Use opts=RMFIELD(opts, ''' name, ...
-           ''') to remove the field from the struct.']);
+	error(['input options match more than ones with "' ...
+	       defname '". ' ...
+	       'Use opts=RMFIELD(opts, ''' name1, ...
+	       ''') to remove the field from the struct.']);
       end
-      idxmatched = [idxmatched find(idx)];
-      val = getfield(inopts, name);
-      % next line can replace previous line from MATLAB version 6.5.0 on and in octave
-      % val = inopts.(name);
-      if isstruct(val) % valid syntax only from version 6.5.0
-    opts = setfield(opts, defname, ...
-        getoptions(val, getfield(defopts, defname))); 
-      elseif isstruct(getfield(defopts, defname)) 
-      % next three lines can replace previous three lines from MATLAB 
-      % version 6.5.0 on
-      %   opts.(defname) = ...
-      %      getoptions(val, defopts.(defname)); 
-      % elseif isstruct(defopts.(defname)) 
-    warning(['option "' name '" disregarded (must be struct)']); 
+      idxmatched = [idxmatched find(idx)]; %#ok<AGROW>
+      val = inopts.( name1 );
+      if isstruct(val)
+        opts.( defname ) = getoptions(val, defopts.( defname ) );
+      elseif isstruct(defopts.( defname )) 
+        warning(['option "' name1 '" disregarded (must be struct)']); 
       elseif ~isempty(val) % empty value: do nothing, i.e. stick to default
-    opts = setfield(opts, defnames{find(idx)}, val);
-    % next line can replace previous line from MATLAB version 6.5.0 on
-    % opts.(defname) = inopts.(name); 
+        opts.( defname ) = val; 
       end
     else
-      warning(['option "' name '" disregarded (unknown field name)']);
+      warning(['option "' name1 '" disregarded (unknown field name)']);
     end
   end
 
@@ -1940,17 +1760,17 @@ function res=myevalbool(s)
     res = s;
   else % evaluation string s
     if strncmpi(s, 'yes', 3) || strncmpi(s, 'on', 2) ...
-      || strncmpi(s, 'true', 4) || strncmp(s, '1 ', 2)
-      res = 1;
+	  || strncmpi(s, 'true', 4) || strncmp(s, '1 ', 2)
+      res = true;
     elseif strncmpi(s, 'no', 2) || strncmpi(s, 'off', 3) ...
-      || strncmpi(s, 'false', 5) || strncmp(s, '0 ', 2)
-      res = 0;
+	  || strncmpi(s, 'false', 5) || strncmp(s, '0 ', 2)
+      res = false;
     else
       try res = evalin('caller', s); catch
-    error(['String value "' s '" cannot be evaluated']);
+	error(['String value "' s '" cannot be evaluated']);
       end
-      try res ~= 0; catch
-    error(['String value "' s '" cannot be evaluated reasonably']);
+      try res ~= 0; catch %#ok<VUNUS>
+	error(['String value "' s '" cannot be evaluated reasonably']);
       end
     end
   end
@@ -2007,25 +1827,26 @@ end
  
 % sort inar
 if nargin < 3 || isempty(idx)
-  [sar idx] = sort(inar);
+  sar = sort(inar);
 else
   sar = inar(idx);
 end
 
-res = [];
-for p = perc
+res = zeros( numel( perc ), 1 );
+for pidx = numel( perc )
+    p = perc( pidx );
   if p <= 100*(0.5/N)
-    res(end+1) = sar(1);
+    res(pidx) = sar(1);
   elseif p >= 100*((N-0.5)/N)
-    res(end+1) = sar(N);
+    res(pidx) = sar(N);
   else
     % find largest index smaller than required percentile
     availablepercentiles = 100*((1:N)-0.5)/N;
-    i = max(find(p > availablepercentiles));
+    i = (find(p > availablepercentiles,1,'last'));
     % interpolate linearly
-    res(end+1) = sar(i) ...
-    + (sar(i+1)-sar(i))*(p - availablepercentiles(i)) ...
-    / (availablepercentiles(i+1) - availablepercentiles(i));
+    res(pidx) = sar(i) ...
+	+ (sar(i+1)-sar(i))*(p - availablepercentiles(i)) ...
+	/ (availablepercentiles(i+1) - availablepercentiles(i));
 
   end
 end
@@ -2033,95 +1854,6 @@ end
 if flgtranspose
   res = res';
 end
-
-
-% ---------------------------------------------------------------  
-% ---------------------------------------------------------------  
-% ---------------------------------------------------------------  
-% ---------------------------------------------------------------  
-
-
-
-function [s ranks rankDelta] = local_noisemeasurement(arf1, arf2, lamreev, theta, cutlimit)
-% function [s ranks rankDelta] = noisemeasurement(arf1, arf2, lamreev, theta)
-%
-% Input: 
-%   arf1, arf2 : two arrays of function values. arf1 is of size 1xlambda, 
-%       arf2 may be of size 1xlamreev or 1xlambda. The first lamreev values 
-%       in arf2 are (re-)evaluations of the respective solutions, i.e. 
-%       arf1(1) and arf2(1) are two evaluations of "the first" solution.
-%    lamreev: number of reevaluated individuals in arf2 
-%    theta : parameter theta for the rank change limit, between 0 and 1, 
-%       typically between 0.2 and 0.7. 
-%    cutlimit (optional): output s is computed as a mean of rankchange minus 
-%       threshold, where rankchange is <=2*(lambda-1). cutlimit limits 
-%       abs(rankchange minus threshold) in this calculation to cutlimit. 
-%       cutlimit=1 evaluates basically the sign only. cutlimit=2 could be 
-%       the rank change with one solution (both evaluations of it). 
-% 
-% Output: 
-%   s : noise measurement, s>0 means the noise measure is above the
-%       acceptance threshold
-%   ranks : 2xlambda array, corresponding to [arf1; arf2], of ranks 
-%       of arf1 and arf2 in the set [arf1 arf2], values are in [1:2*lambda]
-%   rankDelta: 1xlambda array of rank movements of arf2 compared to
-%       arf1.  rankDelta(i) agrees with the number of values from
-%       the set [arf1 arf2] that lie between arf1(i) and arf2(i).
-%
-% Note: equal function values might lead to somewhat spurious results.
-%       For this case a revision is advisable. 
-
-%%% verify input argument sizes
-if size(arf1,1) ~= 1
-  error('arf1 must be an 1xlambda array');
-elseif size(arf2,1) ~= 1
-  error('arf2 must be an 1xsomething array');
-elseif size(arf1,2) < size(arf2,2)  % not really necessary, but saver
-  error('arf2 must not be smaller than arf1 in length');
-end
-lam = size(arf1, 2);
-if size(arf1,2) ~= size(arf2,2)
-   arf2(end+1:lam) = arf1((size(arf2,2)+1):lam);
-end
-if nargin < 5
-  cutlimit = inf;
-end
-
-%%% capture unusual values
-if any(diff(arf1) == 0)
-  % this will presumably interpreted as rank change, because
-  % sort(ones(...)) returns 1,2,3,...
-  warning([num2str(sum(diff(arf1)==0)) ' equal function values']);
-end
-
-%%% compute rank changes into rankDelta
-% compute ranks
-[ignore, idx] = sort([arf1 arf2]);
-[ignore, ranks] = sort(idx);
-ranks = reshape(ranks, lam, 2)';
-
-rankDelta = ranks(1,:) - ranks(2,:) - sign(ranks(1,:) - ranks(2,:));
-
-%%% compute rank change limits using both ranks(1,...) and ranks(2,...)
-for i = 1:lamreev
-  sumlim(i) = ...
-      0.5 * (...
-          myprctile(abs((1:2*lam-1) - (ranks(1,i) - (ranks(1,i)>ranks(2,i)))), ...
-                    theta*50) ...      
-          + myprctile(abs((1:2*lam-1) - (ranks(2,i) - (ranks(2,i)>ranks(1,i)))), ...
-                      theta*50)); 
-end
-
-%%% compute measurement
-%s = abs(rankDelta(1:lamreev)) - sumlim; % lives roughly in 0..2*lambda
-
-%                               max: 1 rankchange in 2*lambda is always fine
-s = abs(rankDelta(1:lamreev)) - max(1, sumlim); % lives roughly in 0..2*lambda
-
-% cut-off limit
-idx = abs(s) > cutlimit; 
-s(idx) = sign(s(idx)) * cutlimit;
-s = mean(s);
 
 % ---------------------------------------------------------------  
 % ---------------------------------------------------------------  
@@ -2155,8 +1887,6 @@ function local_plotcmaesdat(figNb, filenameprefix, filenameextension, objectvarn
 %   name = axlen, OBJECTVARNAME (xmean|xrecentbest), fit, or stddev.
 %
 
-manual_mode = 0;
-
   if nargin < 1 || isempty(figNb)
     figNb = 325;
   end
@@ -2167,7 +1897,7 @@ manual_mode = 0;
     filenameextension = '.dat';
   end
   if nargin < 4 || isempty(objectvarname)
-    objectvarname = 'xmean';    
+    % objectvarname = 'xmean';    
     objectvarname = 'xrecentbest';
   end
   % load data
@@ -2210,9 +1940,6 @@ manual_mode = 0;
   end
 
   % set up figure window
-  if manual_mode
-    figure(figNb);  % just create and raise the figure window
-  else
     if 1 < 3 && evalin('caller', 'iterplotted') == 0 && evalin('caller', 'irun') == 1 
       figure(figNb);  % incomment this, if figure raise in the beginning is not desired
     elseif ismember(figNb, findobj('Type', 'figure'))
@@ -2220,12 +1947,11 @@ manual_mode = 0;
     else
       figure(figNb);
     end
-  end
 
   % plot fitness etc
   foffset = 1e-99;
   dfit = d.f(:,6)-min(d.f(:,6)); 
-  [ignore idxbest] = min(dfit);
+  [~, idxbest] = min(dfit);
   dfit(dfit<1e-98) = NaN;
   subplot(2,2,1); hold off; 
   dd = abs(d.f(:,7:8)) + foffset; 
@@ -2252,8 +1978,8 @@ manual_mode = 0;
   semilogy(d.f(:,iabscissa),abs(d.f(:,6))+foffset,'-b'); hold on;
   semilogy(d.f(:,iabscissa),dfit,'-c'); hold on;
   semilogy(d.f(:,iabscissa),(d.f(:,4)),'-r'); hold on; % AR
-  semilogy(d.std(:,iabscissa), [max(d.std(:,6:end)')' ...
-                      min(d.std(:,6:end)')'], '-m'); % max,min std
+  semilogy(d.std(:,iabscissa), [max(d.std(:,6:end),2) ...
+                      min(d.std(:,6:end),2)], '-m'); % max,min std
   maxval = max(d.std(end,6:end));
   minval = min(d.std(end,6:end));
   text(d.std(end,iabscissa), maxval, sprintf('%.0e', maxval));
@@ -2282,10 +2008,10 @@ manual_mode = 0;
   axis(ax); 
 
   % add some annotation lines
-  [ignore idx] = sort(d.x(end,6:end));
+  [~, idx] = sort(d.x(end,6:end));
   % choose no more than 25 indices 
   idxs = round(linspace(1, size(d.x,2)-5, min(size(d.x,2)-5, 25))); 
-  yy = repmat(NaN, 2, size(d.x,2)-5);
+  yy = NaN( 2, size(d.x,2)-5);
   yy(1,:) = d.x(end, 6:end);
   yy(2,idx(idxs)) = linspace(ax(3), ax(4), length(idxs));
   plot([d.x(end,iabscissa) ax(2)], yy, '-'); 
@@ -2315,8 +2041,8 @@ manual_mode = 0;
   d.std(:,6:end) = d.std(:,6:end) ./ (d.std(:,3) * ones(1,size(d.std,2)-5));
   semilogy(d.std(:,iabscissa), d.std(:,6:end), '-'); hold on; 
   if 11 < 3  % max and min std
-    semilogy(d.std(:,iabscissa), [d.std(:,3).*max(d.std(:,6:end)')' ...
-                        d.std(:,3).*min(d.std(:,6:end)')'], '-m', 'linewidth', 2);
+    semilogy(d.std(:,iabscissa), [d.std(:,3).*max(d.std(:,6:end),2) ...
+                        d.std(:,3).*min(d.std(:,6:end),2)], '-m', 'linewidth', 2);
     maxval = max(d.std(end,6:end));
     minval = min(d.std(end,6:end));
     text(d.std(end,iabscissa), d.std(end,3)*maxval, sprintf('max=%.0e', maxval));
@@ -2326,10 +2052,10 @@ manual_mode = 0;
   ax(2) = max(minxend, ax(2)); 
   axis(ax);
   % add some annotation lines
-  [ignore idx] = sort(d.std(end,6:end));
+  [~, idx] = sort(d.std(end,6:end));
   % choose no more than 25 indices 
   idxs = round(linspace(1, size(d.x,2)-5, min(size(d.x,2)-5, 25))); 
-  yy = repmat(NaN, 2, size(d.std,2)-5);
+  yy = NaN( 2, size(d.std,2)-5);
   yy(1,:) = d.std(end, 6:end);
   yy(2,idx(idxs)) = logspace(log10(ax(3)), log10(ax(4)), length(idxs));
   semilogy([d.std(end,iabscissa) ax(2)], yy, '-'); 
@@ -2345,547 +2071,7 @@ manual_mode = 0;
   end
   drawnow;
 
-% ---------------------------------------------------------------  
-% --------------- TEST OBJECTIVE FUNCTIONS ----------------------  
-% ---------------------------------------------------------------  
 
-%%% Unimodal functions
-
-function f=fjens1(x)
-%
-% use population size about 2*N
-%
-  f = sum((x>0) .* x.^1, 1);
-  if any(any(x<0))
-    idx = sum(x < 0, 1) > 0;
-    f(idx) = 1e3;
-%    f = f + 1e3 * sum(x<0, 1);
-%    f = f + 10 * sum((x<0) .* x.^2, 1);
-    f(idx) = f(idx) + 1e-3*abs(randn(1,sum(idx)));
-%    f(idx) = NaN;
-  end
-
-function f=fsphere(x)
-  f = sum(x.^2,1);
-
-function f=fmax(x)
-  f = max(abs(x), [], 1);
-
-function f=fssphere(x)
-  f=sqrt(sum(x.^2, 1));
-
-%  lb = -0.512; ub = 512; 
-%  xfeas = x; 
-%  xfeas(x<lb) = lb;
-%  xfeas(x>ub) = ub; 
-%  f=sum(xfeas.^2, 1);
-%  f = f + 1e-9 * sum((xfeas-x).^2); 
-  
-function f=fspherenoise(x, Nevals)
-  if nargin < 2 || isempty(Nevals)
-    Nevals = 1;
-  end
-  [N,popsi] = size(x);
-%  x = x .* (1 +  0.3e-0 * randn(N, popsi)/(2*N)); % actuator noise
-  fsum = 10.^(0*(0:N-1)/(N-1)) * x.^2; 
-%  f = 0*rand(1,1) ...
-%      + fsum ...
-%      + fsum .* (2*randn(1,popsi) ./ randn(1,popsi).^0 / (2*N)) ...
-%      + 1*fsum.^0.9 .* 2*randn(1,popsi) / (2*N); % 
-
-%  f = fsum .* exp(0.1*randn(1,popsi));
-  f = fsum .* (1 + (10/(N+10)/sqrt(Nevals))*randn(1,popsi));
-%  f = fsum .* (1 + (0.1/N)*randn(1,popsi)./randn(1,popsi).^1);
-
-  idx = rand(1,popsi) < 0.0;
-  if sum(idx) > 0
-    f(idx) = f(idx) + 1e3*exp(randn(1,sum(idx)));
-  end
-  
-function f=fmixranks(x)
-  N = size(x,1);
-  f=(10.^(0*(0:(N-1))/(N-1))*x.^2).^0.5;
-  if size(x, 2) > 1 % compute ranks, if it is a population 
-    [ignore, idx] = sort(f);
-    [ignore, ranks] = sort(idx);
-    k = 9; % number of solutions randomly permuted, lambda/2-1
-           % works still quite well (two time slower)
-    for i = k+1:k-0:size(x,2)
-      idx(i-k+(1:k)) = idx(i-k+randperm(k)); 
-    end
-    %disp([ranks' f'])
-    [ignore, ranks] = sort(idx);
-    %disp([ranks' f'])
-    %pause
-    f = ranks+1e-9*randn(1,1);
-  end
-  
-function f = fsphereoneax(x)
-  f = x(1)^2;
-  f = mean(x)^2;
-  
-function f=frandsphere(x)
-  N = size(x,1);
-  idx = ceil(N*rand(7,1));
-  f=sum(x(idx).^2);
-
-function f=fspherelb0(x, M) % lbound at zero for 1:M needed
-  if nargin < 2 M = 0; end
-  N = size(x,1);
-  % M active bounds, f_i = 1 for x = 0
-  f = -M + sum((x(1:M) + 1).^2);
-  f = f + sum(x(M+1:N).^2);
-  
-function f=fspherehull(x)
-  % Patton, Dexter, Goodman, Punch
-  % in -500..500
-  % spherical ridge through zeros(N,1)
-  % worst case start point seems x = 2*100*sqrt(N)
-  % and small step size
-  N = size(x,1);
-  f = norm(x) + (norm(x-100*sqrt(N)) - 100*N)^2;
-  
-function f=fellilb0(x, idxM, scal) % lbound at zero for 1:M needed
-  N = size(x,1);
-  if nargin < 3 || isempty(scal)
-    scal = 100;
-  end
-  scale=scal.^((0:N-1)/(N-1));
-  if nargin < 2 || isempty(idxM)
-    idxM = 1:N;
-  end
-  %scale(N) = 1e0;
-  % M active bounds
-  xopt = 0.1;
-  x(idxM) = x(idxM) + xopt;
-  f = scale.^2*x.^2;
-  f = f - sum((xopt*scale(idxM)).^2); 
-%  f = exp(f) - 1;
-%  f = log10(f+1e-19) + 19;
-
-  f = f + 1e-19;
-  
-function f=fcornersphere(x)
-  w = ones(size(x,1));
-  w(1) = 2.5; w(2)=2.5;
-  idx = x < 0;
-  f = sum(x(idx).^2);
-  idx = x > 0;
-  f = f + 2^2*sum(w(idx).*x(idx).^2);
-  
-function f=fsectorsphere(x, scal)
-%
-% This is deceptive for cumulative sigma control CSA in large dimension:
-% The strategy (initially) diverges for N=50 and popsize = 150.  (Even
-% for cs==1 this can be observed for larger settings of N and
-% popsize.) The reason is obvious from the function topology. 
-% Divergence can be avoided by setting boundaries or adding a
-% penalty for large ||x||. Then, convergence can be observed again. 
-% Conclusion: for popsize>N cumulative sigma control is not completely
-% reasonable, but I do not know better alternatives. In particular:
-% TPA takes longer to converge than CSA when the latter still works. 
-%
-  if nargin < 2 || isempty (scal)
-    scal = 1e3;
-  end
-  f=sum(x.^2,1);
-  idx = x<0;
-  f = f + (scal^2 - 1) * sum((idx.*x).^2,1);
-  if 11 < 3
-    idxpen = find(f>1e9);
-    if ~isempty(idxpen)
-      f(idxpen) = f(idxpen) + 1e8*sum(x(:,idxpen).^2,1);
-    end
-  end
-  
-function f=fstepsphere(x, scal)
-  if nargin < 2 || isempty (scal)
-    scal = 1e0;
-  end
-  N = size(x,1);
-  f=1e-11+sum(scal.^((0:N-1)/(N-1))*floor(x+0.5).^2);
-  f=1e-11+sum(floor(scal.^((0:N-1)/(N-1))'.*x+0.5).^2);
-%  f=1e-11+sum(floor(x+0.5).^2);
-
-function f=fstep(x)
-  % in -5.12..5.12 (bounded)
-  N = size(x,1);
-  f=1e-11+6*N+sum(floor(x));
-
-function f=flnorm(x, scal, e)
-if nargin < 2 || isempty(scal)
-  scal = 1;
-end
-if nargin < 3 || isempty(e)
-  e = 1;
-end
-if e==inf
-  f = max(abs(x));
-else
-  N = size(x,1);
-  scale = scal.^((0:N-1)/(N-1))';
-  f=sum(abs(scale.*x).^e);
-end
-
-function f=fneumaier3(x) 
-  % in -n^2..n^2
-  % x^*-i = i(n+1-i)
-  N = size(x,1);
-%  f = N*(N+4)*(N-1)/6 + sum((x-1).^2) - sum(x(1:N-1).*x(2:N));
-  f = sum((x-1).^2) - sum(x(1:N-1).*x(2:N));
-
-function f = fmaxmindist(y)
-  % y in [-1,1], y(1:2) is first point on a plane, y(3:4) second etc
-  % points best
-  %   5    1.4142
-  %   8    1.03527618 
-  %  10    0.842535997 
-  %  20    0.5997   
-  pop = size(y,2);
-  N = size(y,1)/2;
-  f = []; 
-  for ipop = 1:pop
-    if any(abs(y(:,ipop)) > 1)
-      f(ipop) = NaN; 
-    else
-      x = reshape(y(:,ipop), [2, N]);
-      f(ipop) = inf;
-      for i = 1:N
-        f(ipop) = min(f(ipop), min(sqrt(sum((x(:,[1:i-1 i+1:N]) - repmat(x(:,i), 1, N-1)).^2, 1))));
-      end
-    end
-  end
-  f = -f;
-
-function f=fchangingsphere(x)
-  N = size(x,1);
-  global scale_G; global count_G; if isempty(count_G) count_G=-1; end
-  count_G = count_G+1;
-  if mod(count_G,10) == 0
-    scale_G = 10.^(2*rand(1,N));
-  end
-  %disp(scale(1));
-  f = scale_G*x.^2;
-  
-function f= flogsphere(x)
- f = 1-exp(-sum(x.^2));
-  
-function f= fexpsphere(x)
- f = exp(sum(x.^2)) - 1;
-  
-function f=fbaluja(x)
-  % in [-0.16 0.16]
-  y = x(1);
-  for i = 2:length(x)
-    y(i) = x(i) + y(i-1);
-  end
-  f = 1e5 - 1/(1e-5 + sum(abs(y)));
-
-function f=fschwefel(x)
-  f = 0;
-  for i = 1:size(x,1),
-    f = f+sum(x(1:i))^2;
-  end
-
-function f=fcigar(x, ar)
-  if nargin < 2 || isempty(ar)
-    ar = 1e3;
-  end
-  f = x(1,:).^2 + ar^2*sum(x(2:end,:).^2,1);
-  
-function f=fcigtab(x)
-  f = x(1,:).^2 + 1e8*x(end,:).^2 + 1e4*sum(x(2:(end-1),:).^2, 1);
-  
-function f=ftablet(x)
-  f = 1e6*x(1,:).^2 + sum(x(2:end,:).^2, 1);
-
-function f=felli(x, lgscal, expon, expon2)
-  % lgscal: log10(axis ratio)
-  % expon: x_i^expon, sphere==2
-  N = size(x,1); if N < 2 error('dimension must be greater one'); end
-
-%  x = x - repmat(-0.5+(1:N)',1,size(x,2)); % optimum in 1:N
-  if nargin < 2 || isempty(lgscal), lgscal = 3; end
-  if nargin < 3 || isempty(expon), expon = 2; end
-  if nargin < 4 || isempty(expon2), expon2 = 1; end
-
-  f=((10^(lgscal*expon)).^((0:N-1)/(N-1)) * abs(x).^expon).^(1/expon2);
-%  if rand(1,1) > 0.015
-%    f = NaN;
-%  end
-%  f = f + randn(size(f));
-
-function f=fellitest(x)
-  beta = 0.9;
-  N = size(x,1);
-  f = (1e6.^((0:(N-1))/(N-1))).^beta * (x.^2).^beta; 
-
-  
-function f=fellii(x, scal)
-  N = size(x,1); if N < 2 error('dimension must be greater one'); end
-  if nargin < 2
-    scal = 1;
-  end
-  f= (scal*(1:N)).^2 * (x).^2;
-
-function f=fellirot(x)
-  N = size(x,1);
-  global ORTHOGONALCOORSYSTEM_G
-  if isempty(ORTHOGONALCOORSYSTEM_G) ...
-    || length(ORTHOGONALCOORSYSTEM_G) < N ...
-    || isempty(ORTHOGONALCOORSYSTEM_G{N})
-    coordinatesystem(N);
-  end
-  f = felli(ORTHOGONALCOORSYSTEM_G{N}*x);
-  
-function f=frot(x, fun, varargin)
-  N = size(x,1);
-  global ORTHOGONALCOORSYSTEM_G
-  if isempty(ORTHOGONALCOORSYSTEM_G) ...
-    || length(ORTHOGONALCOORSYSTEM_G) < N ...
-    || isempty(ORTHOGONALCOORSYSTEM_G{N})
-    coordinatesystem(N);
-  end
-  f = feval(fun, ORTHOGONALCOORSYSTEM_G{N}*x, varargin{:});
-  
-function coordinatesystem(N)
-  if nargin < 1 || isempty(N)
-    arN = 2:30;
-  else
-    arN = N;
-  end
-  global ORTHOGONALCOORSYSTEM_G
-  ORTHOGONALCOORSYSTEM_G{1} = 1; 
-  for N = arN
-    ar = randn(N,N);
-    for i = 1:N 
-      for j = 1:i-1
-    ar(:,i) = ar(:,i) - ar(:,i)'*ar(:,j) * ar(:,j);
-      end
-      ar(:,i) = ar(:,i) / norm(ar(:,i));
-    end
-    ORTHOGONALCOORSYSTEM_G{N} = ar; 
-  end
-
-function f=fplane(x)
-  f=x(1);
-
-function f=ftwoaxes(x)
-  f = sum(x(1:floor(end/2),:).^2, 1) + 1e6*sum(x(floor(1+end/2):end,:).^2, 1);
-
-function f=fparabR(x)
-  f = -x(1,:) + 100*sum(x(2:end,:).^2,1);
-
-function f=fsharpR(x)
-  f = abs(-x(1, :)).^2 + 100 * sqrt(sum(x(2:end,:).^2, 1));
-  
-function f=frosen(x)
-  if size(x,1) < 2 error('dimension must be greater one'); end
-  N = size(x,1); 
-  popsi = size(x,2); 
-  f = 1e2*sum((x(1:end-1,:).^2 - x(2:end,:)).^2,1) + sum((x(1:end-1,:)-1).^2,1);
-  % f = f + f^0.9 .* (2*randn(1,popsi) ./ randn(1,popsi).^0 / (2*N)); 
-
-function f=frosenlin(x)
-  if size(x,1) < 2 error('dimension must be greater one'); end
-
-  x_org = x;
-  x(x>30) = 30;
-  x(x<-30) = -30;
-
-  f = 1e2*sum(-(x(1:end-1,:).^2 - x(2:end,:)),1) + ...
-      sum((x(1:end-1,:)-1).^2,1);
-
-  f = f + sum((x-x_org).^2,1);
-%  f(any(abs(x)>30,1)) = NaN; 
-
-function f=frosenrot(x)
-  N = size(x,1);
-  global ORTHOGONALCOORSYSTEM_G
-  if isempty(ORTHOGONALCOORSYSTEM_G) ...
-    || length(ORTHOGONALCOORSYSTEM_G) < N ...
-    || isempty(ORTHOGONALCOORSYSTEM_G{N})
-    coordinatesystem(N);
-  end
-  f = frosen(ORTHOGONALCOORSYSTEM_G{N}*x);
-
-function f=frosenmodif(x)
-  f = 74 + 100*(x(2)-x(1)^2)^2 + (1-x(1))^2 ...
-      - 400*exp(-sum((x+1).^2)/2/0.05);
-  
-function f=fschwefelrosen1(x)
-  % in [-10 10] 
-  f=sum((x.^2-x(1)).^2 + (x-1).^2);
-  
-function f=fschwefelrosen2(x)
-  % in [-10 10] 
-  f=sum((x(2:end).^2-x(1)).^2 + (x(2:end)-1).^2);
-
-function f=fdiffpow(x)
-  [N popsi] = size(x); if N < 2 error('dimension must be greater one'); end
-
-  f = sum(abs(x).^repmat(2+10*(0:N-1)'/(N-1), 1, popsi), 1);
-  f = sqrt(f); 
-
-function f=fabsprod(x)
-  f = sum(abs(x),1) + prod(abs(x),1);
-
-function f=ffloor(x)
-  f = sum(floor(x+0.5).^2,1); 
-
-function f=fmaxx(x)
-  f = max(abs(x), [], 1);
-
-%%% Multimodal functions 
-
-function f=fbirastrigin(x)
-% todo: the volume needs to be a constant 
-  N = size(x,1); 
-  idx = (sum(x, 1) < 0.5*N); % global optimum
-  f = zeros(1,size(x,2));
-  f(idx) = 10*(N-sum(cos(2*pi*x(:,idx)),1)) + sum(x(:,idx).^2,1); 
-  idx = ~idx;
-  f(idx) = 0.1 + 10*(N-sum(cos(2*pi*(x(:,idx)-2)),1)) + sum((x(:,idx)-2).^2,1); 
-
-function f=fackley(x)
-  % -32.768..32.768
-  % Adding a penalty outside the interval is recommended,  
-  % because for large step sizes, fackley imposes like frand
-  % 
-  N = size(x,1); 
-  f = 20-20*exp(-0.2*sqrt(sum(x.^2)/N)); 
-  f = f + (exp(1) - exp(sum(cos(2*pi*x))/N));
-  % add penalty outside the search interval
-  f = f + sum((x(x>32.768)-32.768).^2) + sum((x(x<-32.768)+32.768).^2);
-  
-function f = fbohachevsky(x)
- % -15..15
-  f = sum(x(1:end-1).^2 + 2 * x(2:end).^2 - 0.3 * cos(3*pi*x(1:end-1)) ...
-      - 0.4 * cos(4*pi*x(2:end)) + 0.7);
-  
-function f=fconcentric(x)
-  % in  +-600
-  s = sum(x.^2);
-  f = s^0.25 * (sin(50*s^0.1)^2 + 1);
-
-function f=fgriewank(x)
-  % in [-600 600]
-  [N, P] = size(x);
-  f = 1 - prod(cos(x'./sqrt(1:N))) + sum(x.^2)/4e3;
-  scale = repmat(sqrt(1:N)', 1, P);
-  f = 1 - prod(cos(x./scale), 1) + sum(x.^2, 1)/4e3;
-  % f = f + 1e4*sum(x(abs(x)>5).^2);
-  % if sum(x(abs(x)>5).^2) > 0
-  %   f = 1e4 * sum(x(abs(x)>5).^2) + 1e8 * sum(x(x>5)).^2;
-  % end
-
-function f=fgriewrosen(x)
-% F13 or F8F2
-  [N, P] = size(x);
-  scale = repmat(sqrt(1:N)', 1, P);
-  y = [x(2:end,:); x(1,:)];
-  x = 100 * (x.^2 - y) + (x - 1).^2;  % Rosenbrock part
-  f = 1 - prod(cos(x./scale), 1) + sum(x.^2, 1)/4e3;
-  f = sum(1 - cos(x) + x.^2/4e3, 1);
-
-function f=fspallpseudorastrigin(x, scal, skewfac, skewstart, amplitude)
-% by default multi-modal about between -30 and 30
-  if nargin < 5 || isempty(amplitude)
-    amplitude = 40;
-  end
-  if nargin < 4 || isempty(skewstart)
-    skewstart = 0;
-  end
-  if nargin < 3 || isempty(skewfac)
-    skewfac = 1;
-  end
-  if nargin < 2 || isempty(scal)
-    scal = 1;
-  end
-  N = size(x,1); 
-  scale = 1;
-  if N > 1
-    scale=scal.^((0:N-1)'/(N-1)); 
-  end
-  % simple version: 
-  % f = amplitude*(N - sum(cos(2*pi*(scale.*x)))) + sum((scale.*x).^2);
-
-  % skew version: 
-  y = repmat(scale, 1, size(x,2)) .* x;
-  idx = find(x > skewstart);
-  if ~isempty(idx)
-    y(idx) =  skewfac*y(idx);
-  end
-  f = amplitude * (0*N-prod(cos((2*pi)^0*y),1)) + 0.05 * sum(y.^2,1) ...
-      + randn(1,1);
-
-function f=frastrigin(x, scal, skewfac, skewstart, amplitude)
-% by default multi-modal about between -30 and 30
-  if nargin < 5 || isempty(amplitude)
-    amplitude = 10;
-  end
-  if nargin < 4 || isempty(skewstart)
-    skewstart = 0;
-  end
-  if nargin < 3 || isempty(skewfac)
-    skewfac = 1;
-  end
-  if nargin < 2 || isempty(scal)
-    scal = 1;
-  end
-  N = size(x,1); 
-  scale = 1;
-  if N > 1
-    scale=scal.^((0:N-1)'/(N-1)); 
-  end
-  % simple version: 
-  % f = amplitude*(N - sum(cos(2*pi*(scale.*x)))) + sum((scale.*x).^2);
-
-  % skew version: 
-  y = repmat(scale, 1, size(x,2)) .* x;
-  idx = find(x > skewstart);
-  % idx = intersect(idx, 2:2:10); 
-  if ~isempty(idx)
-    y(idx) =  skewfac*y(idx);
-  end
-  f = amplitude * (N-sum(cos(2*pi*y),1)) + sum(y.^2,1);
-  
-function f=frastriginmax(x)
-  N = size(x,1);
-  f = (N/20)*807.06580387678 - (10 * (N-sum(cos(2*pi*x),1)) + sum(x.^2,1));
-  f(any(abs(x) > 5.12)) = 1e2*N;
-
-function f = fschaffer(x)
- % -100..100
-  N = size(x,1);
-  s = x(1:N-1,:).^2 + x(2:N,:).^2;
-  f = sum(s.^0.25 .* (sin(50*s.^0.1).^2+1), 1);
-
-function f=fschwefelmult(x)
-  % -500..500
-  % 
-  N = size(x,1); 
-  f = - sum(x.*sin(sqrt(abs(x))), 1);
-  f = 418.9829*N - 1.27275661e-5*N - sum(x.*sin(sqrt(abs(x))), 1);
-  % penalty term 
-  f = f + 1e4*sum((abs(x)>500) .* (abs(x)-500).^2, 1);
-  
-function f=ftwomax(x)
-  % Boundaries at +/-5
-  N = size(x,1); 
-  f = -abs(sum(x)) + 5*N;
-
-function f=ftwomaxtwo(x)
-  % Boundaries at +/-10
-  N = size(x,1); 
-  f = abs(sum(x));
-  if f > 30
-    f = f - 30;
-  end
-  f = -f;
-  
-function f=frand(x)
-  f=1./(1-rand(1, size(x,2))) - 1;
 
 % CHANGES
 % 12/04/28: (3.61) stopIter is relative to countiter after resume (thanks to Tom Holden)
@@ -2992,7 +2178,7 @@ function f=frand(x)
 %      o Initial stall to adapt C (flginiphase) is removed and
 %        adaptation of pc is stalled for large norm(ps) instead.
 %      o Returned default options include documentation. 
-%      o Resume part reorganized.
+%      o ResumeRun part reorganized.
 % 04/03: Stopflag becomes cell-array. 
 
 % ---------------------------------------------------------------
