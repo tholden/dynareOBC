@@ -47,6 +47,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if dynareOBC.NumberOfMax == 0
         dynareOBC.NoCubature = true;
         dynareOBC.Global = false;
+        dynareOBC.FullHorizon = false;
     end
     
     [ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
@@ -350,7 +351,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %Save the result
 
-    FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC.Order ) ',solve_algo=' int2str( SolveAlgo ) ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
+    if dynareOBC.Order == 3
+        KOrderSolverString = ',k_order_solver';
+    else
+        KOrderSolverString = '';
+    end
+    
+    FileText = strjoin( [ FileLines { [ 'stoch_simul(order=' int2str( dynareOBC.Order ) ',solve_algo=' int2str( SolveAlgo ) KOrderSolverString ',pruning,sylvester=fixed_point,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' ); % dr=cyclic_reduction,
     newmodfile = fopen( 'dynareOBCTemp3.mod', 'w' );
     fprintf( newmodfile, '%s', FileText );
     fclose( newmodfile );

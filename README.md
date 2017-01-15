@@ -15,9 +15,11 @@ A paper documenting the estimation procedure is available from here: https://git
 
 The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.50132
 
-Alternatively, read the presentation slides from here: https://github.com/tholden/dynareOBC/raw/master/slides.pdf
+Alternatively, read the technical slides from here: https://github.com/tholden/dynareOBC/raw/master/TechnicalSlides.pdf
 
-Or the course slides from here: https://github.com/tholden/dynareOBC/raw/master/slidesCourse.pdf
+Or the non-technical slides from here: https://github.com/tholden/dynareOBC/raw/master/NonTechnicalSlides.pdf
+
+Or the course slides from here: https://github.com/tholden/dynareOBC/raw/master/CourseSlides.pdf
 
 Installation
 ------------
@@ -119,8 +121,8 @@ Note:
          Causes DynareOBC to ignore the value specified in `MaxCubatureDegree` and `QuasiMonteCarlo`, and to instead use a degree 3 monomial cubature rule without negative weights, but involving evaluations further from the origin.
     * `QuasiMonteCarloLevel=INTEGER` (default: `0`)
          If this is non-zero, then Gaussian cubature is not used (so the MaxCubatureDegree option is ignored). Instead, quasi- Monte Carlo integration with at most `2^(1+INTEGER) - 1` samples is used.
-    * `MaxCubatureDegree=INTEGER` (default: `7`)
-         Specifies the degree of polynomial which will be integrated exactly in the highest degree, cubature performed. Values above `51` are treated as equal to `51`. Note that setting `CubatureSmoothing>0` will reduce the effective maximum accuracy by 2 degrees. Setting `CubatureTolerance>0` may also mean that the result does not integrate the stated degree polynomials exactly as well.
+    * `MaxCubatureDegree=INTEGER` (default: `5`)
+         Specifies the degree of polynomial which will be integrated exactly in the highest degree cubature performed. Values above `51` are treated as equal to `51`. Note that setting `CubatureSmoothing>0` will reduce the effective maximum accuracy by 2 degrees. Setting `CubatureTolerance>0` may also mean that the result does not integrate the stated degree polynomials exactly as well.
           * `CubatureSmoothing=FLOAT_IN_UNIT_INTERVAL` (default: `0`)
                When this is larger than 0, and less than 1, DynareOBC takes a weighted combination of the results of cubature rules of adjacent degrees. Large numbers imply larger weights on lower degree rules. A good setting is often 0.01 - 0.3.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
