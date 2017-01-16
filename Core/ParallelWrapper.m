@@ -44,8 +44,10 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
     BestPersistentStates = BestPersistentStates( oIndices );
     if ~isempty( sRV )
         [ ~, sIndices ] = sort( sRV );
-        if length( sIndices ) > DesiredNumberOfNonTimeouts
+        if length( sIndices ) >= DesiredNumberOfNonTimeouts
             sIndices = sIndices( 1:DesiredNumberOfNonTimeouts );
+        else
+            fprintf( 'Timeout appears to be too low. You may wish to modify the logic in ParallelWrapper.m.\nDesired %d, received %d.\n', DesiredNumberOfNonTimeouts, length( sIndices ) );
         end
         RunTimes = RunTimes( sIndices );
         MaxRunTime = max( RunTimes );
