@@ -15,7 +15,8 @@
 %  * `Order`: Determines the number of points to use to search along each group of NonProductSearchDirection directions. A (small) non-negative integer.
 %  * `NonProductSearchDimension`: NonProductSearchDimension*ProductSearchDimension determines how many dimensions to search in simultaneously. A (small) positive integer.
 %  * `ProductSearchDimension`: NonProductSearchDimension*ProductSearchDimension determines how many dimensions to search in simultaneously. A (small) positive integer.
-%  * `Parallel`: Determines whether to use a `parfor` loop to invoke the objective function. A logical.
+%  * `PersistentState`: Some state that needs to be passed to the objective.
+%  * `Resume`: Whether to resume the past run. A logical.
 %  
 %  Ouputs:
 %   * `xMean`: The optimal point.
