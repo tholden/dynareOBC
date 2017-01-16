@@ -141,7 +141,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     allx = NaN( N, NPoints*NoD );
     allf = NaN( 1, NPoints*NoD );
 
-    disp( [ 'Using ' num2str( NPoints ) ' points per iteration.' ] );
+    disp( [ 'Using up to ' num2str( NPoints ) ' points per iteration.' ] );
     
     stream = RandStream( 'mt19937ar', 'Seed', 0 );
     ixPerm = randperm( stream, N );
