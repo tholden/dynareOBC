@@ -38,6 +38,10 @@
 
 function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACDMinimisation( FitnessFunction, xMean, Sigma, MinSigma, LB, UB, A, b, MaxEvaluations, StopFitness, HowOftenUpdateRotation, Order, NonProductSearchDimension, ProductSearchDimension, PersistentState, Resume )
 
+    %%% parameters
+    k_succ = 1.5;       
+    k_unsucc = 0.5;
+    
     xMean = xMean(:);
     
     NonProductSearchDimension = max( 1, floor( NonProductSearchDimension ) ); %integer >=1
@@ -83,9 +87,6 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     if isempty( Resume )
         Resume = false;
     end
-    %%% parameters
-    k_succ = 1.1;       
-    k_unsucc = 0.5;
     c1 = 0.5 / N;
     cmu = 0.5 / N;
     Order = max( 1, floor( Order ) ); %integer >=1
@@ -123,6 +124,9 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     [ fi, fj ] = find( DVAbsSobolPoints < seps );
     fij = unique( max( fi, fj ) );
     VAbsSobolPoints( fij ) = [];
+    
+    SobolPoints = SobolPoints ./ VAbsSobolPoints( 2 );
+    VAbsSobolPoints = VAbsSobolPoints ./ VAbsSobolPoints( 2 );
     
     IdxSobolPoints = arrayfun( @(spc) find( abs( VAbsSobolPoints - abs( spc ) ) < seps, 1 ), SobolPoints );
     
@@ -194,13 +198,13 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
         end
 
         %%% Adapt step-size sigma depending on the success/unsuccess of the previous search
-        foundAlpha = max( abs( alpha( :, minFitLoc ) ) );
+        foundAlpha = norm( alpha( :, minFitLoc ) );
         
         if lsucc % increase the step-size
-            Sigma(qix,1) = Sigma(qix,1) * foundAlpha * k_succ;     % default k_succ = 1.1
+            Sigma(qix,1) = Sigma(qix,1) * foundAlpha * k_succ;
             somebetter = true;
         else            % decrease the step-size
-            Sigma(qix,1) = Sigma(qix,1) * min( k_unsucc, foundAlpha * k_unsucc );   % default k_unsucc = 0.5
+            Sigma(qix,1) = Sigma(qix,1) * min( k_unsucc, foundAlpha * k_unsucc );
         end
         
         %%% Update archive 
@@ -226,8 +230,8 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
             B = ae.B;
         end    
         
-        if rem(Iterations,1000) == 0
-            disp([ num2str(Iterations) ' ' num2str(NEvaluations) ' ' num2str(BestFitness) ' ' num2str(min(Sigma)) ]);
+        if true % rem(Iterations,1000) == 0
+            disp([ num2str(Iterations) ' ' num2str(NEvaluations) ' ' num2str(BestFitness) ' ' num2str(min(Sigma)) ' ' num2str(norm(Sigma)) ' ' num2str(max(Sigma)) ]);
         end
         
         save VariablesACD.mat;
