@@ -27,7 +27,7 @@
 % ---------------------------------------------------------------
 % Adaptive Coordinate Descent. To be used under the terms of the BSD license 
 % Author : Ilya Loshchilov, Marc Schoenauer, Michele Sebag, 2012.  
-% Further work: Tom Holden, 2016.
+% Further work: Tom Holden, 2016, 2017. See: https://github.com/tholden/ParallelFastNonLinearACD
 % e-mail: ilya.loshchilov@gmail.com marc.schoenauer@inria.fr michele.sebag@lri.fr 
 % URL:http://www.lri.fr/~ilya
 % REFERENCE: Loshchilov, I., Schoenauer, M. , Sebag, M. (2011). Adaptive Coordinate Descent. 
