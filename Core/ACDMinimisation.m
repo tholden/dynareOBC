@@ -40,7 +40,7 @@
 function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACDMinimisation( FitnessFunction, xMean, Sigma, MinSigma, LB, UB, A, b, MaxEvaluations, StopFitness, HowOftenUpdateRotation, Order, NonProductSearchDimension, ProductSearchDimension, PersistentState, Resume )
 
     %%% parameters
-    k_succ = 1.5;       
+    k_succ = 0.5;       
     k_unsucc = 0.5;
     
     xMean = xMean(:);
@@ -199,13 +199,13 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
         end
 
         %%% Adapt step-size sigma depending on the success/unsuccess of the previous search
-        foundAlpha = norm( alpha( :, minFitLoc ) );
+        foundAlpha = alpha( :, minFitLoc );
         
         if lsucc % increase the step-size
-            Sigma(qix,1) = Sigma(qix,1) * foundAlpha * k_succ;
+            Sigma(qix,1) = Sigma(qix,1) .* ( 1 + abs( foundAlpha ) * k_succ );
             somebetter = true;
         else            % decrease the step-size
-            Sigma(qix,1) = Sigma(qix,1) * min( k_unsucc, foundAlpha * k_unsucc );
+            Sigma(qix,1) = Sigma(qix,1) * k_unsucc;
         end
         
         %%% Update archive 
