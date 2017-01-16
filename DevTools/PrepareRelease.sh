@@ -26,6 +26,7 @@ rm -f -r -d -- **/*.ini
 rm -f -r -d -- **/*.zip
 rm -f -r -d -- **/*.eps
 rm -f -r -d -- **/*.jnl
+rm -f -r -d -- **/*.orig
 
 rm -f -r -d -- **/dynareOBCTemp*
 rm -f -r -d -- **/*deleteThis*
@@ -53,6 +54,7 @@ rm -f -r -d -- **/.DS_Store
 rm -f -r -d -- **/.git
 rm -f -r -d -- **/dynareOBCGlobalResume.mat
 rm -f -r -d -- **/variablescmaes.mat
+rm -f -r -d -- **/VariablesACD.mat
 rm -f -r -d -- **/CurrentVersionURL.txt
 rm -f -r -d -- **/LastDependencyUpdate.mat
 rm -f -r -d -- **/FastStart.mat

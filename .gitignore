@@ -40,6 +40,7 @@ Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
 .DS_Store
 dynareOBCGlobalResume.mat
 variablescmaes.mat
+VariablesACD.mat
 CurrentVersionURL.txt
 LastDependencyUpdate.mat
 FastStart.mat
