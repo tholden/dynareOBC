@@ -55,7 +55,7 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
         
         CurrentPool = gcp;
         TargetScale = DesiredNumberOfNonTimeouts ./ CurrentPool.NumWorkers;
-        TimeoutTarget = max( BestRunTime * ( TargetScale + 1 ), MaxRunTime * TargetScale );
+        TimeoutTarget = max( BestRunTime * ( TargetScale + 2 ), MaxRunTime * ( TargetScale + 1 ) );
         if isempty( Timeout )
             Timeout = TimeoutTarget;
         else
