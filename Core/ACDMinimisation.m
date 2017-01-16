@@ -112,10 +112,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     
     SobolPoints = nsobol( UNPoints, NonProductSearchDimension );
     assert( all( mean( SobolPoints ) < 1e-12 ) );
-    SobolPoints = bsxfun( @minus, SobolPoints, mean( SobolPoints ) );
-    RootCovSobolPoints = sqrtm( cov( SobolPoints ) );
-    assert( std( diag( RootCovSobolPoints ) ) ./ mean( diag( RootCovSobolPoints ) ) < 1e-6 );
-    SobolPoints = ( SobolPoints / RootCovSobolPoints )';
+    SobolPoints = SobolPoints';
     assert( size( SobolPoints, 1 ) == NonProductSearchDimension );
     
     VAbsSobolPoints = unique( abs( SobolPoints(:) ), 'stable' );
@@ -126,16 +123,18 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     fij = unique( max( fi, fj ) );
     VAbsSobolPoints( fij ) = [];
     
-    SobolPoints = SobolPoints ./ VAbsSobolPoints( 2 );
-    VAbsSobolPoints = VAbsSobolPoints ./ VAbsSobolPoints( 2 );
+    SobolScale = norm( SobolPoints( :, 2 ) );
+    VAbsSobolPoints = VAbsSobolPoints ./ SobolScale;
+    SobolPoints = SobolPoints ./ SobolScale;
     
     IdxSobolPoints = arrayfun( @(spc) find( abs( VAbsSobolPoints - abs( spc ) ) < seps, 1 ), SobolPoints );
+    muCriticalIdx = max( max( IdxSobolPoints( :, 2 : ( 1 + 2 * NonProductSearchDimension ) ) ) );
     
     IdxCell_alpha = repmat( { 1 : UNPoints }, 1, ProductSearchDimension );
     [ IdxCell_alpha{:} ] = ndgrid( IdxCell_alpha{:} );
     AllIdxUalpha = cell2mat( cellfun( @(alphaCoord) reshape( alphaCoord( 2:end ), 1, NPoints ), IdxCell_alpha, 'UniformOutput', false )' );
     AllIdx_alpha = cell2mat( arrayfun( @( idx ) { IdxSobolPoints( :, idx ) }, AllIdxUalpha ) );
-    [ ~, SortIdx_alpha ] = sortrows( [ sort( AllIdx_alpha, 1, 'descend' )', sort( AllIdxUalpha, 1, 'descend' )', ( 1 : NPoints )' ] );
+    [ SortedIndices, SortIdx_alpha ] = sortrows( [ sort( AllIdx_alpha, 1, 'descend' )', sort( AllIdxUalpha, 1, 'descend' )', ( 1 : NPoints )' ] );
     alpha = cell2mat( arrayfun( @( idx ) { SobolPoints( :, idx ) }, AllIdxUalpha( :, SortIdx_alpha ) ) );
     
     allx = NaN( N, NPoints*NoD );
@@ -146,7 +145,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     stream = RandStream( 'mt19937ar', 'Seed', 0 );
     ixPerm = randperm( stream, N );
 
-    mu = 2 * SearchDimension + 2 * SearchDimension * ( SearchDimension - 1 );
+    mu = find( SortedIndices( :, 1 ) > muCriticalIdx, 1 ) - 1;
     
     disp( 'Minimal alpha:' );
     disp( alpha( :, 1:mu ) );
