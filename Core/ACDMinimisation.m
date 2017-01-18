@@ -55,8 +55,16 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     if isempty( Sigma )
         Sigma = ones( N, 1 );
     end
+    Sigma = Sigma(:);
+    if length( Sigma ) == 1
+        Sigma = ones( N, 1 ) * Sigma;
+    end
     if isempty( MinSigma )
         MinSigma = ones( N, 1 ) * sqrt( eps );
+    end
+    MinSigma = MinSigma(:);
+    if length( MinSigma ) == 1
+        MinSigma = ones( N, 1 ) * MinSigma;
     end
     if isempty( LB )
         LB = -Inf( N, 1 );
@@ -92,8 +100,6 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     cmu = 0.5 / N;
     Order = max( 1, floor( Order ) ); %integer >=1
     HowOftenUpdateRotation = max( 1, floor( HowOftenUpdateRotation ) ); %integer >=1    
-
-    Sigma = min( Sigma, ( UB - LB ) * 0.25 );
 
     BestFitness = 1e+30;
     NEvaluations = 0;
