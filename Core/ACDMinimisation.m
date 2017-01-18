@@ -57,27 +57,26 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     end
     Sigma = Sigma(:);
     if length( Sigma ) == 1
-        Sigma = ones( N, 1 ) * Sigma;
+        Sigma = repmat( Sigma, N, 1 );
     end
     if isempty( MinSigma )
         MinSigma = ones( N, 1 ) * sqrt( eps );
     end
     MinSigma = MinSigma(:);
     if length( MinSigma ) == 1
-        MinSigma = ones( N, 1 ) * MinSigma;
+        MinSigma = repmat( MinSigma, N, 1 );
     end
     if isempty( LB )
         LB = -Inf( N, 1 );
     end
-    if isempty( UB )
-        UB = Inf( N, 1 );
-    end
-    if length( MinSigma ) == 1
-        MinSigma = repmat( MinSigma, N, 1 );
-    end
+    LB = LB(:);
     if length( LB ) == 1
         LB = repmat( LB, N, 1 );
     end
+    if isempty( UB )
+        UB = Inf( N, 1 );
+    end
+    UB = UB(:);
     if length( UB ) == 1
         UB = repmat( UB, N, 1 );
     end
