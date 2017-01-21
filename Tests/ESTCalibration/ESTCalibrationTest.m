@@ -8,7 +8,7 @@ RootOmega = 0.1 * randn( N, N );
 Omega = RootOmega * RootOmega';
 delta = randn( N, 1 );
 tau = randn ^ 2;
-nu = 80.5 + 4 * randn ^ 2;
+nu = 8.5 + 4 * randn ^ 2;
 log_nuM4 = log( nu - 4 );
 
 PhiN0 = rand( 1, T );
@@ -41,6 +41,9 @@ hist( Zcheck, 100 );
 
 sZ3 = mean( Zcheck.^3 );
 sZ4 = mean( Zcheck.^4 );
+
+disp( [ sZ3 sZ4 ] );
+disp( [ std( Zcheck.^3 ) std( Zcheck.^4 ) ] );
 
 out1 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; log_nuM4 ], optimoptions( @fsolve, 'display', 'iter' ) );
 out2 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), log_nuM4, mu, lambda, Sigma, sZ3, [] ), tau, optimoptions( @fsolve, 'display', 'iter' ) );
