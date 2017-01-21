@@ -1,5 +1,5 @@
 function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn, deltann, xno, Psno, deltasno, tauno, nuno ] = ...
-    KalmanStep( m, xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, MEVar, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables )
+    KalmanStep( m, xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables )
 
     LogObservationLikelihood = NaN;
     xnn = [];
@@ -97,35 +97,41 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
 
     StdDevThreshold = dynareOBC.StdDevThreshold;
 
-    WM = [ NewAugEndoPoints; ExoPoints; zeros( NObs, NCubaturePoints ); NewMeasurementPoints ];
+    wm = [ NewAugEndoPoints; ExoPoints; zeros( NObs, NCubaturePoints ); NewMeasurementPoints ];
     
-    NWM = size( WM, 1 );
+    nwm = size( wm, 1 );
     
-    PredictedWM = sum( bsxfun( @times, WM, CubatureWeights ), 2 );
-    DemeanedWM = bsxfun( @minus, WM, PredictedWM );
-    WeightedDemeanedWM = bsxfun( @times, DemeanedWM, CubatureWeights );
+    Median_wm = wm( :, 1 );
     
-    PredictedWMVariance = zeros( NWM, NWM );
-    ZetaBlock = ( NWM - 2 * NObs + 1 ) : NWM;
-    diagMEVar = diag( MEVar );
-    PredictedWMVariance( ZetaBlock, ZetaBlock ) = [ diagMEVar, diagMEVar; diagMEVar, diagMEVar ];
+    Mean_wm = sum( bsxfun( @times, wm, CubatureWeights ), 2 );
+    ano = bsxfun( @minus, wm, Mean_wm );
+    Weighted_ano = bsxfun( @times, ano, CubatureWeights );
     
-    PredictedWMVariance = PredictedWMVariance + DemeanedWM' * WeightedDemeanedWM;
-    PredictedWMVariance = 0.5 * ( PredictedWMVariance + PredictedWMVariance' );
+    Variance_wm = zeros( nwm, nwm );
+    ZetaBlock = ( nwm - 2 * NObs + 1 ) : nwm;
+    Lambda = diag( diagLambda );
+    Variance_wm( ZetaBlock, ZetaBlock ) = [ Lambda, Lambda; Lambda, Lambda ];
+    
+    Variance_wm = Variance_wm + ano' * Weighted_ano;
+    Variance_wm = 0.5 * ( Variance_wm + Variance_wm' );
+    
+    Mean_wmMMedian_wm = Mean_wm - Median_wm;
+    
+    Zhat_wm = ( Mean_wmMMedian_wm' * ano ) / sqrt( Mean_wmMMedian_wm' * Variance_wm * Mean_wmMMedian_wm );
     
     WBlock = 1 : ( NAugEndo + NExo + NObs );
-    PredictedW = PredictedWM( WBlock );                                           % w_{t|t-1} in the paper
-    PredictedWVariance = PredictedWMVariance( WBlock, WBlock );                   % V_{t|t-1} in the paper
+    PredictedW = Mean_wm( WBlock );                                           % w_{t|t-1} in the paper
+    PredictedWVariance = Variance_wm( WBlock, WBlock );                   % V_{t|t-1} in the paper
     
-    MBlock = ( NWM - NObs + 1 ) : NWM;
-    PredictedM = PredictedWM( MBlock );                                           % m_{t|t-1} in the paper
-    PredictedMVariance = PredictedWMVariance( MBlock, MBlock );                   % Q_{t|t-1} in the paper
-    PredictedWMCovariance = PredictedWMVariance( WBlock, MBlock );                % R_{t|t-1} in the paper
+    MBlock = ( nwm - NObs + 1 ) : nwm;
+    PredictedM = Mean_wm( MBlock );                                           % m_{t|t-1} in the paper
+    PredictedMVariance = Variance_wm( MBlock, MBlock );                   % Q_{t|t-1} in the paper
+    PredictedWMCovariance = Variance_wm( WBlock, MBlock );                % R_{t|t-1} in the paper
     
     if dynareOBC.NoSkewLikelihood
         LocationM = PredictedM;
     else
-        LocationM = WM( MBlock, 1 );
+        LocationM = wm( MBlock, 1 );
     end
     
     if NObs > 0
