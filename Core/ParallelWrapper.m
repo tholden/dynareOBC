@@ -1,18 +1,19 @@
-function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, DesiredNumberOfNonTimeouts, InitialTimeOutLikelihoodEvaluation, varargin )
-    persistent Timeout XStore LogLObsStore
+function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, DesiredNumberOfNonTimeouts, InitialTimeOut, varargin )
+    persistent BestRunTime MaxRunTime XStore LogLObsStore
     
     D = size( XV, 1 );
     N = size( XV, 2 );
     
-    if isfinite( InitialTimeOutLikelihoodEvaluation )
-        if isempty( Timeout )
-            CTimeout = InitialTimeOutLikelihoodEvaluation;
-            fprintf( 'Initial timeout: %g\n', CTimeout );
+    if isfinite( InitialTimeOut )
+        if isempty( BestRunTime ) || isempty( MaxRunTime )
+            Timeout = InitialTimeOut;
         else
-            CTimeout = Timeout;
+            CurrentPool = gcp;
+            TargetScale = DesiredNumberOfNonTimeouts ./ CurrentPool.NumWorkers;
+            Timeout = max( BestRunTime * ( TargetScale + 2 ), MaxRunTime * ( TargetScale + 1 ) );
         end
     else
-        CTimeout = Inf;
+        Timeout = Inf;
     end
     
     if isempty( XStore ) || isempty( LogLObsStore )
@@ -26,6 +27,7 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
         end
     end
     
+    fprintf( 'Using timeout: %g\n', Timeout );
     [ TPVOut, RunTimes ] = TimedParFor( @( i ) objective_function( XV( :, i ), varargin{:} ), 1:N, { -Inf, [], [] }, CTimeout, false );
     RV = - TPVOut{ 1 };
     BestPersistentStates = TPVOut{ 2 };
@@ -49,20 +51,22 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
         else
             fprintf( 'Timeout appears to be too low. You may wish to modify the logic in ParallelWrapper.m.\nDesired %d, received %d.\n', DesiredNumberOfNonTimeouts, length( sIndices ) );
         end
-        RunTimes = RunTimes( sIndices );
-        MaxRunTime = max( RunTimes );
-        BestRunTime = RunTimes( 1 );
         
-        CurrentPool = gcp;
-        TargetScale = DesiredNumberOfNonTimeouts ./ CurrentPool.NumWorkers;
-        TimeoutTarget = max( BestRunTime * ( TargetScale + 2 ), MaxRunTime * ( TargetScale + 1 ) );
-        if isempty( Timeout )
-            Timeout = TimeoutTarget;
+        RunTimes = RunTimes( sIndices );
+        NewMaxRunTime = max( RunTimes );
+        NewBestRunTime = RunTimes( 1 );
+        
+        if isempty( MaxRunTime )
+            MaxRunTime = NewMaxRunTime;
         else
-            Timeout = 0.95 * Timeout + 0.05 * max( Timeout * 0.8, TimeoutTarget );
+            MaxRunTime = 0.95 * MaxRunTime + 0.05 * max( MaxRunTime * 0.8, NewMaxRunTime );
+        end
+        if isempty( BestRunTime )
+            BestRunTime = NewBestRunTime;
+        else
+            BestRunTime = 0.95 * BestRunTime + 0.05 * max( BestRunTime * 0.8, NewBestRunTime );
         end
         
         BestPersistentState = BestPersistentStates{ sIndices( 1 ) };
     end
-    fprintf( 'New timeout: %g\n', Timeout );
 end
