@@ -1,33 +1,45 @@
-function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRootUpdatedXVariance, UpdatedW, RootUpdatedWVariance, SmootherGain, PredictedX, RootPredictedXVariance ] = ...
-    KalmanStep( Measurement, OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing )
+function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn, deltann, xno, Psno, deltasno, tauno, nuno ] = ...
+    KalmanStep( m, xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, MEVar, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables )
 
-    TwoNLogObservationLikelihood = NaN;
-    UpdatedX = [];
-    RootUpdatedXVariance = [];
-    InvRootUpdatedXVariance = [];
-    UpdatedW = [];
-    RootUpdatedWVariance = [];
-    SmootherGain = [];
-    PredictedX = [];
-    RootPredictedXVariance = [];
+    LogObservationLikelihood = NaN;
+    xnn = [];
+    Ssnn = [];
+    deltasnn = [];
+    taunn = [];
+    nunn = [];
+    wnn = [];
+    Pnn = [];
+    deltann = [];
+    xno = [];
+    Psno = [];
+    deltasno = [];
+    tauno = [];
     
-    NAugState1 = size( RootOldXVariance, 1 );
-    NAugState2 = size( RootOldXVariance, 2 );
-    NExo1 = size( RootQ, 1 );
-    NExo2 = size( RootQ, 2 );
+    NAugState1 = size( Ssoo, 1 );
+    NAugState2 = size( Ssoo, 2 );
+    NExo1 = size( RootExoVar, 1 );
+    NExo2 = size( RootExoVar, 2 );
     
-    IntDim = NAugState2 + NExo2;
+    IntDim = NAugState2 + NExo2 + 2;
     
     if dynareOBC.FilterCubatureDegree > 0
         CubatureOrder = ceil( 0.5 * ( dynareOBC.FilterCubatureDegree - 1 ) );
         [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
-        CubaturePoints = bsxfun( @plus, [ RootOldXVariance, zeros( NAugState1, NExo2 ); zeros( NExo1, NAugState2 ), RootQ ] * pTmp, [ OldX; zeros( NExo1, 1 ) ] );
     else
         NCubaturePoints = 2 * IntDim + 1;
         wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
-        CubaturePoints = [ OldX, bsxfun( @plus, [ RootOldXVariance, -RootOldXVariance ] * wTemp, OldX ), repmat( OldX, 1, 2 * NExo2 ); zeros( NExo1, 1 + 2 * NAugState2 ),  [ RootQ -RootQ ] * wTemp ];
+        pTmp = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
         CubatureWeights = 1 / NCubaturePoints;
     end
+    
+    PhiN0 = normcdf( pTmp( end - 1, : ) );
+    PhiN10 = normcdf( pTmp( end, : ) );
+    FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) / gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
+    tcdf_tauoo_nuoo = tcdf( tauoo, nuoo );
+    FInvEST = tinv( tcdf_tauoo_nuoo + ( 1 - tcdf_tauoo_nuoo ) * PhiN0, nuoo );
+    N11Scaler = FInvScaledInvChi * sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
+    
+    CubaturePoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, pTmp( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * pTmp( 1:NExo2,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
     
     Constant = dynareOBC.Constant;
     NEndo = length( Constant );
@@ -36,19 +48,19 @@ function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRoot
     NAugEndo = NEndo * NEndoMult;
 
     StatePoints = CubaturePoints( 1:NAugState1, : );
-    ExoPoints = CubaturePoints( (NAugState1+1):end, : );
+    ExoPoints = CubaturePoints( (NAugState1+1):(NAugState1+NExo1), : );
 
     OldAugEndoPoints = zeros( NAugEndo, NCubaturePoints );
     OldAugEndoPoints( SelectAugStateVariables, : ) = StatePoints;
     
-    Observed = find( isfinite( Measurement ) );
-    FiniteMeasurements = Measurement( Observed )';
+    Observed = find( isfinite( m ) );
+    FiniteMeasurements = m( Observed )';
     NObs = length( Observed );
        
     NewAugEndoPoints = zeros( NAugEndo, NCubaturePoints );
     
     for i = 1 : NCubaturePoints
-        InitialFullState = GetFullStateStruct( OldAugEndoPoints( :, i ), dynareOBC.Order, Constant ); %#ok<*PFBNS>
+        InitialFullState = GetFullStateStruct( OldAugEndoPoints( :, i ), dynareOBC.Order, Constant );
         try
             Simulation = SimulateModel( ExoPoints( :, i ), false, InitialFullState, true, true );
         catch
@@ -101,10 +113,6 @@ function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRoot
     PredictedWMVariance = PredictedWMVariance + DemeanedWM' * WeightedDemeanedWM;
     PredictedWMVariance = 0.5 * ( PredictedWMVariance + PredictedWMVariance' );
     
-    if Smoothing
-        CovOldNewX = StatePoints' * WeightedDemeanedWM( SelectAugStateVariables, : ); % C_{t|t-1} in the paper
-    end
-    
     WBlock = 1 : ( NAugEndo + NExo + NObs );
     PredictedW = PredictedWM( WBlock );                                           % w_{t|t-1} in the paper
     PredictedWVariance = PredictedWMVariance( WBlock, WBlock );                   % V_{t|t-1} in the paper
@@ -126,35 +134,35 @@ function [ TwoNLogObservationLikelihood, UpdatedX, RootUpdatedXVariance, InvRoot
         ScaledPredictedWMCovariance = PredictedWMCovariance * InvRootPredictedMVariance';
         ScaledResiduals = InvRootPredictedMVariance * ( FiniteMeasurements - PredictedM );
 
-        UpdatedW = PredictedW + ScaledPredictedWMCovariance * ScaledResiduals;                              % w_{t|t} in the paper
-        UpdatedWVariance = PredictedWVariance - ScaledPredictedWMCovariance * ScaledPredictedWMCovariance'; % V_{t|t} in the paper
+        wnn = PredictedW + ScaledPredictedWMCovariance * ScaledResiduals;                              % w_{t|t} in the paper
+        Pnn = PredictedWVariance - ScaledPredictedWMCovariance * ScaledPredictedWMCovariance'; % V_{t|t} in the paper
 
-        UpdatedX = UpdatedW( SelectAugStateVariables );                                                     % x_{t|t} in the paper
-        UpdatedXVariance = UpdatedWVariance( SelectAugStateVariables, SelectAugStateVariables );            % P_{t|t} in the paper
+        xnn = wnn( SelectAugStateVariables );                                                     % x_{t|t} in the paper
+        UpdatedXVariance = Pnn( SelectAugStateVariables, SelectAugStateVariables );            % P_{t|t} in the paper
     
-        TwoNLogObservationLikelihood = LogDetPredictedMVariance + ScaledResiduals' * ScaledResiduals + NObs * 1.8378770664093454836;
+        LogObservationLikelihood = LogDetPredictedMVariance + ScaledResiduals' * ScaledResiduals + NObs * 1.8378770664093454836;
 
     else
         
-        UpdatedW = PredictedW;
-        UpdatedWVariance = PredictedWVariance;
+        wnn = PredictedW;
+        Pnn = PredictedWVariance;
 
-        UpdatedX = PredictedW( SelectAugStateVariables );
+        xnn = PredictedW( SelectAugStateVariables );
         UpdatedXVariance = PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables );
         
-        TwoNLogObservationLikelihood = 0;
+        LogObservationLikelihood = 0;
         
     end
     
     
     if Smoothing
-        [ RootUpdatedXVariance, InvRootUpdatedXVariance ] = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
-        RootUpdatedWVariance = ObtainEstimateRootCovariance( UpdatedWVariance, 0 );
+        [ Ssnn, InvRootUpdatedXVariance ] = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
+        RootUpdatedWVariance = ObtainEstimateRootCovariance( Pnn, 0 );
         SmootherGain = ( RootOldWVariance * RootOldWVariance( 1:NAugState1, : )' ) * ( InvRootOldXVariance' * InvRootOldXVariance ) * CovOldNewX * ( InvRootUpdatedXVariance' * InvRootUpdatedXVariance ); % B_{t|t-1} * S_{t|t-1}^- in the paper
-        PredictedX = PredictedW( SelectAugStateVariables );
-        RootPredictedXVariance = ObtainEstimateRootCovariance( PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables ), 0 );
+        xno = PredictedW( SelectAugStateVariables );
+        Psno = PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables );
     else
-        RootUpdatedXVariance = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
+        Ssnn = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
     end
         
 end
