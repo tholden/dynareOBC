@@ -51,7 +51,7 @@ function resid = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 )
     else
         tau4 = tau * sqrt( ( nu - 4 ) / nu );
         ET4 = 3 * nuTnu / ( ( nu - 2 ) * ( nu - 4 ) ) * tcdf( tau4, nu - 4 ) / tcdf_tau_nu - 1.5 * tau * ET3 + 0.5 * tauTtau * tau * ET1; 
-        omega4 = 3 * nuTnu / ( ( nu - 1 ) * ( nu - 3 ) ) * OMdelta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( 1 + 2 / nu * ET2 + ET4 / nuTun ) + 6 * nu / ( nu - 1 ) * delta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( ET2 + ET4 / nu ) + delta2OmegaHatRatio * delta2OmegaHatRatio * ET4;
+        omega4 = 3 * nuTnu / ( ( nu - 1 ) * ( nu - 3 ) ) * OMdelta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( 1 + 2 / nu * ET2 + ET4 / nuTnu ) + 6 * nu / ( nu - 1 ) * delta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( ET2 + ET4 / nu ) + delta2OmegaHatRatio * delta2OmegaHatRatio * ET4;
         Z4 = OmegaHatSigmaRatio * OmegaHatSigmaRatio * ( omega4 - 4 * omega3 * sqrt_delta2OmegaHatRatio * ET1 + 6 * omega2 * delta2OmegaHatRatio * ET12 - 4 * omega1 * sqrt_delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET1 + delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET12 );
         resid = [ sZ3 - Z3; sZ4 - Z4 ];
     end

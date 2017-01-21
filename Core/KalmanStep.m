@@ -34,10 +34,10 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     PhiN0 = normcdf( pTmp( end - 1, : ) );
     PhiN10 = normcdf( pTmp( end, : ) );
-    FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) / gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
+    FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
     tcdf_tauoo_nuoo = tcdf( tauoo, nuoo );
     FInvEST = tinv( tcdf_tauoo_nuoo + ( 1 - tcdf_tauoo_nuoo ) * PhiN0, nuoo );
-    N11Scaler = FInvScaledInvChi * sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
+    N11Scaler = FInvScaledInvChi .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
     
     CubaturePoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, pTmp( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * pTmp( 1:NExo2,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
     
@@ -117,7 +117,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     Mean_wmMMedian_wm = Mean_wm - Median_wm;
     
-    Zhat_wm = ( Mean_wmMMedian_wm' * ano ) / sqrt( Mean_wmMMedian_wm' * Variance_wm * Mean_wmMMedian_wm );
+    Zcheck_wm = ( Mean_wmMMedian_wm' * ano ) / sqrt( Mean_wmMMedian_wm' * Variance_wm * Mean_wmMMedian_wm );
     
     WBlock = 1 : ( NAugEndo + NExo + NObs );
     PredictedW = Mean_wm( WBlock );                                           % w_{t|t-1} in the paper
