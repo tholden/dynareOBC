@@ -1,16 +1,6 @@
-function resid = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 )
+function resid = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4 )
 
-    if isempty( sZ4 )
-        if nu <= 3
-            resid = Inf;
-            return;
-        end
-    else
-        if nu <= 4
-            resid = Inf;
-            return;
-        end
-    end
+    nu = 4 + exp( log_nuM4 );
     
     tcdf_tau_nu = tcdf( tau, nu );
     tpdfRatio = tpdf( tau, nu ) / tcdf_tau_nu;

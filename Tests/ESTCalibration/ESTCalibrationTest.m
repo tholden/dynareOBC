@@ -3,12 +3,13 @@ addpath ../../Core
 T = 100000;
 N = 10;
 
-xi = randn( N, 1 );
-RootOmega = randn( N, N );
+xi = 10 * randn( N, 1 );
+RootOmega = 0.1 * randn( N, N );
 Omega = RootOmega * RootOmega';
 delta = randn( N, 1 );
-tau = randn;
-nu = 4 + randn ^ 2;
+tau = randn ^ 2;
+nu = 80.5 + 4 * randn ^ 2;
+log_nuM4 = log( nu - 4 );
 
 PhiN0 = rand( 1, T );
 PhiN10 = rand( 1, T );
@@ -33,9 +34,15 @@ Zcheck = ( ( mu - lambda )' * DemeanedESTPoints ) / sqrt( ( mu - lambda )' * Sig
 disp( mean( Zcheck ) );
 disp( mean( Zcheck.^2 ) );
 
+Zcheck = Zcheck - mean( Zcheck );
+Zcheck = Zcheck / sqrt( mean( Zcheck.^2 ) );
+
+hist( Zcheck, 100 );
+
 sZ3 = mean( Zcheck.^3 );
 sZ4 = mean( Zcheck.^4 );
 
-out = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; nu ], optimoptions( @fsolve, 'display', 'iter' ) );
+out1 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; log_nuM4 ], optimoptions( @fsolve, 'display', 'iter' ) );
+out2 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), log_nuM4, mu, lambda, Sigma, sZ3, [] ), tau, optimoptions( @fsolve, 'display', 'iter' ) );
 
-disp( [ out, [ tau; nu ] ] );
+disp( [ out1( 1 ), out2, tau; out1( 2 ), log_nuM4, log_nuM4 ] );
