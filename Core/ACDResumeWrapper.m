@@ -17,7 +17,7 @@ function [ x, f, PersistentState ] = ACDResumeWrapper( OptiFunction, x, lb, ub, 
     sigma = ( ub - lb ) * Radius;
     sigma( ~isfinite( sigma ) ) = max( Radius, Radius * abs( x( ~isfinite( sigma ) ) ) );
     
-    InitialTimeOutLikelihoodEvaluation = 200;
+    InitialTimeOutLikelihoodEvaluation = Inf;
     
     ProductSearchDimension = max( 1, floor( log( 1 + nw ) / log( 3 ) ) );
     Order = max( 1, ceil( ( -log( 2 ) + log( ( 20 * nw + 1 ) ^ ( 1 / ProductSearchDimension ) + 1 ) ) / log( 2 ) ) );

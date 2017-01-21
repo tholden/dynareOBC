@@ -4,16 +4,12 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
     D = size( XV, 1 );
     N = size( XV, 2 );
     
-    if isfinite( InitialTimeOut )
-        if isempty( BestRunTime ) || isempty( MaxRunTime )
-            Timeout = InitialTimeOut;
-        else
-            CurrentPool = gcp;
-            TargetScale = DesiredNumberOfNonTimeouts ./ CurrentPool.NumWorkers;
-            Timeout = max( BestRunTime * ( TargetScale + 2 ), MaxRunTime * ( TargetScale + 1 ) );
-        end
+    if isempty( BestRunTime ) || isempty( MaxRunTime )
+        Timeout = InitialTimeOut;
     else
-        Timeout = Inf;
+        CurrentPool = gcp;
+        TargetScale = DesiredNumberOfNonTimeouts ./ CurrentPool.NumWorkers;
+        Timeout = max( BestRunTime * ( TargetScale + 2 ), MaxRunTime * ( TargetScale + 1 ) );
     end
     
     if isempty( XStore ) || isempty( LogLObsStore )
