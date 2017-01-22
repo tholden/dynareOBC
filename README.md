@@ -278,6 +278,7 @@ DynareOBC incorporates code:
  * from the nonlinear moving average toolkit, that is copyright Lan and Alexander Meyer-Gohde, 2014,
  * for nested Gaussian cubature, that is copyright Genz and Keister, 1996,
  * for displaying a progress bar, that is copyright Cacho, "Stefan" and Scheff, 2014,
+ * for finding the nearest symmetric positive definite matrix, that is copyright D'Errico, 2013,
  * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
  * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
  
