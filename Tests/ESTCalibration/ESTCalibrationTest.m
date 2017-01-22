@@ -8,8 +8,11 @@ xi = 10 * randn( N, 1 );
 RootOmega = 0.1 * randn( N, N );
 Omega = RootOmega * RootOmega';
 delta = randn( N, 1 );
-tau = randn ^ 2;
-nu = 8.5 + 4 * randn ^ 2;
+tau = randn;
+nu = 4.5 + 4 * randn ^ 2;
+
+disp( 'tau, nu:' );
+disp( [ tau, nu ] );
 
 [ Weights, pTmp, T ] = fwtpts( N + 2, Order );
 disp( 'T:' );
