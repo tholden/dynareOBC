@@ -1,8 +1,8 @@
 clear all; %#ok<CLALL>
 addpath ../../Core
 
-Order = 14;
-N = 3;
+Order = 4;
+N = 10;
 
 xi = 10 * randn( N, 1 );
 RootOmega = 0.1 * randn( N, N );
