@@ -51,9 +51,6 @@ disp( [ xi, xiAlt ] );
 disp( 'lambda, lambdaAlt:' );
 disp( [ lambda, lambdaAlt ] );
 
-disp( 'mu - lambda, delta:' );
-disp( [ mu - lambda, delta ] );
-
 Zcheck = ( ( mu - lambda )' * DemeanedESTPoints ) / sqrt( ( mu - lambda )' * Sigma * ( mu - lambda ) );
 
 meanZcheck = Zcheck * Weights';
