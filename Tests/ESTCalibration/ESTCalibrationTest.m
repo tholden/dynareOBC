@@ -1,4 +1,4 @@
-clear all;
+clear all; %#ok<CLALL>
 addpath ../../Core
 
 Order = 14;
