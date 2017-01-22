@@ -36,6 +36,21 @@ Sigma = NearestSPD( Sigma );
 
 lambda = ESTPoints( :, 1 );
 
+tpdfRatio = tpdf( tau, nu ) / tcdf_tau_nu;
+tauTtau = tau * tau;
+OPtauTtauDnu = 1 + tauTtau / nu;
+ET1 = nu / ( nu - 1 ) * OPtauTtauDnu * tpdfRatio;
+xiAlt = mu - delta * ET1;
+
+MedT = tinv( tcdf_tau_nu + ( 1 - tcdf_tau_nu ) * 0.5, nu );
+lambdaAlt = xi + delta * MedT;
+
+disp( 'xi, xiAlt:' );
+disp( [ xi, xiAlt ] );
+
+disp( 'lambda, lambdaAlt:' );
+disp( [ lambda, lambdaAlt ] );
+
 disp( 'mu - lambda, delta:' );
 disp( [ mu - lambda, delta ] );
 
@@ -75,8 +90,8 @@ disp( [ delta, deltaHat ] );
 disp( 'diag( Omega ) comparison:' );
 disp( [ diag( Omega ), diag( OmegaHat ) ] );
 
-Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
-Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, Sigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
+Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, Sigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
 
 disp( 'Estim4 Estim3 Truth:' );
 disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), nu, nu ] );
