@@ -86,3 +86,15 @@ disp( 'delta comparison:' );
 disp( [ delta deltaHat ] );
 disp( 'diag( Omega ) comparison:' );
 disp( [ diag( Omega ) diag( OmegaHat ) ] );
+
+[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( Estim3( 1 ), nu, mu, lambda, Sigma, sZ3, sZ4 );
+
+disp( 'at Estim3:' );
+disp( 'resid:' );
+disp( resid' );
+disp( 'xi comparison:' );
+disp( [ xi xiHat ] );
+disp( 'delta comparison:' );
+disp( [ delta deltaHat ] );
+disp( 'diag( Omega ) comparison:' );
+disp( [ diag( Omega ) diag( OmegaHat ) ] );
