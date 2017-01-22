@@ -13,6 +13,7 @@ nu = 8.5 + 4 * randn ^ 2;
 log_nuM4 = log( nu - 4 );
 
 [ Weights, pTmp, T ] = fwtpts( N + 2, Order );
+disp( 'T:' );
 disp( T );
 PhiN0 = normcdf( pTmp( end - 1, : ) );
 PhiN10 = normcdf( pTmp( end, : ) );
@@ -35,20 +36,54 @@ lambda = ESTPoints( :, 1 );
 
 Zcheck = ( ( mu - lambda )' * DemeanedESTPoints ) / sqrt( ( mu - lambda )' * Sigma * ( mu - lambda ) );
 
-disp( Zcheck * Weights' );
-disp( Zcheck.^2 * Weights' );
+meanZcheck = Zcheck * Weights';
+meanZcheck2 = Zcheck.^2 * Weights';
 
-Zcheck = Zcheck - mean( Zcheck );
-Zcheck = Zcheck / sqrt( mean( Zcheck.^2 ) );
+disp( 'EZ, EZ^2:' );
+disp( [ meanZcheck meanZcheck2 ] );
 
-hist( Zcheck, 100 );
+Zcheck = Zcheck - meanZcheck;
+Zcheck = Zcheck / meanZcheck2;
+
+[ fZcheck, xiZcheck ] = ksdensity( Zcheck, linspace( min( Zcheck ), max( Zcheck ), 10000 ), 'NumPoints', 10000, 'Weights', Weights );
+fZcheck = max( 0, fZcheck );
+fZcheck = fZcheck / sum( fZcheck );
+idx1Zcheck = find( fZcheck / max( fZcheck ) > 0.005, 1 );
+idx2Zcheck = find( fZcheck / max( fZcheck ) > 0.005, 1, 'last' );
+plot( xiZcheck( idx1Zcheck : idx2Zcheck ), fZcheck( idx1Zcheck : idx2Zcheck ) );
 
 sZ3 = Zcheck.^3 * Weights';
 sZ4 = Zcheck.^4 * Weights';
 
+disp( 'EZ^3 EZ^3:' );
 disp( [ sZ3 sZ4 ] );
 
-out1 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; log_nuM4 ], optimoptions( @fsolve, 'display', 'iter' ) );
-out2 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), log_nuM4, mu, lambda, Sigma, sZ3, [] ), tau, optimoptions( @fsolve, 'display', 'iter' ) );
+[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4 );
 
-disp( [ out1( 1 ), out2, tau; out1( 2 ), log_nuM4, log_nuM4 ] );
+disp( 'at truth:' );
+disp( 'resid:' );
+disp( resid' );
+disp( 'xi comparison:' );
+disp( [ xi xiHat ] );
+disp( 'delta comparison:' );
+disp( [ delta deltaHat ] );
+disp( 'diag( Omega ) comparison:' );
+disp( [ diag( Omega ) diag( OmegaHat ) ] );
+
+Estim4 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; log_nuM4 ], optimoptions( @fsolve, 'display', 'iter' ) );
+Estim3 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), log_nuM4, mu, lambda, Sigma, sZ3, [] ), tau, optimoptions( @fsolve, 'display', 'iter' ) );
+
+disp( 'Estim4 Estim3 Truth:' );
+disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), log_nuM4, log_nuM4 ] );
+
+[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( Estim4( 1 ), Estim4( 2 ), mu, lambda, Sigma, sZ3, sZ4 );
+
+disp( 'at Estim4:' );
+disp( 'resid:' );
+disp( resid' );
+disp( 'xi comparison:' );
+disp( [ xi xiHat ] );
+disp( 'delta comparison:' );
+disp( [ delta deltaHat ] );
+disp( 'diag( Omega ) comparison:' );
+disp( [ diag( Omega ) diag( OmegaHat ) ] );

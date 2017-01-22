@@ -1,4 +1,4 @@
-function resid = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4 )
+function [ resid, xi, delta, Omega ] = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4 )
 
     nu = 4 + exp( log_nuM4 );
     
@@ -15,9 +15,10 @@ function resid = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4
     MedT = tinv( tcdf_tau_nu + ( 1 - tcdf_tau_nu ) * 0.5, nu );
     
     delta = ( mu - lambda ) / ( ET1 - MedT );
+    xi = mu - delta * ET1;
     delta_deltaT = delta * delta';
     ET12 = ET1 * ET1;
-    Omega = ( ( nu - 1 ) / ( nu + ET2 ) ) * ( Sigma - ( ET2 - ET12 ) * delta_deltaT );
+    Omega = NearestSPD( ( ( nu - 1 ) / ( nu + ET2 ) ) * ( Sigma - ( ET2 - ET12 ) * delta_deltaT ) );
     OmegaHat = Omega + delta_deltaT;
     
     deltaT_delta = delta' * delta;
