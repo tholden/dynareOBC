@@ -29,9 +29,12 @@ DemeanedESTPoints = bsxfun( @minus, ESTPoints, mu );
 Weighted_DemeanedESTPoints = bsxfun( @times, DemeanedESTPoints, Weights );
 
 Sigma = DemeanedESTPoints * Weighted_DemeanedESTPoints';
-Sigma = 0.5 * ( Sigma + Sigma' );
+Sigma = NearestSPD( Sigma );
 
 lambda = ESTPoints( :, 1 );
+
+disp( 'mu - lambda, delta:' );
+disp( [ mu - lambda, delta ] );
 
 Zcheck = ( ( mu - lambda )' * DemeanedESTPoints ) / sqrt( ( mu - lambda )' * Sigma * ( mu - lambda ) );
 
@@ -39,7 +42,7 @@ meanZcheck = Zcheck * Weights';
 meanZcheck2 = Zcheck.^2 * Weights';
 
 disp( 'EZ, EZ^2:' );
-disp( [ meanZcheck meanZcheck2 ] );
+disp( [ meanZcheck, meanZcheck2 ] );
 
 Zcheck = Zcheck - meanZcheck;
 Zcheck = Zcheck / meanZcheck2;
@@ -54,8 +57,8 @@ plot( xiZcheck( idx1Zcheck : idx2Zcheck ), fZcheck( idx1Zcheck : idx2Zcheck ) );
 sZ3 = Zcheck.^3 * Weights';
 sZ4 = Zcheck.^4 * Weights';
 
-disp( 'EZ^3 EZ^3:' );
-disp( [ sZ3 sZ4 ] );
+disp( 'EZ^3, EZ^3:' );
+disp( [ sZ3, sZ4 ] );
 
 [ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 );
 
@@ -63,11 +66,11 @@ disp( 'at truth:' );
 disp( 'resid:' );
 disp( resid' );
 disp( 'xi comparison:' );
-disp( [ xi xiHat ] );
+disp( [ xi, xiHat ] );
 disp( 'delta comparison:' );
-disp( [ delta deltaHat ] );
+disp( [ delta, deltaHat ] );
 disp( 'diag( Omega ) comparison:' );
-disp( [ diag( Omega ) diag( OmegaHat ) ] );
+disp( [ diag( Omega ), diag( OmegaHat ) ] );
 
 Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
 Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, Sigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
@@ -81,11 +84,11 @@ disp( 'at Estim4:' );
 disp( 'resid:' );
 disp( resid' );
 disp( 'xi comparison:' );
-disp( [ xi xiHat ] );
+disp( [ xi, xiHat ] );
 disp( 'delta comparison:' );
-disp( [ delta deltaHat ] );
+disp( [ delta, deltaHat ] );
 disp( 'diag( Omega ) comparison:' );
-disp( [ diag( Omega ) diag( OmegaHat ) ] );
+disp( [ diag( Omega ), diag( OmegaHat ) ] );
 
 [ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( Estim3( 1 ), nu, mu, lambda, Sigma, sZ3, sZ4 );
 
@@ -93,8 +96,8 @@ disp( 'at Estim3:' );
 disp( 'resid:' );
 disp( resid' );
 disp( 'xi comparison:' );
-disp( [ xi xiHat ] );
+disp( [ xi, xiHat ] );
 disp( 'delta comparison:' );
-disp( [ delta deltaHat ] );
+disp( [ delta, deltaHat ] );
 disp( 'diag( Omega ) comparison:' );
-disp( [ diag( Omega ) diag( OmegaHat ) ] );
+disp( [ diag( Omega ), diag( OmegaHat ) ] );
