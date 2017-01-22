@@ -36,7 +36,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     PhiN10 = normcdf( pTmp( end, : ) );
     FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
     tcdf_tauoo_nuoo = tcdf( tauoo, nuoo );
-    FInvEST = tinv( tcdf_tauoo_nuoo + ( 1 - tcdf_tauoo_nuoo ) * PhiN0, nuoo );
+    FInvEST = FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tauoo_nuoo, nuoo );
     N11Scaler = FInvScaledInvChi .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
     
     CubaturePoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, pTmp( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * pTmp( 1:NExo2,: ) ], [ xoo; zeros( NExo1, 1 ) ] );

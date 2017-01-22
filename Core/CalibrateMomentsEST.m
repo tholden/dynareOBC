@@ -10,7 +10,7 @@ function [ resid, xi, delta, Omega ] = CalibrateMomentsEST( tau, nu, mu, lambda,
     nuTnu = nu * nu;
     ET3 = 2 * nuTnu / ( ( nu - 1 ) * ( nu - 3 ) ) * OPtauTtauDnu * OPtauTtauDnu * tpdfRatio + tauTtau * ET1;
     
-    MedT = tinv( tcdf_tau_nu + ( 1 - tcdf_tau_nu ) * 0.5, nu );
+    MedT = tinv( 1 - 0.5 * tcdf_tau_nu, nu );
     
     delta = ( mu - lambda ) / ( ET1 - MedT );
     xi = mu - delta * ET1;

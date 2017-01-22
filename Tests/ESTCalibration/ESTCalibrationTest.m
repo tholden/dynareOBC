@@ -22,7 +22,7 @@ PhiN10 = normcdf( pTmp( end, : ) );
 
 FInvScaledInvChi = sqrt( 0.5 * ( nu + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nu + 1 ), 'upper' ) );
 tcdf_tau_nu = tcdf( tau, nu );
-FInvEST = tinv( tcdf_tau_nu + ( 1 - tcdf_tau_nu ) * PhiN0, nu );
+FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tau_nu, nu );
 N11Scaler = FInvScaledInvChi .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
 
 ESTPoints = bsxfun( @plus, RootOmega * bsxfun( @times, pTmp( 1:(end-2), : ), N11Scaler ) + bsxfun( @times, delta, FInvEST ), xi );
@@ -42,7 +42,7 @@ OPtauTtauDnu = 1 + tauTtau / nu;
 ET1 = nu / ( nu - 1 ) * OPtauTtauDnu * tpdfRatio;
 xiAlt = mu - delta * ET1;
 
-MedT = tinv( tcdf_tau_nu + ( 1 - tcdf_tau_nu ) * 0.5, nu );
+MedT = tinv( 1 - 0.5 * tcdf_tau_nu, nu );
 lambdaAlt = xi + delta * MedT;
 
 disp( 'xi, xiAlt:' );
