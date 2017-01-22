@@ -57,7 +57,7 @@ sZ4 = Zcheck.^4 * Weights';
 disp( 'EZ^3 EZ^3:' );
 disp( [ sZ3 sZ4 ] );
 
-[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4 );
+[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 );
 
 disp( 'at truth:' );
 disp( 'resid:' );
@@ -73,7 +73,7 @@ Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, S
 Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, Sigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
 
 disp( 'Estim4 Estim3 Truth:' );
-disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), log_nuM4, log_nuM4 ] );
+disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), nu, nu ] );
 
 [ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( Estim4( 1 ), Estim4( 2 ), mu, lambda, Sigma, sZ3, sZ4 );
 
