@@ -10,7 +10,6 @@ Omega = RootOmega * RootOmega';
 delta = randn( N, 1 );
 tau = randn ^ 2;
 nu = 8.5 + 4 * randn ^ 2;
-log_nuM4 = log( nu - 4 );
 
 [ Weights, pTmp, T ] = fwtpts( N + 2, Order );
 disp( 'T:' );
@@ -70,8 +69,8 @@ disp( [ delta deltaHat ] );
 disp( 'diag( Omega ) comparison:' );
 disp( [ diag( Omega ) diag( OmegaHat ) ] );
 
-Estim4 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; log_nuM4 ], optimoptions( @fsolve, 'display', 'iter' ) );
-Estim3 = fsolve( @( in ) CalibrateMomentsEST( in( 1 ), log_nuM4, mu, lambda, Sigma, sZ3, [] ), tau, optimoptions( @fsolve, 'display', 'iter' ) );
+Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
+Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, Sigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter' ) );
 
 disp( 'Estim4 Estim3 Truth:' );
 disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), log_nuM4, log_nuM4 ] );

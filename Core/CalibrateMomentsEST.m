@@ -1,7 +1,5 @@
-function [ resid, xi, delta, Omega ] = CalibrateMomentsEST( tau, log_nuM4, mu, lambda, Sigma, sZ3, sZ4 )
+function [ resid, xi, delta, Omega ] = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 )
 
-    nu = 4 + exp( log_nuM4 );
-    
     tcdf_tau_nu = tcdf( tau, nu );
     tpdfRatio = tpdf( tau, nu ) / tcdf_tau_nu;
     tauTtau = tau * tau;
