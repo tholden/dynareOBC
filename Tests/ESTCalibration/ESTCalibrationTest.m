@@ -50,7 +50,7 @@ disp( [ meanZcheck, meanZcheck2 ] );
 Zcheck = Zcheck - meanZcheck;
 Zcheck = Zcheck / meanZcheck2;
 
-[ fZcheck, xiZcheck ] = ksdensity( Zcheck, linspace( min( Zcheck ), max( Zcheck ), 10000 ), 'NumPoints', 10000, 'Weights', Weights );
+[ fZcheck, xiZcheck ] = ksdensity( Zcheck, linspace( min( Zcheck ), max( Zcheck ), 2000 ), 'NumPoints', 2000, 'Weights', Weights );
 fZcheck = max( 0, fZcheck );
 fZcheck = fZcheck / sum( fZcheck );
 idx1Zcheck = find( fZcheck / max( fZcheck ) > 0.005, 1 );
