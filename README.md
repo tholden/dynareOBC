@@ -42,6 +42,7 @@ Recommended additional installations:
  * MATLAB R2016a or later.
  * The MATLAB Parallel Toolbox, or a fully compatible clone, which speeds up assorted routines.
  * The MATLAB Optimization Toolbox, or an alternative non-linear least squares routine, which is required for the experimental `global` option. (To use an alternative routine, you must set `dynareOBC.FSolveFunctor`.) This toolbox is also required for some options of estimation, as detailed below.
+ * The MATLAB Statistics and Machine Learning Toolox, or a fully compatible clone, which is required for estimation.
  * The MATLAB Symbolic Toolbox, which is required for the UseVPA option.
  * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On Windows, a free compiler meeting these requirements is available from: https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx . Alternatively, on Windows, with MATLAB r2015b, another free compiler meeting these requirements (which uses much less disk space) is available by clicking on "Add-Ons" in the MATLAB toolbar, then searching for MinGW. Be sure to untick the "check for updated files" in the installer that opens.
  * MATLAB Coder, or a fully compatible clone (only used with MATLAB R2015a or later).
@@ -180,7 +181,7 @@ Note:
 
  * **Settings for controlling estimation or smoothing**
     * `Estimation`
-         Enables estimation of the model's parameters
+         Enables estimation of the model's parameters. Note that Estimation requires the MATLAB Statistics and Machine Learning Toolox.
           * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
                Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates. The second sheet should contain a title row with the names of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
           * `Prior=STRING` (default: `FlatPrior`)
@@ -190,26 +191,26 @@ Note:
           * `SkipStandardErrors`
                Makes DynareOBC skip calculation of standard errors for the estimated parameters.
           * `FilterCubatureDegree=INTEGER` (default: `0`)
-               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the filter. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the filter. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than four times the order of approximation. Values above `51` are treated as equal to `51`.
           * `StdDevThreshold=FLOAT` (default: `1e-6`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
           * `NoSkewLikelihood`
                Disables the skewing of the distribution used to approximate the likelihood.
           * `NoTLikelihood`
-               Disables the use of a (skew) t-distribution to approximate the likelihood. Instead a (skew) normal distribution will be used.
+               Disables the use of a (extended skew) t-distribution to approximate the likelihood. Instead a (extended skew) normal distribution will be used.
           * `MinimisationFunctions=STRING`
             (default: `CMAESWrapper,FMinConWrapper`)
                A `,` `;` or `#` delimitated list of minimisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `CMAESResumeWrapper` (an evolutionary global search algorithm, resuming an interrupted CMAES run), `ACDWrapper` (an adaptive coordinate descent algorithm), `ACDResumeWrapper` (an adaptive coordinate descent algorithm, resuming an interrupted ACD run), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox).
           * `FixedParameters=STRING` (default: `''`)
                A `,` `;` or `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur in the second sheet of the data file.
     * `Smoothing`
-         Performs smoothing to estimate the model's state variables and shocks. It is recommended that smoothing is invoked in a separate DynareOBC run after estimation has completed.
+         Performs smoothing to estimate the model's state variables and shocks. It is recommended that smoothing is invoked in a separate DynareOBC run after estimation has completed. Note that Smoothing requires the MATLAB Statistics and Machine Learning Toolox.
           * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
                Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain at least one worksheet. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates.
           * `StationaryDistMaxIterations=INTEGER` (default: `1000`)
                The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
           * `FilterCubatureDegree=INTEGER` (default: `0`)
-               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the predict step. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than twice the order of approximation. Values above `51` are treated as equal to `51`.
+               If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the predict step. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than four times the order of approximation. Values above `51` are treated as equal to `51`.
           * `StdDevThreshold=FLOAT` (default: `1e-6`)
                Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
                
