@@ -22,24 +22,47 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     IntDim = NAugState2 + NExo2 + 2;
     
-    if dynareOBC.FilterCubatureDegree > 0
-        CubatureOrder = ceil( 0.5 * ( dynareOBC.FilterCubatureDegree - 1 ) );
-        [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
-    else
-        NCubaturePoints = 2 * IntDim + 1;
-        wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
-        pTmp = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
-        CubatureWeights = 1 / NCubaturePoints;
+    if isfinite( nuoo )
+        if dynareOBC.FilterCubatureDegree > 0
+            CubatureOrder = ceil( 0.5 * ( dynareOBC.FilterCubatureDegree - 1 ) );
+            [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
+        else
+            NCubaturePoints = 2 * IntDim + 1;
+            wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
+            pTmp = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
+            CubatureWeights = 1 / NCubaturePoints;
+        end
+
+        PhiN10 = normcdf( pTmp( end, : ) );
+        FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
+        FInvScaledInvChi( ~isfinite( FInvScaledInvChi ) ) = 1;
     end
     
-    PhiN0 = normcdf( pTmp( end - 1, : ) );
-    PhiN10 = normcdf( pTmp( end, : ) );
-    FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
+    if ~isfinite( nuoo ) || all( abs( FInvScaledInvChi - 1 ) <= sqrt( eps ) )
+        IntDim = NAugState2 + NExo2 + 1;
+
+        if dynareOBC.FilterCubatureDegree > 0
+            [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
+        else
+            NCubaturePoints = 2 * IntDim + 1;
+            wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
+            pTmp = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
+            CubatureWeights = 1 / NCubaturePoints;
+        end
+
+        FInvScaledInvChi = ones( NCubaturePoints, 1 );
+    else
+        pTmp( end, : ) = [];
+    end
+
+    PhiN0 = normcdf( pTmp( end, : ) );
+    pTmp( end, : ) = [];
+    
     tcdf_tauoo_nuoo = tcdf( tauoo, nuoo );
     FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tauoo_nuoo, nuoo );
     N11Scaler = FInvScaledInvChi .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
     
-    CubaturePoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, pTmp( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * pTmp( 1:NExo2,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
+    CubaturePoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, pTmp( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * pTmp( (NAugState2+1):end,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
     
     Constant = dynareOBC.Constant;
     NEndo = length( Constant );
@@ -112,13 +135,31 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     Lambda = diag( diagLambda );
     Variance_wm( ZetaBlock, ZetaBlock ) = [ Lambda, Lambda; Lambda, Lambda ];
     
-    Variance_wm = Variance_wm + ano' * Weighted_ano;
+    Variance_wm = Variance_wm + NearestSPD( ano' * Weighted_ano );
     Variance_wm = 0.5 * ( Variance_wm + Variance_wm' );
+    cholVariance_wm = chol( Variance_wm );
     
     Mean_wmMMedian_wm = Mean_wm - Median_wm;
+    cholVariance_wm_Mean_wmMMedian_wm = cholVariance_wm * Mean_wmMMedian_wm;
+    cholVariance_wm_Mean_wmMMedian_wm2 = cholVariance_wm_Mean_wmMMedian_wm' * cholVariance_wm_Mean_wmMMedian_wm;
     
-    Zcheck_wm = ( Mean_wmMMedian_wm' * ano ) / sqrt( Mean_wmMMedian_wm' * Variance_wm * Mean_wmMMedian_wm );
-    
+    if cholVariance_wm_Mean_wmMMedian_wm2 > 0 && ~dynareOBC.NoSkewLikelihood
+        Zcheck_wm = ( Mean_wmMMedian_wm' * ano ) / sqrt( cholVariance_wm_Mean_wmMMedian_wm2 );
+
+        meanZcheck_wm = Zcheck_wm * CubatureWeights';
+        meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
+
+        Zcheck_wm = Zcheck_wm - meanZcheck_wm;
+        Zcheck_wm = Zcheck_wm / meanZcheck_wm2;
+
+        sZ3 = Zcheck_wm.^3 * CubatureWeights';
+        sZ4 = Zcheck_wm.^4 * CubatureWeights';
+
+        Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+        Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+    else
+    end
+
     WBlock = 1 : ( NAugEndo + NExo + NObs );
     PredictedW = Mean_wm( WBlock );                                           % w_{t|t-1} in the paper
     PredictedWVariance = Variance_wm( WBlock, WBlock );                   % V_{t|t-1} in the paper
