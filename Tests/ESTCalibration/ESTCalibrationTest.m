@@ -7,6 +7,7 @@ N = 10;
 xi = 10 * randn( N, 1 );
 RootOmega = 0.1 * randn( N, N );
 Omega = RootOmega * RootOmega';
+[ Omega, cholOmega ] = NearestSPD( Omega );
 delta = randn( N, 1 );
 tau = randn;
 nu = 4.5 + 4 * randn ^ 2;
@@ -32,7 +33,7 @@ DemeanedESTPoints = bsxfun( @minus, ESTPoints, mu );
 Weighted_DemeanedESTPoints = bsxfun( @times, DemeanedESTPoints, Weights );
 
 Sigma = DemeanedESTPoints * Weighted_DemeanedESTPoints';
-Sigma = NearestSPD( Sigma );
+[ Sigma, cholSigma ] = NearestSPD( Sigma );
 
 lambda = ESTPoints( :, 1 );
 
@@ -51,7 +52,9 @@ disp( [ xi, xiAlt ] );
 disp( 'lambda, lambdaAlt:' );
 disp( [ lambda, lambdaAlt ] );
 
-Zcheck = ( ( mu - lambda )' * DemeanedESTPoints ) / sqrt( ( mu - lambda )' * Sigma * ( mu - lambda ) );
+cholSigma_muMlambda = cholSigma * ( mu - lambda );
+
+Zcheck = ( ( mu - lambda )' * DemeanedESTPoints ) / sqrt( cholSigma_muMlambda' * cholSigma_muMlambda );
 
 meanZcheck = Zcheck * Weights';
 meanZcheck2 = Zcheck.^2 * Weights';
@@ -75,7 +78,7 @@ sZ4 = Zcheck.^4 * Weights';
 disp( 'EZ^3, EZ^3:' );
 disp( [ sZ3, sZ4 ] );
 
-[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 );
+[ resid, xiHat, deltaHat, cholOmegaHat ] = CalibrateMomentsEST( tau, nu, mu, lambda, cholSigma, sZ3, sZ4 );
 
 disp( 'at truth:' );
 disp( 'resid:' );
@@ -84,16 +87,16 @@ disp( 'xi comparison:' );
 disp( [ xi, xiHat ] );
 disp( 'delta comparison:' );
 disp( [ delta, deltaHat ] );
-disp( 'diag( Omega ) comparison:' );
-disp( [ diag( Omega ), diag( OmegaHat ) ] );
+disp( 'diag( cholOmega ) comparison:' );
+disp( [ diag( cholOmega ), diag( cholOmegaHat ) ] );
 
-Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, Sigma, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
-Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, Sigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, cholSigma, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, cholSigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
 
 disp( 'Estim4 Estim3 Truth:' );
 disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), nu, nu ] );
 
-[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( Estim4( 1 ), Estim4( 2 ), mu, lambda, Sigma, sZ3, sZ4 );
+[ resid, xiHat, deltaHat, cholOmegaHat ] = CalibrateMomentsEST( Estim4( 1 ), Estim4( 2 ), mu, lambda, cholSigma, sZ3, sZ4 );
 
 disp( 'at Estim4:' );
 disp( 'resid:' );
@@ -102,10 +105,10 @@ disp( 'xi comparison:' );
 disp( [ xi, xiHat ] );
 disp( 'delta comparison:' );
 disp( [ delta, deltaHat ] );
-disp( 'diag( Omega ) comparison:' );
-disp( [ diag( Omega ), diag( OmegaHat ) ] );
+disp( 'diag( cholOmega ) comparison:' );
+disp( [ diag( cholOmega ), diag( cholOmegaHat ) ] );
 
-[ resid, xiHat, deltaHat, OmegaHat ] = CalibrateMomentsEST( Estim3( 1 ), nu, mu, lambda, Sigma, sZ3, sZ4 );
+[ resid, xiHat, deltaHat, cholOmegaHat ] = CalibrateMomentsEST( Estim3( 1 ), nu, mu, lambda, cholSigma, sZ3, sZ4 );
 
 disp( 'at Estim3:' );
 disp( 'resid:' );
@@ -114,5 +117,5 @@ disp( 'xi comparison:' );
 disp( [ xi, xiHat ] );
 disp( 'delta comparison:' );
 disp( [ delta, deltaHat ] );
-disp( 'diag( Omega ) comparison:' );
-disp( [ diag( Omega ), diag( OmegaHat ) ] );
+disp( 'diag( cholOmega ) comparison:' );
+disp( [ diag( cholOmega ), diag( cholOmegaHat ) ] );

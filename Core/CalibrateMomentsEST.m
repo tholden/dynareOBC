@@ -1,4 +1,4 @@
-function [ resid, xi, delta, Omega ] = CalibrateMomentsEST( tau, nu, mu, lambda, Sigma, sZ3, sZ4 )
+function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lambda, cholSigma, sZ3, sZ4 )
 
     tcdf_tau_nu = tcdf( tau, nu );
     tpdfRatio = tpdf( tau, nu ) / tcdf_tau_nu;
@@ -16,13 +16,25 @@ function [ resid, xi, delta, Omega ] = CalibrateMomentsEST( tau, nu, mu, lambda,
     xi = mu - delta * ET1;
     delta_deltaT = delta * delta';
     ET12 = ET1 * ET1;
-    Omega = NearestSPD( ( ( nu - 1 ) / ( nu + ET2 ) ) * ( Sigma - ( ET2 - ET12 ) * delta_deltaT ) );
-    OmegaHat = Omega + delta_deltaT;
+    
+    if ET2 < ET12
+        cholOmega = sqrt( ( nu - 1 ) / ( nu + ET2 ) ) * cholupdate( cholSigma, sqrt( ET12 - ET2 ) * delta );
+    else
+        [ cholOmega, p ] = cholupdate( cholSigma, sqrt( ET2 - ET12 ) * delta, '-' );
+        if p == 0
+            cholOmega = cholOmega * sqrt( ( nu - 1 ) / ( nu + ET2 ) );
+        else
+            [ ~, cholOmega ] = NearestSPD( ( ( nu - 1 ) / ( nu + ET2 ) ) * ( cholSigma' * cholSigma - ( ET2 - ET12 ) * delta_deltaT ) );
+        end
+    end
+    cholOmegaHat = cholupdate( cholOmega, delta );
     
     deltaT_delta = delta' * delta;
     deltaT_delta2 = deltaT_delta * deltaT_delta;
-    deltaT_OmegaHat_delta = delta' * OmegaHat * delta;
-    deltaT_Sigma_delta = delta' * Sigma * delta;
+    cholOmegaHat_delta = cholOmegaHat * delta;
+    deltaT_OmegaHat_delta = cholOmegaHat_delta' * cholOmegaHat_delta;
+    cholSigma_delta = cholSigma * delta;
+    deltaT_Sigma_delta = cholSigma_delta' * cholSigma_delta;
     sqrt_deltaT_OmegaHat_delta = sqrt( deltaT_OmegaHat_delta );
     OmegaHatSigmaRatio = deltaT_OmegaHat_delta / deltaT_Sigma_delta;
     sqrt_delta2OmegaHatRatio = deltaT_delta / sqrt_deltaT_OmegaHat_delta;
