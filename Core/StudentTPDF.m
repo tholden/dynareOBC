@@ -1,12 +1,12 @@
-function y = StudentTPDF( x, nu )
+function [ y, log_y ] = StudentTPDF( x, nu )
 
     % To see why we do not use the MATLAB function, try plot( tpdf( 0, exp( 0:1:300 ) ) ) and plot( tpdf( 0, exp( 0:1:1000 ) ) )
 
     assert( all( nu > 0 ) );
     assert( numel( x ) == 1 || numel( nu ) == 1 || all( size( x ) == size( nu ) ) );
 
-    y = zeros( max( size( x ), size( nu ) ) );
-
+    log_y = zeros( max( size( x ), size( nu ) ) );
+    
     selNuFinite = isfinite( nu );
     idxNuFinite = find( selNuFinite );
     if ~isempty( idxNuFinite )
@@ -32,7 +32,7 @@ function y = StudentTPDF( x, nu )
         );
         idxSmallNu = find( nuFinite <= 20 );
         logGammaRootNuRatio( idxSmallNu ) = gammaln( nuP1O2Finite( idxSmallNu ) ) - gammaln( 0.5 * nuFinite( idxSmallNu ) ) - 0.5 * log( nuFinite( idxSmallNu ) );
-        y( idxNuFinite ) = exp( logGammaRootNuRatio - 0.5 * log( pi ) - nuP1O2Finite .* log1p( xFinite .^ 2 ./ nuFinite ) );
+        log_y( idxNuFinite ) = logGammaRootNuRatio - 0.572364942924700085 - nuP1O2Finite .* log1p( xFinite .^ 2 ./ nuFinite );
     end
 
     idxNuNonFinite = find( ~selNuFinite );
@@ -42,7 +42,9 @@ function y = StudentTPDF( x, nu )
         else
             xNonFinite = x;
         end
-        y( idxNuNonFinite ) = exp( - 0.5 * xNonFinite .^ 2 ) ./ sqrt( 2 * pi );
+        log_y( idxNuNonFinite ) = - 0.5 * xNonFinite .^ 2 - 0.918938533204672742;
     end
+    
+    y = exp( log_y );
 
 end
