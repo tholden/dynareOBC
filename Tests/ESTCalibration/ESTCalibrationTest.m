@@ -83,7 +83,8 @@ disp( 'EZ, EZ^2:' );
 disp( [ meanZcheck, meanZcheck2 ] );
 
 Zcheck = Zcheck - meanZcheck;
-Zcheck = Zcheck / meanZcheck2;
+meanZcheck2 = Zcheck.^2 * Weights';
+Zcheck = Zcheck / sqrt( meanZcheck2 );
 
 [ fZcheck, xiZcheck ] = ksdensity( Zcheck, linspace( min( Zcheck ), max( Zcheck ), 2000 ), 'NumPoints', 2000, 'Weights', Weights );
 fZcheck = max( 0, fZcheck );

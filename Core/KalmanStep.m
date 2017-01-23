@@ -143,14 +143,13 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     cholVariance_wm_Mean_wmMMedian_wm = cholVariance_wm * Mean_wmMMedian_wm;
     cholVariance_wm_Mean_wmMMedian_wm2 = cholVariance_wm_Mean_wmMMedian_wm' * cholVariance_wm_Mean_wmMMedian_wm;
     
-    if cholVariance_wm_Mean_wmMMedian_wm2 > 0 && ~dynareOBC.NoSkewLikelihood
+    if cholVariance_wm_Mean_wmMMedian_wm2 > eps && ~dynareOBC.NoSkewLikelihood
         Zcheck_wm = ( Mean_wmMMedian_wm' * ano ) / sqrt( cholVariance_wm_Mean_wmMMedian_wm2 );
 
         meanZcheck_wm = Zcheck_wm * CubatureWeights';
-        meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
-
         Zcheck_wm = Zcheck_wm - meanZcheck_wm;
-        Zcheck_wm = Zcheck_wm / meanZcheck_wm2;
+        meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
+        Zcheck_wm = Zcheck_wm / sqrt( meanZcheck_wm2 );
 
         sZ3 = Zcheck_wm.^3 * CubatureWeights';
         sZ4 = Zcheck_wm.^4 * CubatureWeights';
@@ -158,6 +157,12 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ tau; nu ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
         Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
     else
+        Zcheck_wm = cholVariance_wm * ano;
+        
+        meanZcheck_wm = Zcheck_wm * CubatureWeights';
+        Zcheck_wm = bsxfun( @minus, Zcheck_wm, meanZcheck_wm );
+        meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
+        Zcheck_wm = bsxfun( @times, Zcheck_wm, 1 ./ sqrt( meanZcheck_wm2 ) );
     end
 
     WBlock = 1 : ( NAugEndo + NExo + NObs );
