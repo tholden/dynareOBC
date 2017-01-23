@@ -42,7 +42,7 @@ function y = StudentTPDF( x, nu )
         else
             xNonFinite = x;
         end
-        y( idxNuNonFinite ) = normpdf( xNonFinite, 0, 1 );
+        y( idxNuNonFinite ) = exp( - 0.5 * xNonFinite .^ 2 ) ./ sqrt( 2 * pi );
     end
 
 end
