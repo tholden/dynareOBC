@@ -94,7 +94,7 @@ idx2Zcheck = find( fZcheck / max( fZcheck ) > 0.005, 1, 'last' );
 plot( xiZcheck( idx1Zcheck : idx2Zcheck ), fZcheck( idx1Zcheck : idx2Zcheck ) );
 
 sZ3 = Zcheck.^3 * Weights';
-sZ4 = Zcheck.^4 * Weights';
+sZ4 = max( 3, Zcheck.^4 * Weights' );
 
 disp( 'EZ^3, EZ^3:' );
 disp( [ sZ3, sZ4 ] );

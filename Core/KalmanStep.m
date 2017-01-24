@@ -152,7 +152,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         Zcheck_wm = Zcheck_wm / sqrt( meanZcheck_wm2 );
 
         sZ3 = Zcheck_wm.^3 * CubatureWeights';
-        sZ4 = Zcheck_wm.^4 * CubatureWeights';
+        sZ4 = max( 3, Zcheck_wm.^4 * CubatureWeights' );
 
         if isempty( nuno )
             tauno_nuno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ tauoo; nuoo ], [ -Inf; 4 + eps( 4 ) ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
