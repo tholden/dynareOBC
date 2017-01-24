@@ -162,30 +162,34 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
             tauno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nuno, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), tauoo, [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
         end
     else
-        Zcheck_wm = cholVariance_wm * ano;
+        tauno = -Inf;
         
-        meanZcheck_wm = Zcheck_wm * CubatureWeights';
-        Zcheck_wm = bsxfun( @minus, Zcheck_wm, meanZcheck_wm );
-        meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
-        Zcheck_wm = bsxfun( @times, Zcheck_wm, 1 ./ sqrt( meanZcheck_wm2 ) );
-        
-        kurtDir = max( 0, Zcheck_wm.^4 * CubatureWeights' - 3 );
-        
-        if kurtDir' * kurtDir < eps
-            kurtDir = Zcheck_wm.^4 * CubatureWeights';
+        if isempty( nuno )
+            Zcheck_wm = cholVariance_wm * ano;
+
+            meanZcheck_wm = Zcheck_wm * CubatureWeights';
+            Zcheck_wm = bsxfun( @minus, Zcheck_wm, meanZcheck_wm );
+            meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
+            Zcheck_wm = bsxfun( @times, Zcheck_wm, 1 ./ sqrt( meanZcheck_wm2 ) );
+
+            kurtDir = max( 0, Zcheck_wm.^4 * CubatureWeights' - 3 );
+
+            if kurtDir' * kurtDir < eps
+                kurtDir = Zcheck_wm.^4 * CubatureWeights';
+            end
+
+            kurtDir = kurtDir / norm( kurtDir );
+
+            Zcheck_wm = kurtDir' * Zcheck_wm;
+
+            meanZcheck_wm = Zcheck_wm * CubatureWeights';
+            Zcheck_wm = Zcheck_wm - meanZcheck_wm;
+            meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
+            Zcheck_wm = Zcheck_wm / sqrt( meanZcheck_wm2 );
+
+            sZ4 = max( 3, Zcheck_wm.^4 * CubatureWeights' );
+            nuno = 4 + 6 / ( sZ4 - 3 );
         end
-        
-        kurtDir = kurtDir / norm( kurtDir );
-        
-        Zcheck_wm = kurtDir' * Zcheck_wm;
-        
-        meanZcheck_wm = Zcheck_wm * CubatureWeights';
-        Zcheck_wm = Zcheck_wm - meanZcheck_wm;
-        meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
-        Zcheck_wm = Zcheck_wm / sqrt( meanZcheck_wm2 );
-        
-        sZ4 = max( 3, Zcheck_wm.^4 * CubatureWeights' );
-        nuno = 4 + 6 / ( sZ4 - 3 );
     end
 
     WBlock = 1 : ( NAugEndo + NExo + NObs );
