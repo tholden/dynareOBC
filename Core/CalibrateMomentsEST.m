@@ -1,6 +1,6 @@
 function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lambda, cholSigma, sZ3, sZ4 )
 
-    tcdf_tau_nu = tcdf( tau, nu );
+    tcdf_tau_nu = StudentTCDF( tau, nu );
     
     resid = zeros( 0, 1 );
     
@@ -48,7 +48,7 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
     MedT = tinv( 1 - 0.5 * tcdf_tau_nu, nu );
     
     ET1 = nuOnuM1 * OPtauTtauDnu * tpdfRatio;
-    ET2 = nuOnuM2 * tcdf( tau2, nu - 2 ) / tcdf_tau_nu - tau * ET1;
+    ET2 = nuOnuM2 * StudentTCDF( tau2, nu - 2 ) / tcdf_tau_nu - tau * ET1;
     ET3 = 2 * nuOnuM1 * nuOnuM3 * OPtauTtauDnu * OPtauTtauDnu * tpdfRatio + tauTtau * ET1;
     
     delta = ( mu - lambda ) / ( ET1 - MedT );
@@ -111,7 +111,7 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
         end
         tau4 = tau / sqrt( nuOnuM4 );
         if tcdf_tau_nu > 0
-            ET4 = 3 * nuOnuM2 * nuOnuM4 * tcdf( tau4, nu - 4 ) / tcdf_tau_nu - 1.5 * tau * ET3 + 0.5 * tauTtau * tau * ET1;
+            ET4 = 3 * nuOnuM2 * nuOnuM4 * StudentTCDF( tau4, nu - 4 ) / tcdf_tau_nu - 1.5 * tau * ET3 + 0.5 * tauTtau * tau * ET1;
         else
             ET4 = 3 * nuOnuM2 * nuOnuM4;
         end

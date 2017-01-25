@@ -10,36 +10,33 @@ Omega = RootOmega * RootOmega';
 [ Omega, cholOmega ] = NearestSPD( Omega );
 delta = randn( N, 1 );
 tau = -Inf; % randn;
-nu = 4.5 + 4 * randn ^ 2; % Inf;
+nu = Inf; % 4.5 + 4 * randn ^ 2; % Inf;
 
 disp( 'tau, nu:' );
 disp( [ tau, nu ] );
 
 IntDim = N + 2;
 
-tcdf_tau_nu = tcdf( tau, nu );
+tcdf_tau_nu = StudentTCDF( tau, nu );
+
+if tcdf_tau_nu == 0
+    IntDim = IntDim - 1;
+    cholOmega = cholupdate( cholOmega, delta );
+    Omega = cholOmega' * cholOmega;
+    delta = zeros( N, 1 );
+end
 
 if isfinite( nu )
+    [ Weights, pTmp, T ] = fwtpts( IntDim, Order );
+    disp( 'T:' );
+    disp( T );
+    PhiN10 = normcdf( pTmp( end, : ) );
     if tcdf_tau_nu > 0
-        [ Weights, pTmp, T ] = fwtpts( IntDim, Order );
-        disp( 'T:' );
-        disp( T );
-        PhiN10 = normcdf( pTmp( end, : ) );
         N11Scaler = sqrt( 0.5 * ( nu + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nu + 1 ), 'upper' ) );
-        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
     else
-        IntDim = IntDim - 1;
-        [ Weights, pTmp, T ] = fwtpts( IntDim, Order );
-        disp( 'T:' );
-        disp( T );
-        PhiN10 = normcdf( pTmp( end, : ) );
         N11Scaler = sqrt( 0.5 * nu ./ gammaincinv( PhiN10, 0.5 * nu, 'upper' ) );
-        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
-        
-        cholOmega = cholupdate( cholOmega, delta );
-        Omega = cholOmega' * cholOmega;
-        delta = zeros( N, 1 );
     end
+    N11Scaler( ~isfinite( N11Scaler ) ) = 1;
 end
 
 if ~isfinite( nu ) || all( abs( N11Scaler - 1 ) <= sqrt( eps ) )
