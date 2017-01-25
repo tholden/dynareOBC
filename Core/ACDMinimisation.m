@@ -141,18 +141,20 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     [ SortedIndices, SortIdx_alpha ] = sortrows( [ sort( AllIdx_alpha, 1, 'descend' )', sort( AllIdxUalpha, 1, 'descend' )', ( 1 : NPoints )' ] );
     alpha = cell2mat( arrayfun( @( idx ) { SobolPoints( :, idx ) }, AllIdxUalpha( :, SortIdx_alpha ) ) );
     
-    allx = NaN( N, NPoints*NoD );
-    allf = NaN( 1, NPoints*NoD );
-
     disp( [ 'Using up to ' num2str( NPoints ) ' points per iteration.' ] );
     
     stream = RandStream( 'mt19937ar', 'Seed', 0 );
     ixPerm = randperm( stream, N );
 
-    mu = find( SortedIndices( :, 1 ) > muCriticalIdx, 1 ) - 1;
+    MinNPoints = find( SortedIndices( :, 1 ) > muCriticalIdx, 1 ) - 1;
     
+    allx = NaN( N, MinNPoints*NoD );
+    allFit = NaN( 1, MinNPoints*NoD );
+    
+    mu = max( N, floor( 0.5 * MinNPoints * NoD ) );
+
     disp( 'Minimal alpha:' );
-    disp( alpha( :, 1:mu ) );
+    disp( alpha( :, 1:MinNPoints ) );
     
     % -------------------- Generation Loop --------------------------------
 
@@ -183,7 +185,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
             x( :, iPoint ) = clamp( xMean, dx * alpha( :, iPoint ), LB, UB, A, b );       % first point to test along qix'th principal component
 
         end
-        [ Fit, TmpPersistentState ] = FitnessFunction( x, PersistentState, mu );
+        [ Fit, TmpPersistentState ] = FitnessFunction( x, PersistentState, MinNPoints );
         NEvaluations = NEvaluations + NPoints;
 
         %%% Who is the next mean point?  
@@ -212,16 +214,28 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
         end
         
         %%% Update archive 
-        finiteFit = find( isfinite( Fit ) );
-        finiteIndices = ( ix - 1 ) * NPoints + finiteFit;
-        allx( :, finiteIndices ) = x( :, finiteFit );
-        allf( 1, finiteIndices ) = Fit( finiteFit );
+        IndicesToReplace = ( ix - 1 ) * MinNPoints + ( 1 : MinNPoints );
+        x = [ x allx( :, IndicesToReplace ) ]; %#ok<AGROW>
+        Fit = [ Fit allFit( IndicesToReplace ) ]; %#ok<AGROW>
+        [ Fit, sortIdxFit ] = sort( Fit );
+        x = x( :, sortIdxFit );
+        [ x, xUniqueIdx ] = unique( x', 'rows', 'stable' );
+        x = x';
+        Fit = Fit( xUniqueIdx );
+        lFit = length( Fit );
+        if lFit > MinNPoints
+            Fit = Fit( 1:MinNPoints );
+            x = x( :, 1:MinNPoints );
+            lFit = MinNPoints;
+        end
+        allx( :, IndicesToReplace( 1 : lFit ) ) = x;
+        allFit( 1, IndicesToReplace( 1 : lFit ) ) = Fit;
         
-        if (ix == NoD) && somebetter && all( isfinite( allf ) ) %% we update our rotation matrix B every N=dimension iterations
+        if ( ix == NoD ) && somebetter && all( isfinite( allFit ) ) %% we update our rotation matrix B every N=dimension iterations
             somebetter = false;
 
-            [~, arindex] = sort(allf,2,'ascend');
-            allxbest = allx(:,arindex(1:N));
+            [ ~, arindex ] = sort( allFit, 2 );
+            allxbest = allx( : ,arindex( 1:mu ) );
             if firstAE
                 ae = ACD_AEupdateFAST([], allxbest, c1, cmu,HowOftenUpdateRotation);    % initialize encoding
                 ae.B = B;
