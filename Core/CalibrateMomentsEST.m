@@ -2,6 +2,8 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
 
     tcdf_tau_nu = tcdf( tau, nu );
     
+    resid = zeros( 0, 1 );
+    
     if tcdf_tau_nu == 0
         Z3 = 0;
         if isfinite( nu )
@@ -9,10 +11,11 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
         else
             Z4 = 3;
         end
-        if isempty( sZ4 )
-            resid = sZ3 - Z3;
-        else
-            resid = [ sZ3 - Z3; sZ4 - Z4 ];
+        if ~isempty( sZ3 )
+            resid = [ resid; sZ3 - Z3 ];
+        end
+        if ~isempty( sZ4 )
+            resid = [ resid; sZ4 - Z4 ];
         end
         if nargout > 1
             xi = mu;
@@ -72,6 +75,11 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
             [ ~, cholOmega ] = NearestSPD( OmegaScaleRatio * ( cholSigma' * cholSigma - ( ET2 - ET12 ) * delta_deltaT ) );
         end
     end
+    
+    if isempty( sZ3 ) && isempty( sZ4 )
+        return;
+    end
+    
     cholOmegaHat = cholupdate( cholOmega, delta );
     
     deltaT_delta = delta' * delta;
@@ -89,12 +97,13 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
     omega2 = ( deltaT_Sigma_delta + deltaT_delta2 * ET12 ) / deltaT_OmegaHat_delta;
     OMdelta2OmegaHatRatio = 1 - delta2OmegaHatRatio;
     omega3 = 3 * nuOnuM1 * sqrt_delta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( ET1 + ET3 / nu ) + delta2OmegaHatRatio * sqrt_delta2OmegaHatRatio * ET3;
+
+    if ~isempty( sZ3 )
+        Z3 = OmegaHatSigmaRatio * sqrt( OmegaHatSigmaRatio ) * ( omega3 - 3 * omega2 * sqrt_delta2OmegaHatRatio * ET1 + 3 * omega1 * delta2OmegaHatRatio * ET12 - sqrt_delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET1 );
+        resid = [ resid; sZ3 - Z3 ];
+    end
     
-    Z3 = OmegaHatSigmaRatio * sqrt( OmegaHatSigmaRatio ) * ( omega3 - 3 * omega2 * sqrt_delta2OmegaHatRatio * ET1 + 3 * omega1 * delta2OmegaHatRatio * ET12 - sqrt_delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET1 );
-    
-    if isempty( sZ4 )
-        resid = sZ3 - Z3;
-    else
+    if ~isempty( sZ4 )
         if isfinite( nu )
             nuOnuM4 = nu / ( nu - 4 );
         else
@@ -108,7 +117,7 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
         end
         omega4 = 3 * nuOnuM1 * nuOnuM3 * OMdelta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( 1 + 2 / nu * ET2 + ET4 / nuTnu ) + 6 * nuOnuM1 * delta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( ET2 + ET4 / nu ) + delta2OmegaHatRatio * delta2OmegaHatRatio * ET4;
         Z4 = OmegaHatSigmaRatio * OmegaHatSigmaRatio * ( omega4 - 4 * omega3 * sqrt_delta2OmegaHatRatio * ET1 + 6 * omega2 * delta2OmegaHatRatio * ET12 - 4 * omega1 * sqrt_delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET1 + delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET12 );
-        resid = [ sZ3 - Z3; sZ4 - Z4 ];
+        resid = [ resid; sZ4 - Z4 ];
     end
     
 end
