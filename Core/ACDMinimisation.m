@@ -1,4 +1,4 @@
-% `[ xMean, BestFitness, Iterations, NEvaluations ] = ACD( FitnessFunction, xMean, sigma, LB, UB, A, b, MaxEvaluations, StopFitness, HowOftenUpdateRotation, Order, NonProductSearchDimension, ProductSearchDimension, Parallel );`
+% `[ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACDMinimisation( FitnessFunction, xMean, Sigma, MinSigma, LB, UB, A, b, MaxEvaluations, StopFitness, HowOftenUpdateRotation, Order, NonProductSearchDimension, ProductSearchDimension, PersistentState, Resume );`
 % 
 % Inputs:
 %  * `FitnessFunction`: The objective function, a function handle.
