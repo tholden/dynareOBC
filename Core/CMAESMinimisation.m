@@ -793,8 +793,6 @@ while isempty(stopflag)
     %          1 - N/min(stopMaxIter,stopMaxFunEvals/lambda)) + cs; 
     damps = myeval(opts.CMA.damps); 
 
-      noiseReevals = 0; % more convenient in later coding
-
     %qqq hacking of a different parameter setting, e.g. for ccov or damps,
     %  can be done here, but is not necessary anymore, see opts.CMA. 
     % ccov1 = 0.0*ccov1; disp(['CAVE: ccov1=' num2str(ccov1)]);
@@ -840,7 +838,7 @@ while isempty(stopflag)
 
   % Generate and evaluate lambda offspring
  
-  fitness.raw = NaN( 1, lambda + noiseReevals);
+  fitness.raw = NaN( 1, lambda );
   
   if AlwaysAroundBest
       xmean = bestever.x;
@@ -883,10 +881,7 @@ while isempty(stopflag)
       countevalNaN = countevalNaN + 0; % sum(isnan(fitness.raw));
       counteval = counteval + lambda; % sum(~isnan(fitness.raw));
 
-  % non-parallel evaluation and remaining NaN-values
-  % set also the reevaluated solution to NaN
-  fitness.raw(lambda + find(isnan(fitness.raw(1:noiseReevals)))) = NaN;
-  assert( all(isfinite(fitness.raw)) );
+  fitness.raw( ~isfinite( fitness.raw ) ) = 1e30;
   
   fitness.sel = fitness.raw; 
 
