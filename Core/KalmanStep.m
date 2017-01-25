@@ -22,30 +22,29 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     IntDim = NAugState2 + NExo2 + 2;
     
-    tcdf_tauoo_nuoo = tcdf( tauoo, nuoo );
+    tcdf_tauoo_nuoo = StudentTCDF( tauoo, nuoo );
+    
+    if tcdf_tauoo_nuoo == 0
+        IntDim = IntDim - 1;
+        tmp_deltasoo = Ssoo \ deltasoo;
+        if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / norm( deltasoo ) ) < sqrt( eps ) )
+            % Ssoo * Ssoo' + deltasoo * deltasoo' = Ssoo * Ssoo' + Ssoo * tmp_deltasoo * tmp_deltasoo' * Ssoo' = Ssoo * ( I' * I + tmp_deltasoo * tmp_deltasoo' ) * Ssoo'
+            Ssoo = Ssoo * cholupdate( eye( NAugState2 ), tmp_deltasoo );
+        else
+            Ssoo = [ Ssoo, deltasoo ];
+        end
+        deltasoo = zeros( size( deltasoo ) );
+    end
     
     if isfinite( nuoo )
+        [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, dynareOBC.FilterCubatureDegree );
+        PhiN10 = normcdf( CubaturePoints( end, : ) );
         if tcdf_tauoo_nuoo > 0
-            [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, dynareOBC.FilterCubatureDegree );
-            PhiN10 = normcdf( CubaturePoints( end, : ) );
             N11Scaler = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
-            N11Scaler( ~isfinite( N11Scaler ) ) = 1;
         else
-            IntDim = IntDim - 1;
-            [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, dynareOBC.FilterCubatureDegree );
-            PhiN10 = normcdf( CubaturePoints( end, : ) );
             N11Scaler = sqrt( 0.5 * nuoo ./ gammaincinv( PhiN10, 0.5 * nuoo, 'upper' ) );
-            N11Scaler( ~isfinite( N11Scaler ) ) = 1;
-
-            tmp_deltasoo = Ssoo \ deltasoo;
-            if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / norm( deltasoo ) ) < sqrt( eps ) )
-                % Ssoo * Ssoo' + deltasoo * deltasoo' = Ssoo * Ssoo' + Ssoo * tmp_deltasoo * tmp_deltasoo' * Ssoo' = Ssoo * ( I' * I + tmp_deltasoo * tmp_deltasoo' ) * Ssoo'
-                Ssoo = Ssoo * cholupdate( eye( NAugState2 ), tmp_deltasoo );
-            else
-                Ssoo = [ Ssoo, deltasoo ];
-            end
-            deltasoo = zeros( size( deltasoo ) );
         end
+        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
     end
     
     if ~isfinite( nuoo ) || all( abs( N11Scaler - 1 ) <= sqrt( eps ) )
@@ -60,14 +59,10 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         PhiN0 = normcdf( CubaturePoints( end, : ) );
         CubaturePoints( end, : ) = [];
         FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tauoo_nuoo, nuoo );
-        tpdfRatio = StudentTPDF( tauoo, nuoo ) / tcdf_tauoo_nuoo;
-        MedT = tinv( 1 - 0.5 * tcdf_tauoo_nuoo, nuoo );
         N11Scaler = N11Scaler .* sqrt( ( nuoo + FInvEST .^ 2 ) / ( 1 + nuoo ) );
         N11Scaler( ~isfinite( N11Scaler ) ) = 1;
     else
         FInvEST = zeros( 1, NCubaturePoints );
-        tpdfRatio = 0;
-        MedT = 0;
     end
     
     StateExoPoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, CubaturePoints( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * CubaturePoints( (NAugState2+1):end,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
@@ -85,8 +80,8 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     OldAugEndoPoints( SelectAugStateVariables, : ) = StatePoints;
     
     Observed = find( isfinite( m ) );
-    FiniteMeasurements = m( Observed )';
-    NObs = length( Observed );
+    m = m( Observed )';
+    nm = length( Observed );
        
     NewAugEndoPoints = zeros( NAugEndo, NCubaturePoints );
     
@@ -110,7 +105,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         end
     end
     
-    if NObs > 0
+    if nm > 0
         LagValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( OldAugEndoPoints, NEndo, NEndoMult, NCubaturePoints ), 2 ), NEndo, NCubaturePoints ), Constant );
         LagValuesWithBoundsLagIndices = LagValuesWithBoundsBig( LagIndices, : );
         
@@ -128,7 +123,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
 
     StdDevThreshold = dynareOBC.StdDevThreshold;
 
-    wm = [ NewAugEndoPoints; ExoPoints; zeros( NObs, NCubaturePoints ); NewMeasurementPoints ];
+    wm = [ NewAugEndoPoints; ExoPoints; zeros( nm, NCubaturePoints ); NewMeasurementPoints ];
     
     nwm = size( wm, 1 );
     
@@ -139,7 +134,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     Weighted_ano = bsxfun( @times, ano, CubatureWeights );
     
     Variance_wm = zeros( nwm, nwm );
-    ZetaBlock = ( nwm - 2 * NObs + 1 ) : nwm;
+    ZetaBlock = ( nwm - 2 * nm + 1 ) : nwm;
     Lambda = diag( diagLambda );
     Variance_wm( ZetaBlock, ZetaBlock ) = [ Lambda, Lambda; Lambda, Lambda ];
     
@@ -200,60 +195,75 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         end
     end
     
-    % TODO: Up to here
+    [ ~, wmno, deltaetano, cholPRRQno ] = CalibrateMomentsEST( tauno, nuno, Mean_wm, Median_wm, cholVariance_wm, [], [] );
+    
+    assert( NAugEndo + NExo + nm + nm == nwm );
+    
+    wBlock = 1 : ( NAugEndo + NExo + nm );
+    mBlock = ( nwm - nm + 1 ) : nwm;
+    
+    wno = wmno( wBlock );
+    mno = wmno( mBlock );
+    
+    deltano = deltaetano( wBlock );
+    etano = deltaetano( mBlock );
+    
+    cholPno = cholPRRQno( wBlock, wBlock );
+    Pno = cholPno' * cholPno;
+    tmpRno = cholPRRQno( wBlock, mBlock );
+    Rno = cholPno' * tmpRno;
+    tmpQno = cholPRRQno( mBlock, mBlock );
+    Qno = tmpRno' * tmpRno + tmpQno' * tmpQno;
+    
+    xno = wno( 1:NAugState1 );
+    deltasno = deltano( 1:NAugState1 );
+    Psno = Pno( 1:NAugState1, 1:NAugState1 );
+    
+    if nm > 0
+        cholPnoCheck = cholupdate( cholPno, deltano );
+        RnoCheck = Rno + deltano * etano';
+        [ ~, cholQnoCheck ] = NearestSPD( Qno + etano * etano' );
 
-    WBlock = 1 : ( NAugEndo + NExo + NObs );
-    PredictedW = Mean_wm( WBlock );                                           % w_{t|t-1} in the paper
-    PredictedWVariance = Variance_wm( WBlock, WBlock );                   % V_{t|t-1} in the paper
-    
-    MBlock = ( nwm - NObs + 1 ) : nwm;
-    PredictedM = Mean_wm( MBlock );                                           % m_{t|t-1} in the paper
-    PredictedMVariance = Variance_wm( MBlock, MBlock );                   % Q_{t|t-1} in the paper
-    PredictedWMCovariance = Variance_wm( WBlock, MBlock );                % R_{t|t-1} in the paper
-    
-    if dynareOBC.NoSkewLikelihood
-        LocationM = PredictedM;
-    else
-        LocationM = wm( MBlock, 1 );
-    end
-    
-    if NObs > 0
-    
-        [ ~, InvRootPredictedMVariance, LogDetPredictedMVariance ] = ObtainEstimateRootCovariance( PredictedMVariance, 0 );
-        ScaledPredictedWMCovariance = PredictedWMCovariance * InvRootPredictedMVariance';
-        ScaledResiduals = InvRootPredictedMVariance * ( FiniteMeasurements - PredictedM );
-
-        wnn = PredictedW + ScaledPredictedWMCovariance * ScaledResiduals;                              % w_{t|t} in the paper
-        Pnn = PredictedWVariance - ScaledPredictedWMCovariance * ScaledPredictedWMCovariance'; % V_{t|t} in the paper
-
-        xnn = wnn( SelectAugStateVariables );                                                     % x_{t|t} in the paper
-        UpdatedXVariance = Pnn( SelectAugStateVariables, SelectAugStateVariables );            % P_{t|t} in the paper
-    
-        LogObservationLikelihood = LogDetPredictedMVariance + ScaledResiduals' * ScaledResiduals + NObs * 1.8378770664093454836;
-
-    else
+        RCheck_IcholQnoCheck = RnoCheck / cholQnoCheck;
+        TIcholQnoCheck_mInnovation = cholQnoCheck' \ ( m - mno );
+        TIcholQnoCheck_eta = cholQnoCheck' \ etano;
         
-        wnn = PredictedW;
-        Pnn = PredictedWVariance;
+        PTildeno = cholPnoCheck * cholPnoCheck' - RCheck_IcholQnoCheck * RCheck_IcholQnoCheck';
+        deltaTildeno = deltano - RCheck_IcholQnoCheck * TIcholQnoCheck_eta;
+        
+        wnn = RCheck_IcholQnoCheck * TIcholQnoCheck_mInnovation;
+        scalePnn = ( nuno + TIcholQnoCheck_mInnovation' * TIcholQnoCheck_mInnovation ) / ( nuno + nm );
+        scaledeltann = 1 / ( 1 - TIcholQnoCheck_eta' * TIcholQnoCheck_eta );
+        Pnn = scalePnn * NearestSPD( PTildeno - ( deltaTildeno * deltaTildeno' ) * scaledeltann );
+        deltann = sqrt( scalePnn * scaledeltann ) * deltaTildeno;
+        taunn = sqrt( scaledeltann / scalePnn ) * ( TIcholQnoCheck_eta' * TIcholQnoCheck_mInnovation + tauno );
+        nunn = nuno + nm;
+        
+        [ ~, logMVTStudentTPDF_TIcholQnoCheck_mInnovation_nuno ] = MVTStudentTPDF( TIcholQnoCheck_mInnovation, nuno );
+        [ ~, log_tcdf_tauno_nuno ] = StudentTCDF( tauno, nuno );
+        [ ~, log_tcdf_taunn_nunn ] = StudentTCDF( taunn, nunn );
+        
+        LogObservationLikelihood = -sum( log( abs( diag( cholQnoCheck ) ) ) ) + logMVTStudentTPDF_TIcholQnoCheck_mInnovation_nuno;
 
-        xnn = PredictedW( SelectAugStateVariables );
-        UpdatedXVariance = PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables );
+        if isfinite( log_tcdf_tauno_nuno ) || isfinite( log_tcdf_taunn_nunn )
+            LogObservationLikelihood = LogObservationLikelihood - log_tcdf_tauno_nuno + log_tcdf_taunn_nunn;
+        end
+    else
+        wnn = wno;
+        Pnn = Pno;
+        deltann = deltano;
+        taunn = tauno;
+        nunn = nuno;
         
         LogObservationLikelihood = 0;
-        
     end
     
+    xnn = wnn( 1:NAugState1 );
+    deltasnn = deltann( 1:NAugState1 );
+    Psnn = Pnn( 1:NAugState1, 1:NAugState1 );
     
-    if Smoothing
-        [ Ssnn, InvRootUpdatedXVariance ] = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
-        RootUpdatedWVariance = ObtainEstimateRootCovariance( Pnn, 0 );
-        SmootherGain = ( RootOldWVariance * RootOldWVariance( 1:NAugState1, : )' ) * ( InvRootOldXVariance' * InvRootOldXVariance ) * CovOldNewX * ( InvRootUpdatedXVariance' * InvRootUpdatedXVariance ); % B_{t|t-1} * S_{t|t-1}^- in the paper
-        xno = PredictedW( SelectAugStateVariables );
-        Psno = PredictedWVariance( SelectAugStateVariables, SelectAugStateVariables );
-    else
-        Ssnn = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
-    end
-        
+    Ssnn = ObtainEstimateRootCovariance( Psnn, StdDevThreshold );
+       
 end
 
 function [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, FilterCubatureDegree )
