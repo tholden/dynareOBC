@@ -39,7 +39,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
 
             tmp_deltasoo = Ssoo \ deltasoo;
             if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / norm( deltasoo ) ) < sqrt( eps ) )
-                % Ssoo * Ssoo' + deltasoo * deltasoo' = Ssoo * Ssoo' + Ssoo * tmp_deltasoo * tmp_deltasoo' * Ssoo' = Ssoo * [ I tmp_deltasoo ] [ I'; tmp_deltasoo' ] * Ssoo'
+                % Ssoo * Ssoo' + deltasoo * deltasoo' = Ssoo * Ssoo' + Ssoo * tmp_deltasoo * tmp_deltasoo' * Ssoo' = Ssoo * ( I' * I + tmp_deltasoo * tmp_deltasoo' ) * Ssoo'
                 Ssoo = Ssoo * cholupdate( eye( NAugState2 ), tmp_deltasoo );
             else
                 Ssoo = [ Ssoo, deltasoo ];
