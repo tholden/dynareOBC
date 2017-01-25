@@ -80,11 +80,11 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
         return;
     end
     
-    cholOmegaHat = cholupdate( cholOmega, delta );
+    cholOmegaCheck = cholupdate( cholOmega, delta );
     
     deltaT_delta = delta' * delta;
     deltaT_delta2 = deltaT_delta * deltaT_delta;
-    cholOmegaHat_delta = cholOmegaHat * delta;
+    cholOmegaHat_delta = cholOmegaCheck * delta;
     deltaT_OmegaHat_delta = cholOmegaHat_delta' * cholOmegaHat_delta;
     cholSigma_delta = cholSigma * delta;
     deltaT_Sigma_delta = cholSigma_delta' * cholSigma_delta;
