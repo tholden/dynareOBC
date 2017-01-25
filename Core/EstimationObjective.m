@@ -1,14 +1,13 @@
-function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, M, options, oo, dynareOBC, InitialRun, Smoothing )
+function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, EstimationPersistentState, M, options, oo, dynareOBC, InitialRun, Smoothing )
 
-    TwoNLogLikelihood = Inf;
+    LogLikelihood = -Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
     if nargout > 1
-        TwoNLogObservationLikelihoods = NaN( T, 1 );
+        LogObservationLikelihoods = NaN( T, 1 );
     end
 
     M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
-    MEVar = exp( p( ( length( dynareOBC.EstimationParameterSelect ) + 1 ):( end - 1 ) ) );
-    TDoF = 2 + exp( p( end ) );
+    diagLambda = exp( p( length( dynareOBC.EstimationParameterSelect ) + ( 1 : N ) ) );
     
     options.qz_criterium = 1 - 1e-6;
     try
@@ -37,7 +36,7 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
    
     StdDevThreshold = dynareOBC.StdDevThreshold;
     
-    RootQ = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), StdDevThreshold );
+    RootExoVar = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), StdDevThreshold );
 
     LagIndices = find( dynareOBC.OriginalLeadLagIncidence( 1, : ) > 0 );
     CurrentIndices = find( dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0 );
@@ -48,28 +47,49 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     end
     FutureValues = nan( sum( LeadIndices ), 1 );
     
-    % get initial mean and covariance
-    OldX = full( dynareOBC.Mean_z );
-    OldX = OldX( dynareOBC.CoreSelectInAugmented );
-    OldX = OldX( SelectAugStateVariables );
-    dr = oo.dr;
+    if isempty( EstimationPersistentState )
+        % get initial mean and covariance
+        xoo = full( dynareOBC.Mean_z );
+        xoo = xoo( dynareOBC.CoreSelectInAugmented );
+        xoo = xoo( SelectAugStateVariables );
+        dr = oo.dr;
 
-    if dynareOBC.Order == 1
-        TempCovariance = full( dynareOBC.Var_z1 );
-        TempCovarianceSelect = dr.inv_order_var( SelectStateVariables );
+        if dynareOBC.Order == 1
+            TempPsoo = full( dynareOBC.Var_z1 );
+            TempPsooSelect = dr.inv_order_var( SelectStateVariables );
+        else
+            TempPsoo = full( dynareOBC.Var_z2 );
+            TempPsooSelect = [ dr.inv_order_var( SelectStateVariables ); NEndo + dr.inv_order_var( SelectStateVariables ) ];
+        end
+
+        TempSsoo = ObtainEstimateRootCovariance( TempPsoo( TempPsooSelect, TempPsooSelect ), StdDevThreshold );
+
+        Ssoo = zeros( NAugState, size( TempSsoo, 2 ) );
+        Ssoo( 1:size( TempSsoo, 1 ), : ) = TempSsoo; % handles 3rd order
+        % end getting initial mean and covariance
+
+        deltasoo = zeros( size( xoo ) );
+        tauoo = -Inf;
+        nuoo = Inf;
     else
-        TempCovariance = full( dynareOBC.Var_z2 );
-        TempCovarianceSelect = [ dr.inv_order_var( SelectStateVariables ); NEndo + dr.inv_order_var( SelectStateVariables ) ];
+        xoo = EstimationPersistentState.xoo;
+        Ssoo = EstimationPersistentState.Ssoo;
+        deltasoo = EstimationPersistentState.deltasoo;
+        tauoo = EstimationPersistentState.tauoo;
+        nuoo = EstimationPersistentState.nuoo;
     end
-
-    TempOldRootCovariance = ObtainEstimateRootCovariance( TempCovariance( TempCovarianceSelect, TempCovarianceSelect ), StdDevThreshold );
-
-    RootOldXVariance = zeros( NAugState, size( TempOldRootCovariance, 2 ) );
-    RootOldXVariance( 1:size( TempOldRootCovariance, 1 ), : ) = TempOldRootCovariance; % handles 3rd order
-    % end getting initial mean and covariance
     
-    OldXVariance = RootOldXVariance * RootOldXVariance';
-    CompOld = [ OldXVariance(:); OldX ];
+    Psoo = Ssoo * Ssoo';
+
+    CompOld = [ Psoo(:); xoo; deltasoo ];
+    
+    if isfinite( tauoo )
+        CompOld = [ CompOld; tauoo ];
+    end
+    if isfinite( nuoo )
+        CompOld = [ CompOld; nuoo ];
+    end    
+    
     ErrorOld = Inf;
     StepSize = 1;
     
@@ -78,30 +98,54 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
     
     tCutOff = 100;
     
-    StartTime = tic;
-    
+    if dynareOBC.NoTLikelihood
+        nuno = Inf;
+        assert( length( p ) == length( dynareOBC.EstimationParameterSelect ) + N );
+    elseif dynareOBC.DynamicNu
+        nuno = [];
+        assert( length( p ) == length( dynareOBC.EstimationParameterSelect ) + N );
+    else
+        nuno = exp( p( end ) );
+        assert( length( p ) == length( dynareOBC.EstimationParameterSelect ) + N + 1 );
+    end
+
     for t = 1:dynareOBC.StationaryDistMaxIterations
         try
-            [ ~, X, RootXVariance, InvRootXVariance, ~, RootWVariance ] = KalmanStep( nan( 1, N ), OldX, RootOldXVariance, [], [], RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, false );
+            [ ~, xnn, Ssnn, deltasnn, taunn, nunn ] = KalmanStep( nan( 1, N ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
         catch
-            X = [];
+            xnn = [];
         end
-        if ~Smoothing && ( isempty( X ) || toc( StartTime ) > dynareOBC.TimeOutLikelihoodEvaluation )
+        if ~Smoothing && isempty( xnn )
             return;
         end
         
-        XVariance = RootXVariance * RootXVariance';
+        Psnn = Ssnn * Ssnn';
         
-        X = OldX + StepSize * ( X - OldX );
-        XVariance = OldXVariance + StepSize * ( XVariance - OldXVariance );
+        xnn = xoo + StepSize * ( xnn - xoo );
+        Psnn = Psoo + StepSize * ( Psnn - Psoo );
+        deltasnn = deltasoo + StepSize * ( deltasnn - deltasoo );
 
-        CompNew = [ XVariance(:); X ];
+        CompNew = [ Psnn(:); xnn; deltasnn ];
         
-        OldX = X;
-        RootOldXVariance = ObtainEstimateRootCovariance( XVariance, StdDevThreshold );
+        if isfinite( tauoo ) && isfinite( taunn )
+            taunn = tauoo + StepSize * ( taunn - tauoo );
+            CompNew = [ CompNew; taunn ]; %#ok<AGROW>
+        end
+        if isfinite( nuoo ) && isfinite( nunn )
+            nunn = nuoo + StepSize * ( nunn - nuoo );
+            CompNew = [ CompNew; nunn ]; %#ok<AGROW>
+        end
         
-        Error = max( abs( CompNew - CompOld ) );
-        ErrorScale = sqrt( eps( max( abs( [ CompNew; CompOld ] ) ) ) );
+        xoo = xnn;
+        Ssoo = ObtainEstimateRootCovariance( Psnn, StdDevThreshold );
+        deltasoo = deltasnn;
+        tauoo = taunn;
+        nuoo = nunn;
+        
+        nComp = min( length( CompNew ), length( CompOld ) );
+        
+        Error = max( abs( CompNew( 1:nComp ) - CompOld( 1:nComp ) ) );
+        ErrorScale = sqrt( eps( max( abs( [ CompNew( 1:nComp ); CompOld( 1:nComp ) ] ) ) ) );
         if Error < ErrorScale
             break;
         end
@@ -118,72 +162,98 @@ function [ TwoNLogLikelihood, TwoNLogObservationLikelihoods, M, options, oo, dyn
         ErrorOld = Error;
     end
 
+    EstimationPersistentState.xoo = xoo;
+    EstimationPersistentState.Ssoo = Ssoo;
+    EstimationPersistentState.deltasoo = deltasoo;
+    EstimationPersistentState.tauoo = tauoo;
+    EstimationPersistentState.nuoo = nuoo;
+
     PriorFunc = str2func( dynareOBC.Prior );
     PriorValue = PriorFunc( p );
-    ScaledPriorValue = -2 * PriorValue / T;
+    ScaledPriorValue = PriorValue / T;
     
     if Smoothing
-        FilteredWs = cell( T, 1 );
-        RootFilteredWVariances = cell( T, 1 );
-        SmootherGains = cell( T, 1 );
-        PredictedXs = cell( T, 1 );
-        RootPredictedXVariances = cell( T, 1 );
+        wnn_ = cell( T, 1 );
+        Pnn_ = cell( T, 1 );
+        deltann_ = cell( T, 1 );
+        taunn_ = cell( T, 1 );
+        nunn_ = cell( T, 1 );
+        xno_ = cell( T, 1 );
+        Psno_ = cell( T, 1 );
+        deltasno_ = cell( T, 1 );
+        tauno_ = cell( T, 1 );
+        nuno_ = cell( T, 1 );
     end
     
-    TwoNLogLikelihood = 0;
+    LogLikelihood = 0;
+% function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn, deltann, xno, Psno, deltasno, tauno, nuno ] = ...
+%     KalmanStep( m, xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables )
+
     for t = 1:T
-        InvRootOldXVariance = InvRootXVariance;
-        RootOldWVariance = RootWVariance;
         if Smoothing
-            [ TwoNLogObservationLikelihood, X, RootXVariance, InvRootXVariance, W, RootWVariance, SmootherGain, PredictedX, RootPredictedXVariance ] = ...
-                KalmanStep( dynareOBC.EstimationData( t, : ), OldX, RootOldXVariance, InvRootOldXVariance, RootOldWVariance, RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing );
-            FilteredWs{ t } = W;
-            RootFilteredWVariances{ t } = RootWVariance;
-            SmootherGains{ t } = SmootherGain;
-            PredictedXs{ t } = PredictedX;
-            RootPredictedXVariances{ t } = RootPredictedXVariance;
+            if dynareOBC.DynamicNu
+                nuno = [];
+            end
+            [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn, deltann, xno, Psno, deltasno, tauno, nuno ] = ...
+                KalmanStep( dynareOBC.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
+            wnn_{ t } = wnn;
+            Pnn_{ t } = Pnn;
+            deltann_{ t } = deltann;
+            taunn_{ t } = taunn;
+            nunn_{ t } = nunn;
+            xno_{ t } = xno;
+            Psno_{ t } = Psno;
+            deltasno_{ t } = deltasno;
+            tauno_{ t } = tauno;
+            nuno_{ t } = nuno;
         else
-            [ TwoNLogObservationLikelihood, X, RootXVariance ] = ...
-                KalmanStep( dynareOBC.EstimationData( t, : ), OldX, RootOldXVariance, [], [], RootQ, MEVar, TDoF, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables, Smoothing );
-            if isempty( X ) || toc( StartTime ) > dynareOBC.TimeOutLikelihoodEvaluation
-                TwoNLogLikelihood = Inf;
+            [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn ] = ...
+                KalmanStep( dynareOBC.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
+            if isempty( xnn )
+                LogLikelihood = Inf;
                 return;
             end
         end
-        TwoNLogObservationLikelihood = TwoNLogObservationLikelihood + ScaledPriorValue;
+        LogObservationLikelihood = LogObservationLikelihood + ScaledPriorValue;
+        
         if nargout > 1
-            TwoNLogObservationLikelihoods( t ) = TwoNLogObservationLikelihood;
+            LogObservationLikelihoods( t ) = LogObservationLikelihood;
         end
-        OldX = X;
-        RootOldXVariance = RootXVariance;
-        TwoNLogLikelihood = TwoNLogLikelihood + TwoNLogObservationLikelihood;
+        
+        xoo = xnn;
+        Ssoo = Ssnn;
+        deltasoo = deltasnn;
+        tauoo = taunn;
+        nuoo = nunn;
+        
+        LogLikelihood = LogLikelihood + LogObservationLikelihood;
     end
     
     if Smoothing
-        SmoothedWs = cell( T, 1 );
-        RootSmoothedWVariances = cell( T, 1 );
-        SmoothedWs{ T } = W;
-        RootSmoothedWVariances{ T } = RootWVariance;
-        
-        for t = ( T - 1 ):-1:1
-            W = FilteredWs{ t } + SmootherGain * ( X - PredictedX );
-            SmoothedWs{ t } = W;
-            VarianceTerm1 = RootFilteredWVariances{ t };
-            VarianceTerm2 = SmootherGain * RootPredictedXVariance;
-            VarianceTerm3 = SmootherGain * RootXVariance;
-            WVariance = VarianceTerm1 * VarianceTerm1' - VarianceTerm2 * VarianceTerm2' + VarianceTerm3 * VarianceTerm3';
-            RootWVariance = ObtainEstimateRootCovariance( WVariance, 0 );
-            RootSmoothedWVariances{ t } = RootWVariance;
-            RootXVariance = RootWVariance( SelectAugStateVariables, : );
-            SmootherGain = SmootherGains{ t };
-            PredictedX = PredictedXs{ t };
-            RootPredictedXVariance = RootPredictedXVariances{ t };
-        end
-
-        dynareOBC.FilteredWs = FilteredWs;
-        dynareOBC.RootFilteredWVariances = RootFilteredWVariances;
-        dynareOBC.SmoothedWs = SmoothedWs;
-        RootSmoothedWVariances.RootSmoothedWVariances = RootSmoothedWVariances;
+%         SmoothedWs = cell( T, 1 );
+%         RootSmoothedWVariances = cell( T, 1 );
+%         SmoothedWs{ T } = W;
+%         RootSmoothedWVariances{ T } = RootWVariance;
+%         
+%         for t = ( T - 1 ):-1:1
+%             W = FilteredWs{ t } + SmootherGain * ( xnn - PredictedX );
+%             SmoothedWs{ t } = W;
+%             VarianceTerm1 = RootFilteredWVariances{ t };
+%             VarianceTerm2 = SmootherGain * RootPredictedXVariance;
+%             VarianceTerm3 = SmootherGain * Ssnn;
+%             WVariance = VarianceTerm1 * VarianceTerm1' - VarianceTerm2 * VarianceTerm2' + VarianceTerm3 * VarianceTerm3';
+%             RootWVariance = ObtainEstimateRootCovariance( WVariance, 0 );
+%             RootSmoothedWVariances{ t } = RootWVariance;
+%             Ssnn = RootWVariance( SelectAugStateVariables, : );
+%             SmootherGain = SmootherGains{ t };
+%             PredictedX = PredictedXs{ t };
+%             RootPredictedXVariance = RootPredictedXVariances{ t };
+%         end
+% 
+%         dynareOBC.FilteredWs = FilteredWs;
+%         dynareOBC.RootFilteredWVariances = RootFilteredWVariances;
+%         dynareOBC.SmoothedWs = SmoothedWs;
+%         RootSmoothedWVariances.RootSmoothedWVariances = RootSmoothedWVariances;
 
     end
 end

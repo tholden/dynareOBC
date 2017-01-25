@@ -68,6 +68,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     if dynareOBC.Estimation || dynareOBC.Smoothing
+        if dynareOBC.DynamicNu && dynareOBC.NoTLikelihood
+            error( 'dynareOBC:DynamicNuNoTLikelihoodIncompatible', 'You cannot select both NoTLikelihood and DynamicNu.' );
+        end
+        
         fprintf( '\n' );
         disp( 'Loading data for estimation and/or smoothing.' );
         fprintf( '\n' );    
@@ -408,42 +412,43 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
         EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); log( 0.0001 ) * ones( NumObservables, 1 ) ];
-        TLikelihood = ~dynareOBC.NoTLikelihood;
-        if TLikelihood
-            EstimatedParameters( end + 1 ) = log( 10 );
+        
+        EstimatedNu = ~dynareOBC.NoTLikelihood && ~dynareOBC.DynamicNu;
+        if EstimatedNu
+            EstimatedParameters( end + 1 ) = log( 100 );
         end
         
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
         StoreGlobals( M_, options_, oo_, dynareOBC );
         EstimationPersistentState = [];
-        [ TwoNLogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
+        [ LogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
-        disp( -0.5 * TwoNLogLikelihood );
+        disp( LogLikelihood );
         
-        if TLikelihood
+        if EstimatedNu
             OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false, false );
         else
             OptiFunction = @( p ) EstimationObjective( [ p; Inf ], M_, options_, oo_, dynareOBC, false, false );
         end
-        OptiLB = [ LBTemp; -Inf( NumObservables + TLikelihood, 1 ) ];
-        OptiUB = [ UBTemp; Inf( NumObservables + TLikelihood, 1 ) ];
-        MinimisationFunctions = strsplit( dynareOBC.MinimisationFunctions, { ',', ';', '#' } );
-        for i = 1 : length( MinimisationFunctions )
-            FMinEstimateFunctor = str2func( MinimisationFunctions{ i } );
-            [ EstimatedParameters, TwoNLogLikelihood, EstimationPersistentState ] = FMinEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB, EstimationPersistentState );
+        OptiLB = [ LBTemp; -Inf( NumObservables + EstimatedNu, 1 ) ];
+        OptiUB = [ UBTemp; Inf( NumObservables + EstimatedNu, 1 ) ];
+        MaximisationFunctions = strsplit( dynareOBC.MaximisationFunctions, { ',', ';', '#' } );
+        for i = 1 : length( MaximisationFunctions )
+            FMaxEstimateFunctor = str2func( MaximisationFunctions{ i } );
+            [ EstimatedParameters, LogLikelihood, EstimationPersistentState ] = FMaxEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB, EstimationPersistentState );
         end
         disp( 'Final log-likelihood:' );
-        disp( -0.5 * TwoNLogLikelihood );
+        disp( LogLikelihood );
  
         
-        [ TwoNLogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
+        [ LogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
         StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Paranoid verification of final log-likelihood:' );
-        disp( -0.5 * TwoNLogLikelihood );
+        disp( LogLikelihood );
         
         dynareOBC.EstimationPersistentState = EstimationPersistentState;
         
@@ -457,7 +462,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             for i = 1 : NumObservables
                 fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, exp( EstimatedParameters( NumEstimatedParams + i ) ) );
             end
-            if TLikelihood
+            if EstimatedNu
                 fprintf( '\n' );
                 disp( 'Final measurement degrees of freedom parameter:' );
                 fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, 2 + exp( EstimatedParameters( end ) ) );
@@ -489,7 +494,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 TmpEstimatedParameter = exp( EstimatedParameters( NumEstimatedParams + i ) );
                 fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, TmpEstimatedParameter, TmpEstimatedParameter * EstimatedParameterStandardErrors( NumEstimatedParams + i ) ); % delta method
             end
-            if TLikelihood
+            if EstimatedNu
                 fprintf( '\n' );
                 disp( 'Final measurement degrees of freedom parameter:' );
                 TmpEstimatedParameter = exp( EstimatedParameters( end ) );
