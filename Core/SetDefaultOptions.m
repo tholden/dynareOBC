@@ -9,6 +9,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'DataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'Debug', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'DisplayBoundsSolutionProgress', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'DynamicNu', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Estimation', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FastCubature', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'FeasibilityTestGridSize', 0 );
