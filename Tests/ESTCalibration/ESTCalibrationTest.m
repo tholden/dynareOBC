@@ -9,39 +9,64 @@ RootOmega = 0.1 * randn( N, N );
 Omega = RootOmega * RootOmega';
 [ Omega, cholOmega ] = NearestSPD( Omega );
 delta = randn( N, 1 );
-tau = randn;
+tau = -Inf; % randn;
 nu = 4.5 + 4 * randn ^ 2; % Inf;
 
 disp( 'tau, nu:' );
 disp( [ tau, nu ] );
 
+IntDim = N + 2;
+
+tcdf_tau_nu = tcdf( tau, nu );
+
 if isfinite( nu )
-    [ Weights, pTmp, T ] = fwtpts( N + 2, Order );
-    disp( 'T:' );
-    disp( T );
-    PhiN10 = normcdf( pTmp( end, : ) );
-    FInvScaledInvChi = sqrt( 0.5 * ( nu + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nu + 1 ), 'upper' ) );
-    FInvScaledInvChi( ~isfinite( FInvScaledInvChi ) ) = 1;
+    if tcdf_tau_nu > 0
+        [ Weights, pTmp, T ] = fwtpts( IntDim, Order );
+        disp( 'T:' );
+        disp( T );
+        PhiN10 = normcdf( pTmp( end, : ) );
+        N11Scaler = sqrt( 0.5 * ( nu + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nu + 1 ), 'upper' ) );
+        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
+    else
+        IntDim = IntDim - 1;
+        [ Weights, pTmp, T ] = fwtpts( IntDim, Order );
+        disp( 'T:' );
+        disp( T );
+        PhiN10 = normcdf( pTmp( end, : ) );
+        N11Scaler = sqrt( 0.5 * nu ./ gammaincinv( PhiN10, 0.5 * nu, 'upper' ) );
+        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
+        
+        cholOmega = cholupdate( cholOmega, delta );
+        Omega = cholOmega' * cholOmega;
+        delta = zeros( N, 1 );
+    end
 end
 
-if ~isfinite( nu ) || all( abs( FInvScaledInvChi - 1 ) <= sqrt( eps ) )
-    [ Weights, pTmp, T ] = fwtpts( N + 1, Order );
+if ~isfinite( nu ) || all( abs( N11Scaler - 1 ) <= sqrt( eps ) )
+    IntDim = IntDim - 1;
+    [ Weights, pTmp, T ] = fwtpts( IntDim, Order );
     disp( 'T:' );
     disp( T );
-    FInvScaledInvChi = ones( size( Weights ) );
+    N11Scaler = ones( size( Weights ) );
 else
     pTmp( end, : ) = [];
 end
 
-PhiN0 = normcdf( pTmp( end, : ) );
-pTmp( end, : ) = [];
+if tcdf_tau_nu > 0
+    PhiN0 = normcdf( pTmp( end, : ) );
+    pTmp( end, : ) = [];
+    FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tau_nu, nu );
+    tpdfRatio = StudentTPDF( tau, nu ) / tcdf_tau_nu;
+    MedT = tinv( 1 - 0.5 * tcdf_tau_nu, nu );
+    N11Scaler = N11Scaler .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
+    N11Scaler( ~isfinite( N11Scaler ) ) = 1;
+else
+    FInvEST = zeros( size( Weights ) );
+    tpdfRatio = 0;
+    MedT = 0;
+end
 
-tcdf_tau_nu = tcdf( tau, nu );
-FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tau_nu, nu );
-N11Scaler = FInvScaledInvChi .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
-N11Scaler( ~isfinite( N11Scaler ) ) = 1;
-
-ESTPoints = bsxfun( @plus, RootOmega * bsxfun( @times, pTmp, N11Scaler ) + bsxfun( @times, delta, FInvEST ), xi );
+ESTPoints = bsxfun( @plus, cholOmega' * bsxfun( @times, pTmp, N11Scaler ) + bsxfun( @times, delta, FInvEST ), xi );
 
 mu = sum( bsxfun( @times, ESTPoints, Weights ), 2 );
 DemeanedESTPoints = bsxfun( @minus, ESTPoints, mu );
@@ -52,7 +77,6 @@ Sigma = DemeanedESTPoints * Weighted_DemeanedESTPoints';
 
 lambda = ESTPoints( :, 1 );
 
-tpdfRatio = StudentTPDF( tau, nu ) / tcdf_tau_nu;
 tauTtau = tau * tau;
 OPtauTtauDnu = 1 + tauTtau / nu;
 if isfinite( nu )
@@ -60,10 +84,13 @@ if isfinite( nu )
 else
     nuOnuM1 = 1;
 end
-ET1 = nuOnuM1 * OPtauTtauDnu * tpdfRatio;
+if tcdf_tau_nu > 0
+    ET1 = nuOnuM1 * OPtauTtauDnu * tpdfRatio;
+else
+    ET1 = 0;
+end
 xiAlt = mu - delta * ET1;
 
-MedT = tinv( 1 - 0.5 * tcdf_tau_nu, nu );
 lambdaAlt = xi + delta * MedT;
 
 disp( 'xi, xiAlt:' );
@@ -111,8 +138,8 @@ disp( [ delta, deltaHat ] );
 disp( 'diag( cholOmega ) comparison:' );
 disp( [ diag( cholOmega ), diag( cholOmegaHat ) ] );
 
-Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, cholSigma, sZ3, sZ4 ), [ tau; min( 1e300, nu ) ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
-Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, cholSigma, sZ3, [] ), tau, [], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+Estim4 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), mu, lambda, cholSigma, sZ3, sZ4 ), [ max( -1e300, tau ); min( 1e300, nu ) ], [ -Inf; 4 ], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+Estim3 = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nu, mu, lambda, cholSigma, sZ3, [] ), max( -1e300, tau ), [], [], optimoptions( @lsqnonlin, 'display', 'iter', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
 
 disp( 'Estim4 Estim3 Truth:' );
 disp( [ Estim4( 1 ), Estim3, tau; Estim4( 2 ), nu, nu ] );

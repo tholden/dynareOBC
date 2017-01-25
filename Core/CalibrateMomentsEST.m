@@ -1,7 +1,30 @@
 function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lambda, cholSigma, sZ3, sZ4 )
 
     tcdf_tau_nu = tcdf( tau, nu );
-    tpdfRatio = StudentTPDF( tau, nu ) / tcdf_tau_nu;
+    
+    if tcdf_tau_nu == 0
+        Z3 = 0;
+        if isfinite( nu )
+            Z4 = ( 3 * nu - 6 ) / ( nu - 4 );
+        else
+            Z4 = 3;
+        end
+        if isempty( sZ4 )
+            resid = sZ3 - Z3;
+        else
+            resid = [ sZ3 - Z3; sZ4 - Z4 ];
+        end
+        if nargout > 1
+            xi = mu;
+            delta = zeros( size( mu ) );
+            cholOmega = cholSigma;
+            if isfinite( nu )
+                cholOmega = cholOmega * sqrt( ( nu - 2 ) / nu );
+            end
+        end
+        return;
+    end
+
     tauTtau = tau * tau;
     OPtauTtauDnu = 1 + tauTtau / nu;
     
@@ -15,16 +38,21 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
         nuOnuM3 = 1;
     end
     
-    ET1 = nuOnuM1 * OPtauTtauDnu * tpdfRatio;
     tau2 = tau / sqrt( nuOnuM2 );
-    ET2 = nuOnuM2 * tcdf( tau2, nu - 2 ) / tcdf_tau_nu - tau * ET1;
     nuTnu = nu * nu;
-    ET3 = 2 * nuOnuM1 * nuOnuM3 * OPtauTtauDnu * OPtauTtauDnu * tpdfRatio + tauTtau * ET1;
     
+    tpdfRatio = StudentTPDF( tau, nu ) / tcdf_tau_nu;
     MedT = tinv( 1 - 0.5 * tcdf_tau_nu, nu );
     
+    ET1 = nuOnuM1 * OPtauTtauDnu * tpdfRatio;
+    ET2 = nuOnuM2 * tcdf( tau2, nu - 2 ) / tcdf_tau_nu - tau * ET1;
+    ET3 = 2 * nuOnuM1 * nuOnuM3 * OPtauTtauDnu * OPtauTtauDnu * tpdfRatio + tauTtau * ET1;
+    
     delta = ( mu - lambda ) / ( ET1 - MedT );
-    xi = mu - delta * ET1;
+    
+    if nargout > 1
+        xi = mu - delta * ET1;
+    end
     delta_deltaT = delta * delta';
     ET12 = ET1 * ET1;
     
@@ -55,7 +83,7 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
     sqrt_deltaT_OmegaHat_delta = sqrt( deltaT_OmegaHat_delta );
     OmegaHatSigmaRatio = deltaT_OmegaHat_delta / deltaT_Sigma_delta;
     sqrt_delta2OmegaHatRatio = deltaT_delta / sqrt_deltaT_OmegaHat_delta;
-    delta2OmegaHatRatio = deltaT_delta2 / deltaT_OmegaHat_delta;
+    delta2OmegaHatRatio = sqrt_delta2OmegaHatRatio * sqrt_delta2OmegaHatRatio;
     
     omega1 = sqrt_delta2OmegaHatRatio * ET1;
     omega2 = ( deltaT_Sigma_delta + deltaT_delta2 * ET12 ) / deltaT_OmegaHat_delta;
@@ -73,7 +101,11 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
             nuOnuM4 = 1;
         end
         tau4 = tau / sqrt( nuOnuM4 );
-        ET4 = 3 * nuOnuM2 * nuOnuM4 * tcdf( tau4, nu - 4 ) / tcdf_tau_nu - 1.5 * tau * ET3 + 0.5 * tauTtau * tau * ET1; 
+        if tcdf_tau_nu > 0
+            ET4 = 3 * nuOnuM2 * nuOnuM4 * tcdf( tau4, nu - 4 ) / tcdf_tau_nu - 1.5 * tau * ET3 + 0.5 * tauTtau * tau * ET1;
+        else
+            ET4 = 3 * nuOnuM2 * nuOnuM4;
+        end
         omega4 = 3 * nuOnuM1 * nuOnuM3 * OMdelta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( 1 + 2 / nu * ET2 + ET4 / nuTnu ) + 6 * nuOnuM1 * delta2OmegaHatRatio * OMdelta2OmegaHatRatio * ( ET2 + ET4 / nu ) + delta2OmegaHatRatio * delta2OmegaHatRatio * ET4;
         Z4 = OmegaHatSigmaRatio * OmegaHatSigmaRatio * ( omega4 - 4 * omega3 * sqrt_delta2OmegaHatRatio * ET1 + 6 * omega2 * delta2OmegaHatRatio * ET12 - 4 * omega1 * sqrt_delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET1 + delta2OmegaHatRatio * delta2OmegaHatRatio * ET12 * ET12 );
         resid = [ sZ3 - Z3; sZ4 - Z4 ];

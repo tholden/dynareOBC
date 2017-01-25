@@ -22,47 +22,55 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     IntDim = NAugState2 + NExo2 + 2;
     
-    if isfinite( nuoo )
-        if dynareOBC.FilterCubatureDegree > 0
-            CubatureOrder = ceil( 0.5 * ( dynareOBC.FilterCubatureDegree - 1 ) );
-            [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
-        else
-            NCubaturePoints = 2 * IntDim + 1;
-            wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
-            pTmp = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
-            CubatureWeights = 1 / NCubaturePoints;
-        end
-
-        PhiN10 = normcdf( pTmp( end, : ) );
-        FInvScaledInvChi = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
-        FInvScaledInvChi( ~isfinite( FInvScaledInvChi ) ) = 1;
-    end
-    
-    if ~isfinite( nuoo ) || all( abs( FInvScaledInvChi - 1 ) <= sqrt( eps ) )
-        IntDim = NAugState2 + NExo2 + 1;
-
-        if dynareOBC.FilterCubatureDegree > 0
-            [ CubatureWeights, pTmp, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
-        else
-            NCubaturePoints = 2 * IntDim + 1;
-            wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
-            pTmp = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
-            CubatureWeights = 1 / NCubaturePoints;
-        end
-
-        FInvScaledInvChi = ones( NCubaturePoints, 1 );
-    else
-        pTmp( end, : ) = [];
-    end
-
-    PhiN0 = normcdf( pTmp( end, : ) );
-    pTmp( end, : ) = [];
-    
     tcdf_tauoo_nuoo = tcdf( tauoo, nuoo );
-    FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tauoo_nuoo, nuoo );
-    N11Scaler = FInvScaledInvChi .* sqrt( ( nu + FInvEST .^ 2 ) / ( 1 + nu ) );
     
-    CubaturePoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, pTmp( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * pTmp( (NAugState2+1):end,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
+    if isfinite( nuoo )
+        if tcdf_tauoo_nuoo > 0
+            [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, dynareOBC.FilterCubatureDegree );
+            PhiN10 = normcdf( CubaturePoints( end, : ) );
+            N11Scaler = sqrt( 0.5 * ( nuoo + 1 ) ./ gammaincinv( PhiN10, 0.5 * ( nuoo + 1 ), 'upper' ) );
+            N11Scaler( ~isfinite( N11Scaler ) ) = 1;
+        else
+            IntDim = IntDim - 1;
+            [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, dynareOBC.FilterCubatureDegree );
+            PhiN10 = normcdf( CubaturePoints( end, : ) );
+            N11Scaler = sqrt( 0.5 * nuoo ./ gammaincinv( PhiN10, 0.5 * nuoo, 'upper' ) );
+            N11Scaler( ~isfinite( N11Scaler ) ) = 1;
+
+            tmp_deltasoo = Ssoo \ deltasoo;
+            if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / norm( deltasoo ) ) < sqrt( eps ) )
+                % Ssoo * Ssoo' + deltasoo * deltasoo' = Ssoo * Ssoo' + Ssoo * tmp_deltasoo * tmp_deltasoo' * Ssoo' = Ssoo * [ I tmp_deltasoo ] [ I'; tmp_deltasoo' ] * Ssoo'
+                Ssoo = Ssoo * cholupdate( eye( NAugState2 ), tmp_deltasoo );
+            else
+                Ssoo = [ Ssoo, deltasoo ];
+            end
+            deltasoo = zeros( size( deltasoo ) );
+        end
+    end
+    
+    if ~isfinite( nuoo ) || all( abs( N11Scaler - 1 ) <= sqrt( eps ) )
+        IntDim = IntDim - 1;
+        [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, dynareOBC.FilterCubatureDegree );
+        N11Scaler = ones( 1, NCubaturePoints );
+    else
+        CubaturePoints( end, : ) = [];
+    end
+
+    if tcdf_tauoo_nuoo > 0
+        PhiN0 = normcdf( CubaturePoints( end, : ) );
+        CubaturePoints( end, : ) = [];
+        FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tauoo_nuoo, nuoo );
+        tpdfRatio = StudentTPDF( tauoo, nuoo ) / tcdf_tauoo_nuoo;
+        MedT = tinv( 1 - 0.5 * tcdf_tauoo_nuoo, nuoo );
+        N11Scaler = N11Scaler .* sqrt( ( nuoo + FInvEST .^ 2 ) / ( 1 + nuoo ) );
+        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
+    else
+        FInvEST = zeros( 1, NCubaturePoints );
+        tpdfRatio = 0;
+        MedT = 0;
+    end
+    
+    StateExoPoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, CubaturePoints( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * CubaturePoints( (NAugState2+1):end,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
     
     Constant = dynareOBC.Constant;
     NEndo = length( Constant );
@@ -70,8 +78,8 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     NAugEndo = NEndo * NEndoMult;
 
-    StatePoints = CubaturePoints( 1:NAugState1, : );
-    ExoPoints = CubaturePoints( (NAugState1+1):(NAugState1+NExo1), : );
+    StatePoints = StateExoPoints( 1:NAugState1, : );
+    ExoPoints = StateExoPoints( (NAugState1+1):(NAugState1+NExo1), : );
 
     OldAugEndoPoints = zeros( NAugEndo, NCubaturePoints );
     OldAugEndoPoints( SelectAugStateVariables, : ) = StatePoints;
@@ -155,11 +163,11 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         sZ4 = max( 3, Zcheck_wm.^4 * CubatureWeights' );
 
         if isempty( nuno )
-            tauno_nuno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ tauoo; nuoo ], [ -Inf; 4 + eps( 4 ) ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+            tauno_nuno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ max( -1e300, tauoo ); min( 1e300, nuoo ) ], [ -Inf; 4 + eps( 4 ) ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
             tauno = tauno_nuno( 1 );
             nuno = tauno_nuno( 2 );
         else
-            tauno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nuno, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), tauoo, [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+            tauno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nuno, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), max( -1e300, tauoo ), [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
         end
     else
         tauno = -Inf;
@@ -191,6 +199,8 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
             nuno = 4 + 6 / ( sZ4 - 3 );
         end
     end
+    
+    % TODO: Up to here
 
     WBlock = 1 : ( NAugEndo + NExo + NObs );
     PredictedW = Mean_wm( WBlock );                                           % w_{t|t-1} in the paper
@@ -244,6 +254,18 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         Ssnn = ObtainEstimateRootCovariance( UpdatedXVariance, StdDevThreshold );
     end
         
+end
+
+function [ CubatureWeights, CubaturePoints, NCubaturePoints ] = GetCubaturePoints( IntDim, FilterCubatureDegree )
+    if FilterCubatureDegree > 0
+        CubatureOrder = ceil( 0.5 * ( FilterCubatureDegree - 1 ) );
+        [ CubatureWeights, CubaturePoints, NCubaturePoints ] = fwtpts( IntDim, CubatureOrder );
+    else
+        NCubaturePoints = 2 * IntDim + 1;
+        wTemp = 0.5 * sqrt( 2 * NCubaturePoints );
+        CubaturePoints = [ zeros( IntDim, 1 ), wTemp * eye( IntDim ), -wTemp * eye( IntDim ) ];
+        CubatureWeights = 1 / NCubaturePoints;
+    end
 end
 
 function FullStateStruct = GetFullStateStruct( CurrentState, Order, Constant )
