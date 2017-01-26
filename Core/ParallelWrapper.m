@@ -24,7 +24,7 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
     end
     
     fprintf( 'Using timeout: %g\n', Timeout );
-    [ TPVOut, RunTimes ] = TimedParFor( @( i ) objective_function( XV( :, i ), varargin{:} ), 1:N, { -Inf, [], [] }, CTimeout, false );
+    [ TPVOut, RunTimes ] = TimedParFor( @( i ) objective_function( XV( :, i ), varargin{:} ), 1:N, { -Inf, [], [] }, Timeout, false );
     RV = - TPVOut{ 1 };
     BestPersistentStates = TPVOut{ 2 };
     LogLObsV = TPVOut{ 3 };
