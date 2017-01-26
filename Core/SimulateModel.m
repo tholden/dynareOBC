@@ -135,7 +135,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         %% Standard simulation
         if dynareOBC_.UseSimulationCode && ( dynareOBC_.CompileSimulationCode || dynareOBC_.Estimation || dynareOBC_.Smoothing )
             try
-                if dynareOBC_.Estimation
+                if dynareOBC_.Estimation || dynareOBC_.Smoothing
                     if dynareOBC_.Sparse
                         Simulation = dynareOBCTempCustomLanMeyerGohdePrunedSimulation( MakeFull( oo_.dr ), full( ShockSequence ), int32( SimulationLength ), InitialFullState );
                     else
