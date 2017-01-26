@@ -18,7 +18,7 @@ function [ x, f, PersistentState ] = CMAESWrapper( OptiFunction, x, lb, ub, OldP
 %         OldPersistentState = LoadedVariablesCMAES.PersistentState;
 %     end
 
-    cmaesOptions = cmaes;
+    cmaesOptions = CMAESMinimisation;
     cmaesOptions.ResumeRun = false;
     cmaesOptions.PopSize = [ '(' int2str( nw ) 'ceil((4 + floor(3*log(N)))/' int2str( nw ) '))' ];
     cmaesOptions.DiagonalOnly = '(1+N)^2/popsize';
