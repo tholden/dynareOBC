@@ -20,7 +20,7 @@ function [ x, f, PersistentState ] = CMAESResumeWrapper( OptiFunction, x, lb, ub
 
     cmaesOptions = cmaes;
     cmaesOptions.ResumeRun = true;
-    cmaesOptions.PopSize = [ '(' int2str( nw ) 'ceil((4 + floor(3*log(N)))/' int2str( nw ) '))' ];
+    cmaesOptions.PopSize = [ '(' int2str( nw ) '*ceil((4 + floor(3*log(N)))/' int2str( nw ) '))' ];
     cmaesOptions.DiagonalOnly = '(1+N)^2/popsize';
     cmaesOptions.Seed = randi( intmax, 'int32' );
     cmaesOptions.LBounds = lb;
