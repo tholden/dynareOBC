@@ -35,7 +35,7 @@ function [ RV, BestPersistentState ] = ParallelWrapper( objective_function, XV, 
     
     XStore = [ XStore XV( :, oIndices ) ];
     LogLObsStore = [ LogLObsStore LogLObsV( oIndices ) ];
-    save( 'ValueStore.mat', 'XStore', 'OriginalXStore', 'LogLObsStore' );
+    save( 'ValueStore.mat', 'XStore', 'LogLObsStore' );
     
     sRV = RV( oIndices );
     RunTimes = RunTimes( oIndices );

@@ -429,9 +429,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( LogLikelihood );
         
         if EstimatedNu
-            OptiFunction = @( p ) EstimationObjective( p, M_, options_, oo_, dynareOBC, false, false );
+            OptiFunction = @( p, s ) EstimationObjective( p, s, M_, options_, oo_, dynareOBC, false, false );
         else
-            OptiFunction = @( p ) EstimationObjective( [ p; Inf ], M_, options_, oo_, dynareOBC, false, false );
+            OptiFunction = @( p, s ) EstimationObjective( [ p; Inf ], s, M_, options_, oo_, dynareOBC, false, false );
         end
         OptiLB = [ LBTemp; -Inf( NumObservables + EstimatedNu, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables + EstimatedNu, 1 ) ];
