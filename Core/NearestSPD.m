@@ -24,7 +24,7 @@
 % POSSIBILITY OF SUCH DAMAGE.
 % 
 
-function [ Ahat, cholAhat ] = NearestSPD(A)
+function [ Ahat, cholAhat ] = NearestSPD( A )
     % nearestSPD - the nearest (in Frobenius norm) Symmetric Positive Definite matrix to A
     % usage: Ahat = nearestSPD(A)
     %
@@ -47,10 +47,10 @@ function [ Ahat, cholAhat ] = NearestSPD(A)
     end
 
     % test for a square matrix A
-    [r,c] = size(A);
+    [ r, c ] = size( A );
     if r ~= c
       error('A must be a square matrix.')
-    elseif (r == 1)
+    elseif r == 1
       % A was scalar
       Ahat = max( real( A ), eps );
       cholAhat = sqrt( Ahat );
@@ -58,37 +58,37 @@ function [ Ahat, cholAhat ] = NearestSPD(A)
     end
 
     % symmetrize A into B
-    Ahat = (A + A')/2;
+    Ahat = 0.5 * ( A + A' );
 
-    [cholAhat,p] = chol(Ahat);
+    [ cholAhat, p ] = chol( Ahat );
 
     if p ~= 0
 
         % Compute the symmetric polar factor of B. Call it H.
         % Clearly H is itself SPD.
-        [~,Sigma,V] = svd(Ahat);
-        H = V*Sigma*V';
+        [ ~, Sigma, V ] = svd( Ahat );
+        H = V * Sigma * V';
 
         % get Ahat in the above formula
-        Ahat = (Ahat+H)/2;
+        Ahat = 0.5 * ( Ahat + H );
 
         % ensure symmetry
-        Ahat = (Ahat + Ahat')/2;
+        Ahat = 0.5 * ( Ahat + Ahat' );
 
         % test that Ahat is in fact PD. if it is not so, then tweak it just a bit.
         p = 1;
         k = 0;
         while p ~= 0
-          [cholAhat,p] = chol(Ahat);
-          k = k + 1;
-          if p ~= 0
+            [ cholAhat, p ] = chol( Ahat );
+            k = k + 1;
+            if p ~= 0
             % Ahat failed the chol test. It must have been just a hair off,
             % due to floating point trash, so it is simplest now just to
             % tweak by adding a tiny multiple of an identity matrix.
             AbsMinEig = abs( min( eig( Ahat ) ) );
             AbsMinEig = AbsMinEig + eps( AbsMinEig );
             Ahat = Ahat + ( AbsMinEig * k.^2 ) * eye( size( A ) );
-          end
+            end
         end
 
     end
