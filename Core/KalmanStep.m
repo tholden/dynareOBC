@@ -27,7 +27,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     if tcdf_tauoo_nuoo == 0
         IntDim = IntDim - 1;
         tmp_deltasoo = Ssoo \ deltasoo;
-        if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / norm( deltasoo ) ) < sqrt( eps ) )
+        if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / max( eps, norm( deltasoo ) ) ) < sqrt( eps ) )
             % Ssoo * Ssoo' + deltasoo * deltasoo' = Ssoo * Ssoo' + Ssoo * tmp_deltasoo * tmp_deltasoo' * Ssoo' = Ssoo * ( I' * I + tmp_deltasoo * tmp_deltasoo' ) * Ssoo'
             Ssoo = Ssoo * cholupdate( eye( NAugState2 ), tmp_deltasoo );
         else
@@ -64,7 +64,8 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     else
         FInvEST = zeros( 1, NCubaturePoints );
     end
-    
+
+    keyboard;
     StateExoPoints = bsxfun( @plus, [ Ssoo * bsxfun( @times, CubaturePoints( 1:NAugState2,: ), N11Scaler ) + bsxfun( @times, deltasoo, FInvEST ); RootExoVar * CubaturePoints( (NAugState2+1):end,: ) ], [ xoo; zeros( NExo1, 1 ) ] );
     
     Constant = dynareOBC.Constant;
