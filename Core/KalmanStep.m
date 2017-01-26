@@ -196,10 +196,10 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     end
     
     [ ~, wmno, deltaetano, cholPRRQno ] = CalibrateMomentsEST( tauno, nuno, Mean_wm, Median_wm, cholVariance_wm, [], [] );
+
+    assert( NAugState1 + NExo1 + nm + nm == nwm );
     
-    assert( NAugEndo + NExo + nm + nm == nwm );
-    
-    wBlock = 1 : ( NAugEndo + NExo + nm );
+    wBlock = 1 : ( NAugState1 + NExo1 + nm );
     mBlock = ( nwm - nm + 1 ) : nwm;
     
     wno = wmno( wBlock );
