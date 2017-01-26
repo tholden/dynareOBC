@@ -135,7 +135,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     Variance_wm = zeros( nwm, nwm );
     ZetaBlock = ( nwm - 2 * nm + 1 ) : nwm;
-    Lambda = diag( diagLambda );
+    Lambda = diag( diagLambda( Observed ) );
     Variance_wm( ZetaBlock, ZetaBlock ) = [ Lambda, Lambda; Lambda, Lambda ];
     
     Variance_wm = Variance_wm + NearestSPD( ano' * Weighted_ano );
