@@ -1,6 +1,5 @@
 function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, EstimationPersistentState, M, options, oo, dynareOBC, InitialRun, Smoothing )
 
-    LogLikelihood = -Inf;
     [ T, N ] = size( dynareOBC.EstimationData );
     if nargout > 1
         LogObservationLikelihoods = NaN( T, 1 );
@@ -16,7 +15,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
         rethrow( Error );
     end
     if Info ~= 0
-        return
+        error( 'dynareOBC:EstimationBK', 'Apparent BK condition violation.' );
     end
 
     global M_ options_ oo_ dynareOBC_
@@ -116,7 +115,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
             xnn = [];
         end
         if ~Smoothing && isempty( xnn )
-            return;
+            error( 'dynareOBC:EstimationEmptyKalmanReturn', 'KalmanStep returned an empty xnn.' );
         end
         
         Psnn = Ssnn * Ssnn';
@@ -210,8 +209,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
             [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn ] = ...
                 KalmanStep( dynareOBC.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
             if isempty( xnn )
-                LogLikelihood = Inf;
-                return;
+                error( 'dynareOBC:EstimationEmptyKalmanReturn', 'KalmanStep returned an empty xnn.' );
             end
         end
         LogObservationLikelihood = LogObservationLikelihood + ScaledPriorValue;
