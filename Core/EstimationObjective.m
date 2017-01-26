@@ -12,8 +12,8 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     options.qz_criterium = 1 - 1e-6;
     try
         [ Info, M, options, oo, dynareOBC ] = ModelSolution( false, M, options, oo, dynareOBC, InitialRun );
-    catch
-        return
+    catch Error
+        rethrow( Error );
     end
     if Info ~= 0
         return
