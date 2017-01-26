@@ -246,7 +246,8 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         LogObservationLikelihood = -sum( log( abs( diag( cholQnoCheck ) ) ) ) + logMVTStudentTPDF_TIcholQnoCheck_mInnovation_nuno;
 
         if isfinite( log_tcdf_tauno_nuno ) || isfinite( log_tcdf_taunn_nunn )
-            LogObservationLikelihood = LogObservationLikelihood - log_tcdf_tauno_nuno + log_tcdf_taunn_nunn;
+            tcdfDifference = log_tcdf_taunn_nunn - log_tcdf_tauno_nuno;
+            LogObservationLikelihood = LogObservationLikelihood + tcdfDifference;
         end
     else
         wnn = wno;
