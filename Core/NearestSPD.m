@@ -85,9 +85,11 @@ function [ Ahat, cholAhat ] = NearestSPD( A )
             % Ahat failed the chol test. It must have been just a hair off,
             % due to floating point trash, so it is simplest now just to
             % tweak by adding a tiny multiple of an identity matrix.
-            AbsMinEig = abs( min( eig( Ahat ) ) );
-            AbsMinEig = AbsMinEig + eps( AbsMinEig );
-            Ahat = Ahat + ( AbsMinEig * k.^2 ) * eye( size( A ) );
+            EigAhat =  eig( Ahat );
+            IScale = abs( min( EigAhat ) );
+            IScale = IScale + eps( IScale );
+            IScale = max( IScale, eps( max( EigAhat ) ) );
+            Ahat = Ahat + ( IScale * k.^2 ) * eye( size( A ) );
             end
         end
 
