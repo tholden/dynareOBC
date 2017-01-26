@@ -27,7 +27,7 @@ function [ y, log_y ] = StudentTPDF( x, nu )
         end
         log_y = logGammaRootNuRatio - 0.572364942924700085 - nuP1O2 .* log1p( x .^ 2 ./ nu );
     else
-        log_y( idxNuNonFinite ) = - 0.5 * x .^ 2 - 0.918938533204672742;
+        log_y = - 0.5 * x .^ 2 - 0.918938533204672742;
     end
     
     y = exp( log_y );
