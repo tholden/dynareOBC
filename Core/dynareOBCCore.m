@@ -415,7 +415,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         EstimatedNu = ~dynareOBC.NoTLikelihood && ~dynareOBC.DynamicNu;
         if EstimatedNu
-            EstimatedParameters( end + 1 ) = log( 100 );
+            EstimatedParameters( end + 1 ) = log( 20 );
         end
         
         OpenPool;
