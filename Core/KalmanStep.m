@@ -1,19 +1,19 @@
 function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn, deltann, xno, Psno, deltasno, tauno, nuno ] = ...
     KalmanStep( m, xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables )
 
-    LogObservationLikelihood = NaN;
-    xnn = [];
-    Ssnn = [];
-    deltasnn = [];
-    taunn = [];
-    nunn = [];
-    wnn = [];
-    Pnn = [];
-    deltann = [];
-    xno = [];
-    Psno = [];
-    deltasno = [];
-    tauno = [];
+%     LogObservationLikelihood = NaN;
+%     xnn = [];
+%     Ssnn = [];
+%     deltasnn = [];
+%     taunn = [];
+%     nunn = [];
+%     wnn = [];
+%     Pnn = [];
+%     deltann = [];
+%     xno = [];
+%     Psno = [];
+%     deltasno = [];
+%     tauno = [];
     
     NAugState1 = size( Ssoo, 1 );
     NAugState2 = size( Ssoo, 2 );
@@ -89,8 +89,8 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         InitialFullState = GetFullStateStruct( OldAugEndoPoints( :, i ), dynareOBC.Order, Constant );
         try
             Simulation = SimulateModel( ExoPoints( :, i ), false, InitialFullState, true, true );
-        catch
-            return
+        catch Error
+            rethrow( Error );
         end
         
         if dynareOBC.Order == 1
@@ -101,7 +101,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
             NewAugEndoPoints( :, i ) = [ Simulation.first; Simulation.second; Simulation.first_sigma_2; Simulation.third + Simulation.bound_offset ];
         end
         if any( ~isfinite( NewAugEndoPoints( :, i ) ) )
-            return
+            error( 'dynareOBC:EstimationNonFiniteSimultation', 'Non-finite values were encountered during simulation.' );
         end
     end
     
@@ -115,7 +115,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         MLVValues = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, NCubaturePoints ) ], ExoPoints, MParams, OoDrYs );
         NewMeasurementPoints = MLVValues( Observed, : );
         if any( any( ~isfinite( NewMeasurementPoints ) ) )
-            return
+            error( 'dynareOBC:EstimationNonFiniteMeasurements', 'Non-finite values were encountered during calculation of observation equations.' );
         end
     else
         NewMeasurementPoints = zeros( 0, NCubaturePoints );
