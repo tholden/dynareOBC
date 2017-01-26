@@ -68,8 +68,8 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
         % end getting initial mean and covariance
 
         deltasoo = zeros( size( xoo ) );
-        tauoo = -Inf;
-        nuoo = Inf;
+        tauoo = 10;
+        nuoo = 20;
     else
         xoo = EstimationPersistentState.xoo;
         Ssoo = EstimationPersistentState.Ssoo;
