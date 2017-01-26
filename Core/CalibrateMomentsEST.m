@@ -4,7 +4,7 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
     
     resid = zeros( 0, 1 );
     
-    if tcdf_tau_nu == 0
+    if tcdf_tau_nu == 1
         Z3 = 0;
         if isfinite( nu )
             Z4 = ( 3 * nu - 6 ) / ( nu - 4 );
@@ -110,7 +110,7 @@ function [ resid, xi, delta, cholOmega ] = CalibrateMomentsEST( tau, nu, mu, lam
             nuOnuM4 = 1;
         end
         tau4 = tau / sqrt( nuOnuM4 );
-        if tcdf_tau_nu > 0
+        if tcdf_tau_nu < 1
             ET4 = 3 * nuOnuM2 * nuOnuM4 * StudentTCDF( tau4, nu - 4 ) / tcdf_tau_nu - 1.5 * tau * ET3 + 0.5 * tauTtau * tau * ET1;
         else
             ET4 = 3 * nuOnuM2 * nuOnuM4;

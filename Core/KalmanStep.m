@@ -24,7 +24,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     tcdf_tauoo_nuoo = StudentTCDF( tauoo, nuoo );
     
-    if tcdf_tauoo_nuoo == 0
+    if tcdf_tauoo_nuoo == 1
         IntDim = IntDim - 1;
         tmp_deltasoo = Ssoo \ deltasoo;
         if all( abs( ( Ssoo * tmp_deltasoo - deltasoo ) / max( eps, norm( deltasoo ) ) ) < sqrt( eps ) )
@@ -44,7 +44,6 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         else
             N11Scaler = sqrt( 0.5 * nuoo ./ gammaincinv( PhiN10, 0.5 * nuoo, 'upper' ) );
         end
-        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
     end
     
     if ~isfinite( nuoo ) || all( abs( N11Scaler - 1 ) <= sqrt( eps ) )
@@ -55,12 +54,11 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         CubaturePoints( end, : ) = [];
     end
 
-    if tcdf_tauoo_nuoo > 0
+    if tcdf_tauoo_nuoo < 1 
         PhiN0 = normcdf( CubaturePoints( end, : ) );
         CubaturePoints( end, : ) = [];
         FInvEST = tinv( 1 - ( 1 - PhiN0 ) * tcdf_tauoo_nuoo, nuoo );
         N11Scaler = N11Scaler .* sqrt( ( nuoo + FInvEST .^ 2 ) / ( 1 + nuoo ) );
-        N11Scaler( ~isfinite( N11Scaler ) ) = 1;
     else
         FInvEST = zeros( 1, NCubaturePoints );
     end
@@ -158,14 +156,15 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         sZ4 = max( 3, Zcheck_wm.^4 * CubatureWeights' );
 
         if isempty( nuno )
-            tauno_nuno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ max( -1e300, tauoo ); min( 1e300, nuoo ) ], [ -Inf; 4 + eps( 4 ) ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+            tauno_nuno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), Mean_wm, Median_wm, cholVariance_wm, sZ3, sZ4 ), [ min( 10, tauoo ); min( 100, nuoo ) ], [ -Inf; 4 + eps( 4 ) ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
             tauno = tauno_nuno( 1 );
             nuno = tauno_nuno( 2 );
         else
-            tauno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nuno, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), max( -1e300, tauoo ), [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+            tauno = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nuno, Mean_wm, Median_wm, cholVariance_wm, sZ3, [] ), min( 10, tauoo ), [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
         end
+        keyboard;
     else
-        tauno = -Inf;
+        tauno = Inf;
         
         if isempty( nuno )
             Zcheck_wm = cholVariance_wm * ano;
