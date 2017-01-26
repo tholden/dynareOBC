@@ -109,11 +109,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     end
 
     for t = 1:dynareOBC.StationaryDistMaxIterations
-        try
-            [ ~, xnn, Ssnn, deltasnn, taunn, nunn ] = KalmanStep( nan( 1, N ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
-        catch
-            xnn = [];
-        end
+        [ ~, xnn, Ssnn, deltasnn, taunn, nunn ] = KalmanStep( nan( 1, N ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
         if ~Smoothing && isempty( xnn )
             error( 'dynareOBC:EstimationEmptyKalmanReturn', 'KalmanStep returned an empty xnn.' );
         end
