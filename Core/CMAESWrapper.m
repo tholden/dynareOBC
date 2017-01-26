@@ -13,10 +13,10 @@ function [ x, f, PersistentState ] = CMAESWrapper( OptiFunction, x, lb, ub, OldP
         end
     end
 
-    if isempty( OldPersistentState ) && exist( 'variablescmaes.mat', 'file' )
-        LoadedVariablesCMAES = load( 'variablescmaes.mat' );
-        OldPersistentState = LoadedVariablesCMAES.PersistentState;
-    end
+%     if isempty( OldPersistentState ) && exist( 'variablescmaes.mat', 'file' )
+%         LoadedVariablesCMAES = load( 'variablescmaes.mat' );
+%         OldPersistentState = LoadedVariablesCMAES.PersistentState;
+%     end
 
     cmaesOptions = cmaes;
     cmaesOptions.ResumeRun = false;
