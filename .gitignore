@@ -25,6 +25,7 @@ outcmaes*.*
 *_dynamic.m
 *_steadystate2.m
 *_set_auxiliary_variables.m
+ValueStore.mat
 
 codegen/
 Core/tbxmanager/
