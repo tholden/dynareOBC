@@ -7,13 +7,19 @@ function y = SolveBoundsProblem( q )
     
     ySaved = [];
     
+    Norm_q = norm( q, Inf );
+    if Norm_q < Tolerance
+        Norm_q = 1;
+    end
+    qScaled = q ./ Norm_q;
+    
     if ~dynareOBC_.FullHorizon && ~dynareOBC_.ReverseSearch
     
         if dynareOBC_.DisplayBoundsSolutionProgress
             disp( 0 );
         end
 
-        if all( q >= -Tolerance )
+        if all( qScaled >= -Tolerance )
             y = dynareOBC_.ZeroVecS;
             if SkipFirstSolutions > 0
                 ySaved = y;
@@ -30,12 +36,6 @@ function y = SolveBoundsProblem( q )
     M = dynareOBC_.MMatrix;
     sIndices = dynareOBC_.sIndices;
 
-    Norm_q = norm( q, Inf );
-    if Norm_q < Tolerance
-        Norm_q = 1;
-    end
-    qScaled = q ./ Norm_q;
-    
     ParametricSolutionFound = dynareOBC_.ParametricSolutionFound;
     
     if sum( ParametricSolutionFound ) > 0    
@@ -55,7 +55,7 @@ function y = SolveBoundsProblem( q )
     else
         TssSet = InitTss : Ts;
     end
-    
+	
     for Tss = TssSet
     
         if dynareOBC_.DisplayBoundsSolutionProgress
