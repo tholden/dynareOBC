@@ -452,6 +452,8 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         if CPMatrix
             LargestPMatrix = Tss;
+        else
+            break;
         end
     end
     
