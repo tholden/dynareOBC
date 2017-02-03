@@ -36,24 +36,76 @@ function y = SolveBoundsProblem( q )
     M = dynareOBC_.MMatrix;
     sIndices = dynareOBC_.sIndices;
 
-    ParametricSolutionFound = dynareOBC_.ParametricSolutionFound;
-    
-    if sum( ParametricSolutionFound ) > 0    
-        qsScaled = qScaled( sIndices );    
-    end
     ssIndices = dynareOBC_.ssIndices;
     ZeroVecS = dynareOBC_.ZeroVecS;
+    
+    d1sSubMMatrices = dynareOBC_.d1sSubMMatrices;
+    d2SubMMatrices = dynareOBC_.d2SubMMatrices;
     
     if dynareOBC_.FullHorizon
         InitTss = Ts;
     else
-        InitTss = 1;
+        InitTss = dynareOBC_.LargestPMatrix + 1;
     end
     
     if dynareOBC_.ReverseSearch
         TssSet = Ts : -1 : InitTss;
     else
         TssSet = InitTss : Ts;
+    end
+    
+    
+    if ~dynareOBC_.FullHorizon && ~dynareOBC_.ReverseSearch && dynareOBC_.LargestPMatrix > 0
+        
+        ParametricSolutionHorizon = dynareOBC_.ParametricSolutionHorizon;
+        
+        if ParametricSolutionHorizon > 0
+            
+            d1s = d1sSubMMatrices{ ParametricSolutionHorizon };
+            d2 = d2SubMMatrices{ ParametricSolutionHorizon };
+            
+            CssIndices = ssIndices{ ParametricSolutionHorizon };
+            qnssScaled = d1s .* qScaled( sIndices( CssIndices ) );
+            
+            try
+                if dynareOBC_.ParametricSolutionMode > 1
+                    yScaled = feval( 'dynareOBCTempSolution_mex', qnssScaled );
+                else
+                    yScaled = feval( 'dynareOBCTempSolution', qnssScaled );
+                end
+            catch
+                ParametricSolutionHorizon = 0;
+            end
+            if numel( yScaled ) ~= numel( qnssScaled )
+                ParametricSolutionHorizon = 0;
+            end
+			if ParametricSolutionHorizon == 0
+				warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
+			else
+				y = ZeroVecS;
+				y( CssIndices ) = d2 .* max( 0, yScaled );
+                
+                w = qScaled + M * y; % TODO: compare with normalized M?
+                
+                if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
+                    y = y * Norm_q;
+                    if ~isempty( ySaved ) && max( abs( y - ySaved ) ) <= Tolerance
+                        error( 'TODO' );
+                    end
+                    if dynareOBC_.DisplayBoundsSolutionProgress
+                        disp( full( y ) );
+                    end
+                    if SkipFirstSolutions > 0
+                        ySaved = y;
+                        SkipFirstSolutions = SkipFirstSolutions - 1;
+                    else
+                        return;
+                    end
+                end
+			end
+
+        end
+        
     end
 	
     for Tss = TssSet
@@ -62,36 +114,10 @@ function y = SolveBoundsProblem( q )
             disp( Tss );
         end
     
-        CParametricSolutionFound = ParametricSolutionFound( Tss );
+        ParametricSolutionHorizon = ParametricSolutionFound( Tss );
         CssIndices = ssIndices{ Tss };
         
-        if CParametricSolutionFound > 0
-            
-            strTss = int2str( Tss );
-            qssScaled = qsScaled( CssIndices );
-            
-            try
-                if CParametricSolutionFound > 1
-                    yScaled = feval( [ 'dynareOBCTempSolution' strTss '_mex' ], qssScaled );
-                else
-                    yScaled = feval( [ 'dynareOBCTempSolution' strTss ], qssScaled );
-                end
-            catch
-                CParametricSolutionFound = 0;
-            end
-            if numel( yScaled ) ~= numel( CssIndices )
-                CParametricSolutionFound = 0;
-            end
-			if CParametricSolutionFound == 0
-				warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
-			else
-				y = ZeroVecS;
-				y( CssIndices ) = yScaled;
-			end
-            
-        end
-        
-        if CParametricSolutionFound == 0
+        if ParametricSolutionHorizon == 0
             OptOut = Optimizer{ Tss }{ qScaled };
             yScaled = OptOut( 1 : ( end - 1 ), : );
             alpha = max( eps, OptOut( end ) );
@@ -122,6 +148,10 @@ function y = SolveBoundsProblem( q )
     end
     
     if ~dynareOBC_.FullHorizon && dynareOBC_.ReverseSearch
+        
+        if dynareOBC_.LargestPMatrix > 0
+            error( 'TODO' );
+        end
     
         if dynareOBC_.DisplayBoundsSolutionProgress
             disp( 0 );
