@@ -11,10 +11,23 @@ function dynareOBC = InitialChecks( dynareOBC )
     M = dynareOBC.MMatrix;
     Ms = dynareOBC.MsMatrix;
     
+    sIndices = dynareOBC.sIndices;
+    
+    [ ~, ~, d2 ] = NormalizeMatrix( Ms );
+    M = bsxfun( @times, M, d2 );
+    d1 = 1 ./ max( abs( M ), [], 2 );
+    M = bsxfun( @times, d1, M );
+    Ms = M( sIndices, : );
+    
+    dynareOBC.NormalizedMMatrix = M;
+    dynareOBC.NormalizedMsMatrix = Ms;
+    dynareOBC.d1MMatrix = d1;
+    dynareOBC.d2MMatrix = d2;
+
     varsigma = sdpvar( 1, 1 );
     y = sdpvar( Ts * ns, 1 );
     
-    MsScale = 1e4 ./ norm( Ms, Inf );
+    MsScale = 1e4;
     scaledMs = MsScale * Ms;
     
     Constraints = [ 0 <= y, y <= 1, varsigma <= scaledMs * y ];
@@ -375,12 +388,10 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     dynareOBC.ssIndices = cell( Ts, 1 );
-    dynareOBC.NormalizedM = cell( Ts, 1 );
-    dynareOBC.NormalizedMs = cell( Ts, 1 );
-    dynareOBC.d1M = cell( Ts, 1 );
-    dynareOBC.d2M = cell( Ts, 1 );
-    
-    sIndices = dynareOBC.sIndices;
+    dynareOBC.NormalizedSubMMatrices = cell( Ts, 1 );
+    dynareOBC.NormalizedSubMsMatrices = cell( Ts, 1 );
+    dynareOBC.d1SubMMatrices = cell( Ts, 1 );
+    dynareOBC.d2SubMMatrices = cell( Ts, 1 );
     
     LargestPMatrix = 0;
     
@@ -389,18 +400,18 @@ function dynareOBC = InitialChecks( dynareOBC )
         CssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
         dynareOBC.ssIndices{ Tss } = CssIndices;
 
-        Mc = M( :, CssIndices );
-        Msc = Ms( CssIndices, CssIndices );
+        Mc = dynareOBC.MMatrix( :, CssIndices );
+        Msc = dynareOBC.MsMatrix( CssIndices, CssIndices );
         [ ~, ~, d2 ] = NormalizeMatrix( Msc );
         Mc = bsxfun( @times, Mc, d2 );
         d1 = 1 ./ max( abs( Mc ), [], 2 );
         Mc = bsxfun( @times, d1, Mc );
         Msc = Mc( sIndices( CssIndices ), : );
         
-        dynareOBC.NormalizedM{ Tss } = Mc;
-        dynareOBC.NormalizedMs{ Tss } = Msc;
-        dynareOBC.d1M{ Tss } = d1;
-        dynareOBC.d2M{ Tss } = d2;
+        dynareOBC.NormalizedSubMMatrices{ Tss } = Mc;
+        dynareOBC.NormalizedSubMsMatrices{ Tss } = Msc;
+        dynareOBC.d1SubMMatrices{ Tss } = d1;
+        dynareOBC.d2SubMMatrices{ Tss } = d2;
         
         CPMatrix = false;
         
@@ -464,7 +475,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
 
         PLCP = struct;
-        PLCP.M = Msc;
+        PLCP.M = dynareOBC.NormalizedSubMsMatrices{ Tss };
         PLCP.q = zeros( Tss, 1 );
         PLCP.Q = eye( Tss );
         PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
