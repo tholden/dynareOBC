@@ -28,7 +28,6 @@ ARGS{1} = cell(1,1);
 ARGS{1}{1} = coder.typeof( zeros( 1, Tss ) ); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
-strTss = int2str( Tss );
 MFileText = fileread( 'dynareOBCTempSolution.m' );
 MFileText = regexprep( MFileText, '^\s*for\s+([^=]+)=([^,;]+)(,|;|$)', 'for $1 = coder.unroll\( $2 \);', 'ignorecase', 'lineanchors', 'dotexceptnewline' );
 MFile = fopen( 'dynareOBCTempSolution.m', 'w' );
