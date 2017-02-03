@@ -8,6 +8,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
     UseVPA = dynareOBC.UseVPA && ( isoctave || user_has_matlab_license( 'Symbolic_Toolbox' ) );
     
+    M = dynareOBC.MMatrix;
     Ms = dynareOBC.MsMatrix;
     
     varsigma = sdpvar( 1, 1 );
@@ -213,10 +214,10 @@ function dynareOBC = InitialChecks( dynareOBC )
                
     if QuickPCheckUseMex
         disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
-        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( dynareOBC.MsMatrix );
+        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
     else
         disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
-        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck( dynareOBC.MsMatrix );
+        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
     end
     if UseVPA
         QuickPCheckResult = true;
@@ -225,7 +226,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 continue;
             end
             TmpSet = IndicesToCheck(1):IndicesToCheck(2);
-            TmpDet = double( det( vpa( dynareOBC.MsMatrix( TmpSet, TmpSet ) ) ) );
+            TmpDet = double( det( vpa( Ms( TmpSet, TmpSet ) ) ) );
             if TmpDet <= 0
                 QuickPCheckResult = false;
                 StartEndDet = [ IndicesToCheck, TmpDet ];
@@ -259,10 +260,10 @@ function dynareOBC = InitialChecks( dynareOBC )
                     T = min( TM, Ts );
                     Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
                     Indices = Indices(:);
-                    M = dynareOBC.MsMatrix( Indices, Indices );                
+                    Mc = Ms( Indices, Indices );                
                     if ptestUseMex
                         disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
-                        if ptest_mex( M )
+                        if ptest_mex( Mc )
                             ptestVal = 1;
                         else
                             ptestVal = -1;
@@ -270,7 +271,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                     else
                         disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
                         OpenPool;
-                        if ptest( M )
+                        if ptest( Mc )
                             ptestVal = 1;
                         else
                             ptestVal = -1;
@@ -292,19 +293,19 @@ function dynareOBC = InitialChecks( dynareOBC )
         T = min( TM, Ts );
         Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
         Indices = Indices(:);
-        M = dynareOBC.MsMatrix( Indices, Indices );                
+        Mc = Ms( Indices, Indices );                
         if AltPTestUseMex
             disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
-            [ AltPTestResult, IndicesToCheck ] = AltPTest_mex( M, true );
+            [ AltPTestResult, IndicesToCheck ] = AltPTest_mex( Mc, true );
         else
             disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
-            [ AltPTestResult, IndicesToCheck ] = AltPTest( M, true );
+            [ AltPTestResult, IndicesToCheck ] = AltPTest( Mc, true );
         end
         if UseVPA
             AltPTestResult = true;
             for i = 1 : 3
                 TmpSet = IndicesToCheck{i};
-                if ~isempty( TmpSet ) && double( det( vpa( M( IndicesToCheck{i}, IndicesToCheck{i} ) ) ) ) <= 0
+                if ~isempty( TmpSet ) && double( det( vpa( Mc( IndicesToCheck{i}, IndicesToCheck{i} ) ) ) ) <= 0
                     AltPTestResult = false;
                     break;
                 end
@@ -524,17 +525,15 @@ function dynareOBC = InitialChecks( dynareOBC )
     fprintf( '\n' );
     disp( 'Discovering and testing the installed MILP solver.' );
         
-    M = dynareOBC.MMatrix;
     omega = dynareOBC.Omega;
     
     yScaled = sdpvar( Ts * ns, 1 );
     alpha = sdpvar( 1, 1 );
     z = binvar( Ts * ns, 1 );
     
-    qScaled = ones( size( M, 1 ), 1 );
     qsScaled = ones( Ts * ns, 1 );
 
-    Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
+    Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qsScaled + Ms * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
     Objective = -alpha;
     Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
     if Diagnostics.problem ~= 0
