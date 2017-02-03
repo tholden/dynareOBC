@@ -374,33 +374,94 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     dynareOBC.ssIndices = cell( Ts, 1 );
+    dynareOBC.NormalizedM = cell( Ts, 1 );
+    dynareOBC.NormalizedMs = cell( Ts, 1 );
+    dynareOBC.d1M = cell( Ts, 1 );
+    dynareOBC.d2M = cell( Ts, 1 );
     
-    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
-        SkipCalcs = true;
-        dynareOBC.TimeToSolveParametrically = 0;
-    else
-        SkipCalcs = false;
-    end
-
+    sIndices = dynareOBC.sIndices;
+    
+    LargestPMatrix = 0;
+    
     PoolOpened = false;
     for Tss = 1 : Ts
-        ssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
-        Mss = Ms( ssIndices, ssIndices );
+        CssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
+        dynareOBC.ssIndices{ Tss } = CssIndices;
 
-        dynareOBC.ssIndices{ Tss } = ssIndices;
-
-        if SkipCalcs || Tss > dynareOBC.TimeToSolveParametrically || min( eig( Mss + Mss' ) ) < sqrt( eps )
-            SkipCalcs = true;
-            continue;
+        Mc = M( :, CssIndices );
+        Msc = Ms( CssIndices, CssIndices );
+        [ ~, ~, d2 ] = NormalizeMatrix( Msc );
+        Mc = bsxfun( @times, Mc, d2 );
+        d1 = 1 ./ max( abs( Mc ), [], 2 );
+        Mc = bsxfun( @times, d1, Mc );
+        Msc = Mc( sIndices( CssIndices ), : );
+        
+        dynareOBC.NormalizedM{ Tss } = Mc;
+        dynareOBC.NormalizedMs{ Tss } = Msc;
+        dynareOBC.d1M{ Tss } = d1;
+        dynareOBC.d2M{ Tss } = d2;
+        
+        CPMatrix = false;
+        
+        if all( diag( Msc ) > 0 )
+            if all( abs( angle( eig( Msc ) ) ) < pi - pi / Tss )
+                [ ~, pMsc ] = chol( Msc + Msc' );
+                if pMsc == 0
+                    CPMatrix = true;
+                else
+                    IminusMsc = eye( Tss ) - Msc;
+                    absIminusMsc = abs( IminusMsc );
+                    if max( abs( eig( absIminusMsc ) ) ) < 1 % corollary 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                        CPMatrix = true;
+                    else
+                        IplusMsc = eye( Tss ) + Msc;
+                        norm_absIminusMsc = norm( absIminusMsc );
+                        [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( Tss ) );
+                        if pIMscComb == 0 % theorem 3.4 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                            CPMatrix = true;
+                        else
+                            if norm_absIminusMsc < min( svd( IplusMsc ) ) % theorem 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                                CPMatrix = true;
+                            else
+                                if rank( IplusMsc ) == Tss
+                                    IMscRatio = IplusMsc \ IminusMsc;
+                                    if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                                        CPMatrix = true;
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
         end
+        
+        if CPMatrix
+            LargestPMatrix = Tss;
+        end
+    end
+    
+    fprintf( '\n' );
+    disp( [ 'Largest P-matrix found with a simple criterion included elements up to horizon ' num2str( LargestPMatrix ) ' periods.' ] );
+    disp( 'The search for solutions will start from this point.' );
+    fprintf( '\n' );
+    
+    dynareOBC.ParametricSolutionHorizon = 0;
+    dynareOBC.ParametricSolutionMode = 0;
+    
+    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.SkipFirstSolutions || dynareOBC.ReverseSearch || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+        dynareOBC.TimeToSolveParametrically = 0;
+    end
 
+    for Tss = min( dynareOBC.TimeToSolveParametrically, LargestPMatrix ) : -1 : 1
+        
         if ~PoolOpened
             OpenPool;
             PoolOpened = true;
         end
 
         PLCP = struct;
-        PLCP.M = Mss;
+        PLCP.M = Msc;
         PLCP.q = zeros( Tss, 1 );
         PLCP.Q = eye( Tss );
         PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
@@ -419,21 +480,24 @@ function dynareOBC = InitialChecks( dynareOBC )
                 try
                     ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
                     mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
-                    dynareOBC.ParametricSolutionFound( Tss ) = 2;
+                    dynareOBC.ParametricSolutionHorizon = Tss;
+                    dynareOBC.ParametricSolutionMode = 2;
+                    break;
                 catch MPTError
                     disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
                     disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
                     try
                         ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
-                        dynareOBC.ParametricSolutionFound( Tss ) = 1;
+                        dynareOBC.ParametricSolutionHorizon = Tss;
+                        dynareOBC.ParametricSolutionMode = 1;
                     catch MPTTMError
                         disp( [ 'Error ' MPTTMError.identifier ' writing the MATLAB file for the parameteric solution. ' MPTTMError.message ] );
-                        SkipCalcs = true;
                         continue;
                     end
                     try
                         BuildParametricSolutionCode( Tss );
-                        dynareOBC.ParametricSolutionFound( Tss ) = 2;
+                        dynareOBC.ParametricSolutionMode = 2;
+                        break;
                     catch CoderError
                         disp( [ 'Error ' CoderError.identifier ' compiling the MATLAB file with MATLAB Coder. ' CoderError.message ] );
                     end
@@ -441,11 +505,10 @@ function dynareOBC = InitialChecks( dynareOBC )
             end
         catch
             disp( 'Failed to solve for a parametric solution.' );
-            SkipCalcs = true;
-            continue;
         end
     end
-    if sum( dynareOBC.ParametricSolutionFound ) > 0
+    
+    if dynareOBC.ParametricSolutionHorizon > 0
         rehash;
     end
     
