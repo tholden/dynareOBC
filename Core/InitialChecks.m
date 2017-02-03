@@ -397,7 +397,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     LargestPMatrix = 0;
     
-    PoolOpened = false;
     for Tss = 1 : Ts
         CssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
         dynareOBC.ssIndices{ Tss } = CssIndices;
@@ -470,6 +469,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         dynareOBC.TimeToSolveParametrically = 0;
     end
 
+    PoolOpened = false;
     for Tss = min( dynareOBC.TimeToSolveParametrically, LargestPMatrix ) : -1 : 1
         
         if ~PoolOpened
