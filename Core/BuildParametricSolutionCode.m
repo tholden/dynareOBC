@@ -29,9 +29,9 @@ ARGS{1}{1} = coder.typeof( zeros( 1, Tss ) ); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
 strTss = int2str( Tss );
-MFileText = fileread( [ 'dynareOBCTempSolution' strTss '.m' ] );
+MFileText = fileread( 'dynareOBCTempSolution.m' );
 MFileText = regexprep( MFileText, '^\s*for\s+([^=]+)=([^,;]+)(,|;|$)', 'for $1 = coder.unroll\( $2 \);', 'ignorecase', 'lineanchors', 'dotexceptnewline' );
 MFile = fopen( 'dynareOBCTempSolution.m', 'w' );
 fprintf( MFile, '%s', MFileText );
 codegen -config cfg dynareOBCTempSolution -args ARGS{1} -o dynareOBCTempSolution_mex
-copyfile( [ 'dynareOBCTempSolution_mex.' mexext ], [ 'dynareOBCTempSolution' strTss '_mex.' mexext ], 'f' );
+copyfile( [ 'dynareOBCTempSolution_mex.' mexext ], [ 'dynareOBCTempSolution_mex.' mexext ], 'f' );

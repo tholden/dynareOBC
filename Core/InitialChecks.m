@@ -485,15 +485,14 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'Solving for a parametric solution over the requested domain.' );
         fprintf( '\n' );
 
-        strTss = int2str( Tss );
         try
             warning( 'off', 'MATLAB:lang:badlyScopedReturnValue' );
             warning( 'off', 'MATLAB:nargchk:deprecated' );
             ParametricSolution = mpt_plcp( Opt( PLCP ) );
             if ParametricSolution.exitflag == 1
                 try
-                    ParametricSolution.xopt.toC( 'z', [ 'dynareOBCTempSolution' strTss ] );
-                    mex( [ 'dynareOBCTempSolution' strTss '_mex.c' ] );
+                    ParametricSolution.xopt.toC( 'z', dynareOBCTempSolution );
+                    mex( 'dynareOBCTempSolution_mex.c' );
                     dynareOBC.ParametricSolutionHorizon = Tss;
                     dynareOBC.ParametricSolutionMode = 2;
                     break;
@@ -501,7 +500,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                     disp( [ 'Error ' MPTError.identifier ' in compiling the parametric solution to C. ' MPTError.message ] );
                     disp( 'Attempting to compile via a MATLAB intermediary with MATLAB Coder.' );
                     try
-                        ParametricSolution.xopt.toMatlab( [ 'dynareOBCTempSolution' strTss ], 'z', 'first-region' );
+                        ParametricSolution.xopt.toMatlab( 'dynareOBCTempSolution', 'z', 'first-region' );
                         dynareOBC.ParametricSolutionHorizon = Tss;
                         dynareOBC.ParametricSolutionMode = 1;
                     catch MPTTMError
