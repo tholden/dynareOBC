@@ -7,25 +7,23 @@ function dynareOBC = FormOptimizer( dynareOBC )
         return
     end
     
-    M = dynareOBC.MMatrix;
-    Ms = dynareOBC.MsMatrix;
     omega = dynareOBC.Omega;
 
     if dynareOBC.FullHorizon
         InitTss = Ts;
     else
-        InitTss = 1;
+        InitTss = dynareOBC.LargestPMatrix + 1;
     end
     
-    qScaled = sdpvar( size( M, 1 ), 1 );
-    qsScaled = qScaled( dynareOBC.sIndices );
+    qn = sdpvar( size( dynareOBC.MMatrix, 1 ), 1 );
+    qns = qn( dynareOBC.sIndices );
     ssIndices = dynareOBC.ssIndices;
     
     dynareOBC.Optimizer = cell( Ts, 1 );
     
     for Tss = InitTss : Ts        
         Output = sdpvar( Tss * ns + 1, 1 );     % [ yScaled; alpha ]
-        yScaled = Output( 1 : ( end - 1 ), 1 );
+        yn = Output( 1 : ( end - 1 ), 1 );
         alpha = Output( end );
 
         z = binvar( Tss, ns );
@@ -33,14 +31,24 @@ function dynareOBC = FormOptimizer( dynareOBC )
         z = z(:);
         
         CssIndices = ssIndices{ Tss };
+        
+        Mc = dynareOBC.NormalizedSubMMatrices{ Tss };
+        Msc = dynareOBC.NormalizedSubMsMatrices{ Tss };
 
+        % q + M y >= 0, y' ( qs + Ms y ) = 0, y >= 0
+        % q + D1^(-1) D1 M D2 D2^(-1) y >= 0, y' ( qs + D1s^(-1) D1s Ms D2 D2^(-1) y ) = 0, y >= 0
+        % D1 q + D1 M D2 D2^(-1) y >= 0, y' D2^(-1)' D2 D1s^(-1) ( D1s qs + D1s Ms D2 D2^(-1) y ) = 0, D2^(-1) y >= 0
+        % yn := D2^(-1) y, Mn := D1 M D2, Mns := D1s Ms D2, qn := D1 * q, qns := D1s * qs
+        % qn + Mn yn >= 0, yn' D2 D1s^(-1) ( qns + Mns yn ) = 0, yn >= 0
+        % qn + Mn yn >= 0, yn' ( qns + Mns yn ) = 0, yn >= 0
+        
         if dynareOBC.FullHorizon
-            Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qsScaled( CssIndices ) + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ) ];
+            Constraints = [ 0 <= yn, yn <= z, 0 <= alpha, 0 <= alpha * qn + Mc * yn, alpha * qns( CssIndices ) + Msc * yn <= omega * ( 1 - z ) ];
         else
-            Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M( :, CssIndices ) * yScaled, alpha * qsScaled( CssIndices ) + Ms( CssIndices, CssIndices ) * yScaled <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
+            Constraints = [ 0 <= yn, yn <= z, 0 <= alpha, 0 <= alpha * qn + Mc * yn, alpha * qns( CssIndices ) + Msc * yn <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
         end
         Objective = -alpha;
-        dynareOBC.Optimizer{ Tss } = optimizer( Constraints, Objective, dynareOBC.MILPOptions, qScaled, Output );
+        dynareOBC.Optimizer{ Tss } = optimizer( Constraints, Objective, dynareOBC.MILPOptions, qn, Output );
     end
     
     yalmip( 'clear' );
