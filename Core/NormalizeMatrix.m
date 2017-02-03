@@ -2,6 +2,13 @@ function [ A, d1, d2, k ] = NormalizeMatrix( A, ZeroTolerance, ConvergenceTolera
 % http://www.numerical.rl.ac.uk/reports/drRAL2001034.pdf
 % Finds d1 and d2 such that Aout = diag( d1 ) * A * diag( d2 ) (approximately) satisfies all( sum( abs( Aout ) ) == 1 ) && all( sum( abs( Aout ), 2 ) == 1 )
 
+    if nargin < 3
+        ConvergenceTolerance = eps ^ 0.75;
+        if nargin < 2
+            ZeroTolerance = ConvergenceTolerance;
+        end
+    end
+
     [ m, n ] = size( A );
     
     d1 = ones( m, 1 );
