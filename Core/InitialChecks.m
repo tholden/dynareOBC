@@ -531,9 +531,10 @@ function dynareOBC = InitialChecks( dynareOBC )
     alpha = sdpvar( 1, 1 );
     z = binvar( Ts * ns, 1 );
     
+    qScaled = ones( size( M, 1 ), 1 );
     qsScaled = ones( Ts * ns, 1 );
 
-    Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qsScaled + Ms * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
+    Constraints = [ 0 <= yScaled, yScaled <= z, 0 <= alpha, 0 <= alpha * qScaled + M * yScaled, alpha * qsScaled + Ms * yScaled <= omega * ( 1 - z ) ];
     Objective = -alpha;
     Diagnostics = optimize( Constraints, Objective, dynareOBC.MILPOptions );
     if Diagnostics.problem ~= 0
