@@ -441,6 +441,8 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
     end
     
+    dynareOBC.LargestPMatrix = LargestPMatrix;
+    
     fprintf( '\n' );
     disp( [ 'Largest P-matrix found with a simple criterion included elements up to horizon ' num2str( LargestPMatrix ) ' periods.' ] );
     disp( 'The search for solutions will start from this point.' );
