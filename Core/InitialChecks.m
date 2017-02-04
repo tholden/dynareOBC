@@ -406,7 +406,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         Msc = dynareOBC.MsMatrix( CssIndices, CssIndices );
         [ ~, ~, d2 ] = NormalizeMatrix( Msc, NormalizeTolerance, NormalizeTolerance );
         Mc = bsxfun( @times, Mc, d2 );
-        d1 = 1 ./ CleanSmallVector( max( abs( Mc ), [], 2 ), NormalizeTolerance, NormalizeTolerance );
+        d1 = 1 ./ CleanSmallVector( max( abs( Mc ), [], 2 ), NormalizeTolerance );
         Mc = bsxfun( @times, d1, Mc );
         Msc = Mc( sIndices( CssIndices ), : );
         
