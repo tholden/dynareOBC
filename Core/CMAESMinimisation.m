@@ -214,9 +214,10 @@ defopts.ParentNumber = 'floor(lambda/2)       % AKA mu';
 defopts.RecombinationWeights = 'superlinear decrease % or linear, or equal';
 defopts.DiagonalOnly = '(1+100*N/sqrt(lambda))+(N>=1000)  % C is diagonal for given iterations, 1==always'; 
 % defopts.TPA = 0; 
+% defopts.CMA.cs = (mueff^0.5)/(N^0.5+mueff^0.5) % the short time horizon version
 defopts.CMA.cs = '(mueff+2)/(N+mueff+3)  % cumulation constant for step-size'; 
-   %qqq defopts.CMA.cs = (mueff^0.5)/(N^0.5+mueff^0.5) % the short time horizon version
-defopts.CMA.damps = '1 + 2*max(0,sqrt((mueff-1)/(N+1))-1) + cs  % damping for step-size';
+% defopts.CMA.damps = '1 + 2*max(0,sqrt((mueff-1)/(N+1))-1) + cs  % damping for step-size';
+defopts.CMA.damps = '0.5 + 0.5*min(1, (0.27*lambda/mueff-1)^2) + 2*max(0,sqrt((mueff-1)/(N+1))-1) + cs  % damping for step-size';
 % defopts.CMA.ccum = '4/(N+4)  % cumulation constant for covariance matrix'; 
 defopts.CMA.ccum = '(4 + mueff/N) / (N+4 + 2*mueff/N)  % cumulation constant for pc';
 defopts.CMA.ccov1 = '2 / ((N+1.3)^2+mueff)  % learning rate for rank-one update'; 
@@ -988,10 +989,7 @@ while isempty(stopflag)
   
   % Cumulation: update evolution paths
   ps = (1-cs)*ps + sqrt(cs*(2-cs)*mueff) * (B*zmean);          % Eq. (4)
-  hsig = norm(ps)/sqrt(1-(1-cs)^(2*countiter))/chiN < 1.4 + 2/(N+1);
-  if flg_future_setting
-    hsig = sum(ps.^2) / (1-(1-cs)^(2*countiter)) / N < 2 + 4/(N+1); % just simplified
-  end
+  hsig = sum(ps.^2) / (1-(1-cs)^(2*countiter)) / N < 2 + 4/(N+1); % just simplified
 %  hsig = norm(ps)/sqrt(1-(1-cs)^(2*countiter))/chiN < 1.4 + 2/(N+1);
 %  hsig = norm(ps)/sqrt(1-(1-cs)^(2*countiter))/chiN < 1.5 + 1/(N-0.5);
 %  hsig = norm(ps) < 1.5 * sqrt(N);
@@ -1109,13 +1107,8 @@ while isempty(stopflag)
   end
   
   % Adapt sigma
-  if flg_future_setting  % according to a suggestion from Dirk Arnold (2000)
     % exp(1) is still not reasonably small enough, maybe 2/3?
     sigma = sigma * exp(min(1, (sum(ps.^2)/N - 1)/2 * cs/damps));            % Eq. (5)
-  else
-    % exp(1) is still not reasonably small enough
-    sigma = sigma * exp(min(1, (sqrt(sum(ps.^2))/chiN - 1) * cs/damps));             % Eq. (5)
-  end
   % disp([countiter norm(ps)/chiN]);
     
   % Update B and D from C
