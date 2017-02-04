@@ -86,16 +86,14 @@ function y = SolveBoundsProblem( q )
                 
                 if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                     y = y * Norm_q;
-                    if isempty( ySaved ) || max( abs( y - ySaved ) ) > Tolerance
-                        if DisplayBoundsSolutionProgress
-                            disp( full( y ) );
-                        end
-                        if SkipFirstSolutions > 0
-                            ySaved = y;
-                            SkipFirstSolutions = SkipFirstSolutions - 1;
-                        else
-                            return;
-                        end
+                    if DisplayBoundsSolutionProgress
+                        disp( full( y ) );
+                    end
+                    if SkipFirstSolutions > 0
+                        ySaved = y;
+                        SkipFirstSolutions = SkipFirstSolutions - 1;
+                    else
+                        return;
                     end
                 else
                     PMatrixSolutionOK = false;
@@ -128,16 +126,14 @@ function y = SolveBoundsProblem( q )
 
                 if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                     y = y * Norm_q;
-                    if isempty( ySaved ) || max( abs( y - ySaved ) ) > Tolerance
-                        if DisplayBoundsSolutionProgress
-                            disp( full( y ) );
-                        end
-                        if SkipFirstSolutions > 0
-                            ySaved = y;
-                            SkipFirstSolutions = SkipFirstSolutions - 1;
-                        else
-                            return;
-                        end
+                    if DisplayBoundsSolutionProgress
+                        disp( full( y ) );
+                    end
+                    if SkipFirstSolutions > 0
+                        ySaved = y;
+                        SkipFirstSolutions = SkipFirstSolutions - 1;
+                    else
+                        return;
                     end
                 else
                     PMatrixSolutionOK = false;
