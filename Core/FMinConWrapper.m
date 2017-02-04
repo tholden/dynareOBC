@@ -67,6 +67,6 @@ function [ f, df ] = WrappedOptiFunction( x, OptiFunction, OldPersistentState, T
             WrappedOptiFunctionPersistentState = TmpPersistentState;
         end
         f = RV( 1 );
-        df = ( RV( 2 : end ) - f ) ./ h;
+        df = ( RV( 2 : end )' - f ) ./ h;
     end
 end
