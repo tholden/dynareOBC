@@ -33,4 +33,3 @@ MFileText = regexprep( MFileText, '^\s*for\s+([^=]+)=([^,;]+)(,|;|$)', 'for $1 =
 MFile = fopen( 'dynareOBCTempSolution.m', 'w' );
 fprintf( MFile, '%s', MFileText );
 codegen -config cfg dynareOBCTempSolution -args ARGS{1} -o dynareOBCTempSolution_mex
-copyfile( [ 'dynareOBCTempSolution_mex.' mexext ], [ 'dynareOBCTempSolution_mex.' mexext ], 'f' );
