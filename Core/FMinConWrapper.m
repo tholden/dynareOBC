@@ -68,5 +68,6 @@ function [ f, df ] = WrappedOptiFunction( x, OptiFunction, OldPersistentState, T
         end
         f = RV( 1 );
         df = ( RV( 2 : end )' - f ) ./ h;
+        df( ~isfinite( df ) ) = 0;
     end
 end
