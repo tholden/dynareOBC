@@ -412,7 +412,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         dynareOBC.NormalizedSubMMatrices{ Tss } = Mc;
         dynareOBC.NormalizedSubMsMatrices{ Tss } = Msc;
         dynareOBC.d1SubMMatrices{ Tss } = d1;
-        dynareOBC.d1sSubMMatrices{ Tss } = d1( sInidices );
+        dynareOBC.d1sSubMMatrices{ Tss } = d1( sIndices );
         dynareOBC.d2SubMMatrices{ Tss } = d2';
         
         CPMatrix = false;
