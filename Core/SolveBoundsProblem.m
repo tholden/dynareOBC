@@ -73,33 +73,32 @@ function y = SolveBoundsProblem( q )
                 else
                     yScaled = feval( 'dynareOBCTempSolution', qnssScaled );
                 end
-            catch
+            catch Error
+				warning( 'dynareOBC:ParametricEvaluationError', [ 'Error running the parametric solution:' Error.message ] );
                 ParametricSolutionHorizon = 0;
             end
             if numel( yScaled ) ~= numel( qnssScaled )
+				warning( 'dynareOBC:ParametricEvaluationUnexpectedOutputSize', 'Unexpected output size returned from the parametric solution.' );
                 ParametricSolutionHorizon = 0;
             end
-			if ParametricSolutionHorizon == 0
-				warning( 'dynareOBC:ParametricEvaluationProblem', 'Problem running the parametric solution.' );
-			else
+			if ParametricSolutionHorizon > 0
 				y = ZeroVecS;
 				y( CssIndices ) = d2 .* max( 0, yScaled );
                 
-                w = qScaled + M * y; % TODO: compare with normalized M?
+                w = qScaled + M * y;
                 
                 if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                     y = y * Norm_q;
-                    if ~isempty( ySaved ) && max( abs( y - ySaved ) ) <= Tolerance
-                        error( 'TODO' );
-                    end
-                    if dynareOBC_.DisplayBoundsSolutionProgress
-                        disp( full( y ) );
-                    end
-                    if SkipFirstSolutions > 0
-                        ySaved = y;
-                        SkipFirstSolutions = SkipFirstSolutions - 1;
-                    else
-                        return;
+                    if isempty( ySaved ) || max( abs( y - ySaved ) ) > Tolerance
+                        if dynareOBC_.DisplayBoundsSolutionProgress
+                            disp( full( y ) );
+                        end
+                        if SkipFirstSolutions > 0
+                            ySaved = y;
+                            SkipFirstSolutions = SkipFirstSolutions - 1;
+                        else
+                            return;
+                        end
                     end
                 end
 			end
