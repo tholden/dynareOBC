@@ -413,7 +413,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         dynareOBC.NormalizedSubMsMatrices{ Tss } = Msc;
         dynareOBC.d1SubMMatrices{ Tss } = d1;
         dynareOBC.d1sSubMMatrices{ Tss } = d1( sInidices );
-        dynareOBC.d2SubMMatrices{ Tss } = d2;
+        dynareOBC.d2SubMMatrices{ Tss } = d2';
         
         CPMatrix = false;
         
@@ -458,6 +458,21 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     dynareOBC.LargestPMatrix = LargestPMatrix;
+    
+    if LargestPMatrix > 0
+        LemkeLCPOptions = struct;
+        LemkeLCPOptions.zerotol = eps ^ 0.75;
+        LemkeLCPOptions.lextol  = eps ^ 0.75;
+        LemkeLCPOptions.maxpiv  = 1e10;
+        LemkeLCPOptions.nstepf  = 50;
+        LemkeLCPOptions.clock   = 0;
+        LemkeLCPOptions.verbose = 0;
+        LemkeLCPOptions.routine = 0;
+        LemkeLCPOptions.timelimit = 60;
+        LemkeLCPOptions.normalize = 0;
+        LemkeLCPOptions.normalizethres = 1e10;
+        dynareOBC.LemkeLCPOptions = LemkeLCPOptions;
+    end
     
     fprintf( '\n' );
     disp( [ 'Largest P-matrix found with a simple criterion included elements up to horizon ' num2str( LargestPMatrix ) ' periods.' ] );
