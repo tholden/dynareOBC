@@ -16,8 +16,8 @@ function [ A, d1, d2, k ] = NormalizeMatrix( A, ZeroTolerance, ConvergenceTolera
 
     k = 0;
     while true
-        r = Check( max( abs( A ), [], 2 ), ZeroTolerance );
-        c = Check( max( abs( A ) ), ZeroTolerance );
+        r = CleanSmallVector( max( abs( A ), [], 2 ), ZeroTolerance );
+        c = CleanSmallVector( max( abs( A ) ), ZeroTolerance );
         IdR = 1 ./ sqrt( r );
         IdC = 1 ./ sqrt( c );
         A = bsxfun( @times, IdR, bsxfun( @times, A, IdC ) );
@@ -28,8 +28,4 @@ function [ A, d1, d2, k ] = NormalizeMatrix( A, ZeroTolerance, ConvergenceTolera
             break;
         end
     end
-end
-
-function v = Check( v, ZeroTolerance )
-    v( any( v <= ZeroTolerance ) ) = 1;
 end
