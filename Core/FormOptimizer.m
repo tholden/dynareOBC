@@ -12,7 +12,7 @@ function dynareOBC = FormOptimizer( dynareOBC )
     if dynareOBC.FullHorizon
         InitTss = Ts;
     else
-        InitTss = dynareOBC.LargestPMatrix + 1;
+        InitTss = dynareOBC.LargestPMatrix;
     end
     
     qn = sdpvar( size( dynareOBC.MMatrix, 1 ), 1 );
@@ -42,7 +42,7 @@ function dynareOBC = FormOptimizer( dynareOBC )
         % qn + Mn yn >= 0, yn' D2 D1s^(-1) ( qns + Mns yn ) = 0, yn >= 0
         % qn + Mn yn >= 0, yn' ( qns + Mns yn ) = 0, yn >= 0
         
-        if dynareOBC.FullHorizon
+        if dynareOBC.FullHorizon || ( Tss == dynareOBC.LargestPMatrix )
             Constraints = [ 0 <= yn, yn <= z, 0 <= alpha, 0 <= alpha * qn + Mc * yn, alpha * qns( CssIndices ) + Msc * yn <= omega * ( 1 - z ) ];
         else
             Constraints = [ 0 <= yn, yn <= z, 0 <= alpha, 0 <= alpha * qn + Mc * yn, alpha * qns( CssIndices ) + Msc * yn <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
