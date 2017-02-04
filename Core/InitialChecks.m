@@ -13,9 +13,10 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     sIndices = dynareOBC.sIndices;
     
-    [ ~, ~, d2 ] = NormalizeMatrix( Ms );
+    NormalizeTolerance = eps ^ 0.75;
+    [ ~, ~, d2 ] = NormalizeMatrix( Ms, NormalizeTolerance, NormalizeTolerance );
     M = bsxfun( @times, M, d2 );
-    d1 = 1 ./ max( abs( M ), [], 2 );
+    d1 = 1 ./ CleanSmallVector( max( abs( M ), [], 2 ), NormalizeTolerance );
     M = bsxfun( @times, d1, M );
     Ms = M( sIndices, : );
     
@@ -403,16 +404,16 @@ function dynareOBC = InitialChecks( dynareOBC )
 
         Mc = dynareOBC.MMatrix( :, CssIndices );
         Msc = dynareOBC.MsMatrix( CssIndices, CssIndices );
-        [ ~, ~, d2 ] = NormalizeMatrix( Msc );
+        [ ~, ~, d2 ] = NormalizeMatrix( Msc, NormalizeTolerance, NormalizeTolerance );
         Mc = bsxfun( @times, Mc, d2 );
-        d1 = 1 ./ max( abs( Mc ), [], 2 );
+        d1 = 1 ./ CleanSmallVector( max( abs( Mc ), [], 2 ), NormalizeTolerance, NormalizeTolerance );
         Mc = bsxfun( @times, d1, Mc );
         Msc = Mc( sIndices( CssIndices ), : );
         
         dynareOBC.NormalizedSubMMatrices{ Tss } = Mc;
         dynareOBC.NormalizedSubMsMatrices{ Tss } = Msc;
         dynareOBC.d1SubMMatrices{ Tss } = d1;
-        dynareOBC.d1sSubMMatrices{ Tss } = d1( sIndices );
+        dynareOBC.d1sSubMMatrices{ Tss } = d1( sIndices( CssIndices ) );
         dynareOBC.d2SubMMatrices{ Tss } = d2';
         
         CPMatrix = false;
