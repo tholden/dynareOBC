@@ -12,7 +12,7 @@ function dynareOBC = FormOptimizer( dynareOBC )
     if dynareOBC.FullHorizon
         InitTss = Ts;
     else
-        InitTss = dynareOBC.LargestPMatrix;
+        InitTss = max( 1, dynareOBC.LargestPMatrix );
     end
     
     qn = sdpvar( size( dynareOBC.MMatrix, 1 ), 1 );

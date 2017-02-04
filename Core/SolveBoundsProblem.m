@@ -150,7 +150,7 @@ function y = SolveBoundsProblem( q )
     if FullHorizon
         InitTss = Ts;
     else
-        InitTss = LargestPMatrix + PMatrixSolutionOK;
+        InitTss = max( 1, LargestPMatrix + PMatrixSolutionOK );
     end
     
     if ReverseSearch
