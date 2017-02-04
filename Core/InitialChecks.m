@@ -511,7 +511,7 @@ function dynareOBC = InitialChecks( dynareOBC )
             ParametricSolution = mpt_plcp( Opt( PLCP ) );
             if ParametricSolution.exitflag == 1
                 try
-                    ParametricSolution.xopt.toC( 'z', dynareOBCTempSolution );
+                    ParametricSolution.xopt.toC( 'z', 'dynareOBCTempSolution' );
                     mex( 'dynareOBCTempSolution_mex.c' );
                     dynareOBC.ParametricSolutionHorizon = Tss;
                     dynareOBC.ParametricSolutionMode = 2;
