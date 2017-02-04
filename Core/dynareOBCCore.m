@@ -428,11 +428,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Initial log-likelihood:' );
         disp( LogLikelihood );
         
-        if EstimatedNu
-            OptiFunction = @( p, s ) EstimationObjective( p, s, M_, options_, oo_, dynareOBC, false, false );
-        else
-            OptiFunction = @( p, s ) EstimationObjective( [ p; Inf ], s, M_, options_, oo_, dynareOBC, false, false );
-        end
+        OptiFunction = @( p, s ) EstimationObjective( p, s, M_, options_, oo_, dynareOBC, false, false );
         OptiLB = [ LBTemp; -Inf( NumObservables + EstimatedNu, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables + EstimatedNu, 1 ) ];
         MaximisationFunctions = strsplit( dynareOBC.MaximisationFunctions, { ',', ';', '#' } );
