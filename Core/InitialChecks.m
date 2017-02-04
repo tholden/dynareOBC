@@ -13,7 +13,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     sIndices = dynareOBC.sIndices;
     
-    NormalizeTolerance = eps ^ 0.75;
+    NormalizeTolerance = sqrt( eps );
     [ ~, ~, d2 ] = NormalizeMatrix( Ms, NormalizeTolerance, NormalizeTolerance );
     M = bsxfun( @times, M, d2 );
     d1 = 1 ./ CleanSmallVector( max( abs( M ), [], 2 ), NormalizeTolerance );
@@ -462,8 +462,8 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     if LargestPMatrix > 0
         LemkeLCPOptions = struct;
-        LemkeLCPOptions.zerotol = eps ^ 0.75;
-        LemkeLCPOptions.lextol  = eps ^ 0.75;
+        LemkeLCPOptions.zerotol = sqrt( eps );
+        LemkeLCPOptions.lextol  = sqrt( eps );
         LemkeLCPOptions.maxpiv  = 1e10;
         LemkeLCPOptions.nstepf  = 50;
         LemkeLCPOptions.clock   = 0;
