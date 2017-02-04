@@ -476,7 +476,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, EstimationPersistentState, M_, options_, oo_, dynareOBC ), EstimatedParameters, ObservationCount );
             [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
             
-            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) -0.5 * EstimationObjective( p2, EstimationPersistentState, M_, options_, oo_, dynareOBC, false, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
+            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) EstimationObjective( p2, EstimationPersistentState, M_, options_, oo_, dynareOBC, false, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
             HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
             
             RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );
