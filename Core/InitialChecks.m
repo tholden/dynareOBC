@@ -260,7 +260,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     if ptestVal >= 0
         AbsArguments = abs( angle( eig( Ms ) ) );
 
-        if all( AbsArguments < pi - pi / size( Ms, 1 ) )
+        if all( AbsArguments < pi - pi / size( Ms, 1 ) ) || ( ( size( Ms, 1 ) == 1 ) && ( Ms( 1, 1 ) > 0 ) )
             disp( 'Additional necessary condition for M to be a P-matrix is satisfied.' );
             disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
             disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
@@ -418,7 +418,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         CPMatrix = false;
         
         if all( diag( Msc ) > 0 )
-            if all( abs( angle( eig( Msc ) ) ) < pi - pi / Tss )
+            if Tss == 1 || all( abs( angle( eig( Msc ) ) ) < pi - pi / Tss )
                 [ ~, pMsc ] = chol( Msc + Msc' );
                 if pMsc == 0
                     CPMatrix = true;
