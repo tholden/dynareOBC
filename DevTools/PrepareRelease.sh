@@ -50,6 +50,7 @@ rm -f -r -d -- **/Output/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*/
+rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/*.mat
 
 rm -f -r -d -- **/.DS_Store
 rm -f -r -d -- **/.git

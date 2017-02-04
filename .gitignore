@@ -37,6 +37,7 @@ Output/
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
+Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/*.mat
 
 .DS_Store
 dynareOBCGlobalResume.mat
