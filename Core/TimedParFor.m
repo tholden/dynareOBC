@@ -22,8 +22,6 @@ function [ Out, RunTimes ] = TimedParFor( Function, Inputs, DefaultOutputs, Wait
     
     try
         OpenPool;
-        StoreGlobals;
-        
         for i = 1 : NIn
             f( i ) = parfeval( @( in ) TimedWrapper( in, Function, NOut ), 2, Inputs( i ) );
         end

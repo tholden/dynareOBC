@@ -1,16 +1,23 @@
 function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, EstimationPersistentState, M, options, oo, dynareOBC, InitialRun, Smoothing )
 
-    [ T, N ] = size( dynareOBC.EstimationData );
+    global M_ options_ oo_ dynareOBC_
+    
+    M_ = M;
+    options_ = options;
+    oo_ = oo;
+    dynareOBC_ = dynareOBC;
+    
+    [ T, N ] = size( dynareOBC_.EstimationData );
     if nargout > 1
         LogObservationLikelihoods = NaN( T, 1 );
     end
 
-    M.params( dynareOBC.EstimationParameterSelect ) = p( 1 : length( dynareOBC.EstimationParameterSelect ) );
-    diagLambda = exp( p( length( dynareOBC.EstimationParameterSelect ) + ( 1 : N ) ) );
+    M_.params( dynareOBC_.EstimationParameterSelect ) = p( 1 : length( dynareOBC_.EstimationParameterSelect ) );
+    diagLambda = exp( p( length( dynareOBC_.EstimationParameterSelect ) + ( 1 : N ) ) );
     
-    options.qz_criterium = 1 - 1e-6;
+    options_.qz_criterium = 1 - 1e-6;
     try
-        [ Info, M, options, oo, dynareOBC ] = ModelSolution( false, M, options, oo, dynareOBC, InitialRun );
+        [ Info, M_, options_, oo_, dynareOBC_ ] = ModelSolution( false, M_, options_, oo_, dynareOBC_, InitialRun );
     catch Error
         rethrow( Error );
     end
@@ -18,29 +25,23 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
         error( 'dynareOBC:EstimationBK', 'Apparent BK condition violation.' );
     end
 
-    global M_ options_ oo_ dynareOBC_
-    M_ = M;
-    options_ = options;
-    oo_ = oo;
-    dynareOBC_ = dynareOBC;
+    NEndo = M_.endo_nbr;
+    NExo = dynareOBC_.OriginalNumVarExo;
+    NEndoMult = 2 .^ ( dynareOBC_.Order - 1 );
     
-    NEndo = M.endo_nbr;
-    NExo = dynareOBC.OriginalNumVarExo;
-    NEndoMult = 2 .^ ( dynareOBC.Order - 1 );
-    
-    SelectStateVariables = ismember( ( 1:NEndo )', oo.dr.order_var( dynareOBC.SelectState ) );
+    SelectStateVariables = ismember( ( 1:NEndo )', oo_.dr.order_var( dynareOBC_.SelectState ) );
     SelectAugStateVariables = find( repmat( SelectStateVariables, NEndoMult, 1 ) );
     NState = sum( SelectStateVariables );
     NAugState = NEndoMult * NState;
    
-    StdDevThreshold = dynareOBC.StdDevThreshold;
+    StdDevThreshold = dynareOBC_.StdDevThreshold;
     
-    RootExoVar = ObtainEstimateRootCovariance( M.Sigma_e( 1:NExo, 1:NExo ), StdDevThreshold );
+    RootExoVar = ObtainEstimateRootCovariance( M_.Sigma_e( 1:NExo, 1:NExo ), StdDevThreshold );
 
-    LagIndices = find( dynareOBC.OriginalLeadLagIncidence( 1, : ) > 0 );
-    CurrentIndices = find( dynareOBC.OriginalLeadLagIncidence( 2, : ) > 0 );
-    if size( dynareOBC.OriginalLeadLagIncidence, 1 ) > 2
-        LeadIndices = dynareOBC.OriginalLeadLagIncidence( 3, : ) > 0;
+    LagIndices = find( dynareOBC_.OriginalLeadLagIncidence( 1, : ) > 0 );
+    CurrentIndices = find( dynareOBC_.OriginalLeadLagIncidence( 2, : ) > 0 );
+    if size( dynareOBC_.OriginalLeadLagIncidence, 1 ) > 2
+        LeadIndices = dynareOBC_.OriginalLeadLagIncidence( 3, : ) > 0;
     else
         LeadIndices = [];
     end
@@ -48,16 +49,16 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     
     if isempty( EstimationPersistentState )
         % get initial mean and covariance
-        xoo = full( dynareOBC.Mean_z );
-        xoo = xoo( dynareOBC.CoreSelectInAugmented );
+        xoo = full( dynareOBC_.Mean_z );
+        xoo = xoo( dynareOBC_.CoreSelectInAugmented );
         xoo = xoo( SelectAugStateVariables );
-        dr = oo.dr;
+        dr = oo_.dr;
 
-        if dynareOBC.Order == 1
-            TempPsoo = full( dynareOBC.Var_z1 );
+        if dynareOBC_.Order == 1
+            TempPsoo = full( dynareOBC_.Var_z1 );
             TempPsooSelect = dr.inv_order_var( SelectStateVariables );
         else
-            TempPsoo = full( dynareOBC.Var_z2 );
+            TempPsoo = full( dynareOBC_.Var_z2 );
             TempPsooSelect = [ dr.inv_order_var( SelectStateVariables ); NEndo + dr.inv_order_var( SelectStateVariables ) ];
         end
 
@@ -92,29 +93,29 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     ErrorOld = Inf;
     StepSize = 1;
     
-    MParams = M.params;
-    OoDrYs = oo.dr.ys( 1:dynareOBC.OriginalNumVar );
+    MParams = M_.params;
+    OoDrYs = oo_.dr.ys( 1:dynareOBC_.OriginalNumVar );
     
     tCutOff = 100;
     
-    if dynareOBC.NoTLikelihood
+    if dynareOBC_.NoTLikelihood
         nuno = Inf;
-        assert( length( p ) == length( dynareOBC.EstimationParameterSelect ) + N );
-    elseif dynareOBC.DynamicNu
+        assert( length( p ) == length( dynareOBC_.EstimationParameterSelect ) + N );
+    elseif dynareOBC_.DynamicNu
         nuno = [];
-        assert( length( p ) == length( dynareOBC.EstimationParameterSelect ) + N );
+        assert( length( p ) == length( dynareOBC_.EstimationParameterSelect ) + N );
     else
         nuno = exp( p( end ) );
-        assert( length( p ) == length( dynareOBC.EstimationParameterSelect ) + N + 1 );
+        assert( length( p ) == length( dynareOBC_.EstimationParameterSelect ) + N + 1 );
     end
     
     deltasnn = deltasoo;
     taunn = tauoo;
     nunn = nuoo;
     
-    for t = 1:dynareOBC.StationaryDistMaxIterations
+    for t = 1:dynareOBC_.StationaryDistMaxIterations
         % , deltasnn, taunn, nunn
-        [ ~, xnn, Ssnn ] = KalmanStep( nan( 1, N ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
+        [ ~, xnn, Ssnn ] = KalmanStep( nan( 1, N ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC_, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
         if ~Smoothing && isempty( xnn )
             error( 'dynareOBC:EstimationEmptyKalmanReturn', 'KalmanStep returned an empty xnn.' );
         end
@@ -168,7 +169,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     EstimationPersistentState.tauoo = tauoo;
     EstimationPersistentState.nuoo = nuoo;
 
-    PriorFunc = str2func( dynareOBC.Prior );
+    PriorFunc = str2func( dynareOBC_.Prior );
     PriorValue = PriorFunc( p );
     ScaledPriorValue = PriorValue / T;
     
@@ -191,11 +192,11 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
 
     for t = 1:T
         if Smoothing
-            if dynareOBC.DynamicNu
+            if dynareOBC_.DynamicNu
                 nuno = [];
             end
             [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn, deltann, xno, Psno, deltasno, tauno, nuno ] = ...
-                KalmanStep( dynareOBC.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
+                KalmanStep( dynareOBC_.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC_, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
             wnn_{ t } = wnn;
             Pnn_{ t } = Pnn;
             deltann_{ t } = deltann;
@@ -208,7 +209,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
             nuno_{ t } = nuno;
         else
             [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn ] = ...
-                KalmanStep( dynareOBC.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
+                KalmanStep( dynareOBC_.EstimationData( t, : ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC_, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
             if isempty( xnn )
                 error( 'dynareOBC:EstimationEmptyKalmanReturn', 'KalmanStep returned an empty xnn.' );
             end
@@ -256,4 +257,10 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
 %         RootSmoothedWVariances.RootSmoothedWVariances = RootSmoothedWVariances;
 
     end
+    
+    M = M_;
+    options = options_;
+    oo = oo_;
+    dynareOBC = dynareOBC_;
+    
 end

@@ -420,11 +420,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
-        StoreGlobals( M_, options_, oo_, dynareOBC );
         EstimationPersistentState = [];
         [ LogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
-        StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Initial log-likelihood:' );
         disp( LogLikelihood );
         
@@ -442,7 +440,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         [ LogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
         dynareOBC = orderfields( dynareOBC );
-        StoreGlobals( M_, options_, oo_, dynareOBC );
         disp( 'Paranoid verification of final log-likelihood:' );
         disp( LogLikelihood );
         
