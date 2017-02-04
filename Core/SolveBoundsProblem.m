@@ -56,13 +56,15 @@ function y = SolveBoundsProblem( q )
     PMatrixSolutionOK = true;
     if ~FullHorizon && ~ReverseSearch && LargestPMatrix > 0 && isempty( ySaved )
         
+        qsScaled = qScaled( sIndices );
+        
         if ParametricSolutionHorizon > 0
             
             d1s = d1sSubMMatrices{ ParametricSolutionHorizon };
             d2 = d2SubMMatrices{ ParametricSolutionHorizon };
             
             CssIndices = ssIndices{ ParametricSolutionHorizon };
-            qnssScaled = d1s .* qScaled( sIndices( CssIndices ) );
+            qnssScaled = d1s .* qsScaled( CssIndices );
             
             try
                 if ParametricSolutionMode > 1
@@ -109,7 +111,7 @@ function y = SolveBoundsProblem( q )
             Mns = NormalizedSubMsMatrices{ LargestPMatrix };
 
             CssIndices = ssIndices{ LargestPMatrix };
-            qnssScaled = d1s .* qScaled( sIndices( CssIndices ) );
+            qnssScaled = d1s .* qsScaled( CssIndices );
 
             try
                 [ yScaled, ~, ~, ExitFlag ] = lcp( Mns, qnssScaled, dynareOBC_.LemkeLCPOptions );
