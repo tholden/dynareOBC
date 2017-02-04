@@ -100,8 +100,10 @@ function y = SolveBoundsProblem( q )
                 else
                     PMatrixSolutionOK = false;
                 end
-			end
-
+            end
+            
+        else
+            PMatrixSolutionOK = false;
         end
         
         if ~PMatrixSolutionOK
