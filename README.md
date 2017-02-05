@@ -205,7 +205,7 @@ Note:
                A `,` `;` or `#` delimitated list of maximisation function names, which will be invoked in order. DynareOBC includes the following: `CMAESWrapper` (an evolutionary global search algorithm), `CMAESResumeWrapper` (an evolutionary global search algorithm, resuming an interrupted CMAES run), `ACDWrapper` (an adaptive coordinate descent algorithm), `ACDResumeWrapper` (an adaptive coordinate descent algorithm, resuming an interrupted ACD run), `FMinConWrapper` (MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox).
           * `FixedParameters=STRING` (default: `''`)
                A `,` `;` or `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur in the second sheet of the data file.
-    * `Smoothing`
+    * `Smoothing` **DISABLED IN THIS VERSION**
          Performs smoothing to estimate the model's state variables and shocks. It is recommended that smoothing is invoked in a separate DynareOBC run after estimation has completed. Note that Smoothing requires the MATLAB Statistics and Machine Learning Toolox.
           * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
                Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain at least one worksheet. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates.
