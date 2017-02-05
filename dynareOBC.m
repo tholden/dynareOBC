@@ -59,6 +59,8 @@ function dynareOBC( InputFileName, varargin )
 %    required for the experimental global option. (To use an alternative routine, you must set 
 %    dynareOBC.FSolveFunctor.) This toolbox is also required for some options of estimation, as 
 %    detailed below. 
+%  * The MATLAB Statistics and Machine Learning Toolox, or a fully compatible clone, which is 
+%    required for estimation. 
 %  * The MATLAB Symbolic Toolbox, which is required for the UseVPA option. 
 %  * A working compiler for MEX which is supported by MATLAB Coder, ideally supporting OpenMP. On 
 %    Windows, a free compiler meeting these requirements is available from: 
@@ -85,14 +87,14 @@ function dynareOBC( InputFileName, varargin )
 %  
 % If you are using a 64-bit version of MATLAB, please ask for the following to be installed: 
 %  
-%  * http://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x64.exe 
+%  * https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x64.exe 
 %  * ww_ifort_redist_intel64_2016.3.207.msi from inside: 
 %    https://software.intel.com/sites/default/files/managed/46/54/ww_ifort_redist_msi_2016.3.207.zip 
 %  
 % If you are using a 32-bit version of MATLAB, please ask for the following to be installed: 
 %  
-%  * http://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe 
-%  * http://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x86.exe 
+%  * http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x86.exe 
+%  * https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x86.exe 
 %  * w_fcompxe_redist_ia32_2015.2.179.msi from inside: 
 %    https://software.intel.com/sites/default/files/managed/6a/21/w_fcompxe_redist_msi_2015.2.179.zip 
 %  
@@ -283,7 +285,8 @@ function dynareOBC( InputFileName, varargin )
 %  
 %  * Settings for controlling estimation or smoothing 
 %     * Estimation 
-%          Enables estimation of the model's parameters 
+%          Enables estimation of the model's parameters. Note that Estimation requires the MATLAB 
+%          Statistics and Machine Learning Toolox. 
 %           * DataFile=STRING (default: MOD-FILE-NAME.xlsx) 
 %                Specifies the spreadsheet containing the data to estimate. This spreadsheet should 
 %                contain two worksheets. The first sheet should have a title row containing the names 
@@ -297,11 +300,14 @@ function dynareOBC( InputFileName, varargin )
 %                estimation. The default prior results in maximum likelihood estimates being 
 %                returned. The function should accept a single argument giving the vector of 
 %                parameters to be estimated, in the order they appear in the datafile, including the 
-%                measumerent error variances in the final elements of the vector. The function should 
-%                return the log prior density at that point (up to a constant). 
-%           * StationaryDistMaxIterations=INTEGER (default: 1000) 
-%                The maximum number of iterations used to evaluate the stationary distribution of the 
-%                non-linear filter. 
+%                measumerent error variances, then possibly nu-bar (if DynamicNu is not specified), 
+%                in the final elements of the vector. The function should return the log prior 
+%                density at that point (up to a constant). 
+%           * StationaryDistPeriods=INTEGER (default: 1000) 
+%                The number of periods used to evaluate the stationary distribution of the model. 
+%           * StationaryDistDrop=INTEGER (default: 100) 
+%                The number of periods used as burn-in prior to evaluating the stationary 
+%                distribution of the model. 
 %           * SkipStandardErrors 
 %                Makes DynareOBC skip calculation of standard errors for the estimated parameters. 
 %           * FilterCubatureDegree=INTEGER (default: 0) 
@@ -312,40 +318,46 @@ function dynareOBC( InputFileName, varargin )
 %                which may cause numerical issues e.g. with the positive definiteness of the state 
 %                covariance matrix. The cubature method exactly integrates a polynomial of degree 
 %                INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger 
-%                than twice the order of approximation. Values above 51 are treated as equal to 51. 
+%                than four times the order of approximation. Values above 51 are treated as equal to 
+%                51. 
 %           * StdDevThreshold=FLOAT (default: 1e-6) 
 %                Specifies the threshold below which the standard deviation of the state is set to 
 %                zero, for dimension reduction. 
 %           * NoSkewLikelihood 
 %                Disables the skewing of the distribution used to approximate the likelihood. 
 %           * NoTLikelihood 
-%                Disables the use of a (skew) t-distribution to approximate the likelihood. Instead a 
-%                (skew) normal distribution will be used. 
-%           * MinimisationFunctions=STRING 
+%                Disables the use of a (extended skew) t-distribution to approximate the likelihood. 
+%                Instead a (extended skew) normal distribution will be used. 
+%           * DynamicNu 
+%                Causes the estimation procedure to calibrate the degrees of freedom parameter, nu, 
+%                at each time step. We recommend that FilterCubatureDegree is at least 9 if this 
+%                option is specified. 
+%           * MaximisationFunctions=STRING 
 %             (default: CMAESWrapper,FMinConWrapper) 
-%                A , ; or # delimitated list of minimisation function names, which will be invoked in 
+%                A , ; or # delimitated list of maximisation function names, which will be invoked in 
 %                order. DynareOBC includes the following: CMAESWrapper (an evolutionary global search 
 %                algorithm), CMAESResumeWrapper (an evolutionary global search algorithm, resuming an 
-%                interrupted CMAES run), FMinConWrapper (MATLAB's local search, which requires a 
-%                license for the MATLAB Optimisation Toolbox), FMinBndWrapper (performs repeated one 
-%                dimensional search, only viable for very low dimensional problems). 
+%                interrupted CMAES run), ACDWrapper (an adaptive coordinate descent algorithm), 
+%                ACDResumeWrapper (an adaptive coordinate descent algorithm, resuming an interrupted 
+%                ACD run), FMinConWrapper (MATLAB's local search, which requires a license for the 
+%                MATLAB Optimisation Toolbox). 
 %           * FixedParameters=STRING (default: '') 
 %                A , ; or # delimitated list of parameters names. Any parameters in this list will 
 %                not be estimated, even if they occur in the second sheet of the data file. 
-%           * TimeOutLikelihoodEvaluation=INTEGER (defaut: 60) 
-%                Any likelihood evaluations that take longer than this number of seconds will be 
-%                terminated prematurely. Beware that this may bias parameter estimates. 
-%     * Smoothing 
+%     * Smoothing DISABLED IN THIS VERSION 
 %          Performs smoothing to estimate the model's state variables and shocks. It is recommended 
-%          that smoothing is invoked in a separate DynareOBC run after estimation has completed. 
+%          that smoothing is invoked in a separate DynareOBC run after estimation has completed. Note 
+%          that Smoothing requires the MATLAB Statistics and Machine Learning Toolox. 
 %           * DataFile=STRING (default: MOD-FILE-NAME.xlsx) 
 %                Specifies the spreadsheet containing the data to estimate. This spreadsheet should 
 %                contain at least one worksheet. The first sheet should have a title row containing 
 %                the names of the MLVs being observed, followed by one row per observation. There 
 %                should not be a column with dates. 
-%           * StationaryDistMaxIterations=INTEGER (default: 1000) 
-%                The maximum number of iterations used to evaluate the stationary distribution of the 
-%                non-linear filter. 
+%           * StationaryDistPeriods=INTEGER (default: 1000) 
+%                The number of periods used to evaluate the stationary distribution of the model. 
+%           * StationaryDistDrop=INTEGER (default: 100) 
+%                The number of periods used as burn-in prior to evaluating the stationary 
+%                distribution of the model. 
 %           * FilterCubatureDegree=INTEGER (default: 0) 
 %                If this is greater than zero, then DynareOBC uses an alternative sparse cubature 
 %                rule including additional points for integrating over the states and shocks of the 
@@ -354,7 +366,8 @@ function dynareOBC( InputFileName, varargin )
 %                which may cause numerical issues e.g. with the positive definiteness of the state 
 %                covariance matrix. The cubature method exactly integrates a polynomial of degree 
 %                INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger 
-%                than twice the order of approximation. Values above 51 are treated as equal to 51. 
+%                than four times the order of approximation. Values above 51 are treated as equal to 
+%                51. 
 %           * StdDevThreshold=FLOAT (default: 1e-6) 
 %                Specifies the threshold below which the standard deviation of the state is set to 
 %                zero, for dimension reduction. 
@@ -444,6 +457,7 @@ function dynareOBC( InputFileName, varargin )
 %    2014, 
 %  * for nested Gaussian cubature, that is copyright Genz and Keister, 1996, 
 %  * for displaying a progress bar, that is copyright Cacho, "Stefan" and Scheff, 2014, 
+%  * for finding the nearest symmetric positive definite matrix, that is copyright D'Errico, 2013, 
 %  * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 
 %    2015, 
 %  * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and 
