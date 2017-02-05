@@ -31,8 +31,6 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ]
     
     SelectStateVariables = ismember( ( 1:NEndo )', oo_.dr.order_var( dynareOBC_.SelectState ) );
     SelectAugStateVariables = find( repmat( SelectStateVariables, NEndoMult, 1 ) );
-    NState = sum( SelectStateVariables );
-    NAugState = NEndoMult * NState;
    
     StdDevThreshold = dynareOBC_.StdDevThreshold;
     
@@ -47,114 +45,89 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ]
     end
     FutureValues = nan( sum( LeadIndices ), 1 );
     
-    % get initial mean and covariance
-    xoo = full( dynareOBC_.Mean_z );
-    xoo = xoo( dynareOBC_.CoreSelectInAugmented );
-    xoo = xoo( SelectAugStateVariables );
-    dr = oo_.dr;
+    OldRNGState = rng( 'default' );
+    ShockSequence = RootExoVar * randn( size( RootExoVar, 2 ), dynareOBC_.StatDistPeriods + dynareOBC_.StatDistDrop );
+    rng( OldRNGState );
+    
+    try
+        StatDistSimulation = SimulateModel( ShockSequence, false, [], true, true );
+    catch Error
+        rethrow( Error );
+    end
 
-    if dynareOBC_.Order == 1
-        TempPsoo = full( dynareOBC_.Var_z1 );
-        TempPsooSelect = dr.inv_order_var( SelectStateVariables );
+    if dynareOBC.Order == 1
+        StatDistPoints = StatDistSimulation.first + StatDistSimulation.bound_offset;
+    elseif dynareOBC.Order == 2
+        StatDistPoints = [ StatDistSimulation.first; StatDistSimulation.second + StatDistSimulation.bound_offset ];
     else
-        TempPsoo = full( dynareOBC_.Var_z2 );
-        TempPsooSelect = [ dr.inv_order_var( SelectStateVariables ); NEndo + dr.inv_order_var( SelectStateVariables ) ];
+        StatDistPoints = [ StatDistSimulation.first; StatDistSimulation.second; StatDistSimulation.first_sigma_2; StatDistSimulation.third + StatDistSimulation.bound_offset ];
     end
-
-    TempSsoo = ObtainEstimateRootCovariance( TempPsoo( TempPsooSelect, TempPsooSelect ), StdDevThreshold );
-
-    Ssoo = zeros( NAugState, size( TempSsoo, 2 ) );
-    Ssoo( 1:size( TempSsoo, 1 ), : ) = TempSsoo; % handles 3rd order
-    % end getting initial mean and covariance
-
-    deltasoo = zeros( size( xoo ) );
-    tauoo = 10;
-    nuoo = 20;
-    
-    Psoo = Ssoo * Ssoo';
-
-    CompOld = [ Psoo(:); xoo; deltasoo ];
-    
-    if isfinite( tauoo )
-        CompOld = [ CompOld; tauoo ];
+    if any( ~isfinite( StatDistPoints ) )
+        error( 'dynareOBC:EstimationNonFiniteSimultation', 'Non-finite values were encountered during simulation.' );
     end
-    if isfinite( nuoo )
-        CompOld = [ CompOld; nuoo ];
-    end    
     
-    ErrorOld = Inf;
-    StepSize = 1;
-    
-    MParams = M_.params;
-    OoDrYs = oo_.dr.ys( 1:dynareOBC_.OriginalNumVar );
-    
-    tCutOff = 100;
+    MedianStatDist = zeros( size( StatDistPoints, 1 ), 1 );
+    MeanStatDist = mean( StatDistPoints, 2 );
+    DeMeanedStatDistPoints = bsxfun( @minus, StatDistPoints, MeanStatDist );
+    [ ~, cholVarianceStatDist ] = NearestSPD( cov( StatDistPoints' ) );
+
+    MeanStatDistMMedianStatDist = MeanStatDist - MedianStatDist;
+    cholVarianceStatDist_MeanStatDistMMedianStatDist = cholVarianceStatDist * MeanStatDistMMedianStatDist;
+    cholVarianceStatDist_MeanStatDistMMedianStatDist2 = cholVarianceStatDist_MeanStatDistMMedianStatDist' * cholVarianceStatDist_MeanStatDistMMedianStatDist;
     
     if dynareOBC_.NoTLikelihood
-        nuno = Inf;
+        nuoo = Inf;
         assert( length( p ) == length( dynareOBC_.EstimationParameterSelect ) + N );
     elseif dynareOBC_.DynamicNu
-        nuno = [];
+        nuoo = [];
         assert( length( p ) == length( dynareOBC_.EstimationParameterSelect ) + N );
     else
-        nuno = exp( p( end ) );
+        nuoo = exp( p( end ) );
         assert( length( p ) == length( dynareOBC_.EstimationParameterSelect ) + N + 1 );
     end
     
-    deltasnn = deltasoo;
-    taunn = tauoo;
-    nunn = nuoo;
+    nuno = nuoo;
     
-    for t = 1:dynareOBC_.StationaryDistMaxIterations
-        % , deltasnn, taunn, nunn
-        [ ~, xnn, Ssnn ] = KalmanStep( nan( 1, N ), xoo, Ssoo, deltasoo, tauoo, nuoo, RootExoVar, diagLambda, nuno, MParams, OoDrYs, dynareOBC_, LagIndices, CurrentIndices, FutureValues, SelectAugStateVariables );
-        if ~Smoothing && isempty( xnn )
-            error( 'dynareOBC:EstimationEmptyKalmanReturn', 'KalmanStep returned an empty xnn.' );
-        end
-        
-        Psnn = Ssnn * Ssnn';
-        
-        xnn = xoo + StepSize * ( xnn - xoo );
-        Psnn = Psoo + StepSize * ( Psnn - Psoo );
-        deltasnn = deltasoo + StepSize * ( deltasnn - deltasoo );
+    if cholVarianceStatDist_MeanStatDistMMedianStatDist2 > eps && ~dynareOBC_.NoSkewLikelihood
+        ZcheckStatDist = ( MeanStatDistMMedianStatDist' * DeMeanedStatDistPoints ) / sqrt( cholVarianceStatDist_MeanStatDistMMedianStatDist2 );
 
-        CompNew = [ Psnn(:); xnn; deltasnn ];
-        
-        if isfinite( tauoo ) && isfinite( taunn )
-            taunn = tauoo + StepSize * ( taunn - tauoo );
-            CompNew = [ CompNew; taunn ]; %#ok<AGROW>
+        sZ3 = skewness( ZcheckStatDist, 0 );
+        sZ4 = max( 3, kurtosis( ZcheckStatDist, 0 ) );
+
+        if isempty( nuoo )
+            tauoo_nuoo = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), in( 2 ), MeanStatDist, MedianStatDist, cholVarianceStatDist, sZ3, sZ4 ), [ 2; 10 ], [ -Inf; 4 + eps( 4 ) ], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
+            tauoo = tauoo_nuoo( 1 );
+            nuoo = tauoo_nuoo( 2 );
+        else
+            tauoo = lsqnonlin( @( in ) CalibrateMomentsEST( in( 1 ), nuoo, MeanStatDist, MedianStatDist, cholVarianceStatDist, sZ3, [] ), 2, [], [], optimoptions( @lsqnonlin, 'display', 'off', 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf ) );
         end
-        if isfinite( nuoo ) && isfinite( nunn )
-            nunn = nuoo + StepSize * ( nunn - nuoo );
-            CompNew = [ CompNew; nunn ]; %#ok<AGROW>
-        end
+    else
+        tauoo = Inf;
         
-        xoo = xnn;
-        Ssoo = ObtainEstimateRootCovariance( Psnn, StdDevThreshold );
-        deltasoo = deltasnn;
-        tauoo = taunn;
-        nuoo = nunn;
-        
-        nComp = min( length( CompNew ), length( CompOld ) );
-        
-        Error = max( abs( CompNew( 1:nComp ) - CompOld( 1:nComp ) ) );
-        ErrorScale = sqrt( eps( max( abs( [ CompNew( 1:nComp ); CompOld( 1:nComp ) ] ) ) ) );
-        if Error < ErrorScale
-            break;
-        end
-        if t > tCutOff
-            if Error < ErrorOld
-                StepSize = min( 1, StepSize * 1.01 );
-            else
-                StepSize = 0.5 * StepSize;
-                tCutOff = t + 100;
+        if isempty( nuoo )
+            kurtDir = max( 0, kurtosis( DeMeanedStatDistPoints, 0, 2 ) - 3 );
+
+            if kurtDir' * kurtDir < eps
+                kurtDir = kurtosis( DeMeanedStatDistPoints, 0, 2 );
             end
-        end
-        
-        CompOld = CompNew;
-        ErrorOld = Error;
-    end
 
+            kurtDir = kurtDir / norm( kurtDir );
+
+            ZcheckStatDist = kurtDir' * DeMeanedStatDistPoints;
+
+            sZ4 = max( 3, kurtosis( ZcheckStatDist, 0 ) );
+            nuoo = 4 + 6 / ( sZ4 - 3 );
+        end
+    end
+    
+    [ ~, xoo, deltasoo, cholPsoo ] = CalibrateMomentsEST( tauoo, nuoo, MeanStatDist, MedianStatDist, cholVarianceStatDist, [], [] );
+    
+    Psoo = cholPsoo * cholPsoo';
+    Ssoo = ObtainEstimateRootCovariance( Psoo, StdDevThreshold );
+
+    MParams = M_.params;
+    OoDrYs = oo_.dr.ys( 1:dynareOBC_.OriginalNumVar );
+    
     PriorFunc = str2func( dynareOBC_.Prior );
     PriorValue = PriorFunc( p );
     ScaledPriorValue = PriorValue / T;

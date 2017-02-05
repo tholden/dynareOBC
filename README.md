@@ -186,8 +186,10 @@ Note:
                Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates. The second sheet should contain a title row with the names of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
           * `Prior=STRING` (default: `FlatPrior`)
                Specifies the function containing the prior to be used in maximum a posteriori estimation. The default prior results in maximum likelihood estimates being returned. The function should accept a single argument giving the vector of parameters to be estimated, in the order they appear in the datafile, including the measumerent error variances, then possibly nu-bar (if DynamicNu is not specified), in the final elements of the vector. The function should return the log prior density at that point (up to a constant).
-          * `StationaryDistMaxIterations=INTEGER` (default: `1000`)
-               The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
+          * `StationaryDistPeriods=INTEGER` (default: `1000`)
+               The number of periods used to evaluate the stationary distribution of the model.
+          * `StationaryDistDrop=INTEGER` (default: `100`)
+               The number of periods used as burn-in prior to evaluating the stationary distribution of the model.
           * `SkipStandardErrors`
                Makes DynareOBC skip calculation of standard errors for the estimated parameters.
           * `FilterCubatureDegree=INTEGER` (default: `0`)
@@ -209,8 +211,10 @@ Note:
          Performs smoothing to estimate the model's state variables and shocks. It is recommended that smoothing is invoked in a separate DynareOBC run after estimation has completed. Note that Smoothing requires the MATLAB Statistics and Machine Learning Toolox.
           * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
                Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain at least one worksheet. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates.
-          * `StationaryDistMaxIterations=INTEGER` (default: `1000`)
-               The maximum number of iterations used to evaluate the stationary distribution of the non-linear filter.
+          * `StationaryDistPeriods=INTEGER` (default: `1000`)
+               The number of periods used to evaluate the stationary distribution of the model.
+          * `StationaryDistDrop=INTEGER` (default: `100`)
+               The number of periods used as burn-in prior to evaluating the stationary distribution of the model.
           * `FilterCubatureDegree=INTEGER` (default: `0`)
                If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the predict step. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than four times the order of approximation. Values above `51` are treated as equal to `51`.
           * `StdDevThreshold=FLOAT` (default: `1e-6`)

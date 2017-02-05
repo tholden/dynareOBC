@@ -10,7 +10,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
     if nargin < 2
         DisplayProgress = true;
     end
-    if nargin < 3
+    if nargin < 3 || isempty( InitialFullState )
         Mean_z = full( dynareOBC_.Mean_z );
         dr = oo_.dr;
         nEndo = M_.endo_nbr;
