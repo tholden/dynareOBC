@@ -166,7 +166,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         tauno = Inf;
         
         if isempty( nuno )
-            Zcheck_wm = cholVariance_wm \ ano;
+            Zcheck_wm = ano;
 
             meanZcheck_wm = Zcheck_wm * CubatureWeights';
             Zcheck_wm = bsxfun( @minus, Zcheck_wm, meanZcheck_wm );
