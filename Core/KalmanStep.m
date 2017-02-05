@@ -168,8 +168,6 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
         if isempty( nuno )
             Zcheck_wm = ano;
 
-            meanZcheck_wm = Zcheck_wm * CubatureWeights';
-            Zcheck_wm = bsxfun( @minus, Zcheck_wm, meanZcheck_wm );
             meanZcheck_wm2 = Zcheck_wm.^2 * CubatureWeights';
             Zcheck_wm = bsxfun( @times, Zcheck_wm, 1 ./ sqrt( meanZcheck_wm2 ) );
 
