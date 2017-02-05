@@ -63,7 +63,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ]
         StatDistPoints = [ StatDistSimulation.first; StatDistSimulation.second; StatDistSimulation.first_sigma_2; StatDistSimulation.third + StatDistSimulation.bound_offset ];
     end
     
-    StatDistPoints = StatDistPoints( :, ( dynareOBC_.StationaryDistDrop + 1 ):end );
+    StatDistPoints = StatDistPoints( SelectAugStateVariables, ( dynareOBC_.StationaryDistDrop + 1 ):end );
     
     if any( ~isfinite( StatDistPoints ) )
         error( 'dynareOBC:EstimationNonFiniteSimultation', 'Non-finite values were encountered during simulation.' );
