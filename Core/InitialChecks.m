@@ -398,6 +398,8 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     LargestPMatrix = 0;
     
+    CPMatrix = true;
+    
     for Tss = 1 : Ts
         CssIndices = vec( bsxfun( @plus, (1:Tss)', 0:Ts:((ns-1)*Ts) ) )';
         dynareOBC.ssIndices{ Tss } = CssIndices;
@@ -416,40 +418,47 @@ function dynareOBC = InitialChecks( dynareOBC )
         dynareOBC.d1sSubMMatrices{ Tss } = d1( sIndices( CssIndices ) );
         dynareOBC.d2SubMMatrices{ Tss } = d2';
         
+        if ~CPMatrix
+            continue;
+        end
+        
         CPMatrix = false;
         
-        if all( diag( Msc ) > 0 )
-            if Tss == 1 || all( abs( angle( eig( Msc ) ) ) < pi - pi / Tss )
-                [ ~, pMsc ] = chol( Msc + Msc' );
-                if pMsc == 0
+        if any( diag( Msc ) <= 0 )
+            continue;
+        end
+        if Tss > 1 && any( abs( angle( eig( Msc ) ) ) >= pi - pi / Tss )
+            continue;
+        end
+        
+        [ ~, pMsc ] = chol( Msc + Msc' );
+        if pMsc == 0
+            CPMatrix = true;
+        else
+            IminusMsc = eye( Tss ) - Msc;
+            absIminusMsc = abs( IminusMsc );
+            if max( abs( eig( absIminusMsc ) ) ) < 1 % corollary 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                CPMatrix = true;
+            else
+                IplusMsc = eye( Tss ) + Msc;
+                norm_absIminusMsc = norm( absIminusMsc );
+                [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( Tss ) );
+                if pIMscComb == 0 % theorem 3.4 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                     CPMatrix = true;
                 else
-                    IminusMsc = eye( Tss ) - Msc;
-                    absIminusMsc = abs( IminusMsc );
-                    if max( abs( eig( absIminusMsc ) ) ) < 1 % corollary 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                    if norm_absIminusMsc < min( svd( IplusMsc ) ) % theorem 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                         CPMatrix = true;
                     else
-                        IplusMsc = eye( Tss ) + Msc;
-                        norm_absIminusMsc = norm( absIminusMsc );
-                        [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( Tss ) );
-                        if pIMscComb == 0 % theorem 3.4 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                            CPMatrix = true;
-                        else
-                            if norm_absIminusMsc < min( svd( IplusMsc ) ) % theorem 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                        if rank( IplusMsc ) == Tss
+                            IMscRatio = IplusMsc \ IminusMsc;
+                            if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                                 CPMatrix = true;
-                            else
-                                if rank( IplusMsc ) == Tss
-                                    IMscRatio = IplusMsc \ IminusMsc;
-                                    if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                                        CPMatrix = true;
-                                    end
-                                end
-                                if ~CPMatrix && rank( IminusMsc ) == Tss % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                                    IMscAltRatio = IminusMsc \ IplusMsc;
-                                    if min( svd( IMscAltRatio ) ) > 1
-                                        CPMatrix = true;
-                                    end
-                                end
+                            end
+                        end
+                        if ~CPMatrix && rank( IminusMsc ) == Tss % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                            IMscAltRatio = IminusMsc \ IplusMsc;
+                            if min( svd( IMscAltRatio ) ) > 1
+                                CPMatrix = true;
                             end
                         end
                     end
@@ -459,8 +468,6 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         if CPMatrix
             LargestPMatrix = Tss;
-        else
-            break;
         end
     end
     
