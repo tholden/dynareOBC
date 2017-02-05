@@ -82,7 +82,7 @@ function y = SolveBoundsProblem( q )
             end
             if PMatrixSolutionOK
 				y = ZeroVecS;
-				y( CssIndices ) = d2 .* max( 0, yScaled );
+				y( CssIndices ) = max( 0, d2 .* yScaled );
                 
                 w = qScaled + M * y;
                 
@@ -124,7 +124,7 @@ function y = SolveBoundsProblem( q )
             end
             if PMatrixSolutionOK
                 y = ZeroVecS;
-                y( CssIndices ) = d2 .* max( 0, yScaled );
+                y( CssIndices ) = max( 0, d2 .* yScaled );
 
                 w = qScaled + M * y;
 
@@ -177,13 +177,13 @@ function y = SolveBoundsProblem( q )
         qnScaled = d1 .* qScaled;
 
         OptOut = Optimizer{ Tss }{ qnScaled };
-        yScaled = OptOut( 1 : ( end - 1 ) );
         alpha = max( eps, OptOut( end ) );
-        y = ZeroVecS;
-        y( CssIndices ) = yScaled / alpha;
+        yScaled = OptOut( 1 : ( end - 1 ) ) / alpha;
 
-        if all( isfinite( y ) )
-            y = d2 .* max( 0, y );
+        if all( isfinite( yScaled ) )
+            y = ZeroVecS;
+            y( CssIndices ) = d2 .* yScaled;
+            y = max( 0, y );
             w = qScaled + M * y;
             if all( w >= -Tolerance ) && all( min( w( sIndices ), y ) <= Tolerance )
                 y = y * Norm_q;
