@@ -80,7 +80,7 @@ function y = SolveBoundsProblem( q )
 				warning( 'dynareOBC:ParametricEvaluationUnexpectedOutputSize', 'Unexpected output size returned from the parametric solution.' );
                 PMatrixSolutionOK = false;
             end
-			if PMatrixSolutionOK
+            if PMatrixSolutionOK
 				y = ZeroVecS;
 				y( CssIndices ) = d2 .* max( 0, yScaled );
                 
