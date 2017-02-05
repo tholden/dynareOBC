@@ -1,14 +1,14 @@
-function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, M, options, oo, dynareOBC ] = EstimationObjective( p, EstimationPersistentState, M, options, oo, dynareOBC, InitialRun, Smoothing )
+function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ] = EstimationObjective( p, EstimationPersistentState, Smoothing )
 
     global M_ options_ oo_ dynareOBC_
     
-    M_ = M;
-    options_ = options;
-    oo_ = oo;
-    dynareOBC_ = dynareOBC;
+    M_ = EstimationPersistentState.M;
+    options_ = EstimationPersistentState.options;
+    oo_ = EstimationPersistentState.oo;
+    dynareOBC_ = EstimationPersistentState.dynareOBC;
     
     [ T, N ] = size( dynareOBC_.EstimationData );
-    if nargout > 1
+    if nargout > 2
         LogObservationLikelihoods = NaN( T, 1 );
     end
 
@@ -17,7 +17,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     
     options_.qz_criterium = 1 - 1e-6;
     try
-        [ Info, M_, options_, oo_, dynareOBC_ ] = ModelSolution( false, M_, options_, oo_, dynareOBC_, InitialRun );
+        [ Info, M_, options_, oo_, dynareOBC_ ] = ModelSolution( false, M_, options_, oo_, dynareOBC_, EstimationPersistentState.InitialRun );
     catch Error
         rethrow( Error );
     end
@@ -47,37 +47,29 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
     end
     FutureValues = nan( sum( LeadIndices ), 1 );
     
-    if isempty( EstimationPersistentState )
-        % get initial mean and covariance
-        xoo = full( dynareOBC_.Mean_z );
-        xoo = xoo( dynareOBC_.CoreSelectInAugmented );
-        xoo = xoo( SelectAugStateVariables );
-        dr = oo_.dr;
+    % get initial mean and covariance
+    xoo = full( dynareOBC_.Mean_z );
+    xoo = xoo( dynareOBC_.CoreSelectInAugmented );
+    xoo = xoo( SelectAugStateVariables );
+    dr = oo_.dr;
 
-        if dynareOBC_.Order == 1
-            TempPsoo = full( dynareOBC_.Var_z1 );
-            TempPsooSelect = dr.inv_order_var( SelectStateVariables );
-        else
-            TempPsoo = full( dynareOBC_.Var_z2 );
-            TempPsooSelect = [ dr.inv_order_var( SelectStateVariables ); NEndo + dr.inv_order_var( SelectStateVariables ) ];
-        end
-
-        TempSsoo = ObtainEstimateRootCovariance( TempPsoo( TempPsooSelect, TempPsooSelect ), StdDevThreshold );
-
-        Ssoo = zeros( NAugState, size( TempSsoo, 2 ) );
-        Ssoo( 1:size( TempSsoo, 1 ), : ) = TempSsoo; % handles 3rd order
-        % end getting initial mean and covariance
-
-        deltasoo = zeros( size( xoo ) );
-        tauoo = 10;
-        nuoo = 20;
+    if dynareOBC_.Order == 1
+        TempPsoo = full( dynareOBC_.Var_z1 );
+        TempPsooSelect = dr.inv_order_var( SelectStateVariables );
     else
-        xoo = EstimationPersistentState.xoo;
-        Ssoo = EstimationPersistentState.Ssoo;
-        deltasoo = EstimationPersistentState.deltasoo;
-        tauoo = EstimationPersistentState.tauoo;
-        nuoo = EstimationPersistentState.nuoo;
+        TempPsoo = full( dynareOBC_.Var_z2 );
+        TempPsooSelect = [ dr.inv_order_var( SelectStateVariables ); NEndo + dr.inv_order_var( SelectStateVariables ) ];
     end
+
+    TempSsoo = ObtainEstimateRootCovariance( TempPsoo( TempPsooSelect, TempPsooSelect ), StdDevThreshold );
+
+    Ssoo = zeros( NAugState, size( TempSsoo, 2 ) );
+    Ssoo( 1:size( TempSsoo, 1 ), : ) = TempSsoo; % handles 3rd order
+    % end getting initial mean and covariance
+
+    deltasoo = zeros( size( xoo ) );
+    tauoo = 10;
+    nuoo = 20;
     
     Psoo = Ssoo * Ssoo';
 
@@ -162,12 +154,6 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
         CompOld = CompNew;
         ErrorOld = Error;
     end
-
-    EstimationPersistentState.xoo = xoo;
-    EstimationPersistentState.Ssoo = Ssoo;
-    EstimationPersistentState.deltasoo = deltasoo;
-    EstimationPersistentState.tauoo = tauoo;
-    EstimationPersistentState.nuoo = nuoo;
 
     PriorFunc = str2func( dynareOBC_.Prior );
     PriorValue = PriorFunc( p );
@@ -258,9 +244,9 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods, 
 
     end
     
-    M = M_;
-    options = options_;
-    oo = oo_;
-    dynareOBC = dynareOBC_;
+    EstimationPersistentState.M = M_;
+    EstimationPersistentState.options = options_;
+    EstimationPersistentState.oo = oo_;
+    EstimationPersistentState.dynareOBC = dynareOBC_;
     
 end

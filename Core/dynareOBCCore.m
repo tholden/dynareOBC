@@ -420,13 +420,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
-        EstimationPersistentState = [];
-        [ LogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
-        dynareOBC = orderfields( dynareOBC );
+        EstimationPersistentState = struct( 'M', M_, 'options', options_, 'oo', oo_, 'dynareOBC', dynareOBC, 'InitialRun', true );
+        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, false );
+        EstimationPersistentState.InitialRun = false;
         disp( 'Initial log-likelihood:' );
         disp( LogLikelihood );
         
-        OptiFunction = @( p, s ) EstimationObjective( p, s, M_, options_, oo_, dynareOBC, false, false );
+        OptiFunction = @( p, s ) EstimationObjective( p, s, false );
         OptiLB = [ LBTemp; -Inf( NumObservables + EstimatedNu, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables + EstimatedNu, 1 ) ];
         MaximisationFunctions = strsplit( dynareOBC.MaximisationFunctions, { ',', ';', '#' } );
@@ -438,8 +438,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( LogLikelihood );
  
         
-        [ LogLikelihood, EstimationPersistentState, ~, M_, options_, oo_, dynareOBC ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, M_, options_, oo_, dynareOBC, true, false );
-        dynareOBC = orderfields( dynareOBC );
+        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, false );
+        M_ = EstimationPersistentState.M;
+        options_ = EstimationPersistentState.options;
+        oo_ = EstimationPersistentState.oo;
+        dynareOBC = orderfields( EstimationPersistentState.dynareOBC );
         disp( 'Paranoid verification of final log-likelihood:' );
         disp( LogLikelihood );
         
@@ -466,10 +469,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             ObservationCount = size( dynareOBC.EstimationData, 1 );
             OneOverRootObservationCount = 1 / sqrt( ObservationCount );
             
-            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, EstimationPersistentState, M_, options_, oo_, dynareOBC ), EstimatedParameters, ObservationCount );
+            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, EstimationPersistentState ), EstimatedParameters, ObservationCount );
             [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
             
-            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) EstimationObjective( p2, EstimationPersistentState, M_, options_, oo_, dynareOBC, false, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
+            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) EstimationObjective( p2, EstimationPersistentState, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
             HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
             
             RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );
