@@ -55,9 +55,9 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ]
         rethrow( Error );
     end
 
-    if dynareOBC.Order == 1
+    if dynareOBC_.Order == 1
         StatDistPoints = StatDistSimulation.first + StatDistSimulation.bound_offset;
-    elseif dynareOBC.Order == 2
+    elseif dynareOBC_.Order == 2
         StatDistPoints = [ StatDistSimulation.first; StatDistSimulation.second + StatDistSimulation.bound_offset ];
     else
         StatDistPoints = [ StatDistSimulation.first; StatDistSimulation.second; StatDistSimulation.first_sigma_2; StatDistSimulation.third + StatDistSimulation.bound_offset ];
