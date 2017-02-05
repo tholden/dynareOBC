@@ -138,7 +138,7 @@ function [ LogObservationLikelihood, xnn, Ssnn, deltasnn, taunn, nunn, wnn, Pnn,
     
     Variance_wm = Variance_wm + NearestSPD( ano * Weighted_ano' );
     Variance_wm = 0.5 * ( Variance_wm + Variance_wm' );
-    cholVariance_wm = chol( Variance_wm );
+    [ ~, cholVariance_wm ] = NearestSPD( Variance_wm );
     
     Mean_wmMMedian_wm = Mean_wm - Median_wm;
     cholVariance_wm_Mean_wmMMedian_wm = cholVariance_wm * Mean_wmMMedian_wm;
