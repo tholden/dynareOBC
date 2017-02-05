@@ -46,7 +46,7 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ]
     FutureValues = nan( sum( LeadIndices ), 1 );
     
     OldRNGState = rng( 'default' );
-    ShockSequence = RootExoVar * randn( size( RootExoVar, 2 ), dynareOBC_.StatDistPeriods + dynareOBC_.StatDistDrop );
+    ShockSequence = RootExoVar * randn( size( RootExoVar, 2 ), dynareOBC_.StationaryDistPeriods + dynareOBC_.StationaryDistDrop );
     rng( OldRNGState );
     
     try
@@ -62,6 +62,9 @@ function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ]
     else
         StatDistPoints = [ StatDistSimulation.first; StatDistSimulation.second; StatDistSimulation.first_sigma_2; StatDistSimulation.third + StatDistSimulation.bound_offset ];
     end
+    
+    StatDistPoints = StatDistPoints( :, ( dynareOBC_.StationaryDistDrop + 1 ):end );
+    
     if any( ~isfinite( StatDistPoints ) )
         error( 'dynareOBC:EstimationNonFiniteSimultation', 'Non-finite values were encountered during simulation.' );
     end
