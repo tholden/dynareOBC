@@ -177,7 +177,7 @@ function y = SolveBoundsProblem( q )
         qnScaled = d1 .* qScaled;
 
         OptOut = Optimizer{ Tss }{ qnScaled };
-        yScaled = OptOut( 1 : ( end - 1 ), : );
+        yScaled = OptOut( 1 : ( end - 1 ) );
         alpha = max( eps, OptOut( end ) );
         y = ZeroVecS;
         y( CssIndices ) = yScaled / alpha;
