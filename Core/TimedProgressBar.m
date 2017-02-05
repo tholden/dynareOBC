@@ -86,10 +86,14 @@ classdef TimedProgressBar < handle
         end
         
         function percent= progress(obj)
+            persistent LastDisplayTime
             obj.updateFile();
-            [ percent, remainingTime, ~ ]= obj.getProgress();
-            timedMsg= obj.getTimedMsg( remainingTime, percent );
-            obj.showStatus( percent, [ obj.waitMsg timedMsg ] );
+            if isempty( LastDisplayTime ) || toc( LastDisplayTime ) >= 1
+                LastDisplayTime = tic;
+                [ percent, remainingTime, ~ ]= obj.getProgress();
+                timedMsg= obj.getTimedMsg( remainingTime, percent );
+                obj.showStatus( percent, [ obj.waitMsg timedMsg ] );
+            end
         end
         
         function [ percent, timeElapsed ]= stop(obj)
