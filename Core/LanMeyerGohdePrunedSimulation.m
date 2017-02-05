@@ -1,4 +1,4 @@
-function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_sequence, simul_length, pruning_order, use_cached_nlma_values, initial_state, call_back, call_back_arg )
+function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_sequence, simul_length, pruning_order, use_cached_nlma_values, initial_state, call_back, call_back_arg, call_back_every )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % pruning_abounds.m
@@ -108,7 +108,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
     E = shock_sequence;
     for t=2:simul_length_p1
       simulation_first(:,t)=dr.ghx*simulation_first(select_state,t-1)+dr.ghu*E(:,t-1);
-       if nargin >= 9
+       if nargin >= 10 && rem( t, call_back_every ) == 0
           call_back(call_back_arg);
        end
     end
@@ -145,7 +145,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
                 sxs = alt_kron(simulation_first(select_state,t-1),simulation_first(select_state,t-1));
                 simulation_second(:,t) = dr.ghx*simulation_second(select_state,t-1)...
                                          +(1/2)*( dr.ghxx*sxs+2*dr.ghxu*sxe+dr.ghuu*exe );
-               if nargin >= 9
+               if nargin >= 10 && rem( t, call_back_every ) == 0
                   call_back(call_back_arg);
                end
             end
@@ -200,7 +200,7 @@ function [ simulations, dr ] = LanMeyerGohdePrunedSimulation( M, dr, shock_seque
                                        +(1/2)*(dr.ghxxu*alt_kron(sxs,E(:,t-1))+dr.ghxuu*alt_kron(simulation_first(select_state,t-1),exe))...
                                        +dr.ghxx*alt_kron(simulation_second(select_state,t-1),simulation_first(select_state,t-1))...
                                        +dr.ghxu*alt_kron(simulation_second(select_state,t-1),E(:,t-1));
-               if nargin >= 9
+               if nargin >= 10 && rem( t, call_back_every ) == 0
                   call_back(call_back_arg);
                end
            end

@@ -157,17 +157,15 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         if isempty( Simulation )
             if DisplayProgress
-                p = TimedProgressBar( SimulationLength, 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
+                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
             else
                 p = [];
             end
             if isempty( p )
-                call_back = @( x ) x;
+                Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState );
             else
-                call_back = @( x ) x.progress;
+                Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, @(x) x.progress, p, 100 );
             end
-            call_back_arg = p;
-            Simulation = LanMeyerGohdePrunedSimulation( M_, oo_.dr, ShockSequence, SimulationLength, dynareOBC_.Order, 1, InitialFullState, call_back, call_back_arg );
             if ~isempty( p )
                 p.stop;
             end
@@ -205,7 +203,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             WarningPeriods = { };
 
             if DisplayProgress
-                p = TimedProgressBar( SimulationLength, 50, 'Computing simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
+                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
             else
                 p = [];
             end
@@ -266,7 +264,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
                 warning( WarningState );
 
-                if ~isempty( p )
+                if ~isempty( p ) && rem( t, 10 ) == 0
                     p.progress;
                 end
 
@@ -343,7 +341,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         
         if DisplayProgress
-            p = TimedProgressBar( SimulationLength, 50, 'Computing model local variable paths. Please wait for around ', '. Progress: ', 'Computing model local variable paths. Completed in ' );
+            p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing model local variable paths. Please wait for around ', '. Progress: ', 'Computing model local variable paths. Completed in ' );
         else
             p = [];
         end
@@ -458,7 +456,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
             warning( WarningState );
             
-            if ~isempty( p )
+            if ~isempty( p ) && rem( t, 10 ) == 0
                 p.progress;
             end
         end
