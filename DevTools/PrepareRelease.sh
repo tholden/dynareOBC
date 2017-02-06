@@ -15,6 +15,10 @@ cd ../..
 git submodule foreach git merge upstream/master
 git submodule foreach git push
 
+git add .
+git commit -m "update submodules"
+git push
+
 rm -f -r -d -- ../dynareOBCRelease/
 mkdir ../dynareOBCRelease
 cp -f -r . ../dynareOBCRelease/
