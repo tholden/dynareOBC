@@ -19,10 +19,11 @@
 %  * `Resume`: Whether to resume the past run. A logical.
 %  
 %  Ouputs:
-%   * `xMean`: The optimal point.
-%   * `BestFitness`: The value of the objective at that point.
-%   * `Iterations`: The number of iterations performed.
-%   * `NEvaluations`: The number of function evaluations performed. 
+%  * `xMean`: The optimal point.
+%  * `BestFitness`: The value of the objective at that point.
+%  * `PersistentState`: The state at the best point.
+%  * `Iterations`: The number of iterations performed.
+%  * `NEvaluations`: The number of function evaluations performed. 
 % 
 % ---------------------------------------------------------------
 % Adaptive Coordinate Descent. To be used under the terms of the BSD license 
