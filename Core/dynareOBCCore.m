@@ -547,7 +547,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         if dynareOBC.Smoothing
             error( 'Smoothing is disabled in this version. A new release featuring smoothing is coming soon.' );
             
-            fprintf( '\n' );
+            fprintf( '\n' ); %#ok<UNRCH>
             disp( 'Running smoothing.' );
             fprintf( '\n' );
 
