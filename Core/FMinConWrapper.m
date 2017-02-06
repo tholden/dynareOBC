@@ -38,6 +38,8 @@ function [ x, f, PersistentState ] = FMinConWrapper( OptiFunction, x, LB, UB, Ol
     
     x = max( LB, min( UB, x ) );
     
+    f = -f;
+    
     PersistentState = WrappedOptiFunctionPersistentState;
     WrappedOptiFunctionPersistentState = [];
     

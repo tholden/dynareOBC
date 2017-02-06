@@ -28,5 +28,7 @@ function [ x, f, PersistentState ] = ACDWrapper( OptiFunction, x, lb, ub, OldPer
     
     x = max( lb, min( ub, x ) );
     
+    f = -f;
+    
 end
 

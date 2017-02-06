@@ -28,5 +28,7 @@ function [ x, f, PersistentState ] = ACDResumeWrapper( OptiFunction, x, lb, ub, 
     
     x = max( lb, min( ub, x ) );
     
+    f = -f;
+    
 end
 

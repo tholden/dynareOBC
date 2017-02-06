@@ -46,8 +46,7 @@ function [ x, f, PersistentState ] = CMAESWrapper( OptiFunction, x, lb, ub, OldP
         x, sigma, OldPersistentState, cmaesOptions );
     
     x = max( lb, min( ub, best.x ) );
-    f = best.f;
+    f = -best.f;
     PersistentState = best.PersistentState;
     
 end
-
