@@ -106,7 +106,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = PAC
         Iterations = Iterations + 1;
         
         %%% Sample NPoints candidate solutions
-        Sigma = eps ^ ( 1 / 3 ) * abs( xMean );
+        Sigma = eps ^ ( 1 / 3 ) * max( 1, abs( xMean ) );
         dSigma = diag( Sigma ); % shift along qix'th principal component, the computational complexity is linear
         
         if QuickMode
