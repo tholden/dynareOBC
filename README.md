@@ -103,8 +103,7 @@ Note:
          The number of periods in which to verify that the constraints are not being violated. If this is lower than TimeToEscapeBounds, or the requested number of IRF periods, or PeriodsOfUncertainty + 1, then that value will be used instead.
     * `Omega=FLOAT` (default: `1000`)
          The tightness of the constraint on the news shocks. If this is large, solutions with news shocks close to zero will be returned when there are multiple solutions.
-    * `MILPSolver=STRING`
-      (default: `gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*`)
+    * `MILPSolver=STRING` (default: `gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*`)
          DynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This option sets YALMIP's preferred solvers. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP.
     * `ReverseSearch`
          By default, DynareOBC finds a solution in which the last period at the bound is as soon as possible. This option makes DynareOBC find a solution in which the last period at the bound is as remote as possible, subject to being less than the longest horizon (i.e. `TimeToEscapeBounds`).
