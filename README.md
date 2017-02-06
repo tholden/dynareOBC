@@ -166,10 +166,10 @@ Note:
     * `FullTest=INTEGER` (default: `0`)
       Runs very slow tests to see if the top `INTEGERxINTEGER` submatrix of M is a P(0) and/or (strictly) semi-monotone matrix.
     * `UseVPA`
-      Enables more accurate evaluation of determinants using the symbolic toolbox.     
+      Enables more accurate evaluation of determinants using the symbolic toolbox.
     * `LPSolver=STRING`
       (default: `xpress,gurobi,cplex,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*`)
-      Specifies the preferred solver to use for the linear programming problem that is solved when checking whether matrices are S/S_0. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP. 
+      Specifies the preferred solver to use for the linear programming problem that is solved when checking whether matrices are S/S_0. To find out what solvers are available to you, run `dynareOBC TestSolvers`, and examine the list displayed by YALMIP.
 
 * **For controlling IRFs**
     * `SlowIRFs`
@@ -225,7 +225,7 @@ Note:
           If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the predict step. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. The cubature method exactly integrates a polynomial of degree INTEGER. Thus, in a model without bounds, there is no need to have INTEGER larger than four times the order of approximation. Values above `51` are treated as equal to `51`.
         * `StdDevThreshold=FLOAT` (default: `1e-6`)
           Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
-               
+
 * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`
       Without this, DynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the bound, but they do not take into account the risk of hitting the bound in the far future. With the global option, DynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that under the global solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the response ignoring the bound entirely.
@@ -294,7 +294,7 @@ DynareOBC incorporates code:
 * for finding the nearest symmetric positive definite matrix, that is copyright D'Errico, 2013,
 * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
 * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
- 
+
 Additionally, DynareOBC automatically downloads:
 * YALMIP, copyright Lofberg, 2015,
 * the Opti Toolbox, copyright Currie, and others, 2015,
