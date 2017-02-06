@@ -125,7 +125,6 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = PAC
         
         [ Fit, TmpPersistentState ] = FitnessFunction( x, PersistentState, size( x, 2 ) );
         NEvaluations = NEvaluations + size( x, 2 );
-        Fit( Fit > 0 ) = Inf;
         
         xDone = [ xMean, x ];
         [ Fit, sidxFit ] = sort( Fit );
