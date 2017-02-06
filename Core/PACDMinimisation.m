@@ -1,4 +1,4 @@
-% `[ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = pACDMinimisation( FitnessFunction, xMean, Sigma, MinSigma, LB, UB, A, b, MaxEvaluations, StopFitness, HowOftenUpdateRotation, Order, NonProductSearchDimension, ProductSearchDimension, PersistentState, Resume );`
+% `[ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = pACDMinimisation( FitnessFunction, xMean, LB, UB, A, b, PersistentState, Resume );`
 % 
 % Inputs:
 %  * `FitnessFunction`: The objective function, a function handle.
