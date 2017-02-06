@@ -84,5 +84,5 @@ rm -f -r -d -- **/checksum
 
 find . -empty -type d -delete
 
-echo https://github.com/tholden/dynareOBC/releases/download/TODO/dynareOBC.zip > CurrentVersionURL.txt
+echo https://github.com/tholden/dynareOBC/releases/download/vX.XX.TODO/dynareOBCRelease.zip > CurrentVersionURL.txt
 echo Now update CurrentVersionURL.txt
