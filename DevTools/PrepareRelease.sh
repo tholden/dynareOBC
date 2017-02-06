@@ -1,6 +1,20 @@
 cd ..
+
+git submodule foreach git checkout master
 git pull --recurse-submodules
 git submodule foreach git pull --recurse-submodules
+git submodule foreach git fetch upstream --recurse-submodules
+cd Core/YALMIP
+git checkout develop
+git merge upstream/develop
+git push
+git checkout master
+git merge develop
+git push
+cd ../..
+git submodule foreach git merge upstream/master
+git submodule foreach git push
+
 rm -f -r -d -- ../dynareOBCRelease/
 mkdir ../dynareOBCRelease
 cp -f -r . ../dynareOBCRelease/
