@@ -204,13 +204,13 @@ Note:
                Causes the estimation procedure to calibrate the degrees of freedom parameter, nu, at each time step. We recommend that FilterCubatureDegree is at least 9 if this option is specified.
           * `MaximisationFunctions=STRING` (default: `CMAESWrapper,FMinConWrapper`)
                A `,` `;` or `#` delimitated list of maximisation function names, which will be invoked in order. DynareOBC includes the following:
-                 * `CMAESWrapper` an evolutionary global search algorithm,
-                 * `CMAESResumeWrapper` an evolutionary global search algorithm, resuming an interrupted CMAES run,
-                 * `ACDWrapper` an adaptive coordinate descent algorithm,
-                 * `ACDResumeWrapper` an adaptive coordinate descent algorithm, resuming an interrupted ACD run,
-                 * `PACDWrapper` an alternative adaptive coordinate descent algorithm,
-                 * `PACDResumeWrapper` an alternative adaptive coordinate descent algorithm, resuming an interrupted ACD run,
-                 * `FMinConWrapper` MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox.
+                  * `CMAESWrapper` an evolutionary global search algorithm,
+                  * `CMAESResumeWrapper` an evolutionary global search algorithm, resuming an interrupted CMAES run,
+                  * `ACDWrapper` an adaptive coordinate descent algorithm,
+                  * `ACDResumeWrapper` an adaptive coordinate descent algorithm, resuming an interrupted ACD run,
+                  * `PACDWrapper` an alternative adaptive coordinate descent algorithm,
+                  * `PACDResumeWrapper` an alternative adaptive coordinate descent algorithm, resuming an interrupted ACD run,
+                  * `FMinConWrapper` MATLAB's local search, which requires a license for the MATLAB Optimisation Toolbox.
           * `FixedParameters=STRING` (default: `''`)
                A `,` `;` or `#` delimitated list of parameters names. Any parameters in this list will not be estimated, even if they occur in the second sheet of the data file.
     * `Smoothing` **DISABLED IN THIS VERSION**
