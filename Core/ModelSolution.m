@@ -105,6 +105,14 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
 
     dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
     dynareOBC.ParametricSolutionFound = zeros( dynareOBC.TimeToEscapeBounds, 1 );
+    
+    if SlowMode
+        fprintf( '\n' );
+        disp( 'Preparing normalized sub-matrices.' );
+        fprintf( '\n' );
+    end
+
+    dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode );
 
     if SlowMode
         if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation || dynareOBC.Smoothing )
