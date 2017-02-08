@@ -397,7 +397,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
 
     PoolOpened = false;
-    for Tss = min( dynareOBC.TimeToSolveParametrically, LargestPMatrix ) : -1 : 1
+    for Tss = min( dynareOBC.TimeToSolveParametrically, dynareOBC.LargestPMatrix ) : -1 : 1
         
         if ~PoolOpened
             OpenPool;
