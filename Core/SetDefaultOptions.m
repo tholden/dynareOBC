@@ -72,6 +72,20 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'Tolerance', eps ^ 0.25 );
     dynareOBC = SetDefaultOption( dynareOBC, 'UseSimulationCode', true );
     dynareOBC = SetDefaultOption( dynareOBC, 'UseVPA', false );
+
+    LemkeLCPOptions = struct;
+    LemkeLCPOptions.zerotol = sqrt( eps );
+    LemkeLCPOptions.lextol  = sqrt( eps );
+    LemkeLCPOptions.maxpiv  = 1e10;
+    LemkeLCPOptions.nstepf  = 50;
+    LemkeLCPOptions.clock   = 0;
+    LemkeLCPOptions.verbose = 0;
+    LemkeLCPOptions.routine = 0;
+    LemkeLCPOptions.timelimit = 60;
+    LemkeLCPOptions.normalize = 0;
+    LemkeLCPOptions.normalizethres = 1e10;
+    
+    dynareOBC = SetDefaultOption( dynareOBC, 'LemkeLCPOptions', LemkeLCPOptions );
     
     dynareOBC = orderfields( dynareOBC );
 end

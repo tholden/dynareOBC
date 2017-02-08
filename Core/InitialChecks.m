@@ -473,21 +473,6 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     dynareOBC.LargestPMatrix = LargestPMatrix;
     
-    if LargestPMatrix > 0
-        LemkeLCPOptions = struct;
-        LemkeLCPOptions.zerotol = sqrt( eps );
-        LemkeLCPOptions.lextol  = sqrt( eps );
-        LemkeLCPOptions.maxpiv  = 1e10;
-        LemkeLCPOptions.nstepf  = 50;
-        LemkeLCPOptions.clock   = 0;
-        LemkeLCPOptions.verbose = 0;
-        LemkeLCPOptions.routine = 0;
-        LemkeLCPOptions.timelimit = 60;
-        LemkeLCPOptions.normalize = 0;
-        LemkeLCPOptions.normalizethres = 1e10;
-        dynareOBC.LemkeLCPOptions = LemkeLCPOptions;
-    end
-    
     fprintf( '\n' );
     disp( [ 'Largest P-matrix found with a simple criterion included elements up to horizon ' num2str( LargestPMatrix ) ' periods.' ] );
     disp( 'The search for solutions will start from this point.' );
