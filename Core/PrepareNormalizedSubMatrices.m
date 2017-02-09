@@ -1,5 +1,10 @@
 function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
 
+    Ts = dynareOBC.TimeToEscapeBounds;
+    ns = dynareOBC.NumberOfMax;
+    sIndices = dynareOBC.sIndices;
+    NormalizeTolerance = sqrt( eps );
+
     dynareOBC.ssIndices = cell( Ts, 1 );
     dynareOBC.NormalizedSubMMatrices = cell( Ts, 1 );
     dynareOBC.NormalizedSubMsMatrices = cell( Ts, 1 );
