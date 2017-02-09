@@ -66,15 +66,21 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
                         CPMatrix = true;
                     else
                         if rank( IplusMsc ) == Tss
-                            IMscRatio = IplusMsc \ IminusMsc;
-                            if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                                CPMatrix = true;
+                            try
+                                IMscRatio = IplusMsc \ IminusMsc;
+                                if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                                    CPMatrix = true;
+                                end
+                            catch
                             end
                         end
                         if ~CPMatrix && rank( IminusMsc ) == Tss % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                            IMscAltRatio = IminusMsc \ IplusMsc;
-                            if min( svd( IMscAltRatio ) ) > 1
-                                CPMatrix = true;
+                            try
+                                IMscAltRatio = IminusMsc \ IplusMsc;
+                                if min( svd( IMscAltRatio ) ) > 1
+                                    CPMatrix = true;
+                                end
+                            catch
                             end
                         end
                     end
