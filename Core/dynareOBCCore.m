@@ -403,7 +403,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Beginning the estimation of the model.' );
         fprintf( '\n' );
         
-        dynareOBC.CalculateTheoreticalVariance = true;
         [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
         NumObservables = length( dynareOBC.VarList );
         NumEstimatedParams = length( dynareOBC.EstimationParameterSelect );
