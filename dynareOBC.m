@@ -400,9 +400,14 @@ function dynareOBC( InputFileName, varargin )
 %     * OrderOverride=1|2|3 
 %       Overrides the order of approximation set within the call to stoch_simul. 
 %     * ShockSequenceFile=FILENAME.mat 
-%       Specifies a MAT file to open to load shocks from. The MAT file should contain a matrix called 
-%       ShockSequence, which should have as many rows as there are shocks, and as many columns as 
-%       there are simulation periods. 
+%       Specifies a MAT file to open to load shocks for simulation from. The MAT file should contain 
+%       a matrix called ShockSequence, which should have as many rows as there are shocks, and as 
+%       many columns as there are simulation periods. Shocks are ordered in declaration order. 
+%     * InitialStateFile=FILENAME.mat 
+%       Specifies a MAT file to open to load the initial state for simulation from. The MAT file 
+%       should contain a column vector called InitialState, which should have as many rows as there 
+%       are endogenous variables. Variables are ordered in declaration order. Values assigned to 
+%       non-state variables are ignored. 
 %     * SimulateOnGridPoints 
 %       Rather than running an actual simulation, causes DynareOBC to draw QMC points from a Gaussian 
 %       approximation to the stationary distribution of the model without bounds. The mean for the 
