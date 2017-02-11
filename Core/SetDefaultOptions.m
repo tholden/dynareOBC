@@ -22,6 +22,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'FullTest', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Global', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'IgnoreBoundFailures', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'InitialStateFile', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFsAroundZero', false );
