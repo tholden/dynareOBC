@@ -116,7 +116,7 @@ function [ xMean, BestFitness, PersistentState, Iterations, NEvaluations ] = ACD
     UNPoints = 2 .^ ( NonProductSearchDimension + Order ) - 1;
     NPoints = UNPoints .^ ProductSearchDimension - 1;
     
-    SobolPoints = SobolSequence( NonProductSearchDimension, UNPoints );
+    SobolPoints = SobolSetWrapper( NonProductSearchDimension, UNPoints );
     assert( size( SobolPoints, 1 ) == NonProductSearchDimension );
     assert( all( mean( SobolPoints, 2 ) < 1e-12 ) );
     
