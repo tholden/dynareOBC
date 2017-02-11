@@ -33,7 +33,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
                         error( 'dynareOBC:LoadedShockSequenceWrongSize', 'The loaded ShockSequence was not the correct size. Expected %d x %d, found %d x %d.', dynareOBC.OriginalNumVarExo, dynareOBC.SimulationPeriods, size( ShockSequence, 1 ), size( ShockSequence, 2 ) );
                     end
                 else
-                    error( 'dynareOBC:LoadedShockSequenceFileWrongFields', 'The given shock sequence file did not contain a ShockSequence field.' );
+                    error( 'dynareOBC:LoadedShockSequenceFileWrongFields', 'The given shock sequence file did not contain a ShockSequence variable.' );
                 end
             else
                 error( 'dynareOBC:NoShockSequenceFile', 'Failed to find the file: %s', dynareOBC.ShockSequenceFile );
