@@ -54,7 +54,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
         nEndo = M.endo_nbr;
         
         if exist( dynareOBC.InitialStateFile, 'file' ) == 2
-            FileData = load( dynareOBC.ShockSequenceFile, 'InitialState' );
+            FileData = load( dynareOBC.InitialStateFile, 'InitialState' );
             if isfield( FileData, 'InitialState' )
                 InitialState = FileData.InitialState;
                 if ~all( size( InitialState ) == [ nEndo, 1 ] )
