@@ -1,11 +1,12 @@
 function [ LogLikelihood, EstimationPersistentState, LogObservationLikelihoods ] = EstimationObjective( p, EstimationPersistentState, Smoothing )
 
-    global M_ options_ oo_ dynareOBC_
+    global M_ options_ oo_ dynareOBC_ spkronUseMex
     
     M_ = EstimationPersistentState.M;
     options_ = EstimationPersistentState.options;
     oo_ = EstimationPersistentState.oo;
     dynareOBC_ = EstimationPersistentState.dynareOBC;
+    spkronUseMex = EstimationPersistentState.spkronUseMex;
     
     [ T, N ] = size( dynareOBC_.EstimationData );
     if nargout > 2

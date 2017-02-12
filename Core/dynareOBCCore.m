@@ -394,6 +394,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.MLVSelect = 1 : length( dynareOBC.MLVNames );
     end
 
+    global spkronUseMex
+    
     if dynareOBC.Estimation
         if dynareOBC.Global
             error( 'dynareOBC:UnsupportedGlobalEstimation', 'Estimation of models solved globally is not currently supported.' );
@@ -419,7 +421,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
-        EstimationPersistentState = struct( 'M', M_, 'options', options_, 'oo', oo_, 'dynareOBC', dynareOBC, 'InitialRun', true );
+        EstimationPersistentState = struct( 'M', M_, 'options', options_, 'oo', oo_, 'dynareOBC', dynareOBC, 'spkronUseMex', spkronUseMex, 'InitialRun', true );
         [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, false );
         EstimationPersistentState.InitialRun = false;
         disp( 'Initial log-likelihood:' );
