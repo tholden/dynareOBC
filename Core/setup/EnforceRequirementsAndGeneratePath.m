@@ -145,6 +145,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     addpath( genpath( [ dynareOBCPath '/Core/YALMIP/' ] ) );
     addpath( [ dynareOBCPath '/Core/nlma/' ] );
+    addpath( [ dynareOBCPath '/Core/MChecks/' ] );
+    addpath( [ dynareOBCPath '/Core/Utils/' ] );
+    addpath( [ dynareOBCPath '/Core/Global/' ] );
     addpath( [ dynareOBCPath '/Core/EST-NLSS/Core/' ] );
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );

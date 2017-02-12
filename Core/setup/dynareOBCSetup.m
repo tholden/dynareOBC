@@ -49,6 +49,8 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     dynareOBCCleanUp;
     
     addpath( [ dynareOBCPath '/Core/nlma/' ] );
+    addpath( [ dynareOBCPath '/Core/MChecks/' ] );
+    addpath( [ dynareOBCPath '/Core/Utils/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
