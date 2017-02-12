@@ -565,13 +565,17 @@ function dynareOBC( InputFileName, varargin )
                 SafeRemoveDir( dynareOBCPath, '/DevTools/' );
                 SafeRemoveDir( dynareOBCPath, '/Examples/' );
                 SafeRemoveDir( dynareOBCPath, '/Tests/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/aria2/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/aria2/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/clobber/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/eigtool/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/glpkmex/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/nlma/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/Setup/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/YALMIP/' );
+                SafeRemoveDir( dynareOBCPath, '/Core/MChecks/' );
+                SafeRemoveDir( dynareOBCPath, '/Core/Utils/' );
+                SafeRemoveDir( dynareOBCPath, '/Core/Global/' );
+                SafeRemoveDir( dynareOBCPath, '/Core/EST-NLSS/' );
                 SafeDeleteFiles( dynareOBCPath, '/.git*' );
                 SafeDeleteFiles( dynareOBCPath, '/*.pdf' );
                 SafeDeleteFiles( dynareOBCPath, '/*.m' );
