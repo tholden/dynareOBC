@@ -525,7 +525,7 @@ function dynareOBC( InputFileName, varargin )
     end
 
     OriginalPath = path;
-    addpath( [ dynareOBCPath '/Core/setup/' ] );
+    addpath( [ dynareOBCPath '/Core/Setup/' ] );
     
     fprintf( '\n' );
     try
@@ -570,7 +570,7 @@ function dynareOBC( InputFileName, varargin )
                 SafeRemoveDir( dynareOBCPath, '/Core/eigtool/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/glpkmex/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/nlma/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/setup/' );
+                SafeRemoveDir( dynareOBCPath, '/Core/Setup/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/YALMIP/' );
                 SafeDeleteFiles( dynareOBCPath, '/.git*' );
                 SafeDeleteFiles( dynareOBCPath, '/*.pdf' );
@@ -592,7 +592,7 @@ function dynareOBC( InputFileName, varargin )
                 disp( 'Extracting files from the downloaded release.' );
                 fprintf( '\n' );
                 unzip(  [ dynareOBCPath '/CurrentRelease.zip' ], dynareOBCPath );
-                addpath( [ dynareOBCPath '/Core/setup/' ] );
+                addpath( [ dynareOBCPath '/Core/Setup/' ] );
                 rehash;
                 CurrentVersionURL = DownloadURL;
             end
