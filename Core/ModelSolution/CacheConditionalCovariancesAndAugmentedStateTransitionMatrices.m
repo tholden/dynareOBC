@@ -337,7 +337,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
 
             ConditionalCovariance = 0.5 * ( ConditionalCovariance + ConditionalCovariance' );
             
-            dynareOBC.RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC );
+            dynareOBC.RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
            
 			if Global
 				ConditionalVarianceGlobal = zeros( T * ns, 1 );

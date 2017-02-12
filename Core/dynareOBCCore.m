@@ -516,7 +516,16 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Preparing to simulate the model.' );
         fprintf( '\n' );
 
-        [ oo_, dynareOBC ] = SimulationPreparation( M_, oo_, dynareOBC );
+        rng( 'default' );
+
+        if ~isempty( dynareOBC.IRFShocks )
+            [ ~, dynareOBC.ShockSelect ] = ismember( dynareOBC.IRFShocks, cellstr( M_.exo_names ) );
+        else
+            dynareOBC.ShockSelect = 1 : dynareOBC.OriginalNumVarExo;
+        end
+        if ~isfield( oo_, 'irfs' ) || isempty( oo_.irfs )
+            oo_.irfs = struct;
+        end
 
         dynareOBC = orderfields( dynareOBC );
 

@@ -147,9 +147,15 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     addpath( [ dynareOBCPath '/Extern/nlma/' ] );
     addpath( [ dynareOBCPath '/Extern/EST-NLSS/Core/' ] );
 
-    addpath( [ dynareOBCPath '/Core/MChecks/' ] );
-    addpath( [ dynareOBCPath '/Core/Utils/' ] );
+    addpath( [ dynareOBCPath '/Core/BaseSimulation/' ] );
     addpath( [ dynareOBCPath '/Core/Global/' ] );
+    addpath( [ dynareOBCPath '/Core/InnerProblem/' ] );
+    addpath( [ dynareOBCPath '/Core/MChecks/' ] );
+    addpath( [ dynareOBCPath '/Core/ModelSolution/' ] );
+    addpath( [ dynareOBCPath '/Core/MODProcessing/' ] );
+    addpath( [ dynareOBCPath '/Core/OBCSimulation/' ] );
+    addpath( [ dynareOBCPath '/Core/Output/' ] );
+    addpath( [ dynareOBCPath '/Core/Utils/' ] );
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
     warning( 'off', 'optim:quadprog:WillBeRemoved' );

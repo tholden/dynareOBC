@@ -132,7 +132,7 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         
         ConditionalCovariance = 0.5 * ( ConditionalCovariance + ConditionalCovariance' );
         
-        RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC );
+        RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
 
         % [L,D] = ldl( ConditionalCovariance );
         % assert( isdiag( D ) );
