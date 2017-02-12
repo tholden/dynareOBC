@@ -10,7 +10,7 @@ function aria_urlwrite( dynareOBCPath, URL, FilePath )
     
     try
         ArchitectureString = computer( 'arch' );
-        system( [ '"' dynareOBCPath '/Core/aria2/' ArchitectureString '/aria2c" -x 4 -s 4 -d "' FolderName '" ' URL ], '-echo' );
+        system( [ '"' dynareOBCPath '/Extern/aria2/' ArchitectureString '/aria2c" -x 4 -s 4 -d "' FolderName '" ' URL ], '-echo' );
         if ~strcmp( SourceName, DestinationName )
             movefile( [ FolderName '/' SourceName ], [ FolderName '/' DestinationName ] );
         end
