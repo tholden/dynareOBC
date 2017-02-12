@@ -505,6 +505,7 @@ function dynareOBC( InputFileName, varargin )
     
     WarningState = warning( 'off', 'MATLAB:rmpath:DirNotFound' );
     rmpath( genpath( [ dynareOBCPath '/Core/' ] ) );
+    rmpath( genpath( [ dynareOBCPath '/Extern/' ] ) );
     warning( WarningState );
     
     addpath( dynareOBCPath );
@@ -566,16 +567,18 @@ function dynareOBC( InputFileName, varargin )
                 SafeRemoveDir( dynareOBCPath, '/Examples/' );
                 SafeRemoveDir( dynareOBCPath, '/Tests/' );
                 SafeRemoveDir( dynareOBCPath, '/Extern/aria2/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/clobber/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/eigtool/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/glpkmex/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/nlma/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/Clobber/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/eigtool/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/EST-NLSS/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/glpkmex/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/nlma/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/YALMIP/' );
+                SafeRemoveDir( dynareOBCPath, '/Extern/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/Setup/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/YALMIP/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/MChecks/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/Utils/' );
                 SafeRemoveDir( dynareOBCPath, '/Core/Global/' );
-                SafeRemoveDir( dynareOBCPath, '/Core/EST-NLSS/' );
+                SafeRemoveDir( dynareOBCPath, '/Core/' );
                 SafeDeleteFiles( dynareOBCPath, '/.git*' );
                 SafeDeleteFiles( dynareOBCPath, '/*.pdf' );
                 SafeDeleteFiles( dynareOBCPath, '/*.m' );

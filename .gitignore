@@ -28,10 +28,10 @@ outcmaes*.*
 ValueStore.mat
 
 codegen/
-Core/tbxmanager/
-Core/requirements/
-Core/OptiToolbox216/
-Core/OptiToolbox221/
+Extern/tbxmanager/
+Extern/requirements/
+Extern/OptiToolbox216/
+Extern/OptiToolbox221/
 Output/
 
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*

@@ -1,12 +1,12 @@
 [submodule "Core/nlma"]
-	path = Core/nlma
+	path = Extern/nlma
 	url = https://github.com/tholden/nlma.git
 [submodule "Core/glpkmex"]
-	path = Core/glpkmex
+	path = Extern/glpkmex
 	url = https://github.com/tholden/glpkmex.git
 [submodule "Core/eigtool"]
-	path = Core/eigtool
+	path = Extern/eigtool
 	url = https://github.com/tholden/eigtool.git
 [submodule "Core/YALMIP"]
-	path = Core/YALMIP
+	path = Extern/YALMIP
 	url = https://github.com/tholden/YALMIP.git

@@ -57,10 +57,10 @@ rm -f -r -d -- **/*_set_auxiliary_variables.m
 rm -f -r -d -- **/ValueStore.mat
 
 rm -f -r -d -- DevTools/
-rm -f -r -d -- Core/tbxmanager/
-rm -f -r -d -- Core/requirements/
-rm -f -r -d -- Core/OptiToolbox216/
-rm -f -r -d -- Core/OptiToolbox221/
+rm -f -r -d -- Extern/tbxmanager/
+rm -f -r -d -- Extern/requirements/
+rm -f -r -d -- Extern/OptiToolbox216/
+rm -f -r -d -- Extern/OptiToolbox221/
 
 rm -f -r -d -- **/codegen/
 rm -f -r -d -- **/Output/
@@ -84,5 +84,5 @@ rm -f -r -d -- **/checksum
 
 find . -empty -type d -delete
 
-echo https://github.com/tholden/dynareOBC/releases/download/vX.XX.TODO/dynareOBCRelease.zip > CurrentVersionURL.txt
+echo -n "https://github.com/tholden/dynareOBC/releases/download/vX.XX.TODO/dynareOBCRelease.zip" > CurrentVersionURL.txt
 echo Now update CurrentVersionURL.txt
