@@ -50,6 +50,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     dynareOBCCleanUp;
     
     addpath( [ dynareOBCPath '/Core/MChecks/' ] );
+    addpath( [ dynareOBCPath '/Core/MODProcessing/' ] );
     
     addpath( [ dynareOBCPath '/Extern/nlma/' ] );
     
