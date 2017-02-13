@@ -405,6 +405,24 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Beginning the estimation of the model.' );
         fprintf( '\n' );
         
+        EstimationOptions.DynamicNu = dynareOBC.DynamicNu;
+        EstimationOptions.FilterCubatureDegree = dynareOBC.FilterCubatureDegree;
+        EstimationOptions.MaximisationFunctions = dynareOBC.MaximisationFunctions;
+        EstimationOptions.NoSkewLikelihood = dynareOBC.NoSkewLikelihood;
+        EstimationOptions.NoTLikelihood = dynareOBC.NoTLikelihood;
+        EstimationOptions.Prior = dynareOBC.Prior;
+        EstimationOptions.SkipStandardErrors = dynareOBC.SkipStandardErrors;
+        EstimationOptions.StationaryDistPeriods = dynareOBC.StationaryDistPeriods;
+        EstimationOptions.StationaryDistDrop = dynareOBC.StationaryDistDrop;
+        EstimationOptions.StdDevThreshold = dynareOBC.StdDevThreshold;
+        
+        EstimationOptions.Data = dynareOBC_.EstimationData;
+        EstimationOptions.Solve = @EstimationSolution;
+        EstimationOptions.Simulate = @EstimationSimulation;
+        
+        NExo = dynareOBC_.OriginalNumVarExo;
+        EstimationOptions.ExoCovariance = M_.Sigma_e( 1:NExo, 1:NExo );
+
         [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
         NumObservables = length( dynareOBC.VarList );
         NumEstimatedParams = length( dynareOBC.EstimationParameterSelect );
@@ -422,12 +440,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
         EstimationPersistentState = struct( 'M', M_, 'options', options_, 'oo', oo_, 'dynareOBC', dynareOBC, 'spkronUseMex', spkronUseMex, 'InitialRun', true );
-        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, false );
+        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationOptions, EstimationPersistentState, false );
         EstimationPersistentState.InitialRun = false;
         disp( 'Initial log-likelihood:' );
         disp( LogLikelihood );
         
-        OptiFunction = @( p, s ) EstimationObjective( p, s, false );
+        OptiFunction = @( p, s ) EstimationObjective( p, EstimationOptions, s, false );
         OptiLB = [ LBTemp; -Inf( NumObservables + EstimatedNu, 1 ) ];
         OptiUB = [ UBTemp; Inf( NumObservables + EstimatedNu, 1 ) ];
         MaximisationFunctions = strsplit( dynareOBC.MaximisationFunctions, { ',', ';', '#' } );
@@ -439,7 +457,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( LogLikelihood );
  
         
-        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationPersistentState, false );
+        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationOptions, EstimationPersistentState, false );
         M_ = EstimationPersistentState.M;
         options_ = EstimationPersistentState.options;
         oo_ = EstimationPersistentState.oo;
@@ -470,10 +488,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             ObservationCount = size( dynareOBC.EstimationData, 1 );
             OneOverRootObservationCount = 1 / sqrt( ObservationCount );
             
-            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, EstimationPersistentState ), EstimatedParameters, ObservationCount );
+            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, EstimationData, EstimationPersistentState ), EstimatedParameters, ObservationCount );
             [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
             
-            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) EstimationObjective( p2, EstimationPersistentState, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
+            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) EstimationObjective( p2, EstimationData, EstimationPersistentState, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
             HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
             
             RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );

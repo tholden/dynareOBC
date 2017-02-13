@@ -145,9 +145,10 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     addpath( genpath( [ dynareOBCPath '/Extern/YALMIP/' ] ) );
     addpath( [ dynareOBCPath '/Extern/nlma/' ] );
-    addpath( [ dynareOBCPath '/Extern/EST-NLSS/Core/' ] );
+    addpath( [ dynareOBCPath '/Extern/EST-NLSS/' ] );
 
     addpath( [ dynareOBCPath '/Core/BaseSimulation/' ] );
+    addpath( [ dynareOBCPath '/Core/Estimation/' ] );
     addpath( [ dynareOBCPath '/Core/Global/' ] );
     addpath( [ dynareOBCPath '/Core/InnerProblem/' ] );
     addpath( [ dynareOBCPath '/Core/MChecks/' ] );
