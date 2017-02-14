@@ -1,4 +1,4 @@
-function [ PersistentState, StateSimulation, FullSimulation, MeasurementSimulation ] = EstimationSimulation( Parameters, PersistentState, ShockSequence )
+function [ PersistentState, StateSimulation, FullSimulation, MeasurementSimulation ] = EstimationSimulation( Parameters, PersistentState, ShockSequence, ~ )
 
     global M_ options_ oo_ dynareOBC_
     
