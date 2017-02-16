@@ -416,6 +416,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         EstimationOptions.StationaryDistDrop = dynareOBC.StationaryDistDrop;
         EstimationOptions.StdDevThreshold = dynareOBC.StdDevThreshold;
         
+        EstimationOptions.ParameterNames = cellstr( M_.param_names( Options.EstimationParameterSelect, : ) );
+        EstimationOptions.VariableNames = dynareOBC.VarList;
+        
         EstimationOptions.Data = dynareOBC_.EstimationData;
         EstimationOptions.Solve = @EstimationSolution;
         EstimationOptions.Simulate = @EstimationSimulation;
@@ -430,94 +433,20 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         UBTemp = dynareOBC.EstimationParameterBounds(2,:)';
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
-        EstimatedParameters = [ M_.params( dynareOBC.EstimationParameterSelect ); log( 0.0001 ) * ones( NumObservables, 1 ) ];
-        
-        EstimatedNu = ~dynareOBC.NoTLikelihood && ~dynareOBC.DynamicNu;
-        if EstimatedNu
-            EstimatedParameters( end + 1 ) = log( 20 );
-        end
+        EstimatedParameters = M_.params( dynareOBC.EstimationParameterSelect );
         
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
         EstimationPersistentState = struct( 'M', M_, 'options', options_, 'oo', oo_, 'dynareOBC', dynareOBC, 'spkronUseMex', spkronUseMex, 'InitialRun', true );
-        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationOptions, EstimationPersistentState, false );
-        EstimationPersistentState.InitialRun = false;
-        disp( 'Initial log-likelihood:' );
-        disp( LogLikelihood );
         
-        OptiFunction = @( p, s ) EstimationObjective( p, EstimationOptions, s, false );
-        OptiLB = [ LBTemp; -Inf( NumObservables + EstimatedNu, 1 ) ];
-        OptiUB = [ UBTemp; Inf( NumObservables + EstimatedNu, 1 ) ];
-        MaximisationFunctions = strsplit( dynareOBC.MaximisationFunctions, { ',', ';', '#' } );
-        for i = 1 : length( MaximisationFunctions )
-            FMaxEstimateFunctor = str2func( MaximisationFunctions{ i } );
-            [ EstimatedParameters, LogLikelihood, EstimationPersistentState ] = FMaxEstimateFunctor( OptiFunction, EstimatedParameters, OptiLB, OptiUB, EstimationPersistentState );
-        end
-        disp( 'Final log-likelihood:' );
-        disp( LogLikelihood );
- 
+        % TODO
         
-        [ LogLikelihood, EstimationPersistentState ] = EstimationObjective( EstimatedParameters, EstimationOptions, EstimationPersistentState, false );
         M_ = EstimationPersistentState.M;
         options_ = EstimationPersistentState.options;
         oo_ = EstimationPersistentState.oo;
         dynareOBC = orderfields( EstimationPersistentState.dynareOBC );
-        disp( 'Paranoid verification of final log-likelihood:' );
-        disp( LogLikelihood );
         
-        dynareOBC.EstimationPersistentState = EstimationPersistentState;
-        
-        if dynareOBC.SkipStandardErrors
-            disp( 'Final parameter estimates:' );
-            for i = 1 : NumEstimatedParams
-                fprintf( '%s:\t\t%#.17g\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ) );
-            end
-            fprintf( '\n' );
-            disp( 'Final measurement error standard deviation estimates:' );
-            for i = 1 : NumObservables
-                fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, exp( EstimatedParameters( NumEstimatedParams + i ) ) );
-            end
-            if EstimatedNu
-                fprintf( '\n' );
-                disp( 'Final measurement degrees of freedom parameter:' );
-                fprintf( '%s:\t\t%#.17g\n', dynareOBC.VarList{ i }, 2 + exp( EstimatedParameters( end ) ) );
-            end
-        else
-            disp( 'Calculating standard errors.' );
-            fprintf( '\n' );
-            ObservationCount = size( dynareOBC.EstimationData, 1 );
-            OneOverRootObservationCount = 1 / sqrt( ObservationCount );
-            
-            JacobianScoreVector = GetJacobian( @( p ) GetScoreVector( p, EstimationData, EstimationPersistentState ), EstimatedParameters, ObservationCount );
-            [ ~, TriaJacobianScoreVector ] = qr( JacobianScoreVector * OneOverRootObservationCount, 0 );
-            
-            HessianLogLikelihood = GetJacobian( @( p1 ) GetJacobian( @( p2 ) EstimationObjective( p2, EstimationData, EstimationPersistentState, false ), p1, 1 )', EstimatedParameters, length( EstimatedParameters ) );
-            HessianLogLikelihood = ( 0.5 / ObservationCount ) * ( HessianLogLikelihood + HessianLogLikelihood' );
-            
-            RootEstimatedParameterCovarianceMatrix = OneOverRootObservationCount * ( HessianLogLikelihood \ ( TriaJacobianScoreVector' ) );
-            EstimatedParameterCovarianceMatrix = RootEstimatedParameterCovarianceMatrix * RootEstimatedParameterCovarianceMatrix';
-            dynareOBC.EstimatedParameterCovarianceMatrix = EstimatedParameterCovarianceMatrix;
-            EstimatedParameterStandardErrors = sqrt( diag( EstimatedParameterCovarianceMatrix ) );
-
-            disp( 'Final parameter estimates:' );
-            for i = 1 : NumEstimatedParams
-                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', strtrim( M_.param_names( dynareOBC.EstimationParameterSelect( i ), : ) ), EstimatedParameters( i ), EstimatedParameterStandardErrors( i ) );
-            end
-            fprintf( '\n' );
-            disp( 'Final measurement error standard deviation estimates:' );
-            for i = 1 : NumObservables
-                TmpEstimatedParameter = exp( EstimatedParameters( NumEstimatedParams + i ) );
-                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, TmpEstimatedParameter, TmpEstimatedParameter * EstimatedParameterStandardErrors( NumEstimatedParams + i ) ); % delta method
-            end
-            if EstimatedNu
-                fprintf( '\n' );
-                disp( 'Final measurement degrees of freedom parameter:' );
-                TmpEstimatedParameter = exp( EstimatedParameters( end ) );
-                fprintf( '%s:\t\t%#.17g\t\t(%#.17g)\n', dynareOBC.VarList{ i }, 2 + TmpEstimatedParameter, TmpEstimatedParameter * EstimatedParameterStandardErrors( end ) ); % delta method
-            end
-        end
-        
-        M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters( 1 : NumEstimatedParams );
+        M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters;
     end
 
     [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( ~dynareOBC.Estimation, M_, options_, oo_, dynareOBC );

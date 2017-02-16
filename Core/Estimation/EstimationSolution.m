@@ -1,4 +1,4 @@
-function [ PersistentState, StateSteadyState ] = EstimationSolution( Parameters, PersistentState )
+function [ PersistentState, StateSteadyState, StateVariableIndices ] = EstimationSolution( Parameters, PersistentState )
 
     global M_ options_ oo_ dynareOBC_ spkronUseMex
     
@@ -24,8 +24,8 @@ function [ PersistentState, StateSteadyState ] = EstimationSolution( Parameters,
     NEndo = M_.endo_nbr;
     NEndoMult = 2 .^ ( dynareOBC_.Order - 1 );
     
-    SelectStateVariables = ismember( ( 1:NEndo )', oo_.dr.order_var( dynareOBC_.SelectState ) );
-    SelectAugStateVariables = find( repmat( SelectStateVariables, NEndoMult, 1 ) );
+    StateVariableIndices = ismember( ( 1:NEndo )', oo_.dr.order_var( dynareOBC_.SelectState ) );
+    StateVariableIndices = find( repmat( StateVariableIndices, NEndoMult, 1 ) );
    
     LagIndices = find( dynareOBC_.OriginalLeadLagIncidence( 1, : ) > 0 );
     CurrentIndices = find( dynareOBC_.OriginalLeadLagIncidence( 2, : ) > 0 );
@@ -41,11 +41,10 @@ function [ PersistentState, StateSteadyState ] = EstimationSolution( Parameters,
     PersistentState.oo = oo_;
     PersistentState.dynareOBC = dynareOBC_;
     
-    PersistentState.SelectAugStateVariables = SelectAugStateVariables;
     PersistentState.LagIndices = LagIndices;
     PersistentState.CurrentIndices = CurrentIndices;
     PersistentState.FutureValues = FutureValues;
     
-    StateSteadyState = zeros( length( SelectAugStateVariables ), 1 );
+    StateSteadyState = zeros( length( StateVariableIndices ), 1 );
     
 end
