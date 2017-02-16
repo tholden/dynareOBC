@@ -2,7 +2,7 @@ function [ PersistentState, EndoSimulation, MeasurementSimulation ] = Estimation
 
     global M_ oo_ dynareOBC_
     
-    if isempty( InitialState )
+    if isempty( InitialStates )
     
         try
             FullSimulationStruct = SimulateModel( ShockSequence, false, [], true, true );
