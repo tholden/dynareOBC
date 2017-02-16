@@ -405,6 +405,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Beginning the estimation of the model.' );
         fprintf( '\n' );
         
+        EstimationOptions = struct;
+        
         EstimationOptions.DynamicNu = dynareOBC.DynamicNu;
         EstimationOptions.FilterCubatureDegree = dynareOBC.FilterCubatureDegree;
         EstimationOptions.MaximisationFunctions = dynareOBC.MaximisationFunctions;
@@ -427,19 +429,21 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         EstimationOptions.ExoCovariance = M_.Sigma_e( 1:NExo, 1:NExo );
 
         [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
-        NumObservables = length( dynareOBC.VarList );
-        NumEstimatedParams = length( dynareOBC.EstimationParameterSelect );
         LBTemp = dynareOBC.EstimationParameterBounds(1,:)';
         UBTemp = dynareOBC.EstimationParameterBounds(2,:)';
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
         UBTemp( ~isfinite( UBTemp ) ) = Inf;
+
+        EstimationOptions.LB = LBTemp;
+        EstimationOptions.UB = UBTemp;
+
         EstimatedParameters = M_.params( dynareOBC.EstimationParameterSelect );
         
         OpenPool;
         dynareOBC = orderfields( dynareOBC );
         EstimationPersistentState = struct( 'M', M_, 'options', options_, 'oo', oo_, 'dynareOBC', dynareOBC, 'spkronUseMex', spkronUseMex, 'InitialRun', true );
         
-        % TODO
+        [ EstimatedParameters, EstimationPersistentState ] = RunEstimation( EstimatedParameters, EstimationOptions, EstimationPersistentState );
         
         M_ = EstimationPersistentState.M;
         options_ = EstimationPersistentState.options;
