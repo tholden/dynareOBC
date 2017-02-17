@@ -421,7 +421,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         EstimationOptions.ParameterNames = cellstr( M_.param_names( Options.EstimationParameterSelect, : ) );
         EstimationOptions.VariableNames = dynareOBC.VarList;
         
-        EstimationOptions.Data = dynareOBC_.EstimationData;
+        EstimationOptions.Data = dynareOBC_.EstimationData';
         EstimationOptions.Solve = @EstimationSolution;
         EstimationOptions.Simulate = @EstimationSimulation;
         
