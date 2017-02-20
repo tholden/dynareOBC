@@ -450,7 +450,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         oo_ = EstimationPersistentState.oo;
         dynareOBC = orderfields( EstimationPersistentState.dynareOBC );
         
-        M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters;
+        M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters( 1 : length( dynareOBC.EstimationParameterSelect ) );
     end
 
     [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( ~dynareOBC.Estimation, M_, options_, oo_, dynareOBC );
