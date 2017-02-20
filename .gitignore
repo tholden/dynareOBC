@@ -26,6 +26,8 @@ outcmaes*.*
 *_steadystate2.m
 *_set_auxiliary_variables.m
 ValueStore.mat
+ESTNLSSTempEstimationObjective.m
+ESTNLSSTempEstimationObjectiveMex.mex*
 
 codegen/
 Extern/tbxmanager/
