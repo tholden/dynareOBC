@@ -28,6 +28,7 @@ outcmaes*.*
 ValueStore.mat
 ESTNLSSTempEstimationObjective.m
 ESTNLSSTempEstimationObjectiveMex.mex*
+ESTNLSSTempKalmanStep.m
 
 codegen/
 Extern/tbxmanager/

@@ -57,6 +57,7 @@ rm -f -r -d -- **/*_set_auxiliary_variables.m
 rm -f -r -d -- **/ValueStore.mat
 rm -f -r -d -- **/ESTNLSSTempEstimationObjective.m
 rm -f -r -d -- **/ESTNLSSTempEstimationObjectiveMex.mex*
+rm -f -r -d -- **/ESTNLSSTempKalmanStep.m
 
 rm -f -r -d -- DevTools/
 rm -f -r -d -- Extern/tbxmanager/
