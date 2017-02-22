@@ -409,7 +409,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         
         EstimationOptions.DynamicNu = dynareOBC.DynamicNu;
         EstimationOptions.FilterCubatureDegree = dynareOBC.FilterCubatureDegree;
-        EstimationOptions.MaximisationFunctions = dynareOBC.MaximisationFunctions;
+        EstimationOptions.MaximisationFunctions = StringSplit( dynareOBC.MaximisationFunctions, { ',', ';', '#' } );
         EstimationOptions.NoSkewLikelihood = dynareOBC.NoSkewLikelihood;
         EstimationOptions.NoTLikelihood = dynareOBC.NoTLikelihood;
         EstimationOptions.Prior = dynareOBC.Prior;
