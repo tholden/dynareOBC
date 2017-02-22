@@ -10,7 +10,7 @@ Please read the theory paper from here: https://github.com/tholden/dynareOBC/raw
 And the computational paper from here: https://github.com/tholden/dynareOBC/raw/master/ComputationalPaper.pdf
 (Or here for citations: https://ideas.repec.org/p/zbw/esprep/130143.html )
 
-A paper documenting the estimation procedure is available from here: https://github.com/tholden/dynareOBC/raw/master/EstimationPaper.pdf
+A paper documenting the estimation procedure is available from here: https://github.com/tholden/EST-NLSS/raw/master/EstimationPaper.pdf
 (Or here for citations: http://dx.doi.org/10.5281/zenodo.50127 )
 
 The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.50132
@@ -34,7 +34,7 @@ Requirements
 ------------
 
 Requirements (to be installed and added to your Matlab path):
-* Matlab version R2013a or later, or a fully compatible clone. Note that while DynareOBC should work on all platforms, it has been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
+* MATLAB version R2013a or later, or a fully compatible clone. Note that while DynareOBC should work on all platforms, it has been most heavily tested on 64-bit Windows, so if possible we suggest you use this platform.
 * Dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable
 * If on Windows, either administrative rights on the computer on which you are installing DynareOBC, so that DynareOBC can automatically install its other dependencies, or the manual installation of the items listed in the _Additional requirements for people using Windows, without administrative rights_ section below.
 
@@ -185,7 +185,7 @@ Note:
         * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
           Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates. The second sheet should contain a title row with the names of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
         * `Prior=STRING` (default: `FlatPrior`)
-          Specifies the function containing the prior to be used in maximum a posteriori estimation. The default prior results in maximum likelihood estimates being returned. The function should accept a single argument giving the vector of parameters to be estimated, in the order they appear in the datafile, including the measumerent error variances, then possibly nu-bar (if DynamicNu is not specified), in the final elements of the vector. The function should return the log prior density at that point (up to a constant).
+          Specifies the function containing the prior to be used in maximum a posteriori estimation. The default prior results in maximum likelihood estimates being returned. The function should accept a single argument giving the vector of parameters to be estimated, in the order they appear in the datafile, followed by the measumerent error variances, then possibly `nu-bar` (if `DynamicNu` is not specified), in the final elements of the vector. The function should return the log prior density at that point (up to a constant).
         * `StationaryDistPeriods=INTEGER` (default: `1000`)
           The number of periods used to evaluate the stationary distribution of the model.
         * `StationaryDistDrop=INTEGER` (default: `100`)
@@ -201,7 +201,7 @@ Note:
         * `NoTLikelihood`
           Disables the use of a (extended skew) t-distribution to approximate the likelihood. Instead a (extended skew) normal distribution will be used.
         * `DynamicNu`
-          Causes the estimation procedure to calibrate the degrees of freedom parameter, nu, at each time step. We recommend that FilterCubatureDegree is at least 9 if this option is specified.
+          Causes the estimation procedure to calibrate the degrees of freedom parameter, `nu`, at each time step. We recommend that `FilterCubatureDegree` is at least 9 if this option is specified.
         * `MaximisationFunctions=STRING` (default: `CMAESWrapper,FMinConWrapper`)
           A `,` `;` or `#` delimitated list of maximisation function names, which will be invoked in order. DynareOBC includes the following:
             * `CMAESWrapper` an evolutionary global search algorithm,
@@ -293,16 +293,16 @@ DynareOBC incorporates code:
 * from the nonlinear moving average toolkit, that is copyright Lan and Alexander Meyer-Gohde, 2014,
 * for nested Gaussian cubature, that is copyright Genz and Keister, 1996,
 * for displaying a progress bar, that is copyright Cacho, "Stefan" and Scheff, 2014,
-* for finding the nearest symmetric positive definite matrix, that is copyright D'Errico, 2013,
 * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
-* for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014.
+* for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014,
+* for non-linear state space estimation non-linear state space estimation with an Extended Skew T (EST) approximation to the state distribution, from EST-NLSS, copyright Holden, 2017.
 
 Additionally, DynareOBC automatically downloads:
 * YALMIP, copyright Lofberg, 2015,
 * the Opti Toolbox, copyright Currie, and others, 2015,
 * and MPT, with its dependencies, copyright Herceg and others, 2015.
 
-The original portions of DynareOBC are copyright (c) Tom Holden, 2016.
+The original portions of DynareOBC are copyright (c) Tom Holden, 2016-2017.
 
 DynareOBC is released under the GNU GPL, version 3.0, available from https://www.gnu.org/copyleft/gpl.html
 
