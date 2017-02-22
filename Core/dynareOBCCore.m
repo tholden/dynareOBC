@@ -195,7 +195,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 OptionsSubFieldNames = fieldnames( CurrentField );
                 for j = 1 : length( OptionsSubFieldNames )
                     CurrentSubFieldName = OptionsSubFieldNames{j};
-                    if ~isempty( strfind( lower( CurrentSubFieldName ), 'tol' ) )
+                    if ~isempty( strfind( lower( CurrentSubFieldName ), 'tol' ) ) %#ok<STREMP>
                         CurrentSubField = CurrentField.( CurrentSubFieldName );
                         if numel( CurrentSubField ) == 1 && CurrentSubField > 0 && CurrentSubField <= 1e-4
                             CurrentField.( CurrentSubFieldName ) = min( sqrt( eps ), CurrentSubField );
