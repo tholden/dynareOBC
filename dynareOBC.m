@@ -14,7 +14,7 @@ function dynareOBC( InputFileName, varargin )
 % (Or here for citations: https://ideas.repec.org/p/zbw/esprep/130143.html ) 
 %  
 % A paper documenting the estimation procedure is available from here: 
-% https://github.com/tholden/dynareOBC/raw/master/EstimationPaper.pdf 
+% https://github.com/tholden/EST-NLSS/raw/master/EstimationPaper.pdf 
 % (Or here for citations: http://dx.doi.org/10.5281/zenodo.50127 ) 
 %  
 % The code itself may be cited via the following DOI: http://dx.doi.org/10.5281/zenodo.50132 
@@ -43,7 +43,7 @@ function dynareOBC( InputFileName, varargin )
 % ------------ 
 %  
 % Requirements (to be installed and added to your Matlab path): 
-% * Matlab version R2013a or later, or a fully compatible clone. Note that while DynareOBC should 
+% * MATLAB version R2013a or later, or a fully compatible clone. Note that while DynareOBC should 
 %   work on all platforms, it has been most heavily tested on 64-bit Windows, so if possible we 
 %   suggest you use this platform. 
 % * Dynare, version 4.4 or later, from: http://www.dynare.org/download/dynare-stable 
@@ -298,9 +298,10 @@ function dynareOBC( InputFileName, varargin )
 %           Specifies the function containing the prior to be used in maximum a posteriori 
 %           estimation. The default prior results in maximum likelihood estimates being returned. The 
 %           function should accept a single argument giving the vector of parameters to be estimated, 
-%           in the order they appear in the datafile, including the measumerent error variances, then 
-%           possibly nu-bar (if DynamicNu is not specified), in the final elements of the vector. The 
-%           function should return the log prior density at that point (up to a constant). 
+%           in the order they appear in the datafile, followed by the measumerent error variances, 
+%           then possibly nu-bar (if DynamicNu is not specified), in the final elements of the 
+%           vector. The function should return the log prior density at that point (up to a 
+%           constant). 
 %         * StationaryDistPeriods=INTEGER (default: 1000) 
 %           The number of periods used to evaluate the stationary distribution of the model. 
 %         * StationaryDistDrop=INTEGER (default: 100) 
@@ -461,17 +462,18 @@ function dynareOBC( InputFileName, varargin )
 % * from the nonlinear moving average toolkit, that is copyright Lan and Alexander Meyer-Gohde, 2014, 
 % * for nested Gaussian cubature, that is copyright Genz and Keister, 1996, 
 % * for displaying a progress bar, that is copyright Cacho, "Stefan" and Scheff, 2014, 
-% * for finding the nearest symmetric positive definite matrix, that is copyright D'Errico, 2013, 
 % * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015, 
 % * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and 
-%   colleagues, 2014. 
+%   colleagues, 2014, 
+% * for non-linear state space estimation non-linear state space estimation with an Extended Skew T 
+%   (EST) approximation to the state distribution, from EST-NLSS, copyright Holden, 2017. 
 %  
 % Additionally, DynareOBC automatically downloads: 
 % * YALMIP, copyright Lofberg, 2015, 
 % * the Opti Toolbox, copyright Currie, and others, 2015, 
 % * and MPT, with its dependencies, copyright Herceg and others, 2015. 
 %  
-% The original portions of DynareOBC are copyright (c) Tom Holden, 2016. 
+% The original portions of DynareOBC are copyright (c) Tom Holden, 2016-2017. 
 %  
 % DynareOBC is released under the GNU GPL, version 3.0, available from 
 % https://www.gnu.org/copyleft/gpl.html 
