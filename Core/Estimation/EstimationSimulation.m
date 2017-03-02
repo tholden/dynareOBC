@@ -27,7 +27,7 @@ function [ PersistentState, EndoSimulation, MeasurementSimulation ] = Estimation
 
         NAugEndo = NEndo * NEndoMult;
 
-        SelectStateVariables = PersistentState.SelectAugStateVariables;
+        StateVariableIndices = PersistentState.StateVariableIndices;
         LagIndices = PersistentState.LagIndices;
         CurrentIndices = PersistentState.CurrentIndices;
         FutureValues = PersistentState.FutureValues;
@@ -35,7 +35,7 @@ function [ PersistentState, EndoSimulation, MeasurementSimulation ] = Estimation
         NSimulationPoints = size( InitialStates, 2 );
 
         OldAugEndoPoints = zeros( NAugEndo, NSimulationPoints );
-        OldAugEndoPoints( SelectStateVariables, : ) = InitialStates;
+        OldAugEndoPoints( StateVariableIndices, : ) = InitialStates;
 
         EndoSimulation = zeros( NAugEndo, NSimulationPoints );
 

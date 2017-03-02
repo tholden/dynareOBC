@@ -45,6 +45,8 @@ function [ PersistentState, StateSteadyState, StateVariableIndices ] = Estimatio
     PersistentState.CurrentIndices = CurrentIndices;
     PersistentState.FutureValues = FutureValues;
     
+    PersistentState.StateVariableIndices = StateVariableIndices;
+    
     StateSteadyState = zeros( length( StateVariableIndices ), 1 );
     
 end
