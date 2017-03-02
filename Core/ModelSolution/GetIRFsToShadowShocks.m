@@ -9,10 +9,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     exo_nbr  = M.exo_nbr;
 
     order_var = oo.dr.order_var;
-    SelectState = ( nstatic + 1 ):( nstatic + nspred );
     
-    dynareOBC.SelectState = SelectState;
-
     %% begin code taken from stochastic_solvers
     
     klen = M.maximum_lag + M.maximum_lead + 1;

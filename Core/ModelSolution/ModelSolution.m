@@ -9,6 +9,8 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
         disp( 'Solving the model for specific parameters.' );
         fprintf( '\n' );
     end
+    
+    ns = dynareOBC.NumberOfMax;
 
     % temporary work around for warning in dates object.
     options.initial_period = [];
@@ -77,13 +79,27 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     [ EmptySimulation, oo.dr ] = LanMeyerGohdePrunedSimulation( M, oo.dr, [], 0, dynareOBC.Order, 0 );
     dynareOBC.Constant = EmptySimulation.constant;
     
-    if SlowMode
-        fprintf( '\n' );
-        disp( 'Retrieving IRFs to shadow shocks.' );
-        fprintf( '\n' );
-    end
+    dynareOBC.SelectState = ( M.nstatic + 1 ):( M.nstatic + M.nspred );
+    
+    if ns > 0
+    
+        if SlowMode
+            fprintf( '\n' );
+            disp( 'Retrieving IRFs to shadow shocks.' );
+            fprintf( '\n' );
+        end
 
-    dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC );
+        dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC );
+
+        if SlowMode
+            fprintf( '\n' );
+            disp( 'Preparing normalized sub-matrices.' );
+            fprintf( '\n' );
+        end
+
+        dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode );
+    
+    end
 
     if SlowMode
         fprintf( '\n' );
@@ -103,17 +119,9 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
 % 
 %     [ M, oo, dynareOBC ] = ReduceDecisionMatrices( M, oo, dynareOBC );
 
-    dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
+    dynareOBC.ZeroVecS = sparse( dynareOBC.TimeToEscapeBounds * ns, 1 );
     dynareOBC.ParametricSolutionFound = zeros( dynareOBC.TimeToEscapeBounds, 1 );
     
-    if SlowMode
-        fprintf( '\n' );
-        disp( 'Preparing normalized sub-matrices.' );
-        fprintf( '\n' );
-    end
-
-    dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode );
-
     if SlowMode
         if ~exist( [ 'dynareOBCTempCustomLanMeyerGohdePrunedSimulation.' mexext ], 'file' ) && ( dynareOBC.CompileSimulationCode || dynareOBC.Estimation || dynareOBC.Smoothing )
             fprintf( '\n' );
@@ -127,18 +135,26 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
             end
         end
 
-        fprintf( '\n' );
-        disp( 'Performing initial checks on the model.' );
-        fprintf( '\n' );
-        
-        dynareOBC = InitialChecks( dynareOBC );
+        if ns > 0
+
+            fprintf( '\n' );
+            disp( 'Performing initial checks on the model.' );
+            fprintf( '\n' );
+
+            dynareOBC = InitialChecks( dynareOBC );
+
+        end
     end
 
-    if SlowMode
-        fprintf( '\n' );
-        disp( 'Forming optimizer.' );
-        fprintf( '\n' );
+    if ns > 0
+        
+        if SlowMode
+            fprintf( '\n' );
+            disp( 'Forming optimizer.' );
+            fprintf( '\n' );
+        end
+        dynareOBC = FormOptimizer( dynareOBC );
+        
     end
-    dynareOBC = FormOptimizer( dynareOBC );
     
 end

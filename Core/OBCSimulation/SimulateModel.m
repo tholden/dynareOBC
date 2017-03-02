@@ -179,10 +179,10 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         Simulation.bound_offset = zeros( M_.endo_nbr, SimulationLength );
 
         ghx = oo_.dr.ghx;
-        pMat = dynareOBC_.pMat;
-
+ 
         if dynareOBC_.NumberOfMax > 0
-            y = zeros( Ts * ns, 1 );
+            pMat = dynareOBC_.pMat;
+           y = zeros( Ts * ns, 1 );
 
             BoundOffsetOriginalOrder = InitialFullState.bound_offset;
             BoundOffsetDROrder = BoundOffsetOriginalOrder( oo_.dr.order_var );
