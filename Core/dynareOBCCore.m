@@ -418,17 +418,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         EstimationOptions.StationaryDistDrop = dynareOBC.StationaryDistDrop;
         EstimationOptions.StdDevThreshold = dynareOBC.StdDevThreshold;
         
-        EstimationOptions.ParameterNames = cellstr( M_.param_names( Options.EstimationParameterSelect, : ) );
+        [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
+        EstimationOptions.ParameterNames = cellstr( M_.param_names( dynareOBC.EstimationParameterSelect, : ) );
         EstimationOptions.VariableNames = dynareOBC.VarList;
         
-        EstimationOptions.Data = dynareOBC_.EstimationData';
+        EstimationOptions.Data = dynareOBC.EstimationData';
         EstimationOptions.Solve = @EstimationSolution;
         EstimationOptions.Simulate = @EstimationSimulation;
         
-        NExo = dynareOBC_.OriginalNumVarExo;
+        NExo = dynareOBC.OriginalNumVarExo;
         EstimationOptions.ExoCovariance = M_.Sigma_e( 1:NExo, 1:NExo );
 
-        [ ~, dynareOBC.EstimationParameterSelect ] = ismember( dynareOBC.EstimationParameterNames, cellstr( M_.param_names ) );
         LBTemp = dynareOBC.EstimationParameterBounds(1,:)';
         UBTemp = dynareOBC.EstimationParameterBounds(2,:)';
         LBTemp( ~isfinite( LBTemp ) ) = -Inf;
