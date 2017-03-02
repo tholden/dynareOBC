@@ -144,19 +144,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     tbxmanager restorepath;
 
     addpath( genpath( [ dynareOBCPath '/Extern/YALMIP/' ] ) );
-    addpath( [ dynareOBCPath '/Extern/nlma/' ] );
-    addpath( [ dynareOBCPath '/Extern/EST-NLSS/' ] );
-
-    addpath( [ dynareOBCPath '/Core/BaseSimulation/' ] );
-    addpath( [ dynareOBCPath '/Core/Estimation/' ] );
-    addpath( [ dynareOBCPath '/Core/Global/' ] );
-    addpath( [ dynareOBCPath '/Core/InnerProblem/' ] );
-    addpath( [ dynareOBCPath '/Core/MChecks/' ] );
-    addpath( [ dynareOBCPath '/Core/ModelSolution/' ] );
-    addpath( [ dynareOBCPath '/Core/MODProcessing/' ] );
-    addpath( [ dynareOBCPath '/Core/OBCSimulation/' ] );
-    addpath( [ dynareOBCPath '/Core/Output/' ] );
-    addpath( [ dynareOBCPath '/Core/Utils/' ] );
+    addpath( [ dynareOBCPath '/Extern/eigtool/num_comp/pseudo_radius/' ] );
     
     rmpath( [ fileparts( which( 'mpt_init' ) ) '/modules/parallel/' ] );
     warning( 'off', 'optim:quadprog:WillBeRemoved' );
@@ -167,12 +155,6 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     catch
     end
             
-    if return_dynare_version( dynare_version ) < 4.4
-        error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
-    end
-        
-    addpath( [ dynareOBCPath '/Extern/eigtool/num_comp/pseudo_radius/' ] );
-    addpath( [ dynareOBCPath '/Core/' ] );
     addpath( fileparts( which( 'dynare' ) ) );
     
     if Update

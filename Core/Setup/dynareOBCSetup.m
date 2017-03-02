@@ -53,6 +53,16 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     addpath( [ dynareOBCPath '/Core/MODProcessing/' ] );
     
     addpath( [ dynareOBCPath '/Extern/nlma/' ] );
+    addpath( [ dynareOBCPath '/Core/BaseSimulation/' ] );
+    addpath( [ dynareOBCPath '/Core/Global/' ] );
+    addpath( [ dynareOBCPath '/Core/ModelSolution/' ] );
+    addpath( [ dynareOBCPath '/Core/OBCSimulation/' ] );
+    addpath( [ dynareOBCPath '/Core/Output/' ] );
+    
+    addpath( [ dynareOBCPath '/Extern/EST-NLSS/' ] );
+    addpath( [ dynareOBCPath '/Core/Estimation/' ] );
+    
+    addpath( [ dynareOBCPath '/Core/InnerProblem/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
