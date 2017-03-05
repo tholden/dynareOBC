@@ -1,3 +1,4 @@
+#!/bin/bash
 shopt -s globstar
 
 rm -f -r -d -- Extern/OPTI/Test\ Problems/

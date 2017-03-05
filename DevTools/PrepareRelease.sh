@@ -1,3 +1,4 @@
+#!/bin/bash
 cd ..
 
 git submodule foreach git checkout master
