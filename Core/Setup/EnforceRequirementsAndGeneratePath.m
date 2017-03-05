@@ -19,6 +19,7 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         DLLInstalled = false;
         try
             if strcmp( Architecture, 'PCWIN' )
+                warning( 'dynareOBC:Setup32Bit', 'DynareOBC is no longer supported on 32 bit MATLAB.\n While it may work (particularly if you have commercial solvers installed), absolutely no guarantees are made.\n We strongly recommend that you install a 64 bit version of MATLAB.' );
                 DLLInstalled = CheckMSVCRequirement( '12.0', 40660, 'x86', 'http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x86.exe', dynareOBCPath, '2013/vcredist_x86.exe' ) || DLLInstalled;
                 DLLInstalled = CheckMSVCRequirement( '14.0', 24215, 'x86', 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x86.exe', dynareOBCPath, '2015/vcredist_x86_24215.exe' ) || DLLInstalled;
                 % DLLInstalled = CheckRequirement( '5018D8E6-8D8E-4F76-9AFD-CB2EF1100E84', 234881261, 'https://software.intel.com/sites/default/files/managed/c1/90/w_ccompxe_redist_msi_2013_sp1.4.237.zip', dynareOBCPath, 'w_ccompxe_redist_msi_2013_sp1.4.237.zip', 'w_ccompxe_redist_ia32_2013_sp1.4.237.msi' ) || DLLInstalled;
@@ -77,23 +78,11 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
 
     if ( length( Architecture ) >= 7 ) && strcmp( Architecture(1:7), 'PCWIN64' )
         addpath( [ dynareOBCPath '/Extern/glpkmex/win64/' ] );
-        
-        OptiString = 'OptiToolbox221';
-        
-        OptiYURLs = { 'https://www.dropbox.com/s/gzruuky1sjbgy16/OptiToolbox_edu_v2.21.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.21.zip' };
-        OptiNURLs = { 'https://www.dropbox.com/s/l4syvt58hdtic2t/OptiToolbox_v2.21.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.21.zip' };
-        
-        OptiInstallInternal( Update, dynareOBCPath, OptiString, OptiYURLs, OptiNURLs );
     elseif ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
         addpath( [ dynareOBCPath '/Extern/glpkmex/win32/' ] );
-        
-        OptiString = 'OptiToolbox216';
-        
-        OptiYURLs = { 'https://www.dropbox.com/s/prisikmnp2s8rvg/OptiToolbox_edu_v2.16.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_edu_v2.16.zip' };
-        OptiNURLs = { 'https://www.dropbox.com/s/y21ie4cmez1o9kn/OptiToolbox_v2.16.zip?dl=1', 'http://www.i2c2.aut.ac.nz/Downloads/Files/OptiToolbox_v2.16.zip' };
-        
-        OptiInstallInternal( Update, dynareOBCPath, OptiString, OptiYURLs, OptiNURLs );
-     end
+    end
+    
+    OptiInstallInternal( Update, dynareOBCPath );
 
     [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Extern/tbxmanager/' ] );
     if ~MKDirStatus
@@ -178,81 +167,49 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
     
 end
 
-function OptiInstallInternal( Update, dynareOBCPath, OptiString, OptiYURLs, OptiNURLs )
+function OptiInstallInternal( Update, dynareOBCPath )
     % cleanup old versions
     OptiVersionStrings = { 'OptiToolbox', 'OptiToolbox216', 'OptiToolbox221' };
     for i = 1 : length( OptiVersionStrings )
         OptiVersionString = OptiVersionStrings{i};
-        if ~strcmp( OptiString, OptiVersionString ) && exist( [ dynareOBCPath '/Extern/' OptiVersionString '/' ], 'dir' )
+        if exist( [ dynareOBCPath '/Extern/' OptiVersionString '/' ], 'dir' )
             rmdir( [ dynareOBCPath '/Extern/' OptiVersionString '/' ], 's' );
+        end
+        if exist( [ dynareOBCPath '/Core/' OptiVersionString '/' ], 'dir' )
+            rmdir( [ dynareOBCPath '/Core/' OptiVersionString '/' ], 's' );
         end
     end
     if exist( [ dynareOBCPath '/Extern/Requirements/OptiToolbox.zip' ], 'file' )
         delete( [ dynareOBCPath '/Extern/Requirements/OptiToolbox.zip' ] );
     end
-
-    [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Extern/' OptiString '/' ] );
-    if ~MKDirStatus
-        error( 'dynareOBC:MKDir', 'Failed to make a new directory.' );
+    if exist( [ dynareOBCPath '/Core/Requirements/OptiToolbox.zip' ], 'file' )
+        delete( [ dynareOBCPath '/Core/Requirements/OptiToolbox.zip' ] );
     end
 
-    if Update && ~exist( [ dynareOBCPath '/Extern/' OptiString '/opti_Install.m' ], 'file' )
-        if ~exist( [ dynareOBCPath '/Extern/Requirements/' OptiString '.zip' ], 'file' )
+    if Update && exist( [ dynareOBCPath '/Extern/OPTI_SCIP/Solvers/scip.m' ], 'file' )
+        if exist( [ dynareOBCPath '/Extern/OPTI/Solvers/scip.m' ], 'file' )
+            InstallSCIP = true;
+        else
             fprintf( '\n' );
-            disp( 'Do you want to install SCIP with the OptiToolbox? [y/n]' );
-            disp( 'SCIP is an efficient solver which should speed up dynareOBC.' );
-            disp( 'However, SCIP is only available under the ZLIB Academic License.' );
-            disp( 'Thus, you are only allowed to retrieve SCIP for research purposes,' );
-            disp( 'as a member of a non-commercial and academic institution.' );
+            disp( 'Do you want to install the SCIP mixed integer linear programming solver? [y/n]' );
+            disp( 'SCIP is an efficient solver which should speed up DynareOBC, so if you agree with its license, you should definitely install it.' );
+            disp( 'However, SCIP is only available under the ZIB Academic License, given here: http://scip.zib.de/academic.txt . ' );
+            disp( 'Note, in particular, that the ZIB Academic License requires the user to be a member of a noncommercial and academic institution.' );
             fprintf( '\n' );
             SCIPSelection = input( 'Please type y to install SCIP, or n to not install SCIP: ', 's' );
             fprintf( '\n' );
-
-            if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-                OptiURL = OptiYURLs{ 1 };
-            else
-                OptiURL = OptiNURLs{ 1 };
-            end
-            fprintf( '\n' );
-            disp( 'Downloading the OptiToolbox.' );
-            disp( 'This may take several minutes even on fast university connections.' );
-            fprintf( '\n' );
-
-            ErrCaught = false;
-            try
-                aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/Extern/Requirements/' OptiString '.zip' ] );
-            catch
-                ErrCaught = true;
-            end
-
-            if ErrCaught || exist( [ dynareOBCPath '/Extern/Requirements/' OptiString '.zip' ], 'file' ) == 0
-                fprintf( '\n' );
-                disp( 'Downloading the OptiToolbox from an alternative location.' );
-                if lower( strtrim( SCIPSelection( 1 ) ) ) == 'y'
-                    OptiURL = OptiYURLs{ 2 };
-                else
-                    OptiURL = OptiNURLs{ 2 };
-                end
-                fprintf( '\n' );
-                disp( 'This may take several minutes even on fast university connections.' );
-                fprintf( '\n' );
-                aria_urlwrite( dynareOBCPath, OptiURL, [ dynareOBCPath '/Extern/Requirements/' OptiString '.zip' ] );
-            end
+            
+            InstallSCIP = ( lower( strtrim( SCIPSelection( 1 ) ) ) == 'y' );
         end
-
-        fprintf( '\n' );
-        disp( [ 'Extracting files from ' OptiString '.zip.' ] );
-        fprintf( '\n' );
-        unzip( [ dynareOBCPath '/Extern/Requirements/' OptiString '.zip' ], [ dynareOBCPath '/Extern/' OptiString '/' ] );
-
-        copyfile( [ dynareOBCPath '/Extern/Clobber/' OptiString '/' ], [ dynareOBCPath '/Extern/' OptiString '/' ], 'f' );
-        addpath( [ dynareOBCPath '/Extern/' OptiString '/' ] );
-        rehash path;
-        opti_Install( [ dynareOBCPath '/Extern/' OptiString '/' ], false );
-    else
-        copyfile( [ dynareOBCPath '/Extern/Clobber/' OptiString '/' ], [ dynareOBCPath '/Extern/' OptiString '/' ], 'f' );
-        addpath( [ dynareOBCPath '/Extern/' OptiString '/' ] );
-        rehash path;
-        opti_Install( [ dynareOBCPath '/Extern/' OptiString '/' ], true );
+        
+        if InstallSCIP
+            copyfile( [ dynareOBCPath '/Extern/OPTI_SCIP/*' ], [ dynareOBCPath '/Extern/OPTI/' ], 'f' );
+        else
+            rmdir( [ dynareOBCPath '/Extern/OPTI_SCIP/' ], 's' );
+        end
     end
+    
+    addpath( [ dynareOBCPath '/Extern/OPTI/' ] );
+    rehash path;
+    opti_Install( [ dynareOBCPath '/Extern/OPTI/' ], ~Update );
 end

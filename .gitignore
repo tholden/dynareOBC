@@ -35,6 +35,7 @@ Extern/tbxmanager/
 Extern/requirements/
 Extern/OptiToolbox216/
 Extern/OptiToolbox221/
+Extern/OPTI_SCIP/
 Output/
 
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*

@@ -10,3 +10,6 @@
 [submodule "Extern/YALMIP"]
 	path = Extern/YALMIP
 	url = https://github.com/tholden/YALMIP.git
+[submodule "Extern/OPTI"]
+	path = Extern/OPTI
+	url = https://github.com/tholden/OPTI.git

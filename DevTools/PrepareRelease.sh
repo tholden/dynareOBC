@@ -85,6 +85,8 @@ rm -f -r -d -- **/pou.mat
 rm -f -r -d -- **/time.mat
 rm -f -r -d -- **/checksum
 
+./DevTools/ReduceOPTI.sh
+
 find . -empty -type d -delete
 
 echo -n "https://github.com/tholden/dynareOBC/releases/download/vX.XX.TODO/dynareOBCRelease.zip" > CurrentVersionURL.txt
