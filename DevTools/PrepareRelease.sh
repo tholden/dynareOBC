@@ -4,7 +4,7 @@ git submodule foreach git checkout master
 git pull --recurse-submodules
 git submodule foreach git pull --recurse-submodules
 git submodule foreach git fetch upstream --recurse-submodules
-cd Core/YALMIP
+cd Extern/YALMIP
 git checkout develop
 git merge upstream/develop
 git push
