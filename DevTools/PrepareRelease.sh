@@ -86,7 +86,7 @@ rm -f -r -d -- **/pou.mat
 rm -f -r -d -- **/time.mat
 rm -f -r -d -- **/checksum
 
-./DevTools/ReduceOPTI.sh
+source ./DevTools/ReduceOPTI.sh
 
 find . -empty -type d -delete
 
