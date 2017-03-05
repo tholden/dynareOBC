@@ -295,16 +295,16 @@ DynareOBC incorporates code:
 * for displaying a progress bar, that is copyright Cacho, "Stefan" and Scheff, 2014,
 * for (mixed-integer) linear programming, from GLPKMEX, copyright Makhorin, Legat and others, 2015,
 * for calculating pseudo-spectral radii, from EigTool, copyright Wright, Mengi, Overton and colleagues, 2014,
+* for interfacing with optimization packages, from YALMIP, copyright Lofberg, 2017,
+* for various optimizers, from the Opti Toolbox, copyright Currie, and others, 2017,
 * for non-linear state space estimation non-linear state space estimation with an Extended Skew T (EST) approximation to the state distribution, from EST-NLSS, copyright Holden, 2017.
 
 Additionally, DynareOBC automatically downloads:
-* YALMIP, copyright Lofberg, 2015,
-* the Opti Toolbox, copyright Currie, and others, 2015,
-* and MPT, with its dependencies, copyright Herceg and others, 2015.
+* MPT, with its dependencies, copyright Herceg and others, 2015.
 
 The original portions of DynareOBC are copyright (c) Tom Holden, 2016-2017.
 
-DynareOBC is released under the GNU GPL, version 3.0, available from https://www.gnu.org/copyleft/gpl.html
+DynareOBC is released under the GNU GPL, version 3.0 or later, available from https://www.gnu.org/copyleft/gpl.html
 
 DynareOBC is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or(at your option) any later version.
 
