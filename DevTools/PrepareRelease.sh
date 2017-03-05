@@ -25,6 +25,8 @@ mkdir ../dynareOBCRelease
 cp -f -r . ../dynareOBCRelease/
 cd ../dynareOBCRelease
 
+source ./DevTools/ReduceOPTI.sh
+
 rm -f *.mex*
 rm -f Core/*.mex*
 
@@ -85,8 +87,6 @@ rm -f -r -d -- **/FastStart.mat
 rm -f -r -d -- **/pou.mat
 rm -f -r -d -- **/time.mat
 rm -f -r -d -- **/checksum
-
-source ./DevTools/ReduceOPTI.sh
 
 find . -empty -type d -delete
 
