@@ -13,3 +13,6 @@
 [submodule "Extern/OPTI"]
 	path = Extern/OPTI
 	url = https://github.com/tholden/OPTI.git
+[submodule "Extern/EST-NLSS"]
+	path = Extern/EST-NLSS
+	url = https://github.com/tholden/EST-NLSS
