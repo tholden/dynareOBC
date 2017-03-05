@@ -35,7 +35,7 @@ if dynareOBC.Estimation || dynareOBC.Smoothing
     ARGS{1}{2} = coder.typeof( 0, [ M.exo_nbr, Inf ], [ 0 1 ] );
 else
     ARGS{1}{1} = coder.typeof( zeros( sum( dynareOBC.OriginalLeadLagIncidence(:) > 0 ), 1 ) );
-    ARGS{1}{2} = coder.typeof( zeros( 1, M.exo_nbr ) );
+    ARGS{1}{2} = coder.typeof( zeros( M.exo_nbr, 1 ) );
 end
 if dynareOBC.Estimation
     ARGS{1}{3} = coder.typeof( M.params );
