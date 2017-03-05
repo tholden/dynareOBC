@@ -27,10 +27,10 @@ cd ../dynareOBCRelease
 rm -f *.mex*
 rm -f Core/*.mex*
 
-rm Examples/FernandezVillaverdeEtAl2012/*.m
-rm Examples/FernandezVillaverdeEtAl2012/*.mat
-rm Examples/SmetsWouters*/*.m
-rm Examples/SmetsWouters*/*.mat
+rm -f Examples/FernandezVillaverdeEtAl2012/*.m
+rm -f Examples/FernandezVillaverdeEtAl2012/*.mat
+rm -f Examples/SmetsWouters*/*.m
+rm -f Examples/SmetsWouters*/*.mat
 
 shopt -s globstar
 
