@@ -33,10 +33,12 @@ function dynareOBC = InitialChecks( dynareOBC )
     Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
     
     if Diagnostics.problem ~= 0
-        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+        warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+        vy = NaN( Ts * ns, 1 );
+    else
+        vy = value( y );
     end
     
-    vy = value( y );
     vy = max( 0, vy ./ max( 1, max( vy ) ) );
     new_varsigma = min( scaledMs * vy );
 
@@ -46,7 +48,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
     if AltDiagnostics.problem ~= 0
         warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' AltDiagnostics.info ] );
-        new_sum_y = 0;
+        new_sum_y = NaN;
     else
         vy = value( y );
         vy = max( 0, vy ./ max( 1, max( vy ) ) );
@@ -56,7 +58,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     ptestVal = 0;
 
     vvarsigma = value( varsigma );
-    if new_varsigma > 0 % && new_sum_y <= 1e-6
+    if new_varsigma > 0 || ( isnan( new_varsigma ) && new_sum_y <= 1e-6 )
         fprintf( '\n' );
         disp( 'M is an S matrix, so the LCP is always feasible. This is a necessary condition for there to always be a solution.' );
         disp( 'varsigma bounds (positive means M is an S matrix):' );
