@@ -57,7 +57,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     addpath( [ dynareOBCPath '/Core/Global/' ] );
     addpath( [ dynareOBCPath '/Core/ModelSolution/' ] );
     addpath( [ dynareOBCPath '/Core/OBCSimulation/' ] );
-    addpath( [ dynareOBCPath '/Core/Output/' ] );
+    addpath( [ dynareOBCPath '/Core/Display/' ] );
     
     addpath( [ dynareOBCPath '/Extern/EST-NLSS/' ] );
     addpath( [ dynareOBCPath '/Core/Estimation/' ] );
