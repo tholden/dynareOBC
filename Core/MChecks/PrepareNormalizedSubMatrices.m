@@ -43,7 +43,10 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
         if any( diag( Msc ) <= 0 )
             continue;
         end
-        if Tss > 1 && any( abs( angle( eig( Msc ) ) ) >= pi - pi / Tss )
+        
+        TssTns = Tss * ns;
+        
+        if TssTns > 1 && any( abs( angle( eig( Msc ) ) ) >= pi - pi / TssTns )
             continue;
         end
         
@@ -51,21 +54,21 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
         if pMsc == 0
             CPMatrix = true;
         else
-            IminusMsc = eye( Tss ) - Msc;
+            IminusMsc = eye( TssTns ) - Msc;
             absIminusMsc = abs( IminusMsc );
             if max( abs( eig( absIminusMsc ) ) ) < 1 % corollary 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                 CPMatrix = true;
             else
-                IplusMsc = eye( Tss ) + Msc;
+                IplusMsc = eye( TssTns ) + Msc;
                 norm_absIminusMsc = norm( absIminusMsc );
-                [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( Tss ) );
+                [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( TssTns ) );
                 if pIMscComb == 0 % theorem 3.4 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                     CPMatrix = true;
                 else
                     if norm_absIminusMsc < min( svd( IplusMsc ) ) % theorem 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                         CPMatrix = true;
                     else
-                        if rank( IplusMsc ) == Tss
+                        if rank( IplusMsc ) == TssTns
                             try
                                 IMscRatio = IplusMsc \ IminusMsc;
                                 if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
@@ -74,7 +77,7 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
                             catch
                             end
                         end
-                        if ~CPMatrix && rank( IminusMsc ) == Tss % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                        if ~CPMatrix && rank( IminusMsc ) == TssTns % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                             try
                                 IMscAltRatio = IminusMsc \ IplusMsc;
                                 if min( svd( IMscAltRatio ) ) > 1
