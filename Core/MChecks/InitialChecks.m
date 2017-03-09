@@ -410,8 +410,8 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         d1s = d1sSubMMatrices{ Tss };
         
-        PLCP.Ath = [ diag( d1s ); -diag( d1s ) ];
-        PLCP.bth = ones( 2 * Tss * ns, 1 );
+        PLCP.Ath = [ eye( Tss * ns ); -eye( Tss * ns ) ];
+        PLCP.bth = [ d1s; d1s ];
 
         fprintf( '\n' );
         disp( 'Solving for a parametric solution over the requested domain.' );
