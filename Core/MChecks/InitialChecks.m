@@ -410,7 +410,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         d1s = d1sSubMMatrices{ Tss };
         
-        PLCP.Ath = d1s * [ eye( Tss * ns ); -eye( Tss * ns ) ];
+        PLCP.Ath = [ diag( d1s ); -diag( d1s ) ];
         PLCP.bth = ones( 2 * Tss * ns, 1 );
 
         fprintf( '\n' );
