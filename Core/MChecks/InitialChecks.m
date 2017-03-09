@@ -444,8 +444,8 @@ function dynareOBC = InitialChecks( dynareOBC )
                     end
                 end
             end
-        catch
-            disp( 'Failed to solve for a parametric solution.' );
+        catch Error
+            disp( [ 'Failed to solve for a parametric solution. Internal error: ' Error.message ] );
         end
     end
     
