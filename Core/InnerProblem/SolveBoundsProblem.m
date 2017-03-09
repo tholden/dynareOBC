@@ -107,6 +107,7 @@ function y = SolveBoundsProblem( q )
         end
         
         if ~PMatrixSolutionOK
+            
             d1s = d1sSubMMatrices{ LargestPMatrix };
             d2 = d2SubMMatrices{ LargestPMatrix };
 
@@ -143,6 +144,7 @@ function y = SolveBoundsProblem( q )
                     PMatrixSolutionOK = false;
                 end
             end
+            
         end
         
     end
