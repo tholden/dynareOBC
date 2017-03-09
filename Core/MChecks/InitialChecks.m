@@ -395,6 +395,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
 
     PoolOpened = false;
+    d1sSubMMatrices = dynareOBC.d1sSubMMatrices;
     for Tss = min( dynareOBC.TimeToSolveParametrically, dynareOBC.LargestPMatrix ) : -1 : 1
         
         if ~PoolOpened
@@ -406,7 +407,10 @@ function dynareOBC = InitialChecks( dynareOBC )
         PLCP.M = dynareOBC.NormalizedSubMsMatrices{ Tss };
         PLCP.q = zeros( Tss * ns, 1 );
         PLCP.Q = eye( Tss * ns );
-        PLCP.Ath = [ eye( Tss * ns ); -eye( Tss * ns ) ];
+        
+        d1s = d1sSubMMatrices{ Tss };
+        
+        PLCP.Ath = d1s * [ eye( Tss * ns ); -eye( Tss * ns ) ];
         PLCP.bth = ones( 2 * Tss * ns, 1 );
 
         fprintf( '\n' );
