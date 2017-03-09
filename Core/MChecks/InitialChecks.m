@@ -404,10 +404,10 @@ function dynareOBC = InitialChecks( dynareOBC )
 
         PLCP = struct;
         PLCP.M = dynareOBC.NormalizedSubMsMatrices{ Tss };
-        PLCP.q = zeros( Tss, 1 );
-        PLCP.Q = eye( Tss );
-        PLCP.Ath = [ eye( Tss ); -eye( Tss ) ];
-        PLCP.bth = ones( 2 * Tss, 1 );
+        PLCP.q = zeros( Tss * ns, 1 );
+        PLCP.Q = eye( Tss * ns );
+        PLCP.Ath = [ eye( Tss * ns ); -eye( Tss * ns ) ];
+        PLCP.bth = ones( 2 * Tss * ns, 1 );
 
         fprintf( '\n' );
         disp( 'Solving for a parametric solution over the requested domain.' );
