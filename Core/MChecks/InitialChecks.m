@@ -391,12 +391,12 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ParametricSolutionMode = 0;
     
     if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.ReverseSearch || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
-        dynareOBC.TimeToSolveParametrically = 0;
+        dynareOBC.MaxParametricSolutionDimension = 0;
     end
 
     PoolOpened = false;
     d1sSubMMatrices = dynareOBC.d1sSubMMatrices;
-    for Tss = min( dynareOBC.TimeToSolveParametrically, dynareOBC.LargestPMatrix ) : -1 : 1
+    for Tss = min( ceil( dynareOBC.MaxParametricSolutionDimension / ns ), dynareOBC.LargestPMatrix ) : -1 : 1
         
         if ~PoolOpened
             OpenPool;

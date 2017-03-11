@@ -96,7 +96,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 end
             end
             dynareOBC.PTest = 0;
-            dynareOBC.TimeToSolveParametrically = 0;
+            dynareOBC.MaxParametricSolutionDimension = 0;
         end
         if isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
             warning( 'dynareOBC:OverwritingVarList', 'The variable list passed to stoch_simul will be replaced with the list of observable variables.' );
@@ -109,7 +109,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.MLVSimulationMode = 1;
         dynareOBC.Sparse = false;
         dynareOBC.PTest = 0;
-        dynareOBC.TimeToSolveParametrically = 0;
+        dynareOBC.MaxParametricSolutionDimension = 0;
     end
 
     if dynareOBC.MLVSimulationMode > 0 && isfield( dynareOBC, 'VarList' ) && ~isempty( dynareOBC.VarList )
