@@ -494,7 +494,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     disp( [ 'Found working solver: ' SolverString ] );
     fprintf( '\n' );
     
-    if ~ismember( lSolverString, { 'gurobi', 'cplex', 'xpress', 'mosek', 'scip' } );
+    if ~ismember( lSolverString, { 'gurobi', 'cplex', 'xpress', 'mosek', 'scip' } )
         warning( 'dynareOBC:PoorQualitySolver', 'You are using a low quality MILP solver. This may result in incorrect results, solution failures and slow performance.\nIt is strongly recommended that you install one of the commercial solvers listed in the read-me document (all of which are free to academia).' );
     end
         
