@@ -188,7 +188,7 @@ function [ Weights, Points, NumPoints, Integral ] = fwtpts( S, Order, TypeIsCube
             if D + sum(Z(M+1)) <= Order
                 coder.varsize( 'PP', [], [ true, true ] );
                 [ PP, SP ] = FULPTS( S, M, G ); 
-                Weights = [ Weights, FULWGT( S, M, Order-D, MOM ) ];    %#ok<AGROW>
+                Weights = [ Weights, repmat( FULWGT( S, M, Order-D, MOM ), 1, SP ) ];    %#ok<AGROW>
                 Points = [ Points, PP ]; %#ok<AGROW>
                 IC = IC + SP;
             end
