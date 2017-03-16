@@ -204,7 +204,7 @@ function [ Weights, Points, NumPoints, Integral ] = fwtpts( S, Order, TypeIsCube
 
     Integral = 0;
     if nargin > 3
-        Integral = sum(Weights.*feval(f,Points));
+        Integral = feval(f,Points) * Weights';
     end
 
 end
