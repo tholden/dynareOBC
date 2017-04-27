@@ -282,6 +282,8 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       than one standard deviation. 
  
 * Settings for controlling estimation or smoothing 
+    DISABLED IN THE CURRENT RELEASE. PLEASE EITHER USE AN OLD ONE, OR AWAIT THE NEW RELEASE IN 
+    MAY/JUNE 2017. 
     * Estimation 
       Enables estimation of the model's parameters. Note that Estimation requires the MATLAB 
       Statistics and Machine Learning Toolox. 
