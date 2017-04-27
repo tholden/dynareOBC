@@ -86,6 +86,7 @@ rm -f -r -d -- **/LastDependencyUpdate.mat
 rm -f -r -d -- **/FastStart.mat
 rm -f -r -d -- **/pou.mat
 rm -f -r -d -- **/time.mat
+rm -f -r -d -- **/HigherOrderSobolCache.mat
 rm -f -r -d -- **/checksum
 
 find . -empty -type d -delete
