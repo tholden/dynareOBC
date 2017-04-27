@@ -72,12 +72,12 @@ function y = SolveBoundsProblem( q )
                 else
                     yScaled = feval( 'dynareOBCTempSolution', qnssScaled );
                 end
+				if numel( yScaled ) ~= numel( qnssScaled )
+					warning( 'dynareOBC:ParametricEvaluationUnexpectedOutputSize', 'Unexpected output size returned from the parametric solution.' );
+					PMatrixSolutionOK = false;
+				end
             catch Error
 				warning( 'dynareOBC:ParametricEvaluationError', [ 'Error running the parametric solution: ' Error.message ] );
-                PMatrixSolutionOK = false;
-            end
-            if numel( yScaled ) ~= numel( qnssScaled )
-				warning( 'dynareOBC:ParametricEvaluationUnexpectedOutputSize', 'Unexpected output size returned from the parametric solution.' );
                 PMatrixSolutionOK = false;
             end
             if PMatrixSolutionOK
