@@ -15,7 +15,7 @@ function StoreGlobals( M, options, oo, dynareOBC )
             end
             warning( WarningState );
         end
-        return;
+        return
     catch
     end
     try
@@ -29,7 +29,7 @@ function StoreGlobals( M, options, oo, dynareOBC )
             end
             warning( WarningState );
         end
-        return;
+        return
     catch
     end
 end
