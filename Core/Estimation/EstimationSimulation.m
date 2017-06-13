@@ -63,7 +63,7 @@ function [ PersistentState, EndoSimulation, MeasurementSimulation ] = Estimation
             CurrentValuesWithBoundsBig = bsxfun( @plus, reshape( sum( reshape( EndoSimulation, NEndo, NEndoMult, NSimulationPoints ), 2 ), NEndo, NSimulationPoints ), Constant );
             CurrentValuesWithBoundsCurrentIndices = CurrentValuesWithBoundsBig( CurrentIndices, : );
 
-            MeasurementSimulation = dynareOBCTempGetMLVs( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, NSimulationPoints ) ], ShockSequence, M_.params, oo_.dr.ys( 1:dynareOBC_.OriginalNumVar ) );
+            MeasurementSimulation = dynareOBCTempGetMLVs( full( [ LagValuesWithBoundsLagIndices; CurrentValuesWithBoundsCurrentIndices; repmat( FutureValues, 1, NSimulationPoints ) ] ), ShockSequence, M_.params, full( oo_.dr.ys( 1:dynareOBC_.OriginalNumVar ) ) );
         else
             MeasurementSimulation = zeros( 0, NSimulationPoints );
         end
