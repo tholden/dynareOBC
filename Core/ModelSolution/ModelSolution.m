@@ -13,6 +13,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     ns = dynareOBC.NumberOfMax;
 
     % temporary work around for warning in dates object.
+    options.initial_date = [];
     options.initial_period = [];
     options.dataset = [];
     
