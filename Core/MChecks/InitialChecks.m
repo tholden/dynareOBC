@@ -457,7 +457,9 @@ function dynareOBC = InitialChecks( dynareOBC )
         rehash;
     end
     
-    if ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
+    Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~dynareOBC.FirstOrderConditionalCovariance;
+    
+    if ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~Order2ConditionalCovariance && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
         ClosePool;
     end
 
