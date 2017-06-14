@@ -22,7 +22,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     dynareOBC.OriginalSigma = Sigma;
 
     Order2VarianceRequired = ( dynareOBC.Order >= 2 ) && ( dynareOBC.CalculateTheoreticalVariance || Global );
-    JustCalculateMean = ~( dynareOBC.NumberOfMax > 0 || ( ~dynareOBC.SlowIRFs ) || Order2VarianceRequired );
+    JustCalculateMean = dynareOBC.NumberOfMax == 0 && dynareOBC.SlowIRFs && ( ~Order2VarianceRequired );
     
     if ( dynareOBC.Order == 1 ) || Order2VarianceRequired || dynareOBC.SimulateOnGridPoints
         dynareOBC.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
