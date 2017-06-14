@@ -68,7 +68,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         end 
     end
     
-    if options.order == 1
+    if options.order == 1 || dynareOBC.Order == 1
         dynareOBC.FirstOrderConditionalCovariance = true;
     end
     Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~dynareOBC.FirstOrderConditionalCovariance;
