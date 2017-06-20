@@ -207,6 +207,9 @@ function dynareOBC( InputFileName, varargin )
 %     * NoCubature 
 %       Speeds up DynareOBC by assuming that agents are "surprised" by the existence of the bound. At 
 %       order=1, this is equivalent to a perfect foresight solution to the model. 
+%     * RetrieveConditionalCovariancesParallelizationCutOff (default: 256) 
+%       Determines the size of matrix beyond which we parallelize certain loops involved in 
+%       calculating the covariance of the random variables over which we perform cubature. 
 %  
 % * For controlling accuracy 
 %     * FirstOrderAroundRSS 
