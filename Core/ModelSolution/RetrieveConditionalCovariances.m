@@ -51,8 +51,8 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
 
             BCovXiB{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
 
-            BCovXiB{i} = B2 * BCovXiB{i} * B2';
-            BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
+            BCovXiB{i} = full( B2 * BCovXiB{i} * B2' );
+            % BCovXiB{i}( abs(BCovXiB{i})<eps ) = 0;
 
         end
         
@@ -73,8 +73,8 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
 
                 BCovXiBGlobal{i} = sparse( Ci2, Cj2, Cs2, LengthXi, LengthXi );
 
-                BCovXiBGlobal{i} = B2 * BCovXiBGlobal{i} * B2';
-                BCovXiBGlobal{i}( abs(BCovXiBGlobal{i})<eps ) = 0;
+                BCovXiBGlobal{i} = full( B2 * BCovXiBGlobal{i} * B2' );
+                % BCovXiBGlobal{i}( abs(BCovXiBGlobal{i})<eps ) = 0;
 
             end
         end
@@ -86,17 +86,17 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         VarianceZ2Global = cell( TM1, 1 );
 
         for k = 1 : TM1
-            VarianceZ2{ k } = sparse( LengthZ2, LengthZ2 );
+            VarianceZ2{ k } = zeros( LengthZ2, LengthZ2 );
             for i = 1 : min( k, PeriodsOfUncertainty )
                 CurrentVariance = A2Powers{ k - i + 1 } * BCovXiB{ i } * A2Powers{ k - i + 1 }'; 
-                CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                % CurrentVariance( abs(CurrentVariance)<eps ) = 0;
                 VarianceZ2{ k } = VarianceZ2{ k } + CurrentVariance;
             end
             if Global
-                VarianceZ2Global{ k } = sparse( LengthZ2, LengthZ2 );
+                VarianceZ2Global{ k } = zeros( LengthZ2, LengthZ2 );
                 for i = 1 : k
                     CurrentVariance = A2Powers{ k - i + 1 } * BCovXiBGlobal{ i } * A2Powers{ k - i + 1 }'; 
-                    CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                    % CurrentVariance( abs(CurrentVariance)<eps ) = 0;
                     VarianceZ2Global{ k } = VarianceZ2Global{ k } + CurrentVariance;
                 end
             end

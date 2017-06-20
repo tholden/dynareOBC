@@ -370,11 +370,11 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             end
 
             A2Powers = cell( TM1, 1 );
-            A2Powers{1} = speye( size( A2 ) );
+            A2Powers{1} = eye( size( A2 ) );
 
             for k = 2 : TM1
-                A2Powers{ k } = A2 * A2Powers{ k - 1 };
-                A2Powers{ k }( abs(A2Powers{ k })<eps ) = 0;
+                A2Powers{ k } = full( A2 * A2Powers{ k - 1 } );
+                % A2Powers{ k }( abs(A2Powers{ k })<eps ) = 0;
             end
 
             VarianceY1State = cell( TM1, 1 );
