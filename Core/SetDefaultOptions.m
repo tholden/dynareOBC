@@ -52,6 +52,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'QuasiMonteCarloLevel', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Replications', 50 );
     dynareOBC = SetDefaultOption( dynareOBC, 'Resume', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'RetrieveConditionalCovariancesParallelizationCutOff', 256 );
     dynareOBC = SetDefaultOption( dynareOBC, 'ReverseSearch', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SaveMacro', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SaveMacroName', [ dynareOBC.BaseFileName '-macroexp.mod' ] );
