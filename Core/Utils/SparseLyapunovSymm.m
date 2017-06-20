@@ -1,30 +1,30 @@
-function [ X, Norm ] = SparseLyapunovSymm( A, B )
-% Solves the Lyapunov equation X = A*X*A' + B, for B and X symmetric matrices.
+function [ X, Norm ] = SparseLyapunovSymm( ATrans, B )
+% Solves the Lyapunov equation X = ATrans.'*X*ATrans + B, for B and X symmetric matrices.
 
     X = B;
-    APower = A;
+    APowerTrans = ATrans;
 
     for i = 1 : ( 10 + size( B, 1 ) * size( B, 1 ) )
         XOld = X;
         
-        X = APower * X * APower' + X;
+        X = APowerTrans.' * X * APowerTrans + X;
         X( abs(X) < eps ) = 0;
         
-        APower = APower * APower;
-        APower( abs(APower) < eps ) = 0;
+        APowerTrans = APowerTrans * APowerTrans;
+        APowerTrans( abs( APowerTrans ) < eps ) = 0;
         
-        if ( norm( X - XOld, Inf ) < eps ) || all( APower(:) == 0 )
+        if ( norm( X - XOld, Inf ) < eps ) || all( APowerTrans(:) == 0 )
             % disp( i );
             break;
         end
     end
     
-    Norm = norm( A*X*A' + B - X, Inf ) / norm( B, Inf );
+    Norm = norm( ATrans.'*X*ATrans + B - X, Inf ) / norm( B, Inf );
     
     if Norm > sqrt( eps )
-        X = lyapunov_symm( full( A ), full( B ), 1+1e-6, 1e-12, 1e-15 );
+        X = lyapunov_symm( full( ATrans.' ), full( B ), 1+1e-6, 1e-12, 1e-15 );
         X = spsparse( X );
-        Norm = norm( A*X*A' + B - X, Inf ) / norm( B, Inf );
+        Norm = norm( ATrans.'*X*ATrans + B - X, Inf ) / norm( B, Inf );
     end
 
 end

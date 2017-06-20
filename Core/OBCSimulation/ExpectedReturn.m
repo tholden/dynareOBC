@@ -110,11 +110,11 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M, dr, dynareOBC )
     zPath( :, 1 ) = z;
     
     c = dynareOBC.c;
-    A = dynareOBC.A;
+    ATrans = dynareOBC.ATrans;
     
     for t = 2 : T
         % z( (i6+1):end ) = 0;
-        z = c + A * z;
+        z = c + ATrans.' * z;
         zPath( :, t ) = z;
     end
     

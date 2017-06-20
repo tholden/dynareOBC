@@ -12,11 +12,11 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     dynareOBC.MaxCubatureDimension = min( dynareOBC.MaxCubatureDimension, TM1 * ns );
     
     % pre-calculations for order=1 terms
-    A1 = sparse( nEndo, nEndo );
-    A1( :, SelectState ) = oo.dr.ghx;
-    A1( abs(A1)<eps ) = 0;
+    A1Trans = sparse( nEndo, nEndo );
+    A1Trans( SelectState, : ) = oo.dr.ghx.';
+    A1Trans( abs( A1Trans ) < eps ) = 0;
 
-    B1 = spsparse( oo.dr.ghu );
+    B1Trans = spsparse( oo.dr.ghu.' );
 
     Sigma = spsparse( M.Sigma_e );
     dynareOBC.OriginalSigma = Sigma;
@@ -25,27 +25,27 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
     JustCalculateMean = dynareOBC.NumberOfMax == 0 && dynareOBC.SlowIRFs && ( ~Order2VarianceRequired );
     
     if ( dynareOBC.Order == 1 ) || Order2VarianceRequired || dynareOBC.SimulateOnGridPoints
-        dynareOBC.Var_z1 = SparseLyapunovSymm( A1, B1*Sigma*B1' );
+        dynareOBC.Var_z1 = SparseLyapunovSymm( A1Trans, B1Trans.' * Sigma * B1Trans );
     end
     if ( dynareOBC.Order == 1 ) && Global
         dynareOBC.UnconditionalVarXi = Sigma;
         dynareOBC.LengthXi = size( Sigma, 1 );
     end
     
-    LengthZ1 = size( A1, 1 );
+    LengthZ1 = size( A1Trans, 1 );
         
     if ~JustCalculateMean
-        A1Powers = cell( TM1, 1 );
-        A1Powers{1} = speye( size( A1 ) );
+        A1PowersTrans = cell( TM1, 1 );
+        A1PowersTrans{1} = speye( size( A1Trans ) );
 
         for k = 2 : TM1
-            A1Powers{ k } = A1 * A1Powers{ k - 1 };
-            A1Powers{ k }( abs(A1Powers{ k })<eps ) = 0;
+            A1PowersTrans{ k } = A1PowersTrans{ k - 1 } * A1Trans;
+            A1PowersTrans{ k }( abs( A1PowersTrans{ k } ) < eps ) = 0;
         end
         VarianceZ1 = cell( TM1, 1 );
         VarianceZ1Global = cell( TM1, 1 );
 
-        BCovXiB = B1 * Sigma * B1';
+        BCovXiB = B1Trans.' * Sigma * B1Trans;
 
         PeriodsOfUncertainty = dynareOBC.PeriodsOfUncertainty;
     
@@ -53,14 +53,14 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             VarianceZ1{ k } = sparse( LengthZ1, LengthZ1 );
             for i = 1 : min( k, PeriodsOfUncertainty )
                 iWeight = 0.5 * ( 1 + cos( pi * ( i - 1 ) / PeriodsOfUncertainty ) );
-                CurrentVariance = A1Powers{ k - i + 1 } * ( iWeight * BCovXiB ) * A1Powers{ k - i + 1 }';
+                CurrentVariance = A1PowersTrans{ k - i + 1 }.' * ( iWeight * BCovXiB ) * A1PowersTrans{ k - i + 1 };
                 CurrentVariance( abs(CurrentVariance)<eps ) = 0;
                 VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
             end
             if Global
 				VarianceZ1Global{ k } = sparse( LengthZ1, LengthZ1 );
 				for i = 1 : k
-					CurrentVariance = A1Powers{ k - i + 1 } * BCovXiB * A1Powers{ k - i + 1 }';
+					CurrentVariance = A1PowersTrans{ k - i + 1 }.' * BCovXiB * A1PowersTrans{ k - i + 1 };
 					CurrentVariance( abs(CurrentVariance)<eps ) = 0;
 					VarianceZ1Global{ k } = VarianceZ1Global{ k } + CurrentVariance;
 				end
@@ -84,7 +84,11 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % Idx3 = (2*nEndo+1):LengthZ2;
         
         % A2( Idx1, Idx1 ) = A1;
-        [ A2i, A2j, A2s ] = find( A1 );
+        [ A1j, A1i, A1s ] = find( A1Trans );
+        
+        A2i = A1i;
+        A2j = A1j;
+        A2s = A1s;
         
         % A2( Idx2, Idx2 ) = A1;
         A2i = [ A2i; A2i + nEndo ];
@@ -99,7 +103,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         A2s = [ A2s; 0.5 * Tmps ];
         
         % A2( Idx3, Idx3 ) = spkron( oo_.dr.ghx( SelectState, : ), oo_.dr.ghx( SelectState, : ) );
-        A1S = A1( SelectState, SelectState );
+        A1S = A1Trans( SelectState, SelectState ).';
         A1S2 = spkron( A1S, A1S );
         [ Tmpi, Tmpj, Tmps ] = find( A1S2 );
         A2i = [ A2i; Tmpi + 2*nEndo ];
@@ -109,10 +113,10 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         nState2 = nState * nState;
         LengthZ2 = 2 * nEndo + nState2;
         
-        A2 = sparse( A2i, A2j, A2s, LengthZ2, LengthZ2 );
+        A2Trans = sparse( A2j, A2i, A2s, LengthZ2, LengthZ2 );
  
-        B1S = B1( SelectState, : );
-        B1S2 = ( spkron( B1S, B1S ) );
+        B1S = B1Trans( :, SelectState ).';
+        B1S2 = spkron( B1S, B1S );
         
     end
     
@@ -127,7 +131,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % Jdx3 = (nExo + nExo2 + 1):LengthXi;
 
         % B2( Idx1, Jdx1 ) = oo_.dr.ghu;
-        [ B2i, B2j, B2s ] = find( B1 );
+        [ B2j, B2i, B2s ] = find( B1Trans );
 
         % B2( Idx2, Jdx2 ) = 0.5 * oo_.dr.ghuu;
         [ Tmpi, Tmpj, Tmps ] = spfind( 0.5 * oo.dr.ghuu );
@@ -155,7 +159,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
 
         LengthXi = nExo + nExo2 + nState * nExo;
 
-        B2 = sparse( B2i, B2j, B2s, LengthZ2, LengthXi );  
+        B2Trans = sparse( B2j, B2i, B2s, LengthXi, LengthZ2 );  
 
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
 
@@ -177,12 +181,14 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         UnconditionalVarXi = sparse( Ui, Uj, Us, LengthXi, LengthXi );
         dynareOBC.UnconditionalVarXi = UnconditionalVarXi;
 
-        dynareOBC.Var_z2 = SparseLyapunovSymm( A2, B2*UnconditionalVarXi*B2' );
+        dynareOBC.Var_z2 = SparseLyapunovSymm( A2Trans, B2Trans.' * UnconditionalVarXi * B2Trans );
     end
     
     if dynareOBC.Order > 2
         
-        [ A3i, A3j, A3s ] = find( A2 );
+        A3i = A2i;
+        A3j = A2j;
+        A3s = A2s;
         
         T1 = sparse( nEndo, nEndo );
         T1( :, SelectState ) = 0.5 * oo.dr.ghxss_nlma;
@@ -193,10 +199,9 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         A3s = [ A3s; Tmps ];
         
         k1 = LengthZ2 + nEndo;
-        [ Tmpi, Tmpj, Tmps ] = find( A1 );
-        A3i = [ A3i; Tmpi + LengthZ2; Tmpi + k1 ];
-        A3j = [ A3j; Tmpj + LengthZ2; Tmpj + k1 ];
-        A3s = [ A3s; Tmps; Tmps ];
+        A3i = [ A3i; A1i + LengthZ2; A1i + k1 ];
+        A3j = [ A3j; A1j + LengthZ2; A1j + k1 ];
+        A3s = [ A3s; A1s; A1s ];
         
         IKVecSigma = spkron( speye( nState ), vec( Sigma ) );
         T1 = sparse( nEndo, nEndo );
@@ -249,24 +254,19 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         A3s = [ A3s; Tmps ];
         
         LengthZ3 = k3 + nState3;
-        A3 = sparse( A3i, A3j, A3s, LengthZ3, LengthZ3 );
+        A3Trans = sparse( A3j, A3i, A3s, LengthZ3, LengthZ3 );
         
     end
     
     % Save augmented state transition matrices
     if dynareOBC.Order == 1
-        dynareOBC.A = A1;
-        dynareOBC.B = B1;
+        dynareOBC.ATrans = A1Trans;
         dynareOBC.AugmentedToTotal = speye( nEndo );
     elseif dynareOBC.Order == 2
-        dynareOBC.A = A2;
-        if Order2ConditionalCovariance || Order2VarianceRequired
-            dynareOBC.B = B2;
-        end
+        dynareOBC.ATrans = A2Trans;
         dynareOBC.AugmentedToTotal = [ speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 ) ];
     elseif dynareOBC.Order == 3
-        dynareOBC.A = A3;
-        % dynareOBC_.B = B2;
+        dynareOBC.ATrans = A3Trans;
         dynareOBC.AugmentedToTotal = [ speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 ) speye( nEndo ) speye( nEndo ) sparse( nEndo, nState2 + nState3 ) ];
     else
         error( 'dynareOBC:UnsupportedOrder', 'Order %d is unsupported at present. The only currently supported orders are 1, 2 and 3.', dynareOBC.Order );
@@ -289,7 +289,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         end
     end
     dynareOBC.c = c;
-    Mean_z = ( speye( size( dynareOBC.A ) ) - dynareOBC.A ) \ c;
+    Mean_z = ( speye( size( dynareOBC.ATrans.' ) ) - dynareOBC.ATrans.' ) \ c;
     dynareOBC.Mean_z = Mean_z;
     
     % disp( eigs( dynareOBC_.A, 5 ) );
@@ -319,7 +319,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 p = floor( 0.5 * ( 1 + sqrt( 8 * i - 7 ) ) );
                 q = i - 0.5 * p * ( p - 1 );
                 % p and q are indexes of the lower triangle of a matrix, p>=q
-                CurrentCov = A1Powers{ p - q + 1 } * VarianceZ1{ q }; % * A1Powers{ q - q + 1 }' = eye; 
+                CurrentCov = A1PowersTrans{ p - q + 1 }.' * VarianceZ1{ q }; % * A1Powers{ q - q + 1 }' = eye; 
                 ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) );
                 ConditionalCovarianceTemp{i} = ReducedCov;
             end
@@ -369,12 +369,12 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 warning( 'dynareOBC:ApproximatingConditionalCovariance', 'At present, dynareOBC approximates the conditional covariance of third order approximations with the conditional covariance of a second order approximation.' );
             end
 
-            A2Powers = cell( TM1, 1 );
-            A2Powers{1} = eye( size( A2 ) );
+            A2PowersTrans = cell( TM1, 1 );
+            A2PowersTrans{1} = eye( size( A2Trans ) );
 
             for k = 2 : TM1
-                A2Powers{ k } = full( A2 * A2Powers{ k - 1 } );
-                % A2Powers{ k }( abs(A2Powers{ k })<eps ) = 0;
+                A2PowersTrans{ k } = full( A2PowersTrans{ k - 1 } * A2Trans );
+                % A2PowersTrans{ k }( abs( A2PowersTrans{ k } ) < eps ) = 0;
             end
 
             VarianceY1State = cell( TM1, 1 );
@@ -393,8 +393,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             end
 
             % dynareOBC_.A1Powers = A1Powers;
-            dynareOBC.A2Powers = A2Powers;
-            dynareOBC.B2 = B2;
+            dynareOBC.A2PowersTrans = A2PowersTrans;
+            dynareOBC.B2Trans = B2Trans;
             dynareOBC.VarianceY1State = VarianceY1State;
             dynareOBC.LengthXi = LengthXi;
             

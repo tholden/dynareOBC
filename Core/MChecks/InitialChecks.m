@@ -457,7 +457,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         rehash;
     end
     
-    LengthZ2 = size( dynareOBC.A2Powers{1}, 1 );
+    LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
     Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~dynareOBC.FirstOrderConditionalCovariance;
     ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
     
