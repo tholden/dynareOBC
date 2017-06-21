@@ -457,9 +457,13 @@ function dynareOBC = InitialChecks( dynareOBC )
         rehash;
     end
     
-    LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
-    Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~dynareOBC.FirstOrderConditionalCovariance;
-    ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
+    if isfield( dynareOBC, 'A2PowersTrans' )
+        LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
+        Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~dynareOBC.FirstOrderConditionalCovariance;
+        ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
+    else
+        ParallelRetrieveConditionalCovariances = false;
+    end
     
     if ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
         ClosePool;
