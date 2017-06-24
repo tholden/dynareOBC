@@ -104,6 +104,8 @@ function ReturnStruct = ExpectedReturn( InitialStateOrShock, M, dr, dynareOBC )
         end
     end
     
+    z = full( z );
+    
     Length_z = size( z, 1 );
     
     zPath = zeros( Length_z, T );
