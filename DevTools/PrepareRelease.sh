@@ -1,6 +1,7 @@
 #!/bin/bash
 cd ..
 
+git submodule foreach git pull --recurse-submodules
 git submodule foreach git checkout master
 git pull --recurse-submodules
 git submodule foreach git pull --recurse-submodules
