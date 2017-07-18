@@ -210,5 +210,5 @@ function OptiInstallInternal( Update, dynareOBCPath )
     
     addpath( [ dynareOBCPath '/Extern/OPTI/' ] );
     rehash path;
-    opti_Install( [ dynareOBCPath '/Extern/OPTI/' ], ~Update );
+    opti_Install_Minimal( [ dynareOBCPath '/Extern/OPTI/' ], ~Update );
 end
