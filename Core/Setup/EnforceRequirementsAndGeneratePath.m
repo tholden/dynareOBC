@@ -79,7 +79,9 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
         addpath( [ dynareOBCPath '/Extern/glpkmex/win32/' ] );
     end
     
-    OptiInstallInternal( Update, dynareOBCPath );
+    if ( length( Architecture ) >= 5 ) && strcmp( Architecture(1:5), 'PCWIN' )
+        OptiInstallInternal( Update, dynareOBCPath );
+    end
 
     [ MKDirStatus, ~, ~ ] = mkdir( [ dynareOBCPath '/Extern/tbxmanager/' ] );
     if ~MKDirStatus
