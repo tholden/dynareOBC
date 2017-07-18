@@ -1,20 +1,9 @@
 #!/bin/bash
 shopt -s globstar
 
-rm -f -r -d -- Extern/OPTI/Solvers/*.mexw*
-rm -f -r -d -- Extern/OPTI/Utilities/*.mexw*
-
-cp ../OptiMex/ ../OptiMexTmp/
-
-mv ../OptiMexTmp/asl.* Extern/OPTI/Utilities/
-mv ../OptiMexTmp/coinR.* Extern/OPTI/Utilities/
-mv ../OptiMexTmp/coinW.* Extern/OPTI/Utilities/
-mv ../OptiMexTmp/mklJac.* Extern/OPTI/Utilities/
-mv ../OptiMexTmp/rmathlib.* Extern/OPTI/Utilities/
-
-mv ../OptiMexTmp/* Extern/OPTI/Solvers/
-
-rm -f -r -d ../OptiMexTmp
+cd DevTools
+source ./GetMEX.sh
+cd ..
 
 rm -f -r -d -- Extern/OPTI/Test\ Problems/
 rm -f -r -d -- Extern/OPTI/Solvers/Source/
@@ -72,4 +61,4 @@ cd Extern/OPTI
 find . -name "*scip*" -print | tar -c -f - -T - | ( cd ../OPTI_SCIP; tar -xf -)
 rm -f -r -d -- **/*scip*
 cd ../..
-cp ../ScipMex/* Extern/OPTI_SCIP/Solvers/
+
