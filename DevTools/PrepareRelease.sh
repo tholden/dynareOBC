@@ -30,19 +30,29 @@ mkdir ../dynareOBCRelease
 cp -f -r . ../dynareOBCRelease/
 cd ../dynareOBCRelease
 
+echo Calling ReduceOPTI
+
 source ./DevTools/ReduceOPTI.sh
+
+echo Done ReduceOPTI
 
 rm -f *.mex*
 rm -f Core/*.mex*
+
+echo 1
 
 rm -f Examples/FernandezVillaverdeEtAl2012/*.m
 rm -f Examples/FernandezVillaverdeEtAl2012/*.mat
 rm -f Examples/SmetsWouters*/*.m
 rm -f Examples/SmetsWouters*/*.mat
 
+echo 2
+
 shopt -s globstar
 
 rm -f -r -d -- **/.git*
+
+echo 3
 
 rm -f -r -d -- **/*.asv
 rm -f -r -d -- **/*.bak
@@ -53,6 +63,8 @@ rm -f -r -d -- **/*.zip
 rm -f -r -d -- **/*.eps
 rm -f -r -d -- **/*.jnl
 rm -f -r -d -- **/*.orig
+
+echo 4
 
 rm -f -r -d -- **/dynareOBCTemp*
 rm -f -r -d -- **/*deleteThis*
@@ -67,19 +79,27 @@ rm -f -r -d -- **/ESTNLSSTempEstimationObjective.m
 rm -f -r -d -- **/ESTNLSSTempEstimationObjectiveMex.mex*
 rm -f -r -d -- **/ESTNLSSTempKalmanStep.m
 
+echo 5
+
 rm -f -r -d -- DevTools/
 rm -f -r -d -- Extern/tbxmanager/
 rm -f -r -d -- Extern/requirements/
 rm -f -r -d -- Extern/OptiToolbox216/
 rm -f -r -d -- Extern/OptiToolbox221/
 
+echo 6
+
 rm -f -r -d -- **/codegen/
 rm -f -r -d -- **/Output/
+
+echo 7
 
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*/
 rm -f -r -d -- Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/*.mat
+
+echo 8
 
 rm -f -r -d -- **/.DS_Store
 rm -f -r -d -- **/.git
@@ -94,7 +114,11 @@ rm -f -r -d -- **/time.mat
 rm -f -r -d -- **/HigherOrderSobolCache.mat
 rm -f -r -d -- **/checksum
 
+echo 9
+
 find . -empty -type d -delete
+
+echo Done
 
 echo -n "https://github.com/tholden/dynareOBC/releases/download/vX.XX.TODO/dynareOBCRelease.zip" > CurrentVersionURL.txt
 echo Now update CurrentVersionURL.txt
