@@ -17,7 +17,7 @@ function DLLInstalled = CheckMSVCRequirement( MajorVersion, DesiredBuild, Platfo
             fprintf( '\n' );
             aria_urlwrite( dynareOBCPath, URL, [ dynareOBCPath '/Extern/Requirements/' SavePath ] );
         end
-        if nargin > 5
+        if nargin > 6
             if ~exist( [ dynareOBCPath '/Extern/Requirements/' UnzipPath ], 'file' )
                 fprintf( '\n' );
                 disp( [ 'Extracting files from ' SavePath '.' ] );
