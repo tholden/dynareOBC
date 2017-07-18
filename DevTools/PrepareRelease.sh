@@ -1,4 +1,8 @@
 #!/bin/bash
+echo If you are running this for the first time on a machine, you should:
+echo 1) Create the folder ../../OptiMex containing the *.mexw* files found from the last release in the Extern/Opti/Solvers and Extern/Opti/Utilities folders.
+echo 2) Create the folders ../../ScipMex containing the *.mexw* files found from the last release in the Extern/OPTI_SCIP/Solvers folder.
+
 cd ..
 
 git submodule foreach git pull --recurse-submodules

@@ -1,14 +1,29 @@
 #!/bin/bash
 shopt -s globstar
 
+rm -f -r -d -- Extern/OPTI/Solvers/*.mexw*
+rm -f -r -d -- Extern/OPTI/Utilities/*.mexw*
+
+cp ../OptiMex/ ../OptiMexTmp/
+
+mv ../OptiMexTmp/asl.* Extern/OPTI/Utilities/
+mv ../OptiMexTmp/coinR.* Extern/OPTI/Utilities/
+mv ../OptiMexTmp/coinW.* Extern/OPTI/Utilities/
+mv ../OptiMexTmp/mklJac.* Extern/OPTI/Utilities/
+mv ../OptiMexTmp/rmathlib.* Extern/OPTI/Utilities/
+
+mv ../OptiMexTmp/* Extern/OPTI/Solvers/
+
+rm -f -r -d ../OptiMexTmp
+
 rm -f -r -d -- Extern/OPTI/Test\ Problems/
 rm -f -r -d -- Extern/OPTI/Solvers/Source/
 rm -f -r -d -- Extern/OPTI/Utilities/Source/
 
-rm -f -r -d -- Extern/Opti/**/*.c
-rm -f -r -d -- Extern/Opti/**/*.cpp
-rm -f -r -d -- Extern/Opti/**/*.h
-rm -f -r -d -- Extern/Opti/**/*.hpp
+rm -f -r -d -- Extern/OPTI/**/*.c
+rm -f -r -d -- Extern/OPTI/**/*.cpp
+rm -f -r -d -- Extern/OPTI/**/*.h
+rm -f -r -d -- Extern/OPTI/**/*.hpp
 
 rm -f -r -d -- Extern/OPTI/Solvers/Documentation\ \+\ Licenses/ipopt
 rm -f -r -d -- Extern/OPTI/Solvers/ipopt.*
@@ -57,5 +72,4 @@ cd Extern/OPTI
 find . -name "*scip*" -print | tar -c -f - -T - | ( cd ../OPTI_SCIP; tar -xf -)
 rm -f -r -d -- **/*scip*
 cd ../..
-# The mex below are available from https://www.dropbox.com/s/mgd2rrpti9vq7xw/scip.mexw32?dl=1 and https://www.dropbox.com/s/5yb4f5n59wjt12d/scip.mexw64?dl=1
-cp ../scip.mex* Extern/OPTI_SCIP/Solvers/
+cp ../ScipMex/* Extern/OPTI_SCIP/Solvers/
