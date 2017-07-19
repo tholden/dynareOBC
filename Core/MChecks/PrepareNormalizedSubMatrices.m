@@ -76,7 +76,7 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
                             if rank( IplusMsc ) == TssTns
                                 try
                                     IMscRatio = IplusMsc \ IminusMsc;
-                                    if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                                    if max( abs( eig( abs( IMscRatio ) ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                                         CPMatrix = true;
                                     end
                                 catch
