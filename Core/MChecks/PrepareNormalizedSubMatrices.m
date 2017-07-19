@@ -56,7 +56,7 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
         else
             CompanionMsc = -abs( Msc );
             CompanionMsc = CompanionMsc - 2 * diag( diag( CompanionMsc ) );
-            if min( min( inv( CompanionMsc ) ) ) > 0 % H matrix check
+            if min( min( inv( CompanionMsc ) ) ) >= 0 % H matrix check
                 CPMatrix = true;
             else
                 IminusMsc = eye( TssTns ) - Msc;
