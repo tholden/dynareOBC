@@ -54,36 +54,42 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
         if pMsc == 0
             CPMatrix = true;
         else
-            IminusMsc = eye( TssTns ) - Msc;
-            absIminusMsc = abs( IminusMsc );
-            if max( abs( eig( absIminusMsc ) ) ) < 1 % corollary 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+            CompanionMsc = -abs( Msc );
+            CompanionMsc = CompanionMsc - 2 * diag( diag( CompanionMsc ) );
+            if min( min( inv( CompanionMsc ) ) ) > 0 % H matrix check
                 CPMatrix = true;
             else
-                IplusMsc = eye( TssTns ) + Msc;
-                norm_absIminusMsc = norm( absIminusMsc );
-                [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( TssTns ) );
-                if pIMscComb == 0 % theorem 3.4 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                IminusMsc = eye( TssTns ) - Msc;
+                absIminusMsc = abs( IminusMsc );
+                if max( abs( eig( absIminusMsc ) ) ) < 1 % corollary 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                     CPMatrix = true;
                 else
-                    if norm_absIminusMsc < min( svd( IplusMsc ) ) % theorem 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                    IplusMsc = eye( TssTns ) + Msc;
+                    norm_absIminusMsc = norm( absIminusMsc );
+                    [ ~, pIMscComb ] = chol( IplusMsc' * IplusMsc - ( norm_absIminusMsc * norm_absIminusMsc ) * eye( TssTns ) );
+                    if pIMscComb == 0 % theorem 3.4 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
                         CPMatrix = true;
                     else
-                        if rank( IplusMsc ) == TssTns
-                            try
-                                IMscRatio = IplusMsc \ IminusMsc;
-                                if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                                    CPMatrix = true;
+                        if norm_absIminusMsc < min( svd( IplusMsc ) ) % theorem 3.2 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                            CPMatrix = true;
+                        else
+                            if rank( IplusMsc ) == TssTns
+                                try
+                                    IMscRatio = IplusMsc \ IminusMsc;
+                                    if max( eig( abs( IMscRatio ) ) ) < 1 || norm( IplusMsc \ IminusMsc ) < 1 % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                                        CPMatrix = true;
+                                    end
+                                catch
                                 end
-                            catch
                             end
-                        end
-                        if ~CPMatrix && rank( IminusMsc ) == TssTns % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
-                            try
-                                IMscAltRatio = IminusMsc \ IplusMsc;
-                                if min( svd( IMscAltRatio ) ) > 1
-                                    CPMatrix = true;
+                            if ~CPMatrix && rank( IminusMsc ) == TssTns % theorem 3.1 of https://www.cogentoa.com/article/10.1080/23311835.2016.1271268.pdf
+                                try
+                                    IMscAltRatio = IminusMsc \ IplusMsc;
+                                    if min( svd( IMscAltRatio ) ) > 1
+                                        CPMatrix = true;
+                                    end
+                                catch
                                 end
-                            catch
                             end
                         end
                     end
