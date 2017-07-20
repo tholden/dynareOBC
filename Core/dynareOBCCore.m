@@ -496,7 +496,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             else
                 if dynareOBC.Order > 1 || ~dynareOBC.NoCubature
                     fprintf( '\n' );
-                    disp( 'Note that IRFs generated with FastIRFs are an approximation when the model is solved at order above one, or when there is cubature.' );
+                    disp( 'Note that IRFs generated with FastIRFs are an approximation to the true average IRF.' );
+                    disp( 'The level of FastIRFs is particularly artificial, so FastIRFs may appear to violate the bound.' );
+                    disp( 'To remove the appearance of bound violation, using the IRFsAroundZero option may be sensible.' );
                     disp( 'You should always invoke DynareOBC with the option SlowIRFs when producing the final set of graphs for a paper.' );
                     fprintf( '\n' );
                 end
