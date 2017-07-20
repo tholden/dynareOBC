@@ -35,6 +35,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
         end
     end
     
+    CubatureWeights = [ [ 1; zeros( NumPoints( end ) - 1, 1 ) ], CubatureWeights ];
     NumPoints = [ 1 NumPoints ];
 
     if nargin > 6
@@ -44,13 +45,12 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
     end
 
     yMatrix = y * CubatureWeights( 1, : );
-    yPure = y;
 
     if ~isempty( p )
         p.progress;
     end
     
-    CubatureSmoothing = dynareOBC.CubatureSmoothing;
+    CubatureAcceleration = dynareOBC.CubatureAcceleration;
     
     WarningGenerated = false;
     for i = 1 : CubatureOrder
@@ -91,14 +91,13 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
                 end
             end
         end
-        
-        yPureNew = yMatrix( :, i );
-        if dynareOBC.FastCubature || ( CubatureSmoothing <= 0 ) || ( CubatureSmoothing >= 1 ) || ( dynareOBC.QuasiMonteCarloLevel > 0 )
-            yNew = yPureNew;
+
+        if CubatureAcceleration
+            yNew = IteratedAitkensDeltaSquaredTransformation( yMatrix( :, 1 : ( i + 1 ) ) );
         else
-            yNew = ( 1 - CubatureSmoothing ) * yPureNew + CubatureSmoothing * yPure;
+            yNew = yMatrix( :, i + 1 );
         end
-        yPure = yPureNew;
+        
         yError = max( abs( y - yNew ) );
         y = yNew;
         
