@@ -494,6 +494,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             if dynareOBC.SlowIRFs
                 [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
             else
+                if dynareOBC.Order > 1 || ~dynareOBC.NoCubature
+                    fprintf( '\n' );
+                    disp( 'Note that IRFs generated with FastIRFs are an approximation when the model is solved at order above one, or when there is cubature.' );
+                    disp( 'You should always invoke DynareOBC with the option SlowIRFs when producing the final set of graphs for a paper.' );
+                    fprintf( '\n' );
+                end
                 [ oo_, dynareOBC ] = FastIRFs( M_, oo_, dynareOBC );
             end
         end
