@@ -121,7 +121,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         error( 'dynareOBC:Arguments', 'You cannot select both FirstOrderAroundRSS and FirstOrderAroundMean.' );
     end
 
-    basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', 'nostrict', '-DdynareOBC=1' };
+    basevarargin( end + 1 : end + 7 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', 'nostrict', '-DdynareOBC=1' };
 
     if dynareOBC_.MaxCubatureDimension <= 0 || ( ( ~dynareOBC_.FastCubature ) && dynareOBC_.MaxCubatureDegree <= 1 )
         dynareOBC_.NoCubature = true;
