@@ -2,7 +2,7 @@ This folder contains the MOD files for the Smets Wouters (2003) model, and a var
 
 The tests can be run (e.g.) with:
 
-dynareOBC SW03.mod timetoescapebounds=1000 FeasibilityTestGridSize=10 sparse timetosolveparametrically=0
+dynareOBC SW03.mod timetoescapebounds=1000 FeasibilityTestGridSize=10 sparse MaxParametricSolutionDimension=0
 
 The IRF file can be run with:
 
