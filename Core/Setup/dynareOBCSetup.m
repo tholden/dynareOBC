@@ -134,14 +134,14 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
             try
                 yalmiptest( dynareOBC_.LPSolver );
             catch Error
-                warning( 'dynareOBC:TestSolversError', Error.message );
+                warning( 'dynareOBC:TestSolversError', '%s', Error.message );
             end
         end
         if ~isempty( dynareOBC_.MILPSolver )
             try
                 yalmiptest( dynareOBC_.MILPSolver );
             catch Error
-                warning( 'dynareOBC:TestSolversError', Error.message );
+                warning( 'dynareOBC:TestSolversError', '%s', Error.message );
             end
         end
         Architecture = computer;
@@ -149,7 +149,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
             try
                 opti_Install_Test;
             catch Error
-                warning( 'dynareOBC:TestSolversError', Error.message );
+                warning( 'dynareOBC:TestSolversError', '%s', Error.message );
             end
         end
         return;
