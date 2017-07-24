@@ -222,123 +222,141 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( 1, '\n%s\n', LoopMessage );
     end
     
-    global QuickPCheckUseMex
+    global QuickPCheckUseMex ptestUseMex AltPTestUseMex
     
-               
-    if QuickPCheckUseMex
-        disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
-        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
-    else
-        disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
-        [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
-    end
-    if UseVPA
-        QuickPCheckResult = true;
-        for i = 1 : 3
-            if any( IndicesToCheck <= 0 )
-                continue;
-            end
-            TmpSet = IndicesToCheck(1):IndicesToCheck(2);
-            TmpDet = double( det( vpa( Ms( TmpSet, TmpSet ) ) ) );
-            if TmpDet <= 0
-                QuickPCheckResult = false;
-                StartEndDet = [ IndicesToCheck, TmpDet ];
-                break;
-            end
-        end
-    end
-    if QuickPCheckResult
-        fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
-    else
-        ptestVal = -1;
-        fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
-    end
-        
-    global ptestUseMex AltPTestUseMex
-
-    if ptestVal >= 0
-        AbsArguments = abs( angle( eig( Ms ) ) );
-
-        if all( AbsArguments < pi - pi / size( Ms, 1 ) ) || ( ( size( Ms, 1 ) == 1 ) && ( Ms( 1, 1 ) > 0 ) )
-            disp( 'Additional necessary condition for M to be a P-matrix is satisfied.' );
-            disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
-            disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
-            if  dynareOBC.AltPTest == 0
-                if dynareOBC.PTest == 0
-                    disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
-                    disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
-                else
-                    TM = dynareOBC.PTest;
-
-                    T = min( TM, Ts );
-                    Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
-                    Indices = Indices(:);
-                    Mc = Ms( Indices, Indices );                
-                    if ptestUseMex
-                        disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
-                        if ptest_mex( Mc )
-                            ptestVal = 1;
-                        else
-                            ptestVal = -1;
-                        end
-                    else
-                        disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
-                        OpenPool;
-                        if ptest( Mc )
-                            ptestVal = 1;
-                        else
-                            ptestVal = -1;
-                        end
-                    end
-                end
-            end
-        else
-            disp( 'Additional necessary condition for M to be a P-matrix is not satisfied.' );
-            disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
-            disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
-            ptestVal = -1;
-        end
-    end
+    LargestPMatrix = dynareOBC.LargestPMatrix;
+    T = 0;
     
-    if dynareOBC.AltPTest ~= 0
-        TM = dynareOBC.AltPTest;
-
-        T = min( TM, Ts );
-        Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
-        Indices = Indices(:);
-        Mc = Ms( Indices, Indices );                
-        if AltPTestUseMex
-            disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
-            [ AltPTestResult, IndicesToCheck ] = AltPTest_mex( Mc, true );
+    if LargestPMatrix < Ts           
+        if QuickPCheckUseMex
+            disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
+            [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
         else
-            disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
-            [ AltPTestResult, IndicesToCheck ] = AltPTest( Mc, true );
+            disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
+            [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
         end
         if UseVPA
-            AltPTestResult = true;
+            QuickPCheckResult = true;
             for i = 1 : 3
-                TmpSet = IndicesToCheck{i};
-                if ~isempty( TmpSet ) && double( det( vpa( Mc( IndicesToCheck{i}, IndicesToCheck{i} ) ) ) ) <= 0
-                    AltPTestResult = false;
+                if any( IndicesToCheck <= 0 )
+                    continue;
+                end
+                TmpSet = IndicesToCheck(1):IndicesToCheck(2);
+                TmpDet = double( det( vpa( Ms( TmpSet, TmpSet ) ) ) );
+                if TmpDet <= 0
+                    QuickPCheckResult = false;
+                    StartEndDet = [ IndicesToCheck, TmpDet ];
                     break;
                 end
             end
         end
-        if AltPTestResult
-            if ptestVal < 0
-                warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
-            end
-            ptestVal = 1;
+        if QuickPCheckResult
+            fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
         else
             ptestVal = -1;
+            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
         end
-        fprintf( '\n' );
+        
+        if ptestVal >= 0
+            AbsArguments = abs( angle( eig( Ms ) ) );
+
+            if all( AbsArguments < pi - pi / size( Ms, 1 ) ) || ( ( size( Ms, 1 ) == 1 ) && ( Ms( 1, 1 ) > 0 ) )
+                disp( 'Additional necessary condition for M to be a P-matrix is satisfied.' );
+                disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
+                disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
+                if  dynareOBC.AltPTest == 0
+                    if dynareOBC.PTest == 0
+                        disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
+                        disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
+                    else
+                        TM = dynareOBC.PTest;
+
+                        T = min( TM, Ts );
+                        if LargestPMatrix < T
+                            Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
+                            Indices = Indices(:);
+                            Mc = Ms( Indices, Indices );                
+                            if ptestUseMex
+                                disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of ptest.' );
+                                if ptest_mex( Mc )
+                                    ptestVal = 1;
+                                else
+                                    ptestVal = -1;
+                                end
+                            else
+                                disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of ptest.' );
+                                OpenPool;
+                                if ptest( Mc )
+                                    ptestVal = 1;
+                                else
+                                    ptestVal = -1;
+                                end
+                            end
+                        end
+                    end
+                end
+            else
+                disp( 'Additional necessary condition for M to be a P-matrix is not satisfied.' );
+                disp( 'pi - pi / T - max( abs( angle( eig( M ) ) ) ):' );
+                disp( pi - pi / size( Ms, 1 ) - max( AbsArguments ) );
+                ptestVal = -1;
+            end
+        end
+
+        if dynareOBC.AltPTest ~= 0
+            TM = dynareOBC.AltPTest;
+
+            T = min( TM, Ts );
+            if LargestPMatrix < T
+                Indices = bsxfun( @plus, (1:T)', ( 0 ):Ts:((ns-1)*Ts ) );
+                Indices = Indices(:);
+                Mc = Ms( Indices, Indices );                
+                if AltPTestUseMex
+                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
+                    [ AltPTestResult, IndicesToCheck ] = AltPTest_mex( Mc, true );
+                else
+                    disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
+                    [ AltPTestResult, IndicesToCheck ] = AltPTest( Mc, true );
+                end
+                if UseVPA
+                    AltPTestResult = true;
+                    for i = 1 : 3
+                        TmpSet = IndicesToCheck{i};
+                        if ~isempty( TmpSet ) && double( det( vpa( Mc( IndicesToCheck{i}, IndicesToCheck{i} ) ) ) ) <= 0
+                            AltPTestResult = false;
+                            break;
+                        end
+                    end
+                end
+                if AltPTestResult
+                    if ptestVal < 0
+                        warning( 'dynareOBC:InconsistentAltPTest', 'AltPTest apparently disagrees with results based on necessary conditions, perhaps due to numerical problems. Try using PTest instead.' );
+                    end
+                    ptestVal = 1;
+                else
+                    ptestVal = -1;
+                end
+                fprintf( '\n' );
+            end
+        end
+
+    else
+    	disp( 'Skipping further P tests, since we have already established that M is a P-matrix.' );
+    end
+    
+    if LargestPMatrix > 0
+        if ptestVal > 0
+            T = max( T, LargestPMatrix );
+        else
+            T = LargestPMatrix;
+        end
+        ptestVal = 1;
     end
     
     if ptestVal > 0
-        MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( TM ) ];
+        MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( T ) ];
         fprintf( '\n' );
-        disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( TM ) ' periods.' ] );
+        disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( T ) ' periods.' ] );
         disp( 'This is a necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds).' );
         if ptestUseMex
             DiagIsP = ptest_mex( dynareOBC.d0s );
