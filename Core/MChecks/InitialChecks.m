@@ -2,7 +2,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     Ts = dynareOBC.TimeToEscapeBounds;
     ns = dynareOBC.NumberOfMax;
     
-    UseVPA = dynareOBC.UseVPA && ( isoctave || user_has_matlab_license( 'Symbolic_Toolbox' ) );
+    UseVPA = dynareOBC.UseVPA && ( isoctave || ( license( 'checkout', 'Symbolic_Toolbox' ) && ~isempty( which( 'vpa' ) ) ) );
     
     M = dynareOBC.MMatrix;
     Ms = dynareOBC.MsMatrix;
