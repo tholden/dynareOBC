@@ -23,7 +23,7 @@ var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
     kpf habf kp hab;
  var p;
-varexo ea epsilon_b eg els eqs einv epinf ew em er;
+varexo ea epsilon_b eg els eqs einv epinf ew em; // er
 
 parameters calfa ctou cbeta chab ccs cinvs csadjcost 
            csigma chabb cprobw clandaw csigl cprobp cindw cindp cfc cinvdyn 
@@ -166,7 +166,7 @@ var em       = 1;   //Monetary Innovation
 var einv     = 1;   //Investment Shock
 var epinf    = 1;   //Price Mark Up Shock
 var ew       = 1;	//Wage Mark Up Shock
-var er       = 1;	//Monetary Policy Shock
+//var er       = 1;	//Monetary Policy Shock
 
 end;
 
