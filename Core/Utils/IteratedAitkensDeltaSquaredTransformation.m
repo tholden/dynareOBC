@@ -28,10 +28,9 @@ function Seq = IteratedAitkensDeltaSquaredTransformation( Seq )
             aTop = abs( Top );
             aBottom = abs( Bottom );
 
-            Adj = Top ./ Bottom;
-            GoodAdj = isfinite( Adj ) && ( aBottom > e ) && ( max( aTop, aBottom ) > se );
+            GoodAdj = ( aBottom > e ) && ( max( aTop, aBottom ) > se );
 
-            Seq( GoodAdj ) = Seq( GoodAdj ) - max( -Width, min( Width, Adj( GoodAdj ) ) );
+            Seq( GoodAdj ) = Seq( GoodAdj ) - max( -Width, min( Width, Top( GoodAdj ) ./ Bottom( GoodAdj ) ) );
 
         end
         
