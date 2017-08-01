@@ -2,6 +2,9 @@ function Seq = IteratedAitkensDeltaSquaredTransformation( Seq )
 
     N = size( Seq, 2 );
     
+    e = eps;
+    se = sqrt( e );
+    
     if N >= 3
     
         if mod( N, 2 ) == 0
@@ -10,17 +13,25 @@ function Seq = IteratedAitkensDeltaSquaredTransformation( Seq )
         end
 
         for Idx = 1 : ( 0.5 * ( N - 1 ) )
+            
+            Width = max( Seq ) - min( Seq );
 
             DSeq = diff( Seq, 1, 2 );
 
             Seq = Seq( :, 3:end );
             LDSeq = DSeq( :, 1:(end-1) );
             DSeq = DSeq( :, 2:end );
+            
+            Top = DSeq .* DSeq;
+            Bottom = DSeq - LDSeq;
+            
+            aTop = abs( Top );
+            aBottom = abs( Bottom );
 
-            Adj = DSeq .* DSeq ./ ( DSeq - LDSeq );
-            FiniteAdj = isfinite( Adj );
+            Adj = Top ./ Bottom;
+            GoodAdj = isfinite( Adj ) && ( aBottom > e ) && ( max( aTop, aBottom ) > se );
 
-            Seq( FiniteAdj ) = Seq( FiniteAdj ) - Adj( FiniteAdj );
+            Seq( GoodAdj ) = Seq( GoodAdj ) - max( -Width, min( Width, Adj( GoodAdj ) ) );
 
         end
         
