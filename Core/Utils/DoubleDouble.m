@@ -11,11 +11,44 @@
 % 2. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 % 3. You are under no obligation whatsoever to provide any bug fixes, patches, or upgrades to the features, functionality or performance of the source code ("Enhancements") to anyone; however, if you choose to make your Enhancements available either publicly, or directly to Lawrence Berkeley National Laboratory, without imposing a separate written license agreement for such Enhancements, then you hereby grant the following license: a non-exclusive, royalty-free perpetual license to install, use, modify, prepare derivative works, incorporate into other computer software, distribute, and sublicense such enhancements or derivative works thereof, in binary and source code form.
 
+% The implementation of the LUP decomposition and the backslack operator here is derived from Cleve Moler's code from "Numerical Computing with MATLAB".
+
+% "Numerical Computing with MATLAB" is Copyright (c) 2004, Cleve Moler and Copyright (c) 2016, The MathWorks, Inc.
+
+% "Numerical Computing with MATLAB" is distributed under the following license:
+
+% 1. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+% (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+% (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+% (3) In all cases, the software is, and all modifications and derivatives of the software shall be, licensed to you solely for use in conjunction with MathWorks products and service offerings.
+% 2. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+
 classdef DoubleDouble
     properties ( SetAccess = private, GetAccess = private )
         v1
         v2
     end
+    
+    properties ( Constant, GetAccess = private )
+        InverseFactorial = [
+            1.66666666666666657e-01,  9.25185853854297066e-18;
+            4.16666666666666644e-02,  2.31296463463574266e-18;
+            8.33333333333333322e-03,  1.15648231731787138e-19;
+            1.38888888888888894e-03, -5.30054395437357706e-20;
+            1.98412698412698413e-04,  1.72095582934207053e-22;
+            2.48015873015873016e-05,  2.15119478667758816e-23;
+            2.75573192239858925e-06, -1.85839327404647208e-22;
+            2.75573192239858883e-07,  2.37677146222502973e-23;
+            2.50521083854417202e-08, -1.44881407093591197e-24;
+            2.08767569878681002e-09, -1.20734505911325997e-25;
+            1.60590438368216133e-10,  1.25852945887520981e-26;
+            1.14707455977297245e-11,  2.06555127528307454e-28;
+            7.64716373181981641e-13,  7.03872877733453001e-30;
+            4.77947733238738525e-14,  4.39920548583408126e-31;
+            2.81145725434552060e-15,  1.65088427308614326e-31;
+        ];        
+    end
+    
     methods
         function v = DoubleDouble( in1, in2 )
             if nargin >= 2
@@ -35,8 +68,18 @@ classdef DoubleDouble
             s = v.v1;
         end
         
-        function s = size( v, varargin )
+        function disp( v )
+            disp( v.v1 );
+            disp( '+' );
+            disp( v.v2 );
+        end
+        
+        function [ s, varargout ] = size( v, varargin )
             s = size( v.v1, varargin{:} );
+            if nargout > 1
+                varargout = num2cell( s( 2:end ) );
+                s = s( 1 );
+            end
         end
         
         function s = numel( v )
@@ -49,6 +92,26 @@ classdef DoubleDouble
         
         function v = repmat( v, varargin )
             v = DoubleDouble.Make( repmat( v.v1, varargin{:} ), repmat( v.v2, varargin{:} ) );
+        end
+        
+        function v = diag( v )
+            v = DoubleDouble.Make( diag( v.v1 ), diag( v.v2 ) );
+        end
+        
+        function v = tril( v, k )
+            if nargin < 2
+                v = DoubleDouble.Make( tril( v.v1 ), tril( v.v2 ) );
+            else
+                v = DoubleDouble.Make( tril( v.v1, k ), tril( v.v2, k ) );
+            end
+        end
+        
+        function v = triu( v, k )
+            if nargin < 2
+                v = DoubleDouble.Make( triu( v.v1 ), triu( v.v2 ) );
+            else
+                v = DoubleDouble.Make( triu( v.v1, k ), triu( v.v2, k ) );
+            end
         end
         
         function v = plus( a, b )
@@ -81,6 +144,13 @@ classdef DoubleDouble
                 
         function v = ldivide( a, b )
             v = DoubleDouble.LDivide( a, b );
+        end
+        
+        function v = power( a, b )
+            if ~isa( a, 'DoubleDouble' )
+                a = DoubleDouble( a );
+            end
+            v = exp( b .* log( a ) );
         end
         
         function v = lt( a, b )
@@ -284,24 +354,32 @@ classdef DoubleDouble
             v = DoubleDouble.Prod( v, dim );
         end
         
-        function v = max( a, b, dim )
+        function [ v, i ] = max( a, b, dim )
             if nargin < 3
                 dim = [];
                 if nargin < 2
                     b = [];
                 end
             end
-            v = DoubleDouble.Max( a, b, dim );
+            if nargout < 2
+                v = DoubleDouble.Max( a, b, dim );
+            else
+                [ v, i ] = DoubleDouble.Max( a, b, dim );
+            end
         end
         
-        function v = min( a, b, dim )
+        function [ v, i ] = min( a, b, dim )
             if nargin < 3
                 dim = [];
                 if nargin < 2
                     b = [];
                 end
             end
-            v = DoubleDouble.Min( a, b, dim );
+            if nargout < 2
+                v = DoubleDouble.Min( a, b, dim );
+            else
+                [ v, i ] = DoubleDouble.Min( a, b, dim );
+            end
         end
         
         function v = cumsum( v, dim )
@@ -387,12 +465,146 @@ classdef DoubleDouble
             v = DoubleDouble.Make( x1, x2 );
         end
         
-        function disp( v )
-            disp( v.v1 );
-            disp( '+' );
-            disp( v.v2 );
+        function v = sqrt( v )
+            Select = v < 0;
+            v.v1( Select ) = NaN;
+            v.v2( Select ) = NaN;
+            Select = v > 0;
+            x = 1 ./ sqrt( v.v1( Select ) );
+            vx = v.v1( Select ) .* x;
+            t = DoubleDouble.Make( v.v1( Select ), v.v2( Select ) ) - DoubleDouble.Times( vx, vx );
+            t = DoubleDouble.Plus( vx, t.v1 .* ( x * 0.5 ) );
+            v.v1( Select ) = t.v1;
+            v.v2( Select ) = t.v2;
         end
-                
+        
+        function v = exp( v )
+            % Strategy:  We first reduce the size of x by noting that
+            % exp(kr + m * log(2)) = 2^m * exp(r)^k
+            % where m and k are integers.  By choosing m appropriately
+            % we can make |kr| <= log(2) / 2 = 0.347.  Then exp(r) is 
+            % evaluated using the familiar Taylor series.  Reducing the 
+            % argument substantially speeds up the convergence.
+            k = 512.0;
+            inv_k = 1.0 / k;
+            log_2 = 6.931471805599452862e-01;
+            log_2e = 2.319046813846299558e-17;
+
+            m = floor( v.v1 ./ log_2 + 0.5 );
+            r = DoubleDouble.TimesPowerOf2( v - DoubleDouble.Make( log_2, log_2e ) .* m, inv_k );
+
+            p = r .* r;
+            s = r + DoubleDouble.TimesPowerOf2( p, 0.5 );
+            p = p .* r;
+            t = p .* DoubleDouble.Make( DoubleDouble.InverseFactorial( 1, 1 ), DoubleDouble.InverseFactorial( 1, 2 ) );
+            for i = 2:15
+                s = s + t;
+                p = p .* r;
+                t = p .* DoubleDouble.Make( DoubleDouble.InverseFactorial( i, 1 ), DoubleDouble.InverseFactorial( i, 2 ) );
+                if all( abs( t.v1 ) <= inv_k .* DoubleDouble.eps )
+                    break
+                end
+            end
+
+            s = s + t;
+
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = DoubleDouble.TimesPowerOf2( s, 2.0 ) + s .* s;
+            s = s + 1.0;
+            
+            twoPm = 2 .^ m;
+            
+            v = DoubleDouble.TimesPowerOf2( s, twoPm );
+        end
+        
+        function x = log( v )
+            x = DoubleDouble.Make( log( v.v1 ), zeros( size( v.v1 ) ) );
+            x = x + v .* exp( -x ) - 1.0;
+            x = x + v .* exp( -x ) - 1.0; % slightly paranoid, but does correct e.g. log(exp(DoubleDouble(-40)))
+        end
+        
+        function [ v, u, p ] = lu( v, type )
+            %   [ l, u, p ] = lu( v ) produces a unit lower triangular matrix l, an upper triangular matrix u, and a permutation vector p,  so that l * u = v( p, : )
+
+            if ~isa( v, 'DoubleDouble' )
+                v = DoubleDouble( v );
+            end
+            
+            [ m, n ] = size( v );
+            p = 1 : m;
+
+            for k = 1 : n
+
+                % Find index of largest element below diagonal in k-th column
+                [ ~, midx ] = max( abs( DoubleDouble.Make( v.v1( k:m, k ), v.v2( k:m, k ) ) ) );
+                midx = midx + k - 1;
+
+                % Skip elimination if column is zero
+                if v.v1( midx, k ) ~= 0 || v.v2( midx, k ) ~= 0
+
+                    % Swap pivot row
+                    if midx ~= k
+                        v.v1( [ k midx ], : ) = v.v1( [ midx k ], : );
+                        v.v2( [ k midx ], : ) = v.v2( [ midx k ], : );
+                        p( [ k midx ] ) = p( [ midx k ] );
+                    end
+
+                    % Compute multipliers
+                    i = k + 1 : m;
+                    [ v.v1( i, k ), v.v2( i, k ) ] = DoubleDouble.DDDividedByDD( v.v1( i, k ), v.v2( i, k ), v.v1( k, k ), v.v2( k, k ) );
+
+                    % Update the remainder of the matrix
+                    j = k + 1 : n;
+                    % A( i, j ) = A( i, j ) - A( i, k ) .* A( k, j );
+                    [ t1, t2 ] = DoubleDouble.DDTimesDD( v.v1( i, k ), v.v2( i, k ), v.v1( k, j ), v.v2( k, j ) );
+                    [ v.v1( i, j ), v.v2( i, j ) ] = DoubleDouble.DDPlusDD( v.v1( i, j ), v.v2( i, j ), -t1, -t2 );
+                end
+            end
+
+            if nargout > 1
+                % Separate result
+                l = tril( v, -1 ) + eye( m, n, 'DoubleDouble' );
+                u = triu( v );
+                v = l;
+
+                if nargout > 2 
+                    if nargin < 2 || ~strcmp( type, 'vector' )
+                        pp = eye( m );
+                        pp = pp( p, : );
+                        p = pp;
+                    end
+                else
+                    invp( p ) = 1 : m;
+                    v.v1 = v.v1( invp, : );
+                    v.v2 = v.v2( invp, : );
+                end
+            end
+            
+        end
+        
+        function v = det( v )
+            [ m, n ] = size( v );
+            if m ~= n
+                throw( MException( 'MATLAB:square', 'Matrix must be square.' ) );
+            end
+            [ ~, u, P ] = lu( v );
+            DetP = det( P );
+            if DetP > 0
+                v = prod( diag( u ) );
+            elseif DetP < 0
+                v = -prod( diag( u ) );
+            else
+                v = DoubleDouble.Make( NaN, NaN );
+            end            
+        end
+                        
     end
 
     methods ( Static )
@@ -413,7 +625,18 @@ classdef DoubleDouble
         end
         
         function v = inf( varargin )
-            v = DoubleDouble.Make( inf( varargin{:}, 'double' ), nan( varargin{:}, 'double' ) );
+            v = DoubleDouble.Make( inf( varargin{:}, 'double' ), inf( varargin{:}, 'double' ) );
+        end
+        
+        function v = eps( v )
+            e = 4.93038065763132e-32;
+            if nargin == 0
+                v = DoubleDouble.Make( e, 0 );
+            else
+                v = DoubleDouble( v );
+                v = abs( v );
+                v = DoubleDouble.Times( v, e );
+            end
         end
         
         function v = rand( varargin )
@@ -710,7 +933,7 @@ classdef DoubleDouble
             c = DoubleDouble.Make( cell2mat( c1 ), cell2mat( c2 ) );
         end
         
-        function s = Max( a, b, dim )
+        function [ s, i ] = Max( a, b, dim )
             if isempty( b )
                 if isa( a, 'DoubleDouble' )
                     if nargin < 3 || isempty( dim )
@@ -726,8 +949,11 @@ classdef DoubleDouble
                     x1 = mat2cell( a.v1, Blocks{:} );
                     x2 = mat2cell( a.v2, Blocks{:} );
                     s = DoubleDouble.Make( x1{ 1 }, x2{ 1 } );
-                    for i = 2 : Length
-                        s = DoubleDouble.Max( s, DoubleDouble.Make( x1{ i }, x2{ i } ) );
+                    Size( dim ) = 1;
+                    i = ones( Size );
+                    for j = 2 : Length
+                        [ s, ii ] = DoubleDouble.Max( DoubleDouble.Make( x1{ j }, x2{ j } ), s );
+                        i( ii ) = j;
                     end
                 else
                     if nargin < 3 || isempty( dim )
@@ -742,8 +968,8 @@ classdef DoubleDouble
                     Blocks{ dim } = ones( Length, 1 );
                     x = mat2cell( a, Blocks{:} );
                     s = x{ 1 };
-                    for i = 2 : Length
-                        s = DoubleDouble.Max( s, x{ i } );
+                    for j = 2 : Length
+                        s = DoubleDouble.Max( s, x{ j } );
                     end
                 end
             else
@@ -754,10 +980,10 @@ classdef DoubleDouble
                     b = DoubleDouble( b );
                 end
                 [ a, b ] = DoubleDouble.ExpandSingleton( a, b );
-                Select = ( a.v1 > b.v1 ) | ( ( a.v1 == b.v1 ) & ( a.v2 > b.v2 ) );
+                i = ( a.v1 > b.v1 ) | ( ( a.v1 == b.v1 ) & ( a.v2 > b.v2 ) );
                 s = b;
-                s.v1( Select ) = a.v1( Select );
-                s.v2( Select ) = a.v2( Select );
+                s.v1( i ) = a.v1( i );
+                s.v2( i ) = a.v2( i );
             end
         end
         
@@ -811,7 +1037,7 @@ classdef DoubleDouble
             c = DoubleDouble.Make( cell2mat( c1 ), cell2mat( c2 ) );
         end
         
-        function s = Min( a, b, dim )
+        function [ s, i ] = Min( a, b, dim )
             if isempty( b )
                 if isa( a, 'DoubleDouble' )
                     if nargin < 3 || isempty( dim )
@@ -827,8 +1053,11 @@ classdef DoubleDouble
                     x1 = mat2cell( a.v1, Blocks{:} );
                     x2 = mat2cell( a.v2, Blocks{:} );
                     s = DoubleDouble.Make( x1{ 1 }, x2{ 1 } );
-                    for i = 2 : Length
-                        s = DoubleDouble.Min( s, DoubleDouble.Make( x1{ i }, x2{ i } ) );
+                    Size( dim ) = 1;
+                    i = ones( Size );
+                    for j = 2 : Length
+                        [ s, ii ] = DoubleDouble.Min( DoubleDouble.Make( x1{ j }, x2{ j } ), s );
+                        i( ii ) = j;
                     end
                 else
                     if nargin < 3 || isempty( dim )
@@ -843,8 +1072,8 @@ classdef DoubleDouble
                     Blocks{ dim } = ones( Length, 1 );
                     x = mat2cell( a, Blocks{:} );
                     s = x{ 1 };
-                    for i = 2 : Length
-                        s = DoubleDouble.Min( s, x{ i } );
+                    for j = 2 : Length
+                        s = DoubleDouble.Min( s, x{ j } );
                     end
                 end
             else
@@ -855,10 +1084,10 @@ classdef DoubleDouble
                     b = DoubleDouble( b );
                 end
                 [ a, b ] = DoubleDouble.ExpandSingleton( a, b );
-                Select = ( a.v1 < b.v1 ) | ( ( a.v1 == b.v1 ) & ( a.v2 < b.v2 ) );
+                i = ( a.v1 < b.v1 ) | ( ( a.v1 == b.v1 ) & ( a.v2 < b.v2 ) );
                 s = b;
-                s.v1( Select ) = a.v1( Select );
-                s.v2( Select ) = a.v2( Select );
+                s.v1( i ) = a.v1( i );
+                s.v2( i ) = a.v2( i );
             end
         end
         
@@ -995,7 +1224,7 @@ classdef DoubleDouble
             t2 = t1 + a1 .* b2 + a2 .* b1;
             p2 = t2 + a2 .* b2;
         end
-
+        
         function [ r1, r2 ] = DDDividedByDD( a1, a2, b1, b2 )
             q1 = a1 ./ b1;
             [ p1, p2 ] = DoubleDouble.DDTimesDouble( b1, b2, q1 );
@@ -1038,6 +1267,10 @@ classdef DoubleDouble
             a2 = a - a1;
             a1( Select ) = a1( Select ) * 268435456.0; % 2^28
             a2( Select ) = a2( Select ) * 268435456.0; % 2^28
+        end
+        
+        function v = TimesPowerOf2( a, b )
+            v = DoubleDouble.Make( a.v1 .* b, a.v2 .* b );
         end
 
    end
