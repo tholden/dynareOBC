@@ -16,3 +16,6 @@
 [submodule "Extern/EST-NLSS"]
 	path = Extern/EST-NLSS
 	url = https://github.com/tholden/EST-NLSS
+[submodule "Extern/DoubleDouble"]
+	path = Extern/DoubleDouble
+	url = https://github.com/tholden/DoubleDouble.git
