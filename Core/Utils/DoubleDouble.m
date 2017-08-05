@@ -120,6 +120,11 @@ classdef DoubleDouble
             end
         end
         
+        function [ x1, x2 ] = ToSumOfDoubles( v )
+            x1 = v.v1;
+            x2 = v.v2;
+        end
+        
         function v = double( v )
             v = v.v1;
         end
@@ -594,10 +599,13 @@ classdef DoubleDouble
         end
         
         function v = sqrt( v )
-            x = 1 ./ sqrt( v.v1 );
-            vx = v.v1 .* x;
-            v = v - DoubleDouble.Times( vx, vx );
-            v = DoubleDouble.Plus( vx, v.v1 .* ( x * 0.5 ) );
+            Select = v ~= 0;
+            x = 1 ./ sqrt( v.v1( Select ) );
+            vx = v.v1( Select ) .* x;
+            t = DoubleDouble.Make( v.v1( Select ), v.v2( Select ) ) - DoubleDouble.Times( vx, vx );
+            t = DoubleDouble.Plus( vx, t.v1 .* ( x * 0.5 ) );
+            v.v1( Select ) = t.v1;
+            v.v2( Select ) = t.v2;
         end
         
         function v = exp( v )
@@ -649,7 +657,28 @@ classdef DoubleDouble
             v = DoubleDouble.Make( pow2( s.v1, m ), pow2( s.v2, m ) );
         end
         
+        function x = log( v )
+            x = DoubleDouble.Make( log( v.v1 ), zeros( size( v.v1 ) ) );
+            x = x + v .* exp( -x ) - 1.0;
+            x = x + v .* exp( -x ) - 1.0; % slightly paranoid, but does correct e.g. log(exp(DoubleDouble(-40)))
+        end
+        
+        function v = log2( v )
+            v = log( v ) ./ DoubleDouble.log_2;
+        end
+        
+        function v = log10( v )
+            v = log( v ) ./ DoubleDouble.log_10;
+        end
+        
         function [ sin_v, cos_v ] = sincos( v )
+            if ~isreal( v )
+                exp_Piv = exp( TimesPowerOf2( v, 1i ) );
+                exp_Niv = 1 ./ exp_Piv;
+                sin_v = TimesPowerOf2( exp_Piv - exp_Niv, -0.5i );
+                cos_v = TimesPowerOf2( exp_Piv + exp_Niv, +0.5  );
+                return
+            end
             % Strategy.  To compute sin(x), cos(x), we choose integers a, b so that
             % x = s + a * (pi/2) + b * (pi/16)
             % and |s| <= pi/32.  Using the fact that 
@@ -715,22 +744,85 @@ classdef DoubleDouble
             [ v, ~ ] = sincos( v );
         end
         
+        function v = asin( v )
+            assert( all( abs( v.v1(:) ) <= 1 ) );
+            v = atan2( v, sqrt( 1 - v.*v ) );
+        end
+        
         function v = cos( v )
             [ ~, v ] = sincos( v );
         end
         
-        function x = log( v )
-            x = DoubleDouble.Make( log( v.v1 ), zeros( size( v.v1 ) ) );
-            x = x + v .* exp( -x ) - 1.0;
-            x = x + v .* exp( -x ) - 1.0; % slightly paranoid, but does correct e.g. log(exp(DoubleDouble(-40)))
+        function v = acos( v )
+            assert( all( abs( v.v1(:) ) <= 1 ) );
+            v = atan2( sqrt( 1 - v.*v ), v );
         end
         
-        function v = log2( v )
-            v = log( v ) ./ DoubleDouble.log_2;
+        function v = tan( v )
+            [ sin_v, cos_v ] = sincos( v );
+            v = sin_v ./ cos_v;
         end
         
-        function v = log10( v )
-            v = log( v ) ./ DoubleDouble.log_10;
+        function v = atan( v )
+            v = atan2( v, DoubleDouble.Make( 1, 0 ) );
+        end
+        
+        function v = atan2( y, x )
+            r = sqrt( x.*x + y.*y );
+            xx = x ./ r;
+            yy = y ./ r;
+            Select = abs( xx.v1 ) > abs( yy.v1 );
+            v = DoubleDouble( atan2( y.v1, x.v1 ) );
+            [ sin_z, cos_z ] = sincos( v );
+            t = yy;
+            [ t.v1( Select ), t.v2( Select ) ] = DoubleDouble.DDPlusDD( t.v1( Select ), t.v2( Select ),      -sin_z.v1( Select ), -sin_z.v2( Select ) );
+            [ t.v1( Select ), t.v2( Select ) ] = DoubleDouble.DDDividedByDD( t.v1( Select ), t.v2( Select ), +cos_z.v1( Select ), +cos_z.v2( Select ) );
+            Select = ~Select;
+            [ t.v1( Select ), t.v2( Select ) ] = DoubleDouble.DDPlusDD( xx.v1( Select ), xx.v2( Select ),    -cos_z.v1( Select ), -cos_z.v2( Select ) );
+            [ t.v1( Select ), t.v2( Select ) ] = DoubleDouble.DDDividedByDD( t.v1( Select ), t.v2( Select ), -sin_z.v1( Select ), -sin_z.v2( Select ) );
+            v = v + t;
+        end
+        
+        function v = sinh( v )
+            exp_v = exp( v );
+            v = TimesPowerOf2( exp_v - 1 ./ exp_v, 0.5 );
+        end
+        
+        function v = asinh( v )
+            v = log( v + sqrt( v.*v + 1 ) );
+        end
+        
+        function v = cosh( v )
+            exp_v = exp( v );
+            v = TimesPowerOf2( exp_v + 1 ./ exp_v, 0.5 );
+        end
+        
+        function v = acosh( v )
+            v = log( v + sqrt( v.*v - 1 ) );
+        end
+        
+        function [ sinh_v, cosh_v ] = sinhcosh( v )
+            exp_Pv = exp( v );
+            exp_Nv = 1 ./ exp_Pv;
+            sinh_v = TimesPowerOf2( exp_Pv - exp_Nv, 0.5 );
+            cosh_v = TimesPowerOf2( exp_Pv + exp_Nv, 0.5 );
+        end
+        
+        function v = tanh( v )
+            [ sinh_v, cosh_v ] = sinhcosh( v );
+            v = sinh_v ./ cosh_v;
+        end
+        
+        function v = atanh( v )
+            v = TimesPowerOf2( log( ( 1 + v ) ./ ( 1 - v ) ), 0.5 );
+        end
+        
+        function v = mod( v, b )
+            v = v - b .* floor( v ./ b );
+        end
+        
+        function v = rem( v, b )
+            v = v - b .* fix( v ./ b );
         end
         
         function [ v, U, p ] = lu( v, type )
