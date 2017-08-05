@@ -23,10 +23,27 @@
 % (3) In all cases, the software is, and all modifications and derivatives of the software shall be, licensed to you solely for use in conjunction with MathWorks products and service offerings.
 % 2. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
+% The implementation of the LDL decomposition here is derived from Brian Borchers's ldlt library.
+
+% Brian Borchers's ldlt library is Copyright (c) 2009, Brian Borchers.
+
+% Brian Borchers's ldlt library is distributed under the following license:
+
+% 1. Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+% (1) Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+% (2) Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution
+% (3) Neither the name of the New Mexico Inst of Mining & Tech nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+% 2. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 classdef DoubleDouble
     properties ( SetAccess = private, GetAccess = private )
         v1
         v2
+    end
+    
+    properties ( Constant, GetAccess = public )
+        eps = 4.93038065763132e-32;
+        pi = DoubleDouble.Make( 3.141592653589793116e+00, 1.224646799147353207e-16 );
     end
     
     properties ( Constant, GetAccess = private )
@@ -46,7 +63,32 @@ classdef DoubleDouble
             7.64716373181981641e-13,  7.03872877733453001e-30;
             4.77947733238738525e-14,  4.39920548583408126e-31;
             2.81145725434552060e-15,  1.65088427308614326e-31;
-        ];        
+        ];
+    
+        NInverseFactorial = 15;
+        
+        piT2   = DoubleDouble.Make(  6.283185307179586232e+00,  2.449293598294706414e-16 );
+        piD2   = DoubleDouble.Make(  1.570796326794896558e+00,  6.123233995736766036e-17 );
+        piD16  = DoubleDouble.Make(  1.963495408493620697e-01,  7.654042494670957545e-18 );
+        
+        log_2  = DoubleDouble.Make(  6.931471805599452862e-01,  2.319046813846299558e-17 );
+        log_10 = DoubleDouble.Make(  2.302585092994045901e+00, -2.170756223382249351e-16 );
+        
+        SinTable = [
+            0, 0;
+            1.950903220161282758e-01, -7.991079068461731263e-18;
+            3.826834323650897818e-01, -1.005077269646158761e-17;
+            5.555702330196021776e-01,  4.709410940561676821e-17;
+            7.071067811865475727e-01, -4.833646656726456726e-17;
+        ];
+    
+        CosTable = [
+            0, 0;
+            9.807852804032304306e-01,  1.854693999782500573e-17;
+            9.238795325112867385e-01,  1.764504708433667706e-17;
+            8.314696123025452357e-01,  1.407385698472802389e-18;
+            7.071067811865475727e-01, -4.833646656726456726e-17;
+        ];
     end
     
     methods
@@ -61,6 +103,20 @@ classdef DoubleDouble
                     v.v1 = double( in1 );
                     v.v2 = zeros( size( in1 ) );
                 end
+            end
+        end
+        
+        function disp( v )
+            if isempty( v.v1 )
+                disp( '     []' );
+            else
+                disp( v.v1 );
+            end
+            disp( '     +' );
+            if isempty( v.v2 )
+                disp( '     []' );
+            else
+                disp( v.v2 );
             end
         end
         
@@ -99,20 +155,6 @@ classdef DoubleDouble
             v.v2 = conj( v.v2 );
         end
         
-        function disp( v )
-            if isempty( v.v1 )
-                disp( '     []' );
-            else
-                disp( v.v1 );
-            end
-            disp( '     +' );
-            if isempty( v.v2 )
-                disp( '     []' );
-            else
-                disp( v.v2 );
-            end
-        end
-        
         function [ v, varargout ] = size( v, varargin )
             v = size( v.v1, varargin{:} );
             if nargout > 1
@@ -131,6 +173,11 @@ classdef DoubleDouble
         
         function v = repmat( v, varargin )
             v = DoubleDouble.Make( repmat( v.v1, varargin{:} ), repmat( v.v2, varargin{:} ) );
+        end
+        
+        function v = reshape( v, varargin )
+            v.v1 = reshape( v.v1, varargin{:} );
+            v.v2 = reshape( v.v2, varargin{:} );
         end
         
         function v = isequal( a, b, varargin )
@@ -554,6 +601,12 @@ classdef DoubleDouble
         end
         
         function v = exp( v )
+            if ~isreal( v )
+                [ sin_imag_v, cos_imag_v ] = sincos( imag( v ) );
+                v = exp( real( v ) ) .* ( cos_imag_v + 1i .* sin_imag_v );
+                return
+            end
+            
             % Strategy:  We first reduce the size of x by noting that
             % exp(kr + m * log(2)) = 2^m * exp(r)^k
             % where m and k are integers.  By choosing m appropriately
@@ -562,21 +615,20 @@ classdef DoubleDouble
             % argument substantially speeds up the convergence.
             k = 512.0;
             inv_k = 1.0 / k;
-            log_2 = 6.931471805599452862e-01;
-            log_2e = 2.319046813846299558e-17;
+            Threshhold = inv_k .* DoubleDouble.eps;
 
-            m = floor( v.v1 ./ log_2 + 0.5 );
-            r = TimesPowerOf2( v - DoubleDouble.Make( log_2, log_2e ) .* m, inv_k );
+            m = floor( v.v1 ./ DoubleDouble.log_2.v1 + 0.5 );
+            r = TimesPowerOf2( v - DoubleDouble.log_2 .* m, inv_k );
 
             p = r .* r;
             s = r + TimesPowerOf2( p, 0.5 );
             p = p .* r;
             t = p .* DoubleDouble.Make( DoubleDouble.InverseFactorial( 1, 1 ), DoubleDouble.InverseFactorial( 1, 2 ) );
-            for i = 2:15
+            for i = 2 : DoubleDouble.NInverseFactorial
                 s = s + t;
                 p = p .* r;
                 t = p .* DoubleDouble.Make( DoubleDouble.InverseFactorial( i, 1 ), DoubleDouble.InverseFactorial( i, 2 ) );
-                if all( abs( t.v1 ) <= inv_k .* DoubleDouble.eps )
+                if all( abs( t.v1(:) ) <= Threshhold )
                     break
                 end
             end
@@ -594,15 +646,91 @@ classdef DoubleDouble
             s = TimesPowerOf2( s, 2.0 ) + s .* s;
             s = s + 1.0;
             
-            twoPm = 2 .^ m;
+            v = DoubleDouble.Make( pow2( s.v1, m ), pow2( s.v2, m ) );
+        end
+        
+        function [ sin_v, cos_v ] = sincos( v )
+            % Strategy.  To compute sin(x), cos(x), we choose integers a, b so that
+            % x = s + a * (pi/2) + b * (pi/16)
+            % and |s| <= pi/32.  Using the fact that 
+            % sin(pi/16) = 0.5 * sqrt(2 - sqrt(2 + sqrt(2)))
+            % we can compute sin(x) from sin(s), cos(s).  This greatly increases the convergence of the sine Taylor series.
             
-            v = TimesPowerOf2( s, twoPm );
+            z = round( v ./ DoubleDouble.piT2 );
+            r = v - DoubleDouble.piT2 .* z;
+            
+            q = floor( r.v1 ./ DoubleDouble.piD2.v1 + 0.5 );
+            t = r - DoubleDouble.piD2 .* q;
+            j = q;
+            abs_j = abs( j );
+            
+            q = floor( t.v1 ./ DoubleDouble.piD16.v1 + 0.5 );
+            t = t - DoubleDouble.piD16 .* q;
+            k = q;
+            abs_k = abs( k );
+            
+            assert( all( ( j >= -2 ) & ( j <= 2 ) ) );
+            assert( all( abs_k <= 4 ) );
+            
+            [ sin_t, cos_t ] = SinCosTaylor( t );
+            
+            sin_v = sin_t;
+            cos_v = cos_t;
+            
+            a = DoubleDouble.Make( DoubleDouble.CosTable( abs_k + 1, 1 ), DoubleDouble.CosTable( abs_k + 1, 2 ) );
+            b = DoubleDouble.Make( DoubleDouble.SinTable( abs_k + 1, 1 ), DoubleDouble.SinTable( abs_k + 1, 2 ) );
+            
+            a = reshape( a, size( v ) );
+            b = reshape( b, size( v ) );
+
+            a_sin_t = a .* sin_t;
+            b_sin_t = b .* sin_t;
+            a_cos_t = a .* cos_t;
+            b_cos_t = b .* cos_t;
+            
+            Select = k > 0;
+            
+            [ sin_v.v1( Select ), sin_v.v2( Select ) ] = DoubleDouble.DDPlusDD( +a_sin_t.v1( Select ), +a_sin_t.v2( Select ), +b_cos_t.v1( Select ), +b_cos_t.v2( Select ) );
+            [ cos_v.v1( Select ), cos_v.v2( Select ) ] = DoubleDouble.DDPlusDD( -b_sin_t.v1( Select ), -b_sin_t.v2( Select ), +a_cos_t.v1( Select ), +a_cos_t.v2( Select ) );
+            
+            Select = k < 0;
+            
+            [ sin_v.v1( Select ), sin_v.v2( Select ) ] = DoubleDouble.DDPlusDD( +a_sin_t.v1( Select ), +a_sin_t.v2( Select ), -b_cos_t.v1( Select ), -b_cos_t.v2( Select ) );
+            [ cos_v.v1( Select ), cos_v.v2( Select ) ] = DoubleDouble.DDPlusDD( +b_sin_t.v1( Select ), +b_sin_t.v2( Select ), +a_cos_t.v1( Select ), +a_cos_t.v2( Select ) );
+
+            Select = j == 1;
+            
+            [ sin_v.v1( Select ), sin_v.v2( Select ), cos_v.v1( Select ), cos_v.v2( Select ) ] = deal( +cos_v.v1( Select ), +cos_v.v2( Select ), -sin_v.v1( Select ), -sin_v.v2( Select ) );
+            
+            Select = j == -1;
+
+            [ sin_v.v1( Select ), sin_v.v2( Select ), cos_v.v1( Select ), cos_v.v2( Select ) ] = deal( -cos_v.v1( Select ), -cos_v.v2( Select ), +sin_v.v1( Select ), +sin_v.v2( Select ) );
+            
+            Select = abs_j == 2;
+            
+            [ sin_v.v1( Select ), sin_v.v2( Select ), cos_v.v1( Select ), cos_v.v2( Select ) ] = deal( -sin_v.v1( Select ), -sin_v.v2( Select ), -cos_v.v1( Select ), -cos_v.v2( Select ) );
+        end
+        
+        function v = sin( v )
+            [ v, ~ ] = sincos( v );
+        end
+        
+        function v = cos( v )
+            [ ~, v ] = sincos( v );
         end
         
         function x = log( v )
             x = DoubleDouble.Make( log( v.v1 ), zeros( size( v.v1 ) ) );
             x = x + v .* exp( -x ) - 1.0;
             x = x + v .* exp( -x ) - 1.0; % slightly paranoid, but does correct e.g. log(exp(DoubleDouble(-40)))
+        end
+        
+        function v = log2( v )
+            v = log( v ) ./ DoubleDouble.log_2;
+        end
+        
+        function v = log10( v )
+            v = log( v ) ./ DoubleDouble.log_10;
         end
         
         function [ v, U, p ] = lu( v, type )
@@ -771,17 +899,6 @@ classdef DoubleDouble
             v = DoubleDouble.Make( inf( varargin{:}, 'double' ), inf( varargin{:}, 'double' ) );
         end
         
-        function v = eps( v )
-            e = 4.93038065763132e-32;
-            if nargin == 0
-                v = DoubleDouble.Make( e, 0 );
-            else
-                v = DoubleDouble( v );
-                v = abs( v );
-                v = DoubleDouble.Times( v, e );
-            end
-        end
-        
         function v = rand( varargin )
             t = rand( varargin{:}, 'double' );
             v = DoubleDouble.Make( t, eps( t ) .* ( rand( varargin{:}, 'double' ) - 0.5 ) );
@@ -848,8 +965,12 @@ classdef DoubleDouble
         end
         
         function v = MTimes( a, b )
-            R = size( a, 1 );
-            C = size( b, 2 );
+            [ R, c ] = size( a );
+            [ r, C ] = size( b );
+            if ( ( R == 1 ) && ( c == 1 ) ) || ( ( r == 1 ) && ( C == 1 ) )
+                v = DoubleDouble.Times( a, b );
+                return
+            end
             v = DoubleDouble.Make( zeros( R, C ), zeros( R, C ) );
             if isa( b, 'DoubleDouble' )
                 for c = 1 : C
@@ -903,14 +1024,20 @@ classdef DoubleDouble
         end
         
         function v = MLDivide( a, v )
+            [ Ra, Ca ] = size( a );
+            [ Rv, Cv ] = size( v );
+            if ( ( Ra == 1 ) && ( Ca == 1 ) ) || ( ( Rv == 1 ) && ( Cv == 1 ) )
+                v = DoubleDouble.LDivide( a, v );
+                return
+            end
             if ~isa( v, 'DoubleDouble' )
                 v = DoubleDouble( v );
             end
-            assert( size( a, 1 ) == size( v, 1 ) );
-            if size( a, 1 ) > size( a, 2 )
+            assert( Ra == Rv );
+            if Ra > Ca
                 v = DoubleDouble.MLDivide( a.' * a, a.' * v );
                 return
-            elseif size( a, 1 ) < size( a, 2 )
+            elseif Ra < Ca
                 % This is the minimum norm solution rather than the standard mldivide one.
                 v = a.' * DoubleDouble.MLDivide( a * a.', v );
                 return
@@ -1424,7 +1551,26 @@ classdef DoubleDouble
                    [ v.v1( k, : ), v.v2( k, : ) ] = DoubleDouble.DDDividedByDouble( t1, t2, U( k, k ), true );
                 end
             end
-        end        
+        end
+        
+        function v = SinTaylor( v )
+            Threshhold = 0.5 .* abs( v.v1(:) ) .* DoubleDouble.eps;
+            x = - v .* v;
+            r = v;
+            for i = 1 : 2 : DoubleDouble.NInverseFactorial
+                r = r .* x;
+                t = r .* DoubleDouble.Make( DoubleDouble.InverseFactorial( i, 1 ), DoubleDouble.InverseFactorial( i, 2 ) );
+                v = v + t;
+                if all( abs( t.v1(:) ) <= Threshhold )
+                    break
+                end
+            end
+        end
+        
+        function [ sin_v, cos_v ] = SinCosTaylor( v )
+            sin_v = SinTaylor( v );
+            cos_v = sqrt( 1 - sin_v .* sin_v );
+        end
     end
     
     methods ( Static, Access = private )
