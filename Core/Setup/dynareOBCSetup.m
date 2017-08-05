@@ -60,6 +60,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     addpath( [ dynareOBCPath '/Core/Display/' ] );
     
     addpath( [ dynareOBCPath '/Extern/EST-NLSS/' ] );
+    addpath( [ dynareOBCPath '/Extern/DoubleDouble/' ] );
     addpath( [ dynareOBCPath '/Core/Estimation/' ] );
     
     addpath( [ dynareOBCPath '/Core/InnerProblem/' ] );
