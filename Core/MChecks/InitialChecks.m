@@ -230,26 +230,30 @@ function dynareOBC = InitialChecks( dynareOBC )
     if LargestPMatrix < Ts           
         if QuickPCheckUseMex
             disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
-            [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
+            [ ~, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
         else
             disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
-            [ QuickPCheckResult, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
+            [ ~, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
         end
-        if UseVPA
-            QuickPCheckResult = true;
-            for i = 1 : 3
-                if any( IndicesToCheck <= 0 )
-                    continue;
-                end
-                TmpSet = IndicesToCheck(1):IndicesToCheck(2);
+        
+        QuickPCheckResult = true;
+        for i = 1 : 3
+            if any( IndicesToCheck <= 0 )
+                continue;
+            end
+            TmpSet = IndicesToCheck(1):IndicesToCheck(2);
+            if UseVPA
                 TmpDet = double( det( vpa( Ms( TmpSet, TmpSet ) ) ) );
-                if TmpDet <= 0
-                    QuickPCheckResult = false;
-                    StartEndDet = [ IndicesToCheck, TmpDet ];
-                    break;
-                end
+            else
+                TmpDet = RobustDeterminantDD( Ms( TmpSet, TmpSet ) );
+            end
+            if TmpDet <= 0
+                QuickPCheckResult = false;
+                StartEndDet = [ IndicesToCheck, TmpDet ];
+                break;
             end
         end
+
         if QuickPCheckResult
             fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
         else
@@ -313,10 +317,10 @@ function dynareOBC = InitialChecks( dynareOBC )
                 Mc = Ms( Indices, Indices );                
                 if AltPTestUseMex
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the MEX version of AltPTest.' );
-                    [ AltPTestResult, IndicesToCheck ] = AltPTest_mex( Mc, true );
+                    [ ~, IndicesToCheck ] = AltPTest_mex( Mc, true );
                 else
                     disp( 'Testing whether the requested sub-matrix of M is a P-matrix using the non-MEX version of AltPTest.' );
-                    [ AltPTestResult, IndicesToCheck ] = AltPTest( Mc, true );
+                    [ ~, IndicesToCheck ] = AltPTest( Mc, true );
                 end
                 if UseVPA
                     AltPTestResult = true;
@@ -324,7 +328,16 @@ function dynareOBC = InitialChecks( dynareOBC )
                         TmpSet = IndicesToCheck{i};
                         if ~isempty( TmpSet ) && double( det( vpa( Mc( IndicesToCheck{i}, IndicesToCheck{i} ) ) ) ) <= 0
                             AltPTestResult = false;
-                            break;
+                            break
+                        end
+                    end
+                else
+                    AltPTestResult = true;
+                    for i = 1 : 3
+                        TmpSet = IndicesToCheck{i};
+                        if ~isempty( TmpSet ) && RobustDeterminantDD( Mc( IndicesToCheck{i}, IndicesToCheck{i} ) ) <= 0
+                            AltPTestResult = false;
+                            break
                         end
                     end
                 end

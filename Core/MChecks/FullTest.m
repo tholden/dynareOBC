@@ -43,7 +43,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, 
             if UseVPA
                 MDet = double( det( vpa( MSub ) ) );
             else
-                MDet = RobustDeterminant( MSub );
+                MDet = RobustDeterminantDD( MSub );
             end
             if MDet < MinimumDeterminant
                 MinimumDeterminant = MDet;
