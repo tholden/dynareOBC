@@ -29,6 +29,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'LPSolver', 'xpress,gurobi,cplex,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*' );
     dynareOBC = SetDefaultOption( dynareOBC, 'MaxCubatureDegree', 5 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'MaxCubatureDimension', 128 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'MaxCubatureSerialLoop', 3 );
     dynareOBC = SetDefaultOption( dynareOBC, 'MaximisationFunctions', 'CMAESWrapper,FMinConWrapper' );   
     dynareOBC = SetDefaultOption( dynareOBC, 'MaxParametricSolutionDimension', 4 );
     dynareOBC = SetDefaultOption( dynareOBC, 'MILPSolver', 'gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*' );

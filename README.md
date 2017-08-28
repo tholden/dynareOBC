@@ -125,15 +125,17 @@ Note:
     * `MaxCubatureDegree=INTEGER` (default: `5`)
       Specifies the degree of polynomial which will be integrated exactly in the highest degree cubature performed. Values above `51` are treated as equal to `51`. Note that enabling the option `CubatureSmoothing` or setting `CubatureTolerance>0` may mean that the result does not integrate the stated degree polynomials exactly.
     * `CubatureAcceleration`
-      When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature rules towards their limit using an iterated version of Aitken's delta-squared transformation.
+      When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature rules towards their limit using Wynn's Epsilon algorithm.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
       Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the INTEGER largest eigenvalues of the covariance matrix to zero.
     * `CubatureTolerance=FLOAT` (default: `1e-6`)
-      Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default cubature. Setting this to zero disables adaptive cubature.
+      Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables some additional speed-ups.
     * `NoCubature`
       Speeds up DynareOBC by assuming that agents are "surprised" by the existence of the bound. At `order=1`, this is equivalent to a perfect foresight solution to the model.
+    * `MaxCubatureSerialLoop` (default: `3`)
+      Determines the maximum number of calls to the solution of the inner bounds problem before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)
       Determines the size of matrix beyond which we parallelize certain loops involved in calculating the covariance of the random variables over which we perform cubature.
 

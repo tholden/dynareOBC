@@ -51,12 +51,25 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
     end
     
     CubatureAcceleration = dynareOBC.CubatureAcceleration;
+    CubatureTolerance = dynareOBC.CubatureTolerance;
+    PositiveCubatureTolerance = CubatureTolerance > 0;
+    MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
+    
+    if PositiveCubatureTolerance
+        iMax = CubatureOrder;
+    else
+        iMax = 1;
+    end
     
     WarningGenerated = false;
-    for i = 1 : CubatureOrder
+    for i = 1 : iMax
     
-        jv = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 );
-        if DisableParFor || length( jv ) <= 3
+        if PositiveCubatureTolerance
+            jv = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 );
+        else
+            jv = 2 : NumPoints( end );
+        end
+        if DisableParFor || length( jv ) <= MaxCubatureSerialLoop
             for j = jv
                 lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
@@ -92,19 +105,26 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
             end
         end
 
-        if CubatureAcceleration
-            yNew = IteratedAitkensDeltaSquaredTransformation( yMatrix( :, 1 : ( i + 1 ) ) );
+        if PositiveCubatureTolerance 
+            if CubatureAcceleration
+                yNew = WynnEpsilonTransformation( yMatrix( :, 1 : ( i + 1 ) ) );
+            else
+                yNew = yMatrix( :, i + 1 );
+            end
+
+            yError = max( abs( y - yNew ) );
+            y = yNew;
+
+            if yError < CubatureTolerance
+                break
+            end
         else
-            yNew = yMatrix( :, i + 1 );
-        end
-        
-        yError = max( abs( y - yNew ) );
-        y = yNew;
-        
-        if yError < dynareOBC.CubatureTolerance
-            break;
-        end
-    
+            if CubatureAcceleration
+                y = max( 0, WynnEpsilonTransformation( yMatrix ) );
+            else
+                y = yMatrix( :, end );
+            end
+        end    
     end
 
     if ~isempty( p )
