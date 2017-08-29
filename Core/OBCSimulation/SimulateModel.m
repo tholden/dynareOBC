@@ -228,15 +228,15 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
                     yOld = y;
                     try
-                        y = SolveBoundsProblem( UnconstrainedReturnPath );
-                        [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
-
-                        if ~dynareOBC_.NoCubature
-                            [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first, DisableParFor );
+                        if dynareOBC_.NoCubature
+                            y = SolveBoundsProblem( UnconstrainedReturnPath );
+                        else
+                            [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first, DisableParFor );
                             if dynareOBC_.Global
                                 y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC_ );
                             end
                         end
+                        [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
                     catch Error
                         if dynareOBC_.IgnoreBoundFailures
                             Reshaped_yOld = reshape( yOld, Ts, ns );

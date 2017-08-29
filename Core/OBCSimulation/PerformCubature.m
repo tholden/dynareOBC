@@ -11,7 +11,6 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
         CubatureWeights = ones( NumPoints, 1 ) * ( 1 / NumPoints );
         wTemp = 0.5 * sqrt( 2 * NumPoints );
         CubaturePoints = [ zeros( d, 1 ), eye( d ) * wTemp, eye( d ) * (-wTemp) ];
-        CubatureOrder = 1;
     elseif dynareOBC.QuasiMonteCarloLevel > 0
         CubatureOrder = dynareOBC.QuasiMonteCarloLevel;
         NumPoints = 2 .^ ( 2 : ( 1 + CubatureOrder ) ) - 1;
@@ -44,7 +43,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
         p = [];
     end
 
-    yMatrix = y * CubatureWeights( 1, : );
+    yMatrix = zeros( size( y, 1 ), size( CubatureWeights, 2 ) );
 
     if ~isempty( p )
         p.progress;
@@ -52,22 +51,40 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
     
     CubatureAcceleration = dynareOBC.CubatureAcceleration;
     CubatureTolerance = dynareOBC.CubatureTolerance;
+    if dynareOBC.FastCubature
+        CubatureTolerance = 0;
+    end
     PositiveCubatureTolerance = CubatureTolerance > 0;
     MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
     
-    if PositiveCubatureTolerance
-        iMax = CubatureOrder;
+    global MatlabPoolSize
+    if DisableParFor || isempty( MatlabPoolSize )
+        LocalMatlabPoolSize = 1;
     else
+        LocalMatlabPoolSize = MatlabPoolSize;
+    end
+    CumNumPoints = cumsum( NumPoints );
+    CumNumPoints( end ) = LocalMatlabPoolSize;
+    iMin = find( CumNumPoints >= LocalMatlabPoolSize, 1 );
+    
+    if PositiveCubatureTolerance
+        iMax = length( NumPoints );
+    else
+        iMin = 1;
         iMax = 1;
     end
     
     WarningGenerated = false;
-    for i = 1 : iMax
+    for i = iMin : iMax
     
         if PositiveCubatureTolerance
-            jv = ( NumPoints( i ) + 1 ) : NumPoints( i + 1 );
+            if i == iMin
+                jv = 1 : NumPoints( i );
+            else
+                jv = ( NumPoints( i - 1 ) + 1 ) : NumPoints( i );
+            end
         else
-            jv = 2 : NumPoints( end );
+            jv = 1 : NumPoints( end );
         end
         if DisableParFor || length( jv ) <= MaxCubatureSerialLoop
             for j = jv
@@ -107,9 +124,9 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
 
         if PositiveCubatureTolerance 
             if CubatureAcceleration
-                yNew = WynnEpsilonTransformation( yMatrix( :, 1 : ( i + 1 ) ) );
+                yNew = WynnEpsilonTransformation( yMatrix( :, 1 : i ) );
             else
-                yNew = yMatrix( :, i + 1 );
+                yNew = yMatrix( :, i );
             end
 
             yError = max( abs( y - yNew ) );
