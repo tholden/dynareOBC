@@ -209,6 +209,21 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         LPOptions.gurobi.NumericFocus = 3;
         dynareOBC = SetDefaultOption( dynareOBC, 'LPOptions', LPOptions );
         dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
+        if dynareOBC.MultiThreadBoundsProblem || ( ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) ) )
+            dynareOBC.MILPOptions.bintprog.UseParallel = 1;
+            dynareOBC.MILPOptions.clp.numThreads = 0;
+            dynareOBC.MILPOptions.fmincon.UseParallel = 1;
+            dynareOBC.MILPOptions.gurobi.Threads = 0;
+            dynareOBC.MILPOptions.knitro.UseParallel = 1;
+            dynareOBC.MILPOptions.quadprogbb.use_single_processor = 0;
+        else
+            dynareOBC.MILPOptions.bintprog.UseParallel = 0;
+            dynareOBC.MILPOptions.clp.numThreads = 1;
+            dynareOBC.MILPOptions.fmincon.UseParallel = 0;
+            dynareOBC.MILPOptions.gurobi.Threads = 1;
+            dynareOBC.MILPOptions.knitro.UseParallel = 0;
+            dynareOBC.MILPOptions.quadprogbb.use_single_processor = 1;
+        end
     end
     dynareOBC = orderfields( dynareOBC );
 

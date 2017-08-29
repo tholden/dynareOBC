@@ -36,6 +36,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'MLVSimulationAccuracy', 9 );
     dynareOBC = SetDefaultOption( dynareOBC, 'MLVSimulationMode', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'MLVSimulationSubSample', 1 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'MultiThreadBoundsProblem', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoCleanUp', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoCorr', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoCubature', false );

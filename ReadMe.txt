@@ -165,6 +165,12 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       unless no other solutions are found, in which case it takes the last found one. Thus, without 
       ReverseSearch, this tends to find solutions at the bound for longer. With ReverseSearch, this 
       tends to find solutions at the bound for less time. 
+    * MultiThreadBoundsProblem 
+      Some MILP solvers are multi-threaded. By default though, DynareOBC turns off the MILP 
+      solver's multi-threading when possible, unless DynareOBC is not doing any parallel 
+      simulation. Enabling this option will restore the multi-threading of certain solvers. Since 
+      DynareOBC parallelizes at a higher level (e.g. in cubature, MLV simulation, slow IRF 
+      computation, or estimation), this usually slows down runs. 
     * IgnoreBoundFailures 
       Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due 
       to e.g. infeasability. This will severely compromise accuracy. 
