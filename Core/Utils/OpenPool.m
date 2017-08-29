@@ -22,6 +22,7 @@ function OpenPoolInternal
         end
         GCPStruct = gcp( 'nocreate' );
         MatlabPoolSize = GCPStruct.NumWorkers;
+        GCPStruct.IdleTimeout = Inf;
         return
     catch
     end
