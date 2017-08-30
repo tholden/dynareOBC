@@ -7,7 +7,7 @@ function RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin )
         fprintf( '\n' );
         CancelString = input( 'Press return to continue, or c then return to cancel.', 's' );
         
-        if strcmp( CancelString, 'c' );
+        if strcmp( CancelString, 'c' )
             error( 'dynareOBC:RestartMATLAB', 'Please manually restart MATLAB.' );
         end
         
