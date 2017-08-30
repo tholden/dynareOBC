@@ -50,14 +50,14 @@ function [ Matched, dynareOBC ] = ProcessOtherArgument( Argument, dynareOBC )
             dynareOBC.( FieldNames{ MatchedOptionIndex } ) = TokenNames( 1 ).Value;
             Matched = true;
         else
-            error( 'dynareOBC:NonNumericArgument', [ 'dynareOBC was expecting a numeric argument for ' FieldNames{ MatchedOptionIndex } '.' ] );
+            error( 'dynareOBC:NonNumericArgument', [ 'DynareOBC was expecting a numeric argument for ' FieldNames{ MatchedOptionIndex } '.' ] );
         end
     else
         try
             IsInteger = floor( dynareOBC.( FieldNames{ MatchedOptionIndex } ) ) == dynareOBC.( FieldNames{ MatchedOptionIndex } );
             dynareOBC.( FieldNames{ MatchedOptionIndex } ) = str2double( TokenNames( 1 ).Value );
             if IsInteger && ( floor( dynareOBC.( FieldNames{ MatchedOptionIndex } ) ) ~= dynareOBC.( FieldNames{ MatchedOptionIndex } ) )
-                error( 'dynareOBC:NonIntegerArgument', [ 'dynareOBC was expecting an integer argument for ' FieldNames{ MatchedOptionIndex } '.' ] );
+                error( 'dynareOBC:NonIntegerArgument', [ 'DynareOBC was expecting an integer argument for ' FieldNames{ MatchedOptionIndex } '.' ] );
             end
             Matched = true;
         catch

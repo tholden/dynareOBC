@@ -59,7 +59,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, 
             Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
 
             if Diagnostics.problem ~= 0
-                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
 
             STestVal = value( varsigma );
@@ -77,7 +77,7 @@ function [ MinimumDeterminant, MinimumS, MinimumS0 ] = FullTest( TM, dynareOBC, 
             Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
 
             if Diagnostics.problem ~= 0
-                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
             end
 
             S0TestVal = -value( Objective );

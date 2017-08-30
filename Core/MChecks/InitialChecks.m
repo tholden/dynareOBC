@@ -33,7 +33,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     Diagnostics = optimize( Constraints, Objective, dynareOBC.LPOptions );
     
     if Diagnostics.problem ~= 0
-        warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+        warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
         vy = NaN( Ts * ns, 1 );
     else
         vy = value( y );
@@ -47,7 +47,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     AltDiagnostics = optimize( AltConstraints, AltObjective, dynareOBC.LPOptions );
 
     if AltDiagnostics.problem ~= 0
-        warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' AltDiagnostics.info ] );
+        warning( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' AltDiagnostics.info ] );
         new_sum_y = NaN;
     else
         vy = value( y );
@@ -182,7 +182,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 Diagnostics = optimize( [ LBConstraints0, varsigma <= LBConstraints ], Objective, dynareOBC.LPOptions );
 
                 if Diagnostics.problem ~= 0
-                    error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                    error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
                 end
 
                 vvarsigma = value( varsigma );
@@ -200,7 +200,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                     Diagnostics = optimize( [ UBConstraints0, varsigma <= UBConstraints ], Objective, dynareOBC.LPOptions );
 
                     if Diagnostics.problem ~= 0
-                        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your dynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
                     end
 
                     if value( varsigma ) <= 0

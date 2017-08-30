@@ -3,7 +3,7 @@ function RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin )
     if length( Architecture ) >= 5 && strcmp( Architecture( 1:5 ), 'PCWIN' )
 
         fprintf( '\n' );
-        disp( 'dynareOBC needs to restart MATLAB. dynareOBC will attempt to continue after MATLAB is restarted.' );
+        disp( 'DynareOBC needs to restart MATLAB. DynareOBC will attempt to continue after MATLAB is restarted.' );
         fprintf( '\n' );
         CancelString = input( 'Press return to continue, or c then return to cancel.', 's' );
         
