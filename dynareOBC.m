@@ -542,6 +542,7 @@ function dynareOBC( InputFileName, varargin )
 
     OriginalPath = path;
     addpath( [ dynareOBCPath '/Core/Setup/' ] );
+    addpath( [ dynareOBCPath '/Core/Utils/' ] );
     
     fprintf( '\n' );
     try
@@ -560,6 +561,7 @@ function dynareOBC( InputFileName, varargin )
             fprintf( '\n' );
 
             if lower( strtrim( UpdateSelection( 1 ) ) ) == 'y'
+                ClosePool;
                 fprintf( '\n' );
                 disp( 'Downloading the latest release.' );
                 disp( 'This may take several minutes even on fast university connections.' );
