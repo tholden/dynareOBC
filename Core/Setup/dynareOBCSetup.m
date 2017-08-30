@@ -66,7 +66,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     addpath( [ dynareOBCPath '/Core/InnerProblem/' ] );
     
     if return_dynare_version( dynare_version ) < 4.4
-        error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with dynareOBC. Please update dynare.' );
+        error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with DynareOBC. Please update dynare.' );
     end
 
     if ~ismember( 'noclearall', varargin )
