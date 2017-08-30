@@ -137,7 +137,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             end
         else
             if CubatureAcceleration
-                y = max( 0, WynnEpsilonTransformation( yMatrix ) );
+                y = max( min( yMatrix, [], 2 ), min( max( yMatrix, [], 2 ), WynnEpsilonTransformation( yMatrix ) ) );
             else
                 y = yMatrix( :, end );
             end
