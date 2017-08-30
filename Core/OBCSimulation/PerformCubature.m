@@ -1,4 +1,4 @@
-function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPath, oo, dynareOBC, FirstOrderSimulation, DisableParFor, varargin )
+function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, FirstOrderSimulation, DisableParFor, varargin )
    
     [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
     d = size( RootConditionalCovariance, 2 );
@@ -43,7 +43,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( y, UnconstrainedReturnPat
         p = [];
     end
 
-    yMatrix = zeros( size( y, 1 ), size( CubatureWeights, 2 ) );
+    yMatrix = zeros( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, size( CubatureWeights, 2 ) );
 
     if ~isempty( p )
         p.progress;
