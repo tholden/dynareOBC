@@ -178,7 +178,21 @@ function y = SolveBoundsProblem( q )
 
         qnScaled = d1 .* qScaled;
 
-        OptOut = Optimizer{ Tss }{ qnScaled };
+        try
+            OptOut = Optimizer{ Tss }{ qnScaled };
+        catch Error
+            if dynareOBC_.RetryOnOptimizerError
+                OptOut = [];
+                while isempty( OptOut )
+                    try
+                        OptOut = Optimizer{ Tss }{ qnScaled };
+                    catch
+                    end
+                end
+            else
+                rethrow( Error );
+            end
+        end
         alpha = max( eps, OptOut( end ) );
         yScaled = OptOut( 1 : ( end - 1 ) ) / alpha;
 
