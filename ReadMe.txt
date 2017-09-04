@@ -318,11 +318,13 @@ OPTIONS (NOT CASE SENSITIVE!) include:
           then possibly nu-bar (if DynamicNu is not specified), in the final elements of the 
           vector. The function should return the log prior density at that point (up to a 
           constant). 
-        * StationaryDistPeriods=INTEGER (default: 1000) 
-          The number of periods used to evaluate the stationary distribution of the model. 
-        * StationaryDistDrop=INTEGER (default: 100) 
+        * StationaryDistAccuracy=INTEGER (default: 10) 
+          The number of periods used to evaluate the stationary distribution of the model is 
+          2^StationaryDistAccuracy. 
+        * StationaryDistDrop=INTEGER (default: 0) 
           The number of periods used as burn-in prior to evaluating the stationary distribution of 
-          the model. 
+          the model. Does not need to be greater than zero given the algorithm used for drawing 
+          from the stationary distribution. 
         * SkipStandardErrors 
           Makes DynareOBC skip calculation of standard errors for the estimated parameters. 
         * FilterCubatureDegree=INTEGER (default: 0) 
