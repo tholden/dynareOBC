@@ -172,6 +172,10 @@ function dynareOBC( InputFileName, varargin )
 %       simulation. Enabling this option will restore the multi-threading of certain solvers. Since 
 %       DynareOBC parallelizes at a higher level (e.g. in cubature, MLV simulation, slow IRF 
 %       computation, or estimation), this usually slows down runs. 
+%     * RetryOnOptimizerError 
+%       Some MILP solvers occasionally throw errors for no good reason, e.g. because of temporary 
+%       unavailability of a license server. This option makes DynareOBC keep retrying following an 
+%       error in the optimizer. 
 %     * IgnoreBoundFailures 
 %       Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due 
 %       to e.g. infeasability. This will severely compromise accuracy. 
