@@ -195,10 +195,10 @@ Note:
           Specifies the spreadsheet containing the data to estimate. This spreadsheet should contain two worksheets. The first sheet should have a title row containing the names of the MLVs being observed, followed by one row per observation. There should not be a column with dates. The second sheet should contain a title row with the names of the parameters being estimated, followed by one row for their minima (with empty cells being interpreted as minus infinity), then by one row for their maxima (with empty cells being interpreted as plus infinity).
         * `Prior=STRING` (default: `FlatPrior`)
           Specifies the function containing the prior to be used in maximum a posteriori estimation. The default prior results in maximum likelihood estimates being returned. The function should accept a single argument giving the vector of parameters to be estimated, in the order they appear in the datafile, followed by the measumerent error variances, then possibly `nu-bar` (if `DynamicNu` is not specified), in the final elements of the vector. The function should return the log prior density at that point (up to a constant).
-        * `StationaryDistPeriods=INTEGER` (default: `1000`)
-          The number of periods used to evaluate the stationary distribution of the model.
-        * `StationaryDistDrop=INTEGER` (default: `100`)
-          The number of periods used as burn-in prior to evaluating the stationary distribution of the model.
+        * `StationaryDistAccuracy=INTEGER` (default: `10`)
+          The number of periods used to evaluate the stationary distribution of the model is `2^StationaryDistAccuracy`.
+        * `StationaryDistDrop=INTEGER` (default: `0`)
+          The number of periods used as burn-in prior to evaluating the stationary distribution of the model. Does not need to be greater than zero given the algorithm used for drawing from the stationary distribution.
         * `SkipStandardErrors`
           Makes DynareOBC skip calculation of standard errors for the estimated parameters.
         * `FilterCubatureDegree=INTEGER` (default: `0`)

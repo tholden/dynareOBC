@@ -430,7 +430,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         EstimationOptions.NoTLikelihood = dynareOBC.NoTLikelihood;
         EstimationOptions.Prior = dynareOBC.Prior;
         EstimationOptions.SkipStandardErrors = dynareOBC.SkipStandardErrors;
-        EstimationOptions.StationaryDistPeriods = dynareOBC.StationaryDistPeriods;
+        EstimationOptions.StationaryDistAccuracy = dynareOBC.StationaryDistAccuracy;
         EstimationOptions.StationaryDistDrop = dynareOBC.StationaryDistDrop;
         EstimationOptions.StdDevThreshold = dynareOBC.StdDevThreshold;
         
