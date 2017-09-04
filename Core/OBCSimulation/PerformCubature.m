@@ -74,6 +74,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         iMax = 1;
     end
     
+    y = [];
+    
     WarningGenerated = false;
     for i = iMin : iMax
     
@@ -129,7 +131,12 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 yNew = yMatrix( :, i );
             end
 
-            yError = max( abs( y - yNew ) );
+            if isempty( y )
+                yError = Inf;
+            else
+                yError = max( abs( y - yNew ) );
+            end
+            
             y = yNew;
 
             if yError < CubatureTolerance
