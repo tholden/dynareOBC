@@ -68,6 +68,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     if dynareOBC.Estimation || dynareOBC.Smoothing
+        warning( 'dynareOBC:EstimationIsUnsupported', 'Estimation is currently in development. The current version is unsupported, and is not guaranteed to work in any circumstance. Use for experimentation only.' );
         if dynareOBC.DynamicNu && dynareOBC.NoTLikelihood
             error( 'dynareOBC:DynamicNuNoTLikelihoodIncompatible', 'You cannot select both NoTLikelihood and DynamicNu.' );
         end
