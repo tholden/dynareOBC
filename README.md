@@ -201,8 +201,8 @@ Note:
         * `SkipStandardErrors`
           Makes DynareOBC skip calculation of standard errors for the estimated parameters.
         * `FilterCubatureDegree=INTEGER` (default: `0`)
-      If this is greater than zero, then EST-NLSS uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the filter. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. this cubature method exactly integrates a polynomial of degree `FilterCubatureDegree`. Values above `51` are treated as equal to `51`.
-      If this is less than zero, then EST-NLSS takes `2.^(-FilterCubatureDegree)` points from a high order Sobol sequence.
+          If this is greater than zero, then DynareOBC uses an alternative sparse cubature rule including additional points for integrating over the states and shocks of the model in the filter. While this requires solving the model less far from the steady-state when the state dimension is large, it also requires negative weights, which may cause numerical issues e.g. with the positive definiteness of the state covariance matrix. this cubature method exactly integrates a polynomial of degree `FilterCubatureDegree`. Values above `51` are treated as equal to `51`.
+          If this is less than zero, then DynareOBC takes `2.^(-FilterCubatureDegree)` points from a high order Sobol sequence.
         * `StdDevThreshold=FLOAT` (default: `1e-6`)
           Specifies the threshold below which the standard deviation of the state is set to zero, for dimension reduction.
         * `NoSkewLikelihood`
