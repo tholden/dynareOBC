@@ -286,12 +286,21 @@ OPTIONS (NOT CASE SENSITIVE!) include:
  
 * For controlling IRFs 
     * SlowIRFs 
-      Calculates a more accurate approximation to expected IRFs using Monte-Carlo simulation. 
-      Without this option, DynareOBC calculates expected IRFs via cubature (unless this is also 
-      disabled). We advise that SlowIRFs is always used for IRFs in final paper versions. 
+      Calculates a more accurate approximation to (mean) expected IRFs using Monte-Carlo 
+      simulation. Without this option, DynareOBC calculates (mean) expected IRFs via cubature 
+      (unless this is also disabled). We advise that SlowIRFs or MedianIRFs are always used for 
+      IRFs in final paper versions. 
+    * MedianIRFs 
+      Calculates median IRFs using Monte-Carlo simulation, rather than mean IRFs. Without this 
+      option, DynareOBC calculates (mean) expected IRFs via cubature (unless this is also 
+      disabled). We advise that SlowIRFs or MedianIRFs are always used for IRFs in final paper 
+      versions. Note that due to the non-linearity of the median, the level of median IRFs is 
+      somewhat artificial, so the resulting IRFs may appear to violate the bound. Thus, we 
+      recommend the use of IRFsAroundZero with the MedianIRFs option. 
     * IRFsAroundZero 
-      By default, IRFs are centred around the risky steady state without the SlowIRFs option, or 
-      around the approximate mean with it. This option instead centres IRFs around 0. 
+      By default, IRFs are centred around the risky steady state without the SlowIRFs or MedianIRFs 
+      options, around the approximate mean with the SlowIRFs option, or around the approximate 
+      median with the MedianIRFs option. This option instead centres IRFs around 0. 
     * ShockScale=FLOAT (default: 1) 
       Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller 
       than one standard deviation. 

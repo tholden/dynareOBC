@@ -186,6 +186,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Preparation for the final runs
     
+    if dynareOBC.MedianIRFs
+        dynareOBC.SlowIRFs = true;
+    end
+    
     if dynareOBC.NumberOfMax > 0
         EnforceRequirementsAndGeneratePathFunctor( );
         LPOptions = sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.LPSolver );
@@ -507,14 +511,22 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             fprintf( '\n' );
 
             if dynareOBC.SlowIRFs
+                if dynareOBC.MedianIRFs && ~dynareOBC.IRFsAroundZero
+                    fprintf( '\n' );
+                    disp( 'Note that due to the non-linearity of the median, the level of median IRFs is somewhat artificial, so the resulting IRFs may appear to violate the bound.' );
+                    disp( 'To remove the appearance of bound violation, using the IRFsAroundZero option may be sensible.' );
+                    fprintf( '\n' );
+                end
                 [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
             else
                 if dynareOBC.Order > 1 || ~dynareOBC.NoCubature
                     fprintf( '\n' );
                     disp( 'Note that IRFs generated with FastIRFs are an approximation to the true average IRF.' );
-                    disp( 'The level of FastIRFs is particularly artificial, so FastIRFs may appear to violate the bound.' );
-                    disp( 'To remove the appearance of bound violation, using the IRFsAroundZero option may be sensible.' );
-                    disp( 'You should always invoke DynareOBC with the option SlowIRFs when producing the final set of graphs for a paper.' );
+                    if ~dynareOBC.IRFsAroundZero
+                        disp( 'The level of FastIRFs is particularly artificial, so FastIRFs may appear to violate the bound.' );
+                        disp( 'To remove the appearance of bound violation, using the IRFsAroundZero option may be sensible.' );
+                    end
+                    disp( 'You should always invoke DynareOBC with the SlowIRFs or MedianIRFs options when producing the final set of graphs for a paper.' );
                     fprintf( '\n' );
                 end
                 [ oo_, dynareOBC ] = FastIRFs( M_, oo_, dynareOBC );

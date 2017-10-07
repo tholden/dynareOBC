@@ -131,20 +131,38 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
             warning( 'dynareOBC:SlowIRFsWarnings', 'Critical warnings were generated in the inner loop for calculating slow IRFs; accuracy may be compromised.' );
         end
         
-        for i = dynareOBC.VariableSelect
-            IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
-            IRFsWithoutBounds.( IRFName ) = mean( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
-            oo.irfs.( IRFName ) = mean( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
-            TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
-            IRFOffsets.( IRFName ) = repmat( mean( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
-        end
-        for i = 1 : nMLVIRFs
-            MLVName = MLVNames{MLVSelect(i)};
-            IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
-            IRFsWithoutBounds.( IRFName ) = mean( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
-            oo.irfs.( IRFName ) = mean( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
-            TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
-            IRFOffsets.( IRFName ) = repmat( mean( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
+        if dynareOBC.MedianIRFs
+            for i = dynareOBC.VariableSelect
+                IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFsWithoutBounds.( IRFName ) = median( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
+                oo.irfs.( IRFName ) = median( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
+                TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
+                IRFOffsets.( IRFName ) = repmat( median( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
+            end
+            for i = 1 : nMLVIRFs
+                MLVName = MLVNames{MLVSelect(i)};
+                IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFsWithoutBounds.( IRFName ) = median( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
+                oo.irfs.( IRFName ) = median( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
+                TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
+                IRFOffsets.( IRFName ) = repmat( median( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
+            end
+        else
+            for i = dynareOBC.VariableSelect
+                IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFsWithoutBounds.( IRFName ) = mean( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
+                oo.irfs.( IRFName ) = mean( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
+                TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
+                IRFOffsets.( IRFName ) = repmat( mean( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
+            end
+            for i = 1 : nMLVIRFs
+                MLVName = MLVNames{MLVSelect(i)};
+                IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFsWithoutBounds.( IRFName ) = mean( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
+                oo.irfs.( IRFName ) = mean( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
+                TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
+                IRFOffsets.( IRFName ) = repmat( mean( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
+            end
         end
     end
     dynareOBC.IRFOffsets = IRFOffsets;
