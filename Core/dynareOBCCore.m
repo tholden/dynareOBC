@@ -44,6 +44,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLines( FileLines, dynareOBC );
 
+    if dynareOBC.MaxCubatureDimension <= 0 || ( ( ~dynareOBC.FastCubature ) && ( dynareOBC.GaussianCubatureDegree <= 1 ) && ( dynareOBC.QuasiMonteCarloLevel <= 0 ) )
+        dynareOBC.NoCubature = true;
+    else
+        dynareOBC.NoCubature = false;
+    end
+
     if dynareOBC.NumberOfMax == 0
         dynareOBC.NoCubature = true;
         dynareOBC.Global = false;

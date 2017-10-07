@@ -20,7 +20,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             CubatureWeights( 1:NumPoints( i ), i ) = 1 ./ NumPoints( i );
         end
     else
-        CubatureOrder = ceil( 0.5 * ( dynareOBC.MaxCubatureDegree - 1 ) );
+        CubatureOrder = ceil( 0.5 * ( dynareOBC.GaussianCubatureDegree - 1 ) );
         [ CubatureWeightsCurrent, CubaturePoints, NumPointsCurrent ] = fwtpts( d, CubatureOrder );
         CubatureWeights = zeros( NumPointsCurrent, CubatureOrder );
         CubatureWeights( :, end ) = CubatureWeightsCurrent;

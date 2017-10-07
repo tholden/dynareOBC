@@ -181,23 +181,31 @@ function dynareOBC( InputFileName, varargin )
 %       to e.g. infeasability. This will severely compromise accuracy. 
 %  
 % * For controlling cubature 
-%     * PeriodsOfUncertainty=INTEGER (default: 16) 
-% 	    Controls the number of periods of uncertainty over which we integrate. Since a cosine 
-% 	    windowing function is used, the effective number of periods of uncertainty is roughly half 
-% 	    this number. 
 %     * FastCubature 
-%       Causes DynareOBC to ignore the value specified in MaxCubatureDegree and QuasiMonteCarlo, and 
-%       to instead use a degree 3 monomial cubature rule without negative weights, but involving 
-%       evaluations further from the origin. 
+%       By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At 
+%       order=1, this is equivalent to a perfect foresight solution to the model.) Setting this 
+%       option removes this simplifying assumption, and uses a degree 3 monomial cubature rule 
+%       without negative weights (but involving evaluations far from the origin) to integrate over 
+%       future uncertainty. 
 %     * QuasiMonteCarloLevel=INTEGER (default: 0) 
-%       If this is non-zero, then Gaussian cubature is not used (so the MaxCubatureDegree option is 
-%       ignored). Instead, quasi-Monte Carlo integration with at most 2^(1+INTEGER) - 1 samples is 
-%       used. 
-%     * MaxCubatureDegree=INTEGER (default: 5) 
-%       Specifies the degree of polynomial which will be integrated exactly in the highest degree 
-%       cubature performed. Values above 51 are treated as equal to 51. Note that enabling the option 
-%       CubatureSmoothing or setting CubatureTolerance>0 may mean that the result does not integrate 
-%       the stated degree polynomials exactly. 
+%       By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At 
+%       order=1, this is equivalent to a perfect foresight solution to the model.) Setting this 
+%       option greater than zero removes this simplifying assumption, and uses quasi-Monte Carlo 
+%       integration with at most 2^(1+INTEGER) - 1 samples to integrate over future uncertainty. 
+%     * GaussianCubatureDegree=INTEGER (default: 0) 
+%       By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At 
+%       order=1, this is equivalent to a perfect foresight solution to the model.) Setting this 
+%       option greater than one removes this simplifying assumption, and uses sparse Gaussian 
+%       cubature to integrate over future uncertainty. INTEGER specifies the degree of polynomial 
+%       which will be integrated exactly in the highest degree cubature performed. Values above 51 
+%       are treated as equal to 51. Note that enabling the option CubatureSmoothing or setting 
+%       CubatureTolerance>0 may mean that the result does not integrate the stated degree polynomials 
+%       exactly. 
+%     * PeriodsOfUncertainty=INTEGER (default: 16) 
+% 	  Controls the number of periods of uncertainty over which DynareOBC integrates when one of the 
+% 	  FastCubature, QuasiMonteCarloLevel or GaussianCubatureDegree options are set. Since a cosine 
+% 	  windowing function is used, the effective number of periods of uncertainty is roughly half this 
+% 	  number. 
 %     * CubatureAcceleration 
 %       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature 
 %       rules towards their limit using Wynn's Epsilon algorithm. 
@@ -214,8 +222,7 @@ function dynareOBC( InputFileName, varargin )
 %       Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables 
 %       some additional speed-ups. 
 %     * NoCubature 
-%       Speeds up DynareOBC by assuming that agents are "surprised" by the existence of the bound. At 
-%       order=1, this is equivalent to a perfect foresight solution to the model. 
+%       Ignored. Left in for backwards compatibility. 
 %     * MaxCubatureSerialLoop (default: 3) 
 %       Determines the maximum number of calls to the solution of the inner bounds problem before a 
 %       loop is parallelized. 
