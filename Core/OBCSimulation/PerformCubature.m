@@ -14,11 +14,17 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     elseif dynareOBC.QuasiMonteCarloLevel > 0
         CubatureOrder = dynareOBC.QuasiMonteCarloLevel;
         CubatureOrderP1 = CubatureOrder + 1;
-        NumPoints = 2 .^ ( 1 : CubatureOrderP1 ) - 1;
-        CubaturePoints = SobolSequence( d, NumPoints( end ) );
-        CubatureWeights = zeros( NumPoints( end ), CubatureOrderP1 );
-        for i = 1 : CubatureOrderP1
-            CubatureWeights( 1:NumPoints( i ), i ) = 1 ./ NumPoints( i );
+        if dynareOBC.HigherOrderSobolDegree > 0
+            CubaturePoints = HigherOrderSobol( d, CubatureOrderP1, dynareOBC.HigherOrderSobolDegree, false );
+            NumPoints = size( CubaturePoints, 2 );
+            CubatureWeights = ones( NumPoints, 1 ) * ( 1 / NumPoints );
+        else
+            NumPoints = 2 .^ ( 1 : CubatureOrderP1 ) - 1;
+            CubaturePoints = SobolSequence( d, NumPoints( end ) );
+            CubatureWeights = zeros( NumPoints( end ), CubatureOrderP1 );
+            for i = 1 : CubatureOrderP1
+                CubatureWeights( 1:NumPoints( i ), i ) = 1 ./ NumPoints( i );
+            end
         end
     else
         CubatureOrder = ceil( 0.5 * ( dynareOBC.GaussianCubatureDegree - 1 ) );

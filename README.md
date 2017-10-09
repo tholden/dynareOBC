@@ -122,10 +122,12 @@ Note:
 * **For controlling cubature**
     * `FastCubature`
       By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses a degree 3 monomial cubature rule without negative weights (but involving evaluations far from the origin) to integrate over future uncertainty.
-    * `QuasiMonteCarloLevel=INTEGER` (default: `0`)
-      By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option greater than zero removes this simplifying assumption, and uses quasi-Monte Carlo integration with at most `2^(1+INTEGER) - 1` samples to integrate over future uncertainty.
     * `GaussianCubatureDegree=INTEGER` (default: `0`)
       By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option greater than one removes this simplifying assumption, and uses sparse Gaussian cubature to integrate over future uncertainty. `INTEGER` specifies the degree of polynomial which will be integrated exactly in the highest degree cubature performed. Values above `51` are treated as equal to `51`. Note that enabling the option `CubatureSmoothing` or setting `CubatureTolerance>0` may mean that the result does not integrate the stated degree polynomials exactly.
+    * `QuasiMonteCarloLevel=INTEGER` (default: `0`)
+      By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option greater than zero removes this simplifying assumption, and uses quasi-Monte Carlo (Sobol) integration with at most `2^(1+INTEGER) - 1` samples (if `HigherOrderSobolDegree` is zero) or `2^(1+INTEGER)` samples (otherwise) to integrate over future uncertainty.
+    * `HigherOrderSobolDegree=INTEGER` (default: `0`)
+      Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one, when `QuasiMonteCarloLevel` is positive. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
 	  Controls the number of periods of uncertainty over which DynareOBC integrates when one of the `FastCubature`, `QuasiMonteCarloLevel` or `GaussianCubatureDegree` options are set. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
     * `CubatureAcceleration`
