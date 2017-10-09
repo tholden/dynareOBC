@@ -128,7 +128,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
 
         if PositiveCubatureTolerance 
             if CubatureAcceleration
-                yNew = WynnEpsilonTransformation( yMatrix( :, 1 : i ) );
+                yMatrixTmp = yMatrix( :, 1 : i );
+                yNew = max( min( yMatrixTmp, [], 2 ), min( max( yMatrixTmp, [], 2 ), WynnEpsilonTransformation( yMatrixTmp ) ) );
             else
                 yNew = yMatrix( :, i );
             end
