@@ -10,7 +10,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         NumPoints = 2 * d;
         CubatureWeights = ones( NumPoints, 1 ) * ( 1 / NumPoints );
         wTemp = sqrt( d );
-        CubaturePoints = [ zeros( d, 1 ), eye( d ) * wTemp, eye( d ) * (-wTemp) ];
+        CubaturePoints = [ eye( d ) * wTemp, eye( d ) * (-wTemp) ];
     elseif dynareOBC.QuasiMonteCarloLevel > 0
         CubatureOrder = dynareOBC.QuasiMonteCarloLevel;
         CubatureOrderP1 = CubatureOrder + 1;
