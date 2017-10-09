@@ -53,3 +53,5 @@ FastStart.mat
 pou.mat
 time.mat
 checksum
+
+Core/Utils/HigherOrderSobolCache.mat
