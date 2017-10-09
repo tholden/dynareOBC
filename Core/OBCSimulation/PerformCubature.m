@@ -7,36 +7,35 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     end
     
     if dynareOBC.FastCubature
-        NumPoints = 1 + 2 * d;
+        NumPoints = 2 * d;
         CubatureWeights = ones( NumPoints, 1 ) * ( 1 / NumPoints );
-        wTemp = 0.5 * sqrt( 2 * NumPoints );
+        wTemp = sqrt( d );
         CubaturePoints = [ zeros( d, 1 ), eye( d ) * wTemp, eye( d ) * (-wTemp) ];
     elseif dynareOBC.QuasiMonteCarloLevel > 0
         CubatureOrder = dynareOBC.QuasiMonteCarloLevel;
-        NumPoints = 2 .^ ( 2 : ( 1 + CubatureOrder ) ) - 1;
+        CubatureOrderP1 = CubatureOrder + 1;
+        NumPoints = 2 .^ ( 1 : CubatureOrderP1 ) - 1;
         CubaturePoints = SobolSequence( d, NumPoints( end ) );
-        CubatureWeights = zeros( NumPoints( end ), CubatureOrder );
-        for i = 1 : CubatureOrder
+        CubatureWeights = zeros( NumPoints( end ), CubatureOrderP1 );
+        for i = 1 : CubatureOrderP1
             CubatureWeights( 1:NumPoints( i ), i ) = 1 ./ NumPoints( i );
         end
     else
         CubatureOrder = ceil( 0.5 * ( dynareOBC.GaussianCubatureDegree - 1 ) );
+        CubatureOrderP1 = CubatureOrder + 1;
         [ CubatureWeightsCurrent, CubaturePoints, NumPointsCurrent ] = fwtpts( d, CubatureOrder );
-        CubatureWeights = zeros( NumPointsCurrent, CubatureOrder );
+        CubatureWeights = zeros( NumPointsCurrent, CubatureOrderP1 );
         CubatureWeights( :, end ) = CubatureWeightsCurrent;
-        NumPoints = zeros( 1, CubatureOrder );
+        NumPoints = zeros( 1, CubatureOrderP1 );
         NumPoints( end ) = NumPointsCurrent;
-        for i = 1 : ( CubatureOrder - 1 )
-            CubatureWeightsCurrent = fwtpts( d, i );
+        for i = 1 : CubatureOrder
+            CubatureWeightsCurrent = fwtpts( d, i - 1 );
             NumPointsCurrent = length( CubatureWeightsCurrent );
             CubatureWeights( 1:NumPointsCurrent, i ) = CubatureWeightsCurrent;
             NumPoints( i ) = NumPointsCurrent;
         end
     end
     
-    CubatureWeights = [ [ 1; zeros( NumPoints( end ) - 1, 1 ) ], CubatureWeights ];
-    NumPoints = [ 1 NumPoints ];
-
     if nargin > 6
         p = TimedProgressBar( NumPoints( end ), 20, varargin{:} );
     else
@@ -51,9 +50,12 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     
     CubatureAcceleration = dynareOBC.CubatureAcceleration;
     CubatureTolerance = dynareOBC.CubatureTolerance;
-    if dynareOBC.FastCubature
+    
+    if length( NumPoints ) == 1
+        CubatureAcceleration = false;
         CubatureTolerance = 0;
     end
+    
     PositiveCubatureTolerance = CubatureTolerance > 0;
     MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
     
@@ -148,7 +150,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             else
                 y = yMatrix( :, end );
             end
-        end    
+        end
+        
     end
 
     if ~isempty( p )
