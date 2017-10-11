@@ -3,7 +3,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
     d = size( RootConditionalCovariance, 2 );
     if d == 0
-        return;
+        return
     end
     
     if dynareOBC.FastCubature
