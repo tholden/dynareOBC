@@ -1,8 +1,12 @@
 function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, ReturnPathFirstOrder )
+    
     if dynareOBC.FirstOrderConditionalCovariance
+        
         RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
         GlobalVarianceShare = dynareOBC.GlobalVarianceShare;
+        
     else
+        
         T = dynareOBC.InternalIRFPeriods;
         TM1 = T - 1;
         ns = dynareOBC.NumberOfMax;
@@ -211,7 +215,7 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
             end
         end
         
-        ConditionalCovariance = 0.5 * ( ConditionalCovariance + ConditionalCovariance' );
+        ConditionalCovariance = 0.5 * ( ConditionalCovariance + ConditionalCovariance.' );
         
         RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
 
@@ -243,6 +247,7 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         end
     
     end
+    
 end
 
 function Out = A2PowersProduct( j, X, Select )
