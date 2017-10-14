@@ -211,6 +211,10 @@ function dynareOBC( InputFileName, varargin )
 % 	  FastCubature, QuasiMonteCarloLevel or GaussianCubatureDegree options are set. Since a cosine 
 % 	  windowing function is used, the effective number of periods of uncertainty is roughly half this 
 % 	  number. 
+% 	* ImportanceSampling 
+% 	  Invoking DynareOBC with this option causes DynareOBC to perform integration over future 
+% 	  uncertainty via importance sampling, with a proposal distribution that roughly approximates the 
+% 	  distribution of future paths conditional on hitting the bound. 
 %     * CubatureAcceleration 
 %       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature 
 %       rules towards their limit using Wynn's Epsilon algorithm. 

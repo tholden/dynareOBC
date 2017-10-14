@@ -130,6 +130,8 @@ Note:
       Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one, when `QuasiMonteCarloLevel` is positive. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
 	  Controls the number of periods of uncertainty over which DynareOBC integrates when one of the `FastCubature`, `QuasiMonteCarloLevel` or `GaussianCubatureDegree` options are set. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
+	* `ImportanceSampling`
+	  Invoking DynareOBC with this option causes DynareOBC to perform integration over future uncertainty via importance sampling, with a proposal distribution that roughly approximates the distribution of future paths conditional on hitting the bound.
     * `CubatureAcceleration`
       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature rules towards their limit using Wynn's Epsilon algorithm.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)

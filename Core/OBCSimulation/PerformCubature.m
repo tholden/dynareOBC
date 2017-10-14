@@ -1,7 +1,75 @@
 function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, FirstOrderSimulation, DisableParFor, varargin )
    
     [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
-    d = size( RootConditionalCovariance, 2 );
+    
+    if size( RootConditionalCovariance, 2 ) == 0
+        return
+    end
+    
+    if dynareOBC.ImportanceSampling
+        
+        ConditionalCovariance = RootConditionalCovariance * RootConditionalCovariance.';
+        ConditionalStdDev = sqrt( diag( ConditionalCovariance ) );
+        
+        ZiCutOff = -UnconstrainedReturnPath ./ ConditionalStdDev;
+        PDFZiCutOff = normpdf( ZiCutOff );
+        CDFZiCutOff = normcdf( ZiCutOff );
+        PDFCDFRatioZiCutOff = PDFZiCutOff ./ CDFZiCutOff;
+        
+        MeanXiRel = - ConditionalStdDev .* PDFCDFRatioZiCutOff;
+        MeanXi = MeanXiRel + UnconstrainedReturnPath;
+        VarXi = diag( ConditionalCovariance ) .* ( 1 - ZiCutOff .* PDFCDFRatioZiCutOff - PDFCDFRatioZiCutOff .* PDFCDFRatioZiCutOff );
+        
+        CoordinateWeights = CDFZiCutOff;
+        
+        NPath = numel( UnconstrainedReturnPath );
+        
+        SamplingMean = zeros( NPath, 1 );
+        SamplingCovariance = zeros( NPath, NPath );
+        SamplingMeanCurrent = zeros( NPath, 1 );
+        SamplingCovarianceCurrent = zeros( NPath, NPath );
+        
+        for i = 1 : NPath
+            if ( PDFZiCutOff( i ) == 0 ) || ( CDFZiCutOff( i ) == 0 )
+                CoordinateWeights( i ) = 0;
+                continue
+            end
+            % XiRel = norminv( CDFZCutOff( i ) * Ui ) * ConditionalStdDev( i );
+            % Xi = XiRel + UnconstrainedReturnPath( i );
+            SelectMi = [ ( 1 : ( i - 1 ) ), ( ( i + 1 ) : NPath ) ];
+            XiRelScaler = ConditionalCovariance( SelectMi, i ) / ConditionalCovariance( i, i );
+            MeanXMi = UnconstrainedReturnPath( SelectMi ) + XiRelScaler * MeanXiRel( i );
+            VarXMi = VarXi( i ) * ( XiRelScaler * XiRelScaler.' ) + ConditionalCovariance( SelectMi, SelectMi ) - ( ConditionalCovariance( SelectMi, i ) * ConditionalCovariance( SelectMi, i ).' ) / ConditionalCovariance( i, i );
+            CovXMiXi = XiRelScaler * VarXi( i );
+            
+            SamplingMeanCurrent( i ) = MeanXi( i );
+            SamplingMeanCurrent( SelectMi ) = MeanXMi;
+            
+            SamplingCovarianceCurrent( i ) = VarXi( i );
+            SamplingCovarianceCurrent( SelectMi, SelectMi ) = VarXMi;
+            SamplingCovarianceCurrent( SelectMi, i ) = CovXMiXi;
+            SamplingCovarianceCurrent( i, SelectMi ) = CovXMiXi.';
+            
+            SamplingCovarianceCurrent = SamplingCovarianceCurrent + SamplingMeanCurrent * SamplingMeanCurrent.';
+
+            SamplingMean = SamplingMean + CoordinateWeights( i ) * SamplingMeanCurrent;
+            SamplingCovariance = SamplingCovariance + CoordinateWeights( i ) * SamplingCovarianceCurrent;
+     
+        end
+        
+        SumCoordinateWeights = sum( CoordinateWeights );
+        SamplingMean = SamplingMean / SumCoordinateWeights;
+        SamplingCovariance = SamplingCovariance / SumCoordinateWeights;
+        SamplingCovariance = SamplingCovariance - SamplingMean * SamplingMean.';
+        
+        SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
+        
+    else
+        SamplingMean = UnconstrainedReturnPath;
+        SamplingRootCovariance = RootConditionalCovariance;
+    end
+    
+    d = size( SamplingRootCovariance, 2 );
     if d == 0
         return
     end
@@ -40,6 +108,27 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             CubatureWeights( 1:NumPointsCurrent, i ) = CubatureWeightsCurrent;
             NumPoints( i ) = NumPointsCurrent;
         end
+    end
+    
+    Points = bsxfun( @plus, SamplingMean, SamplingRootCovariance * CubaturePoints );
+    
+    if dynareOBC.ImportanceSampling
+        Projection = SamplingRootCovariance * ( ( SamplingRootCovariance.' * SamplingRootCovariance ) \ SamplingRootCovariance.' );
+        Offset = SamplingMean - Projection * SamplingMean;
+        ProjectedMean = Offset + Projection * UnconstrainedReturnPath;
+        ProjectedRootCovariance = Projection * RootConditionalCovariance;
+        ProjectedCovariance = ProjectedRootCovariance * ProjectedRootCovariance.';
+        ProjectedRootCovariance = ObtainRootConditionalCovariance( ProjectedCovariance, 0, d );
+        assert( size( ProjectedRootCovariance, 2 ) == d, 'dynareOBC:ImportanceSamplingProjectionFailure', 'A projection did not work as expected during importance sampling.' );
+        
+        ProjectedRootCovarianceProduct = ProjectedRootCovariance.' * ProjectedRootCovariance;
+        ProjectedPoints = ProjectedRootCovarianceProduct \ ( ProjectedRootCovariance.' * bsxfun( @minus, Points, ProjectedMean ) );
+        
+        LLTrue = -0.5 * ( sum( log( eig( ProjectedRootCovarianceProduct ) ) ) + sum( ProjectedPoints .* ProjectedPoints ) );
+        LLSampling = -0.5 * ( sum( log( eig( SamplingRootCovariance.' * SamplingRootCovariance ) ) ) + sum( CubaturePoints .* CubaturePoints ) );
+        
+        WeightAdjustment = min( 1, exp( LLTrue - LLSampling ) );
+        CubatureWeights = bsxfun( @times, CubatureWeights, WeightAdjustment(:) );
     end
     
     if nargin > 6
@@ -101,7 +190,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
                 try
-                    yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ) );
+                    yNew = SolveBoundsProblem( Points( :, j ) );
                     yMatrix = yMatrix + yNew * CubatureWeights( j, : );
                 catch Error
                     warning( WarningState );
@@ -118,7 +207,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
                 try
-                    yNew = SolveBoundsProblem( UnconstrainedReturnPath + RootConditionalCovariance * CubaturePoints( :, j ) );
+                    yNew = SolveBoundsProblem( Points( :, j ) );
                     yMatrix = yMatrix + yNew * CubatureWeights( j, : );
                 catch Error
                     warning( WarningState );
