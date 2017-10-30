@@ -65,7 +65,7 @@ function [ IsPMatrix, IndicesToCheck ] = AltPTest( Input, Verbose )
                     end
                     if MDetUB <= 0
                         BreakFlag = true;
-                        break;
+                        break
                     end
                 end
             end
@@ -77,7 +77,7 @@ function [ IsPMatrix, IndicesToCheck ] = AltPTest( Input, Verbose )
             if isempty( K )
                 Set( end ) = Set( end ) + O;
             elseif K( 1 ) == O
-                break;
+                break
             else
                 Set( ( K( 1 ) - O ):SetSize ) = ( Set( K( 1 ) - O ) + O ):( Set( K( 1 ) - O ) + O + SetSize - ( K( 1 ) - O ) );
             end
@@ -89,7 +89,7 @@ function [ IsPMatrix, IndicesToCheck ] = AltPTest( Input, Verbose )
         end
         
         if BreakFlag
-            break;
+            break
         end
         
     end 
