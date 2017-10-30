@@ -1,5 +1,12 @@
 function [ DetA, LB, UB ] = RobustDeterminantDD( InputA )
 
+    if isempty( InputA )
+        DetA = 1;
+        LB = 1;
+        UB = 1;
+        return
+    end
+
     A = DoubleDouble( InputA );
     n = min( size( A, 1 ), size( A, 2 ) );
     A = A( 1:n, 1:n );
@@ -13,7 +20,7 @@ function [ DetA, LB, UB ] = RobustDeterminantDD( InputA )
     else
         DetA = NaN;
     end
-    
+        
     a = max( abs( A(:) ) );
     l = max( abs( L(:) ) );
     u = max( abs( U(:) ) );
