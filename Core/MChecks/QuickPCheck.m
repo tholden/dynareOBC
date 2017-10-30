@@ -49,13 +49,13 @@ function [ CouldBePMatrix, StartEndDet, IndicesToCheck ] = QuickPCheck( Input )
             if MoreFlag && MDetUB <= 0
                 CouldBePMatrix = false;
                 StartEndDet = [ double( SetStart ), double( SetEnd ), MDet ];
-                break;
+                break
             end
         
         end
         
         if ~CouldBePMatrix
-            break;
+            break
         end
 
     end 
