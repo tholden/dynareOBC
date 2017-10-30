@@ -239,7 +239,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         QuickPCheckResult = true;
         for i = 1 : 3
             if any( IndicesToCheck <= 0 )
-                continue;
+                continue
             end
             TmpSet = IndicesToCheck(1):IndicesToCheck(2);
             if UseVPA
@@ -250,7 +250,7 @@ function dynareOBC = InitialChecks( dynareOBC )
             if TmpDet <= 0
                 QuickPCheckResult = false;
                 StartEndDet = [ IndicesToCheck, TmpDet ];
-                break;
+                break
             end
         end
 
