@@ -4,7 +4,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) < eps ) );
     NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
-    CholSigma_e = chol( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
+    SqrtmSigma_e = sqrtm( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
 
     if dynareOBC.SimulateOnGridPoints
         [U,D] = schur( full( dynareOBC.Var_z1 ), 'complex' );
@@ -19,7 +19,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
         ShockSequence = zeros( max( dynareOBC.OriginalNumVarExo, M.endo_nbr ), 2 * dynareOBC.SimulationPeriods );
         Z1Offsets = RootVar_z1 * QMCDraws( 1 : NumberOfPositiveVarianceVariables, : );
         ShockSequence( 1:M.endo_nbr, 1:2:end ) = Z1Offsets( oo.dr.inv_order_var, : );
-        ShockSequence( PositiveVarianceShocks, 2:2:end ) = CholSigma_e' * QMCDraws( (NumberOfPositiveVarianceVariables+1):end, : );
+        ShockSequence( PositiveVarianceShocks, 2:2:end ) = SqrtmSigma_e * QMCDraws( (NumberOfPositiveVarianceVariables+1):end, : );
         
         if ~isempty( dynareOBC.InitialStateFile )
             error( 'dynareOBC:SimulateOnGridPointsIncompatibleOptions', 'You cannot specify an initial state with SimulateOnGridPoints.' );
@@ -30,7 +30,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     else
         if isempty( dynareOBC.ShockSequenceFile )
             ShockSequence = zeros( dynareOBC.OriginalNumVarExo, dynareOBC.SimulationPeriods );
-            ShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, dynareOBC.SimulationPeriods );
+            ShockSequence( PositiveVarianceShocks, : ) = SqrtmSigma_e * randn( NumberOfPositiveVarianceShocks, dynareOBC.SimulationPeriods );
         else
             if exist( dynareOBC.ShockSequenceFile, 'file' ) == 2
                 FileData = load( dynareOBC.ShockSequenceFile, 'ShockSequence' );

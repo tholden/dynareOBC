@@ -38,7 +38,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
     PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) == 0 ) );
     NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
-    CholSigma_e = chol( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
+    SqrtmSigma_e = sqrtm( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
     
     p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Please wait for around ', '. Progress: ', 'Computing base path for average IRFs. Completed in ' );
     
@@ -49,7 +49,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
         WarningState = warning( 'off', 'all' );
         try
             TempShockSequence = zeros( OriginalNumVarExo, T );
-            TempShockSequence( PositiveVarianceShocks, : ) = CholSigma_e' * randn( NumberOfPositiveVarianceShocks, T ) * ( Replications > 1 );
+            TempShockSequence( PositiveVarianceShocks, : ) = SqrtmSigma_e * randn( NumberOfPositiveVarianceShocks, T ) * ( Replications > 1 );
             ShockSequence( :, :, k ) = TempShockSequence( :, IRFIndices );
 
             Simulation = SimulateModel( TempShockSequence, false );
@@ -90,7 +90,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
 
     % Compute irf, allowing correlated shocks
     SS = M.Sigma_e + 1e-14 * eye( M.exo_nbr );
-    cs = transpose( chol( SS ) );
+    cs = sqrtm( SS );
     
     for ShockIndex = dynareOBC.ShockSelect
         Shock = dynareOBC.ShockScale * cs( M.exo_names_orig_ord, ShockIndex );

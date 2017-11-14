@@ -313,7 +313,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         if dynareOBC_.MLVSimulationMode > 1
             PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_.Sigma_e) == 0 ) );
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
-            CholSigma_e = chol( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
+            SqrtmSigma_e = sqrtm( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
         end
         
         ParamVec = M_.params;
@@ -334,7 +334,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 Weights = ones( 1, NumPoints ) * ( 1 / NumPoints );
                 Points = SobolSequence( NumberOfPositiveVarianceShocks, NumPoints );
             end
-            FutureShocks = CholSigma_e' * Points;
+            FutureShocks = SqrtmSigma_e * Points;
             if DisplayProgress
                 fprintf( 'Found a cubature rule with %d points.\n', NumPoints );
             end
