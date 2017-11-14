@@ -44,6 +44,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
     
     WarningGenerated = false;
     MLVSimulationMode = dynareOBC.MLVSimulationMode;
+    SlowIRFsVariableRotationFunction = dynareOBC.SlowIRFsVariableRotationFunction;
     parfor k = 1: Replications
         lastwarn( '' );
         WarningState = warning( 'off', 'all' );
@@ -54,17 +55,6 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
 
             Simulation = SimulateModel( TempShockSequence, false );
 
-            RunWithBoundsWithoutShock( :, :, k ) = Simulation.total_with_bounds( :, IRFIndices );
-            RunWithoutBoundsWithoutShock( :, :, k ) = Simulation.total( :, IRFIndices );
-            
-            if MLVSimulationMode > 0
-                for i = 1 : nMLVIRFs
-                    MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
-                    MLVsWithBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
-                    MLVsWithoutBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithoutBounds.( MLVName )( :, IRFIndices );
-                end
-            end
-
             SimulationFieldNames = fieldnames( Simulation );
             for l = 1 : length( SimulationFieldNames )
                 SimulationFieldName = SimulationFieldNames{l};
@@ -73,7 +63,37 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
                 end
                 StatePreShock( k ).( SimulationFieldName ) = Simulation.( SimulationFieldName )( :, Drop );
             end
-        catch Error
+            
+            if ~isempty( SlowIRFsVariableRotationFunction )
+                [ NewVariableOrder, NewMLVOrder ] = feval( SlowIRFsVariableRotationFunction, StatePreShock( k ).total_with_bounds );
+                for l = 1 : length( SimulationFieldNames )
+                    SimulationFieldName = SimulationFieldNames{l};
+                    if strcmp( SimulationFieldName, 'constant' ) || strcmp( SimulationFieldName, 'MLVsWithBounds' ) || strcmp( SimulationFieldName, 'MLVsWithoutBounds' )
+                        continue;
+                    end
+                    StatePreShock( k ).( SimulationFieldName ) = StatePreShock( k ).( SimulationFieldName )( NewVariableOrder, : );
+                    Simulation.( SimulationFieldName ) = Simulation.( SimulationFieldName )( NewVariableOrder, : );
+                end
+                if MLVSimulationMode > 0
+                    for i = 1 : nMLVIRFs
+                        MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
+                        Simulation.MLVsWithBounds.( MLVName ) = Simulation.MLVsWithBounds.( MLVName )( NewMLVOrder, : );
+                        Simulation.MLVsWithoutBounds.( MLVName ) = Simulation.MLVsWithoutBounds.( MLVName )( NewMLVOrder, : );
+                    end
+                end
+            end
+ 
+            RunWithBoundsWithoutShock( :, :, k ) = Simulation.total_with_bounds( :, IRFIndices );
+            RunWithoutBoundsWithoutShock( :, :, k ) = Simulation.total( :, IRFIndices );
+            
+            if MLVSimulationMode > 0
+                for i = 1 : nMLVIRFs
+                    MLVName = MLVNames{MLVSelect(i)};
+                    MLVsWithBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
+                    MLVsWithoutBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithoutBounds.( MLVName )( :, IRFIndices );
+                end
+            end
+       catch Error
             warning( WarningState );
             rethrow( Error );
         end

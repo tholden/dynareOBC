@@ -70,6 +70,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'SkipFirstSolutions', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'SkipStandardErrors', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SlowIRFs', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'SlowIRFsVariableRotationFunction', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'Smoothing', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Sparse', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'StationaryDistAccuracy', 10 );
