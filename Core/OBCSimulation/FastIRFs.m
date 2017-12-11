@@ -7,7 +7,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
     Ts = dynareOBC.IRFPeriods;
     % Compute irf, allowing correlated shocks
     SS = M.Sigma_e + 1e-14 * eye( M.exo_nbr );
-    cs = sqrtm( SS );
+    cs = spsqrtm( SS );
     
 	TempIRFLROffsets = repmat( dynareOBC.Mean, 1, T );
 	TempIRFSROffsets = zeros( length( dynareOBC.VariableSelect ), Ts );

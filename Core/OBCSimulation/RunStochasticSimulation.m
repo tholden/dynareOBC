@@ -4,7 +4,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     PositiveVarianceShocks = setdiff( 1:dynareOBC.OriginalNumVarExo, find( diag(M.Sigma_e) < eps ) );
     NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
     
-    SqrtmSigma_e = sqrtm( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
+    SqrtmSigma_e = spsqrtm( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
 
     if dynareOBC.SimulateOnGridPoints
         [U,D] = schur( full( dynareOBC.Var_z1 ), 'complex' );

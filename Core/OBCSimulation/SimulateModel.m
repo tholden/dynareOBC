@@ -313,7 +313,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         if dynareOBC_.MLVSimulationMode > 1
             PositiveVarianceShocks = setdiff( 1:dynareOBC_.OriginalNumVarExo, find( diag(M_.Sigma_e) == 0 ) );
             NumberOfPositiveVarianceShocks = length( PositiveVarianceShocks );
-            SqrtmSigma_e = sqrtm( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
+            SqrtmSigma_e = spsqrtm( M_.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
         end
         
         ParamVec = M_.params;
