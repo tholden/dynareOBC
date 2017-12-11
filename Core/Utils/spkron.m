@@ -7,8 +7,8 @@ function [ ix, jx, sx, rx, cx ] = spkron( A, B )
     [I, J] = size(A);
     [K, L] = size(B);
     
-    [ia,ja,sa] = find( A );
-    [ib,jb,sb] = find( B );
+    [ia,ja,sa] = vfind( A );
+    [ib,jb,sb] = vfind( B );
     
     a = double( [ia,ja,sa] );
     b = double( [ib,jb,sb] );

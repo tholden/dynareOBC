@@ -84,7 +84,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % Idx3 = (2*nEndo+1):LengthZ2;
         
         % A2( Idx1, Idx1 ) = A1;
-        [ A1j, A1i, A1s ] = find( A1Trans );
+        [ A1j, A1i, A1s ] = vfind( A1Trans );
         
         A2i = A1i;
         A2j = A1j;
@@ -97,7 +97,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         
         % A2( Idx2, Idx3 ) = 0.5 * oo_.dr.ghxx;
         beta22 = spsparse( oo.dr.ghxx );
-        [ Tmpi, Tmpj, Tmps ] = find( beta22 );
+        [ Tmpi, Tmpj, Tmps ] = vfind( beta22 );
         A2i = [ A2i; Tmpi + nEndo ];
         A2j = [ A2j; Tmpj + 2*nEndo ];
         A2s = [ A2s; 0.5 * Tmps ];
@@ -105,7 +105,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % A2( Idx3, Idx3 ) = spkron( oo_.dr.ghx( SelectState, : ), oo_.dr.ghx( SelectState, : ) );
         A1S = A1Trans( SelectState, SelectState ).';
         A1S2 = spkron( A1S, A1S );
-        [ Tmpi, Tmpj, Tmps ] = find( A1S2 );
+        [ Tmpi, Tmpj, Tmps ] = vfind( A1S2 );
         A2i = [ A2i; Tmpi + 2*nEndo ];
         A2j = [ A2j; Tmpj + 2*nEndo ];
         A2s = [ A2s; Tmps ];
@@ -131,7 +131,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % Jdx3 = (nExo + nExo2 + 1):LengthXi;
 
         % B2( Idx1, Jdx1 ) = oo_.dr.ghu;
-        [ B2j, B2i, B2s ] = find( B1Trans );
+        [ B2j, B2i, B2s ] = vfind( B1Trans );
 
         % B2( Idx2, Jdx2 ) = 0.5 * oo_.dr.ghuu;
         [ Tmpi, Tmpj, Tmps ] = spfind( 0.5 * oo.dr.ghuu );
@@ -146,13 +146,13 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         B2s = [ B2s; Tmps ];
 
         % B2( Idx3, Jdx2 ) = spkron( oo_.dr.ghu( SelectState, : ), oo_.dr.ghu( SelectState, : ) );
-        [ Tmpi, Tmpj, Tmps ] = find( B1S2 );
+        [ Tmpi, Tmpj, Tmps ] = vfind( B1S2 );
         B2i = [ B2i; Tmpi + 2*nEndo ];
         B2j = [ B2j; Tmpj + nExo ];
         B2s = [ B2s; Tmps ];
 
         % B2( Idx3, Jdx3 ) = ( speye( nState * nState ) + commutation_sparse( nState, nState ) ) * spkron( oo_.dr.ghx( SelectState, : ), oo_.dr.ghu( SelectState, : ) );
-        [ Tmpi, Tmpj, Tmps ] = find( ( speye( nState2 ) + K_nState_nState ) * spkron( A1S, B1S ) );
+        [ Tmpi, Tmpj, Tmps ] = vfind( ( speye( nState2 ) + K_nState_nState ) * spkron( A1S, B1S ) );
         B2i = [ B2i; Tmpi + 2*nEndo ];
         B2j = [ B2j; Tmpj + nExo + nExo2 ];
         B2s = [ B2s; Tmps ];
@@ -164,7 +164,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
 
         % BCovXiB{i}( Jdx2, Jdx2 ) = dynareOBC_.Variance_exe;
-        [ Ci, Cj, Cs ] = find( ( speye( nExo2 ) + commutation_sparse( nExo, nExo ) ) * spkron( Sigma, Sigma ) );
+        [ Ci, Cj, Cs ] = vfind( ( speye( nExo2 ) + commutation_sparse( nExo, nExo ) ) * spkron( Sigma, Sigma ) );
         Ci = Ci + nExo;
         Cj = Cj + nExo;
         
@@ -172,7 +172,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         
     if Order2VarianceRequired
         
-        [ Vi, Vj, Vs ] = find( Sigma );
+        [ Vi, Vj, Vs ] = vfind( Sigma );
         [ Tmpi, Tmpj, Tmps ] = spkron( dynareOBC.Var_z1( SelectState, SelectState ), Sigma );
         Ui = [ Vi; Ci; Tmpi + nExo + nExo2 ];
         Uj = [ Vj; Cj; Tmpj + nExo + nExo2 ];
@@ -212,7 +212,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         A3s = [ A3s; Tmps ];
         
         k2 = k1 + nEndo;
-        [ Tmpi, Tmpj, Tmps ] = find( beta22 );
+        [ Tmpi, Tmpj, Tmps ] = vfind( beta22 );
         A3i = [ A3i; Tmpi + k1 ];
         A3j = [ A3j; Tmpj + k2 ];
         A3s = [ A3s; Tmps ];
@@ -230,7 +230,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         A3j = [ A3j; Tmpj ];
         A3s = [ A3s; Tmps ];
         
-        [ Tmpi, Tmpj, Tmps ] = find( A1S2 );
+        [ Tmpi, Tmpj, Tmps ] = vfind( A1S2 );
         A3i = [ A3i; Tmpi + k2 ];
         A3j = [ A3j; Tmpj + k2 ];
         A3s = [ A3s; Tmps ];
@@ -243,7 +243,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
         nState3 = nState2 * nState;
         T1 = sparse( nState3, nEndo );
         T1( :, SelectState ) = ( ( spkron( speye( nState2 ) + K_nState_nState, speye( nState ) ) + commutation_sparse( nState2, nState ) ) * spkron( A1S, B1S2 ) ) * IKVecSigma;
-        [ Tmpi, Tmpj, Tmps ] = find( T1 );
+        [ Tmpi, Tmpj, Tmps ] = vfind( T1 );
         A3i = [ A3i; Tmpi + k3 ];
         A3j = [ A3j; Tmpj ];
         A3s = [ A3s; Tmps ];

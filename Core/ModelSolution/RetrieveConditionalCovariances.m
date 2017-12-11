@@ -24,8 +24,8 @@ function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditiona
         % Jdx3 = (Offset3 + 1):LengthXi;
 
         % BCovXiB{i}( Jdx1, Jdx1 ) = Sigma;
-        [ Vi, Vj, Vs ] = find( Sigma );
-        [ Ci, Cj, Cs ] = find( dynareOBC.VarianceXiSkeleton );
+        [ Vi, Vj, Vs ] = vfind( Sigma );
+        [ Ci, Cj, Cs ] = vfind( dynareOBC.VarianceXiSkeleton );
             
         BCovXiB = cell( TM1, 1 );
         BCovXiBGlobal = cell( TM1, 1 );
