@@ -52,6 +52,10 @@ rm -f -r -d -- Extern/OPTI/Solvers/Documentation\ \+\ Licenses/nomad
 rm -f -r -d -- Extern/OPTI/Solvers/nomad.*
 rm -f -r -d -- Extern/OPTI/Solvers/opti_nomad.m
 
+rm -f -r -d -- Extern/OPTI/Solvers/Documentation\ \+\ Licenses/gsl
+rm -f -r -d -- Extern/OPTI/Solvers/gsl.*
+rm -f -r -d -- Extern/OPTI/Solvers/opti_gsl_nls.m
+
 rm -f -r -d -- Extern/OPTI/Solvers/mkltrnls.*
 rm -f -r -d -- Extern/OPTI/Solvers/opti_mkltrnls.m
 
