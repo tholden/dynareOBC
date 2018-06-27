@@ -1,9 +1,16 @@
 #!/bin/bash
+shopt -s globstar
 echo If you are running this for the first time on a machine, you should:
 echo 1. Create the folder ../../OptiMex containing the *.mexw* files found from the last release in the Extern/Opti/Solvers and Extern/Opti/Utilities folders.
 echo 2. Create the folders ../../ScipMex containing the *.mexw* files found from the last release in the Extern/OPTI_SCIP/Solvers folder.
 
 cd ..
+
+rm -f -r -d Extern/OPTI_SCIP
+mkdir Extern/OPTI_SCIP
+cd Extern/OPTI
+find . -name "*scip*" -print | tar -c -f - -T - | ( cd ../OPTI_SCIP; tar -xf -)
+cd ../..
 
 git submodule foreach git pull --recurse-submodules
 git submodule foreach git checkout master
@@ -47,8 +54,6 @@ rm -f Examples/SmetsWouters*/*.m
 rm -f Examples/SmetsWouters*/*.mat
 
 echo 2
-
-shopt -s globstar
 
 rm -f -r -d -- **/.git*
 
