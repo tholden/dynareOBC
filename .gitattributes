@@ -37,6 +37,7 @@
 .git*       text eol=lf
 
 *.bat       text eol=crlf
+*.reg       text eol=crlf
 
 *.mod       text=auto
 *.txt       text=auto
