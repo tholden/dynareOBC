@@ -6,7 +6,7 @@ function DLLInstalled = CheckMSVCRequirement( MajorVersion, DesiredBuild, Platfo
     end
     if Build < int32( DesiredBuild )
         try
-            Build = winqueryreg( 'HKEY_LOCAL_MACHINE', [ 'SOFTWARE\Wow6432Node\Microsoft\VisualStudio\' MajorVersion '\VC\Runtimes\' Platform '\' ], 'Version' );
+            Build = winqueryreg( 'HKEY_LOCAL_MACHINE', [ 'SOFTWARE\Wow6432Node\Microsoft\VisualStudio\' MajorVersion '\VC\Runtimes\' Platform '\' ], 'Bld' );
         catch
         end
     end
