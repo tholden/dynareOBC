@@ -31,7 +31,7 @@ function DLLInstalled = CheckMSVCRequirement( MajorVersion, DesiredBuild, Platfo
         fprintf( '\n' );
         disp( [ 'Running ' ExePath '.' ] );
         fprintf( '\n' );
-        system( [ 'start "Installing dynareOBC requirement" /wait "' dynareOBCPath '/Extern/Requirements/' ExePath '" /passive /norestart' ] );
+        system( [ 'start "Installing DynareOBC requirement" /wait "' dynareOBCPath '/Extern/Requirements/' ExePath '" /passive /norestart' ] );
         DLLInstalled = true;
     else
         DLLInstalled = false;
