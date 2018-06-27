@@ -4,6 +4,7 @@ function RestartMatlab( OriginalPath, CurrentFolder, InputFileName, varargin )
 
         fprintf( '\n' );
         disp( 'DynareOBC needs to restart MATLAB. DynareOBC will attempt to continue after MATLAB is restarted.' );
+        disp( 'If you are repeatedly seeing this message, please try restarting your machine.' );
         fprintf( '\n' );
         CancelString = input( 'Press return to continue, or c then return to cancel.', 's' );
         
