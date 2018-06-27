@@ -1,0 +1,20 @@
+PIs_ = PI_STEADY;
+PI_STARs_ = ( (1 - theta * (1 / PIs_)^(1 - varepsilon) ) / (1 - theta) )^(1/(1 - varepsilon));
+NUs_ = ( ( 1 - theta) / (1 - theta * PIs_ ^varepsilon) ) * PI_STARs_ ^(-varepsilon);
+Ws_ = A_STEADY * PI_STARs_ * ((varepsilon - 1) / varepsilon) * ( (1 - theta * beta_STEADY * PIs_ ^varepsilon)/(1 - theta * beta_STEADY * PIs_ ^(varepsilon-1)));
+Cs_ = (Ws_ /(psi * ((1/(1 - Sg_STEADY)) * NUs_/ A_STEADY)^vartheta))^(1/(1 + vartheta));
+Ys_ = (1 / (1 - Sg_STEADY)) * Cs_;
+
+PI_ = beta_STEADY;
+EPI_ = PI_;
+PI_STAR_ = ( (1 - theta * (1 / PI_)^(1 - varepsilon) ) / (1 - theta) )^(1/(1 - varepsilon));
+NU_ = ( ( 1 - theta) / (1 - theta * PI_ ^varepsilon) ) * PI_STAR_ ^(-varepsilon);
+W_ = A_STEADY * PI_STAR_ * ((varepsilon - 1) / varepsilon) * ( (1 - theta * beta_STEADY * PI_ ^varepsilon)/(1 - theta * beta_STEADY * PI_ ^(varepsilon-1)));
+C_ = (W_ /(psi * ((1/(1 - Sg_STEADY)) * NU_/ A_STEADY)^vartheta))^(1/(1 + vartheta));
+Y_ = (1 / (1 - Sg_STEADY)) * C_;
+G_ = Sg_STEADY * Y_;
+L_ = Y_ * NU_ / A_STEADY;
+MC_ = W_ / A_STEADY;
+R_ = 1;
+AUX1_ = W_ / A_STEADY * (Y_ /C_)/(1 - theta * beta_STEADY * PI_ ^varepsilon);
+AUX2_ = PI_STAR_ * (Y_ /C_)/(1 - theta * beta_STEADY * PI_ ^(varepsilon-1));
