@@ -322,7 +322,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     if dynareOBC.Global
         if dynareOBC.NoCubature
-            error( 'dynareOBC:GlobalNoCubature', 'You cannot specify both the NoCubature and the Global options.' );
+            error( 'dynareOBC:GlobalNoCubature', 'If specifying the Global option, you must also specify a cubature mode.' );
         end
         
         fprintf( '\n' );
