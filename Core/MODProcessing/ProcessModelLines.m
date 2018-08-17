@@ -2,10 +2,10 @@ function [ FileLines, TempCounter, MaxCounter, write_i ] = ProcessModelLines( li
     % fully support: max, min, abs
     % imperfect support: sign, <, >, <=, >=
     % no support: ==, !=
-    if ~isempty( strfind( line, '==' ) )
+    if ~isempty( strfind( line, '==' ) ) %#ok<STREMP> Supressing only because "contains" is still relatively new.
         error( 'dynareOBC:UnsupportedComparison', 'Error processing line:\n%s\ndynareOBC does not support ==.', line );
     end
-    if ~isempty( strfind( line, '!=' ) )
+    if ~isempty( strfind( line, '!=' ) ) %#ok<STREMP>
         error( 'dynareOBC:UnsupportedComparison', 'Error processing line:\n%s\ndynareOBC does not support !=.', line );
     end
     [ tagstart, tagend ] = regexp( line, '^\[.*?\]', 'once' );
