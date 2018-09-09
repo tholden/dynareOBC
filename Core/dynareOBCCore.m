@@ -353,7 +353,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if ~dynareOBC.NoCubature
         dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PeriodsOfUncertainty ] );
     end
-    dynareOBC.InternalIRFPeriods = max( dynareOBC.TimeToEscapeBounds, dynareOBC.TimeToReturnToSteadyState );
+    dynareOBC.InternalIRFPeriods = max( dynareOBC.TimeToEscapeBounds + 1, dynareOBC.TimeToReturnToSteadyState );
     if ~dynareOBC.SlowIRFs
         dynareOBC.InternalIRFPeriods = max( dynareOBC.InternalIRFPeriods, dynareOBC.IRFPeriods );
     end
