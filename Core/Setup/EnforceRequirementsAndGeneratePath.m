@@ -21,10 +21,10 @@ function EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder
             if strcmp( Architecture, 'PCWIN' )
                 warning( 'dynareOBC:Setup32Bit', 'DynareOBC is no longer supported on 32 bit MATLAB.\n While it may work (particularly if you have commercial solvers installed), absolutely no guarantees are made.\n We strongly recommend that you install a 64 bit version of MATLAB.' );
                 DLLInstalled = CheckMSVCRequirement( '12.0', 40660, 'x86', 'http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x86.exe', dynareOBCPath, '2013/vcredist_x86.exe', false ) || DLLInstalled;
-                DLLInstalled = CheckMSVCRequirement( '14.0', 26429, 'x86', 'https://aka.ms/vs/15/release/VC_redist.x86.exe', dynareOBCPath, '2017/vcredist_x86_26429.exe', false ) || DLLInstalled;
+                DLLInstalled = CheckMSVCRequirement( '14.0', 26706, 'x86', 'https://aka.ms/vs/15/release/VC_redist.x86.exe', dynareOBCPath, '2017/vcredist_x86_26429.exe', false ) || DLLInstalled;
                 DLLInstalled = CheckRequirement( 'F1CD4F9E-0AB7-4368-A89A-05967B173A55', 301990098, 'https://software.intel.com/sites/default/files/managed/47/ed/ww_ifort_redist_msi_2018.3.210.zip', dynareOBCPath, 'ww_ifort_redist_msi_2018.3.210.zip', 'ww_ifort_redist_ia32_2018.3.210.msi' ) || DLLInstalled;
             elseif strcmp( Architecture, 'PCWIN64' )
-                DLLInstalled = CheckMSVCRequirement( '14.0', 26429, 'x64', 'https://aka.ms/vs/15/release/VC_redist.x64.exe', dynareOBCPath, '2017/vcredist_x64_26429.exe', false ) || DLLInstalled;
+                DLLInstalled = CheckMSVCRequirement( '14.0', 26706, 'x64', 'https://aka.ms/vs/15/release/VC_redist.x64.exe', dynareOBCPath, '2017/vcredist_x64_26429.exe', false ) || DLLInstalled;
                 DLLInstalled = CheckRequirement( '8FFDB3FF-96BD-462B-A5AC-AA79D5DFA62C', 301990098, 'https://software.intel.com/sites/default/files/managed/47/ed/ww_ifort_redist_msi_2018.3.210.zip', dynareOBCPath, 'ww_ifort_redist_msi_2018.3.210.zip', 'ww_ifort_redist_intel64_2018.3.210.msi' ) || DLLInstalled;
             end
         catch
