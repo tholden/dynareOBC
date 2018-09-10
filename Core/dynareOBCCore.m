@@ -135,6 +135,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     else
         dynareOBC.ZeroParameterInserted = false;
     end
+    
+    for i = 1 : dynareOBC.NumberOfMax
+        [ FileLines, Indices ] = PerformInsertion( { [ 'parameters dynareOBCFlipParameter' int2str( i ) ';'] , [ 'dynareOBCFlipParameter' int2str( i ) '=0;' ] }, Indices.ModelStart, FileLines, Indices );
+        dynareOBC.MaxFuncIndices = dynareOBC.MaxFuncIndices + 2;
+    end
 
     FileText = strjoin( [ FileLines { [ 'stoch_simul(' LogLinearString 'order=1,irf=0,periods=0,nocorr,nofunctions,nomoments,nograph,nodisplay,noprint);' ] } ], '\n' );
     newmodfile = fopen( 'dynareOBCTemp2.mod', 'w' );
@@ -310,7 +315,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     CurrentNumVar = M_.endo_nbr;
     CurrentNumVarExo = M_.exo_nbr;
 
-    dynareOBC.OriginalNumParams = CurrentNumParams;
+    dynareOBC.OriginalNumParams = CurrentNumParams - dynareOBC.NumberOfMax;
     if dynareOBC.ZeroParameterInserted
         dynareOBC.OriginalNumParams = dynareOBC.OriginalNumParams - 1;
     end
@@ -346,7 +351,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     %% Generating the final mod file
 
     fprintf( '\n' );
-    disp( 'Generating the (probably) final mod file.' );
+    disp( 'Generating the final mod file.' );
     fprintf( '\n' );
     
     dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.AltPTest, dynareOBC.FullTest ] );
@@ -368,14 +373,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     dynareOBC = orderfields( dynareOBC );
 
-    PreAddShadowEquations_FileLines = FileLines;
-    PreAddShadowEquations_ToInsertBeforeModel = ToInsertBeforeModel;
-    PreAddShadowEquations_ToInsertInModelAtEnd = ToInsertInModelAtEnd;
-    PreAddShadowEquations_ToInsertInShocks = ToInsertInShocks;
-    PreAddShadowEquations_ToInsertInInitVal = ToInsertInInitVal;
-    
-    % error( 'TODO' );
-    
     % Insert new variables and equations etc.
 
     [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = ...
@@ -403,7 +400,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     %% Solution
 
     fprintf( '\n' );
-    disp( 'Making the (probably) final call to dynare, as a first step in solving the full model.' );
+    disp( 'Making the final call to dynare, as a first step in solving the full model.' );
     fprintf( '\n' );
 
     options_.solve_tolf = eps;
@@ -487,14 +484,40 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters( 1 : length( dynareOBC.EstimationParameterSelect ) );
     end
 
-    try
-        [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( ~dynareOBC.Estimation, M_, options_, oo_, dynareOBC );
-    catch ErrorStruct
-        if strcmp( ErrorStruct.identifier, 'dynareOBC:ConstantWrongSign' )
+    CurrentFlip = false( 1, dynareOBC.NumberOfMax );
+    FlipsTried = CurrentFlip;
+    RepeatModelSolution = true;
+    while RepeatModelSolution
+        RepeatModelSolution = false;
+        [ Info, M_, options_, oo_ , dynareOBC ] = ModelSolution( ( ~dynareOBC.Estimation ) && ( size( FlipsTried, 1 ) == 1 ), M_, options_, oo_, dynareOBC );
+        if Info == 19090714
+            if dynareOBC.Global
+                error( 'dynareOBC:GlobalConstantWrongSign', 'Global approximation does not currently support cases in which the risky steady state of one of the zero lower bounded variables has an unexpected sign.' );
+            end
+            fprintf( '\n' );
             disp( 'The risky steady state of one of the zero lower bounded variables had an unexpected sign.' );
-            error( 'TODO' );
-        else
-            rethrow( ErrorStruct );
+            disp( 'Attempting to approximate around an alternative point.' );
+            fprintf( '\n' );
+            RepeatModelSolution = true;
+            BadElements = dynareOBC.Constant( ( end - dynareOBC.NumberOfMax + 1 ) : end ) < 0;
+            BadElements = BadElements(:).';
+            NewFlip = xor( CurrentFlip, BadElements );
+            if ismember( NewFlip, FlipsTried, 'rows' )
+                error( 'dynareOBC:NonConvergenceConstantWrongSign', 'DynareOBC could not find a point to approximate around at which the risky steady states of the zero lower bounded variables were positive.' );
+            end
+            if isoctave || user_has_matlab_license( 'optimization_toolbox' )
+                options_.solve_algo = 0;
+            else
+                options_.solve_algo = 4;
+            end
+            options_.maxit = 100;
+            options_.steadystate_flag = 0;
+            [ M_, oo_, info ] = homotopy3( [ 4 * ones( dynareOBC.NumberOfMax, 1 ), ( M_.param_nbr - dynareOBC.NumberOfMax ) + ( 1 : dynareOBC.NumberOfMax ).', CurrentFlip.', NewFlip.' ], 10000, M_, options_, oo_ );
+            if info(1) ~= 0
+                error( 'dynareOBC:FlipAlternativeSteadyState', 'DynareOBC failed to find the steady-state of the model with the constraint(s) flipped.' );
+            end
+            CurrentFlip = NewFlip;
+            FlipsTried = [ FlipsTried; CurrentFlip ]; %#ok<AGROW>
         end
     end
 

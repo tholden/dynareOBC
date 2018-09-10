@@ -81,7 +81,8 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     dynareOBC.Constant = EmptySimulation.constant;
     
     if any( dynareOBC.Constant( ( end - dynareOBC.NumberOfMax + 1 ) : end ) < 0 )
-        error( 'dynareOBC:ConstantWrongSign', 'DynareOBC expected the risky steady state of all zero lower bounded variables to be positive.' );
+        Info = 19090714;
+        return
     end
     
     dynareOBC.SelectState = ( M.nstatic + 1 ):( M.nstatic + M.nspred );

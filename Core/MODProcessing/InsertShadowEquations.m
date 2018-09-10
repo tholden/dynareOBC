@@ -27,7 +27,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
         CurrentNumVar = CurrentNumVar + 1;
         dynareOBC.VarIndices_ZeroLowerBounded( i ) = CurrentNumVar;
         
-        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ';' ]; %#ok<*AGROW> % '+dynareOBCSum' string_i '_0;'
+        ToInsertInModelAtEnd{ end + 1 } = [ BoundedVarName '=(1-dynareOBCFlipParameter' string_i ')*(dynareOBCMaxArg' MaxLetter string_i '-dynareOBCMaxArg' MinLetter string_i ')+dynareOBCFlipParameter' string_i '*(dynareOBCMaxArg' MinLetter string_i '-dynareOBCMaxArg' MaxLetter string_i ');' ]; %#ok<*AGROW> % '+dynareOBCSum' string_i '_0;'
         ToInsertInInitVal{ end + 1 } = sprintf( '%s=%.17e;', BoundedVarName, SteadyStateBoundedVar );
 
         if dynareOBC.Global
@@ -56,7 +56,7 @@ function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShock
             BoundedVarName = LongRunBoundedVarName;
         end
         
-        FileLines{ dynareOBC.MaxFuncIndices( i ) } = [ '#dynareOBCMaxFunc' string_i '=dynareOBCMaxArg' MinLetter string_i '+' BoundedVarName ';' ];
+        FileLines{ dynareOBC.MaxFuncIndices( i ) } = [ '#dynareOBCMaxFunc' string_i '=(1-dynareOBCFlipParameter' string_i ')*dynareOBCMaxArg' MinLetter string_i '+dynareOBCFlipParameter' string_i '*dynareOBCMaxArg' MaxLetter string_i '+' BoundedVarName ';' ];
  
         varString = [ varString ';' ];
         ToInsertBeforeModel = [ ToInsertBeforeModel { varString } ];
