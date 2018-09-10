@@ -18,7 +18,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         
         MeanXiRel = - ConditionalStdDev .* PDFCDFRatioZiCutOff;
         MeanXi = MeanXiRel + UnconstrainedReturnPath;
-        VarXi = diag( ConditionalCovariance ) .* ( 1 - ZiCutOff .* PDFCDFRatioZiCutOff - PDFCDFRatioZiCutOff .* PDFCDFRatioZiCutOff );
+        VarXi = diag( ConditionalCovariance ) .* max( 0, 1 - ZiCutOff .* PDFCDFRatioZiCutOff - PDFCDFRatioZiCutOff .* PDFCDFRatioZiCutOff );
         
         CoordinateWeights = CDFZiCutOff;
         
@@ -30,22 +30,22 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         SamplingCovarianceCurrent = zeros( NPath, NPath );
         
         for i = 1 : NPath
-            if ( PDFZiCutOff( i ) == 0 ) || ( CDFZiCutOff( i ) == 0 )
+            if ( CDFZiCutOff( i ) == 0 ) || ( ( ConditionalCovariance( i, i ) < eps ) && ( UnconstrainedReturnPath( i ) > 0 ) )
                 CoordinateWeights( i ) = 0;
                 continue
             end
             % XiRel = norminv( CDFZCutOff( i ) * Ui ) * ConditionalStdDev( i );
             % Xi = XiRel + UnconstrainedReturnPath( i );
             SelectMi = [ ( 1 : ( i - 1 ) ), ( ( i + 1 ) : NPath ) ];
-            XiRelScaler = ConditionalCovariance( SelectMi, i ) / ConditionalCovariance( i, i );
+            XiRelScaler = ConditionalCovariance( SelectMi, i ) / max( eps, ConditionalCovariance( i, i ) );
             MeanXMi = UnconstrainedReturnPath( SelectMi ) + XiRelScaler * MeanXiRel( i );
-            VarXMi = VarXi( i ) * ( XiRelScaler * XiRelScaler.' ) + ConditionalCovariance( SelectMi, SelectMi ) - ( ConditionalCovariance( SelectMi, i ) * ConditionalCovariance( SelectMi, i ).' ) / ConditionalCovariance( i, i );
+            VarXMi = VarXi( i ) * ( XiRelScaler * XiRelScaler.' ) + ConditionalCovariance( SelectMi, SelectMi ) - ( ConditionalCovariance( SelectMi, i ) * ConditionalCovariance( SelectMi, i ).' ) / max( eps, ConditionalCovariance( i, i ) );
             CovXMiXi = XiRelScaler * VarXi( i );
             
             SamplingMeanCurrent( i ) = MeanXi( i );
             SamplingMeanCurrent( SelectMi ) = MeanXMi;
             
-            SamplingCovarianceCurrent( i ) = VarXi( i );
+            SamplingCovarianceCurrent( i, i ) = VarXi( i );
             SamplingCovarianceCurrent( SelectMi, SelectMi ) = VarXMi;
             SamplingCovarianceCurrent( SelectMi, i ) = CovXMiXi;
             SamplingCovarianceCurrent( i, SelectMi ) = CovXMiXi.';
