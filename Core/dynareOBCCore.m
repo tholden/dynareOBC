@@ -346,7 +346,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     %% Generating the final mod file
 
     fprintf( '\n' );
-    disp( 'Generating the final mod file.' );
+    disp( 'Generating the (probably) final mod file.' );
     fprintf( '\n' );
     
     dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.AltPTest, dynareOBC.FullTest ] );
@@ -368,6 +368,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     dynareOBC = orderfields( dynareOBC );
 
+    PreAddShadowEquations_FileLines = FileLines;
+    PreAddShadowEquations_ToInsertBeforeModel = ToInsertBeforeModel;
+    PreAddShadowEquations_ToInsertInModelAtEnd = ToInsertInModelAtEnd;
+    PreAddShadowEquations_ToInsertInShocks = ToInsertInShocks;
+    PreAddShadowEquations_ToInsertInInitVal = ToInsertInInitVal;
+    
+    % error( 'TODO' );
+    
     % Insert new variables and equations etc.
 
     [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = ...
@@ -395,7 +403,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     %% Solution
 
     fprintf( '\n' );
-    disp( 'Making the final call to dynare, as a first step in solving the full model.' );
+    disp( 'Making the (probably) final call to dynare, as a first step in solving the full model.' );
     fprintf( '\n' );
 
     options_.solve_tolf = eps;
@@ -479,7 +487,16 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         M_.params( dynareOBC.EstimationParameterSelect ) = EstimatedParameters( 1 : length( dynareOBC.EstimationParameterSelect ) );
     end
 
-    [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( ~dynareOBC.Estimation, M_, options_, oo_, dynareOBC );
+    try
+        [ Info, M_, options_, oo_ ,dynareOBC ] = ModelSolution( ~dynareOBC.Estimation, M_, options_, oo_, dynareOBC );
+    catch ErrorStruct
+        if strcmp( ErrorStruct.identifier, 'dynareOBC:ConstantWrongSign' )
+            disp( 'The risky steady state of one of the zero lower bounded variables had an unexpected sign.' );
+            error( 'TODO' );
+        else
+            rethrow( ErrorStruct );
+        end
+    end
 
     if Info ~= 0
         error( 'dynareOBC:FailedToSolve', 'DynareOBC failed to find a solution to the model.' );
