@@ -138,7 +138,7 @@ function dynareOBC( InputFileName, varargin )
 %       TimeToReturnToSteadyState, is used instead. 
 %     * TimeToReturnToSteadyState=INTEGER (default: 64) 
 %       The number of periods in which to verify that the constraints are not being violated. If this 
-%       is lower than TimeToEscapeBounds, or the requested number of IRF periods, or 
+%       is lower than TimeToEscapeBounds + 1, or the requested number of IRF periods, or 
 %       PeriodsOfUncertainty + 1, then that value will be used instead. 
 %     * MaxParametricSolutionDimension=INTEGER (default: 4) 
 %       If the simulation is at the bound for at most this number of periods divided by the number of 
