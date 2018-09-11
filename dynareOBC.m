@@ -211,10 +211,12 @@ function dynareOBC( InputFileName, varargin )
 % 	  FastCubature, QuasiMonteCarloLevel or GaussianCubatureDegree options are set. Since a cosine 
 % 	  windowing function is used, the effective number of periods of uncertainty is roughly half this 
 % 	  number. 
-% 	* ImportanceSampling 
-% 	  Invoking DynareOBC with this option causes DynareOBC to perform integration over future 
-% 	  uncertainty via importance sampling, with a proposal distribution that roughly approximates the 
-% 	  distribution of future paths conditional on hitting the bound. 
+% 	* ImportanceSamplingAccuracy=INTEGER (default: 14) 
+% 	  By default, DynareOBC performs integration over future uncertainty via importance sampling, with 
+% 	  a proposal distribution that roughly approximates the distribution of future paths conditional 
+% 	  on hitting the bound. This option controls the number of points used in the internal quasi-Monte 
+% 	  Carlo procedure for obtaining the proposal distribution. Setting this option to 0 disables 
+% 	  importance sampling. 
 %     * CubatureAcceleration 
 %       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature 
 %       rules towards their limit using Wynn's Epsilon algorithm. 
@@ -230,14 +232,16 @@ function dynareOBC( InputFileName, varargin )
 %       Specifies that the maximum acceptable change in the integrals is the given value, for quasi 
 %       Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables 
 %       some additional speed-ups. 
-%     * NoCubature 
-%       Ignored. Left in for backwards compatibility. 
 %     * MaxCubatureSerialLoop (default: 3) 
 %       Determines the maximum number of calls to the solution of the inner bounds problem before a 
 %       loop is parallelized. 
 %     * RetrieveConditionalCovariancesParallelizationCutOff (default: 256) 
 %       Determines the size of matrix beyond which we parallelize certain loops involved in 
 %       calculating the covariance of the random variables over which we perform cubature. 
+%     * ImportanceSampling 
+%       Ignored. Left in for backwards compatibility. 
+%     * NoCubature 
+%       Ignored. Left in for backwards compatibility. 
 %  
 % * For controlling accuracy 
 %     * FirstOrderAroundRSS 
