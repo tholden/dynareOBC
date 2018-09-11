@@ -56,6 +56,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.FullHorizon = false;
     end
     
+    if dynareOBC.ImportanceSamplingAccuracy == 0
+        dynareOBC.ImportanceSampling = false;
+    else
+        dynareOBC.ImportanceSamplingAccuracy = max( [ dynareOBC.ImportanceSamplingAccuracy, dynareOBC.GaussianCubatureDegree + 2, dynareOBC.QuasiMonteCarloLevel + 2 ] );
+    end
+    
     [ LogLinear, dynareOBC ] = ProcessStochSimulCommand( StochSimulCommand, dynareOBC );
     if dynareOBC.OrderOverride > 0
         dynareOBC.Order = dynareOBC.OrderOverride;

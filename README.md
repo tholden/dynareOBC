@@ -130,8 +130,8 @@ Note:
       Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one, when `QuasiMonteCarloLevel` is positive. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
 	  Controls the number of periods of uncertainty over which DynareOBC integrates when one of the `FastCubature`, `QuasiMonteCarloLevel` or `GaussianCubatureDegree` options are set. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
-	* `ImportanceSampling`
-	  Invoking DynareOBC with this option causes DynareOBC to perform integration over future uncertainty via importance sampling, with a proposal distribution that roughly approximates the distribution of future paths conditional on hitting the bound.
+	* `ImportanceSamplingAccuracy=INTEGER` (default: `14`)
+	  By default, DynareOBC performs integration over future uncertainty via importance sampling, with a proposal distribution that roughly approximates the distribution of future paths conditional on hitting the bound. This option controls the number of points used in the internal quasi-Monte Carlo procedure for obtaining the proposal distribution. Setting this option to `0` disables importance sampling.
     * `CubatureAcceleration`
       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature rules towards their limit using Wynn's Epsilon algorithm.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
@@ -140,12 +140,14 @@ Note:
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the INTEGER largest eigenvalues of the covariance matrix to zero.
     * `CubatureTolerance=FLOAT` (default: `1e-6`)
       Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables some additional speed-ups.
-    * `NoCubature`
-      Ignored. Left in for backwards compatibility.
     * `MaxCubatureSerialLoop` (default: `3`)
       Determines the maximum number of calls to the solution of the inner bounds problem before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)
       Determines the size of matrix beyond which we parallelize certain loops involved in calculating the covariance of the random variables over which we perform cubature.
+    * `ImportanceSampling`
+      Ignored. Left in for backwards compatibility.
+    * `NoCubature`
+      Ignored. Left in for backwards compatibility.
 
 * **For controlling accuracy**
     * `FirstOrderAroundRSS`

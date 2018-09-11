@@ -3,6 +3,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
     
     if size( RootConditionalCovariance, 2 ) == 0
+        y = dynareOBC.ZeroVecS;
         return
     end
     
@@ -62,7 +63,71 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         SamplingCovariance = SamplingCovariance / SumCoordinateWeights;
         SamplingCovariance = SamplingCovariance - SamplingMean * SamplingMean.';
         
+        SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, 0, ( 1 + sum( CoordinateWeights > 0 ) ) * dynareOBC.MaxCubatureDimension );
+        
+        RootConditionalCovarianceProduct = RootConditionalCovariance.' * RootConditionalCovariance;
+        
+        StandardizedSamplingRootCovariance = [ sqrt( eps ) * eye( size( RootConditionalCovarianceProduct ) ), RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * SamplingRootCovariance ) ];
+        
+        % StandardizedSamplingRootCovariance.' = Q * R
+        % StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance.' = R.' * Q.' * Q * R = R.' * R
+        
+        [ ~, R ] = qr( StandardizedSamplingRootCovariance.', 0 );
+        
+        StandardizedSamplingRootCovariance = R.';
+        
+        StandardizedSamplingMean = RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * ( SamplingMean - UnconstrainedReturnPath ) );
+        
+        % ProjectionMatrix = RootConditionalCovarianceProduct * ( RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' ) );
+        % UnconstrainedReturnPath + RootConditionalCovariance * ( StandardizedSamplingMean + StandardizedSamplingRootCovariance * z ) = UnconstrainedReturnPath + ProjectionMatrix * ( SamplingMean + SamplingRootCovariance * w - UnconstrainedReturnPath )
+        
+        % SamplingMean = UnconstrainedReturnPath + RootConditionalCovariance * StandardizedSamplingMean;
+        SamplingRootCovariance = RootConditionalCovariance * StandardizedSamplingRootCovariance;
+        
+        CubatureOrder = dynareOBC.ImportanceSamplingAccuracy;
+        CubatureOrderP1 = CubatureOrder + 1;
+        
+        NumPoints = 2 .^ CubatureOrderP1 - 1;
+        CubaturePoints = SobolSequence( size( StandardizedSamplingRootCovariance, 2 ), NumPoints );
+        
+        StandardizedPoints = bsxfun( @plus, StandardizedSamplingMean, StandardizedSamplingRootCovariance * CubaturePoints );
+        Points = bsxfun( @plus, UnconstrainedReturnPath, RootConditionalCovariance * StandardizedPoints );
+        
+        BadPoints = all( Points > 0 );
+        
+        CubaturePoints( :, BadPoints ) = [];
+        StandardizedPoints( :, BadPoints ) = [];
+        Points( :, BadPoints ) = [];
+        
+        LLTrue = -0.5 * ( sum( log( eig( RootConditionalCovarianceProduct ) ) ) + sum( StandardizedPoints .* StandardizedPoints ) );
+        LLSampling = -0.5 * ( sum( log( eig( SamplingRootCovariance.' * SamplingRootCovariance ) ) ) + sum( CubaturePoints .* CubaturePoints ) );
+        
+        CubatureWeights = exp( LLTrue - LLSampling ); % min( 1, exp( LLTrue - LLSampling ) );
+        CubatureWeights = CubatureWeights / sum( CubatureWeights );
+        
+        SamplingMean = Points * CubatureWeights.';
+        SamplingCovariance = bsxfun( @minus, Points, SamplingMean );
+        SamplingCovariance = bsxfun( @times, SamplingCovariance, sqrt( CubatureWeights ) );
+        SamplingCovariance = SamplingCovariance * SamplingCovariance.';
+        
         SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
+        
+        StandardizedSamplingRootCovariance = [ sqrt( eps ) * eye( size( RootConditionalCovarianceProduct ) ), RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * SamplingRootCovariance ) ];
+        
+        % StandardizedSamplingRootCovariance.' = Q * R
+        % StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance.' = R.' * Q.' * Q * R = R.' * R
+        
+        [ ~, R ] = qr( StandardizedSamplingRootCovariance.', 0 );
+        
+        StandardizedSamplingRootCovariance = R.';
+        
+        StandardizedSamplingMean = RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * ( SamplingMean - UnconstrainedReturnPath ) );
+        
+        % ProjectionMatrix = RootConditionalCovarianceProduct * ( RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' ) );
+        % UnconstrainedReturnPath + RootConditionalCovariance * ( StandardizedSamplingMean + StandardizedSamplingRootCovariance * z ) = UnconstrainedReturnPath + ProjectionMatrix * ( SamplingMean + SamplingRootCovariance * w - UnconstrainedReturnPath )
+        
+        % SamplingMean = UnconstrainedReturnPath + RootConditionalCovariance * StandardizedSamplingMean;
+        SamplingRootCovariance = RootConditionalCovariance * StandardizedSamplingRootCovariance;
         
     else
         SamplingMean = UnconstrainedReturnPath;
@@ -71,6 +136,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     
     d = size( SamplingRootCovariance, 2 );
     if d == 0
+        y = dynareOBC.ZeroVecS;
         return
     end
     
@@ -110,25 +176,17 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         end
     end
     
-    Points = bsxfun( @plus, SamplingMean, SamplingRootCovariance * CubaturePoints );
-    
     if dynareOBC.ImportanceSampling
-        Projection = SamplingRootCovariance * ( ( SamplingRootCovariance.' * SamplingRootCovariance ) \ SamplingRootCovariance.' );
-        Offset = SamplingMean - Projection * SamplingMean;
-        ProjectedMean = Offset + Projection * UnconstrainedReturnPath;
-        ProjectedRootCovariance = Projection * RootConditionalCovariance;
-        ProjectedCovariance = ProjectedRootCovariance * ProjectedRootCovariance.';
-        ProjectedRootCovariance = ObtainRootConditionalCovariance( ProjectedCovariance, 0, d );
-        assert( size( ProjectedRootCovariance, 2 ) == d, 'dynareOBC:ImportanceSamplingProjectionFailure', 'A projection did not work as expected during importance sampling.' );
+        StandardizedPoints = bsxfun( @plus, StandardizedSamplingMean, StandardizedSamplingRootCovariance * CubaturePoints );
+        Points = bsxfun( @plus, UnconstrainedReturnPath, RootConditionalCovariance * StandardizedPoints );
         
-        ProjectedRootCovarianceProduct = ProjectedRootCovariance.' * ProjectedRootCovariance;
-        ProjectedPoints = ProjectedRootCovarianceProduct \ ( ProjectedRootCovariance.' * bsxfun( @minus, Points, ProjectedMean ) );
-        
-        LLTrue = -0.5 * ( sum( log( eig( ProjectedRootCovarianceProduct ) ) ) + sum( ProjectedPoints .* ProjectedPoints ) );
+        LLTrue = -0.5 * ( sum( log( eig( RootConditionalCovarianceProduct ) ) ) + sum( StandardizedPoints .* StandardizedPoints ) );
         LLSampling = -0.5 * ( sum( log( eig( SamplingRootCovariance.' * SamplingRootCovariance ) ) ) + sum( CubaturePoints .* CubaturePoints ) );
         
-        WeightAdjustment = min( 1, exp( LLTrue - LLSampling ) );
+        WeightAdjustment = exp( LLTrue - LLSampling ); % min( 1, exp( LLTrue - LLSampling ) );
         CubatureWeights = bsxfun( @times, CubatureWeights, WeightAdjustment(:) );
+    else
+        Points = bsxfun( @plus, SamplingMean, SamplingRootCovariance * CubaturePoints );
     end
     
     if nargin > 6
