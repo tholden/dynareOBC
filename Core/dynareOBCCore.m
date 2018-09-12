@@ -284,6 +284,10 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     else
         ToInsertInModelAtStart = { };
     end
+    
+    for i = 1 : dynareOBC.NumberOfMax
+        dynareOBC.EndoVariables{ end + 1 } = [ 'dynareOBCZeroLowerBounded' int2str( i ) ];
+    end
 
     % Common file changes
 
