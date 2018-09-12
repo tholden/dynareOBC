@@ -139,7 +139,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         CubatureWeights = exp( LLTrue - LLSampling ) / NumPoints; % min( 1, exp( LLTrue - LLSampling ) / NumPoints );
         ConstraintProb  = sum( CubatureWeights );
         
-        if ConstraintProb < sqrt( eps )
+        if ConstraintProb < dynareOBC.ImportanceSamplingMinConstraintProbability
             y = SolveBoundsProblem( UnconstrainedReturnPath );
             return
         end

@@ -132,6 +132,8 @@ Note:
 	  Controls the number of periods of uncertainty over which DynareOBC integrates when one of the `FastCubature`, `QuasiMonteCarloLevel` or `GaussianCubatureDegree` options are set. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
 	* `ImportanceSamplingAccuracy=INTEGER` (default: `12`)
 	  By default, DynareOBC performs integration over future uncertainty via importance sampling, with a proposal distribution that roughly approximates the distribution of future paths conditional on hitting the bound. This option controls the number of points used in the internal quasi-Monte Carlo procedure for obtaining the proposal distribution. Setting this option to `0` disables importance sampling.
+	* `ImportanceSamplingMinConstraintProbability=FLOAT` (default: `0.0001`)
+	  If the probability of hitting the constraint infuture is approximated as being below this level in a period during simulation, then DynareOBC assumes it definitely will not be hit.
     * `CubatureAcceleration`
       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature rules towards their limit using Wynn's Epsilon algorithm.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)

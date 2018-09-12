@@ -26,6 +26,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'IgnoreBoundFailures', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'ImportanceSampling', true );
     dynareOBC = SetDefaultOption( dynareOBC, 'ImportanceSamplingAccuracy', 12 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'ImportanceSamplingMinConstraintProbability', 0.0001 );
     dynareOBC = SetDefaultOption( dynareOBC, 'InitialStateFile', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'IntegerTolerance', sqrt( sqrt( eps ) ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
