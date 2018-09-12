@@ -3,7 +3,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, FirstOrderSimulation );
     
     if size( RootConditionalCovariance, 2 ) == 0
-        y = dynareOBC.ZeroVecS;
+        y = SolveBoundsProblem( UnconstrainedReturnPath );
         return
     end
     
@@ -63,18 +63,31 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         SamplingCovariance = SamplingCovariance / SumCoordinateWeights;
         SamplingCovariance = SamplingCovariance - SamplingMean * SamplingMean.';
         
-        SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, 0, ( 1 + sum( CoordinateWeights > 0 ) ) * dynareOBC.MaxCubatureDimension );
-        
         RootConditionalCovarianceProduct = RootConditionalCovariance.' * RootConditionalCovariance;
         
-        StandardizedSamplingRootCovariance = [ sqrt( eps ) * eye( size( RootConditionalCovarianceProduct ) ), RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * SamplingRootCovariance ) ];
+        SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, 0, size( SamplingCovariance, 2 ) );
         
-        % StandardizedSamplingRootCovariance.' = Q * R
-        % StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance.' = R.' * Q.' * Q * R = R.' * R
+        StandardizedSamplingRootCovariance = RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * SamplingRootCovariance );
         
-        [ ~, R ] = qr( StandardizedSamplingRootCovariance.', 0 );
+        % StandardizedSamplingRootCovariance = U * D * V'
+        % StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance.' = U * D * V' * V * D * U' = U * D * D * U'
         
-        StandardizedSamplingRootCovariance = R.';
+        [ U, D ] = svd( StandardizedSamplingRootCovariance, 'econ' );
+        if isreal( U )
+            diagD = diag( D );
+            max_diagD = max( diagD );
+            diagD( diagD < dynareOBC.CubaturePruningCutOff * max_diagD ) = 0;
+            diagD( 1 : end - dynareOBC.MaxCubatureDimension ) = 0;
+            IDv = diagD > sqrt( eps );
+            StandardizedSamplingRootCovariance = U( :, IDv ) * diag( diagD( IDv ) );
+        else
+            StandardizedSamplingRootCovariance = ObtainRootConditionalCovariance( StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
+        end
+        
+        if size( StandardizedSamplingRootCovariance, 2 ) == 0
+            y = SolveBoundsProblem( UnconstrainedReturnPath );
+            return
+        end
         
         StandardizedSamplingMean = RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * ( SamplingMean - UnconstrainedReturnPath ) );
         
@@ -93,33 +106,74 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         StandardizedPoints = bsxfun( @plus, StandardizedSamplingMean, StandardizedSamplingRootCovariance * CubaturePoints );
         Points = bsxfun( @plus, UnconstrainedReturnPath, RootConditionalCovariance * StandardizedPoints );
         
+        SamplingRootCovarianceProduct = SamplingRootCovariance.' * SamplingRootCovariance;
+        
+        AltStandardizedRootConditionalCovariance = [ sqrt( eps ) * eye( size( SamplingRootCovarianceProduct ) ), SamplingRootCovarianceProduct \ ( SamplingRootCovariance.' * RootConditionalCovariance ) ];
+        
+        % AltStandardizedRootConditionalCovariance.' = Q * R
+        % AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' = R.' * Q.' * Q * R = R.' * R
+        
+        [ ~, R ] = qr( AltStandardizedRootConditionalCovariance.', 0 );
+        
+        AltStandardizedRootConditionalCovariance = R.';
+        
+        AltStandardizedUnconstrainedReturnPath = SamplingRootCovarianceProduct \ ( SamplingRootCovariance.' * ( - RootConditionalCovariance * StandardizedSamplingMean ) );
+                
         BadPoints = all( Points > 0 );
         
         CubaturePoints( :, BadPoints ) = [];
-        StandardizedPoints( :, BadPoints ) = [];
         Points( :, BadPoints ) = [];
         
-        LLTrue = -0.5 * ( sum( log( eig( RootConditionalCovarianceProduct ) ) ) + sum( StandardizedPoints .* StandardizedPoints ) );
-        LLSampling = -0.5 * ( sum( log( eig( SamplingRootCovariance.' * SamplingRootCovariance ) ) ) + sum( CubaturePoints .* CubaturePoints ) );
+        % Points = UnconstrainedReturnPath + RootConditionalCovariance * StandardizedSamplingMean + SamplingRootCovariance * CubaturePoints
+        % SamplingRootCovarianceProduct \ SamplingRootCovariance.' * ( Points - UnconstrainedReturnPath - RootConditionalCovariance * StandardizedSamplingMean ) = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * SamplingRootCovariance * CubaturePoints = CubaturePoints
+        % Transformed True Mean = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * ( UnconstrainedReturnPath - UnconstrainedReturnPath - RootConditionalCovariance * StandardizedSamplingMean ) = AltStandardizedUnconstrainedReturnPath
+        % Transformed True RootCov = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * RootConditionalCovariance = AltStandardizedRootConditionalCovariance
+        % Points ~ N( UnconstrainedReturnPath, RootConditionalCovariance * RootConditionalCovariance.' )
+        % CubaturePoints ~ N( AltStandardizedUnconstrainedReturnPath, AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' )
         
-        CubatureWeights = exp( LLTrue - LLSampling ); % min( 1, exp( LLTrue - LLSampling ) );
-        CubatureWeights = CubatureWeights / sum( CubatureWeights );
+        StandardizedCubaturePoints = AltStandardizedRootConditionalCovariance \ bsxfun( @minus, CubaturePoints, AltStandardizedUnconstrainedReturnPath );
+        
+        LLTrue = -0.5 * ( sum( log( eig( AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' ) ) ) + sum( StandardizedCubaturePoints .* StandardizedCubaturePoints ) );
+        LLSampling = -0.5 * sum( CubaturePoints .* CubaturePoints );
+        
+        CubatureWeights = exp( LLTrue - LLSampling ) / NumPoints; % min( 1, exp( LLTrue - LLSampling ) / NumPoints );
+        ConstraintProb  = sum( CubatureWeights );
+        
+        if ConstraintProb < sqrt( eps )
+            y = SolveBoundsProblem( UnconstrainedReturnPath );
+            return
+        end
+        
+        CubatureWeights = CubatureWeights / ConstraintProb;
         
         SamplingMean = Points * CubatureWeights.';
         SamplingCovariance = bsxfun( @minus, Points, SamplingMean );
         SamplingCovariance = bsxfun( @times, SamplingCovariance, sqrt( CubatureWeights ) );
         SamplingCovariance = SamplingCovariance * SamplingCovariance.';
         
-        SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
+        SamplingRootCovariance = ObtainRootConditionalCovariance( SamplingCovariance, 0, size( SamplingCovariance, 2 ) );
         
-        StandardizedSamplingRootCovariance = [ sqrt( eps ) * eye( size( RootConditionalCovarianceProduct ) ), RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * SamplingRootCovariance ) ];
+        StandardizedSamplingRootCovariance = RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * SamplingRootCovariance );
         
-        % StandardizedSamplingRootCovariance.' = Q * R
-        % StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance.' = R.' * Q.' * Q * R = R.' * R
+        % StandardizedSamplingRootCovariance = U * D * V'
+        % StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance.' = U * D * V' * V * D * U' = U * D * D * U'
         
-        [ ~, R ] = qr( StandardizedSamplingRootCovariance.', 0 );
+        [ U, D ] = svd( StandardizedSamplingRootCovariance, 'econ' );
+        if isreal( U )
+            diagD = diag( D );
+            max_diagD = max( diagD );
+            diagD( diagD < dynareOBC.CubaturePruningCutOff * max_diagD ) = 0;
+            diagD( 1 : end - dynareOBC.MaxCubatureDimension ) = 0;
+            IDv = diagD > sqrt( eps );
+            StandardizedSamplingRootCovariance = U( :, IDv ) * diag( diagD( IDv ) );
+        else
+            StandardizedSamplingRootCovariance = ObtainRootConditionalCovariance( StandardizedSamplingRootCovariance * StandardizedSamplingRootCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
+        end
         
-        StandardizedSamplingRootCovariance = R.';
+        if size( StandardizedSamplingRootCovariance, 2 ) == 0
+            y = SolveBoundsProblem( UnconstrainedReturnPath );
+            return
+        end
         
         StandardizedSamplingMean = RootConditionalCovarianceProduct \ ( RootConditionalCovariance.' * ( SamplingMean - UnconstrainedReturnPath ) );
         
@@ -136,7 +190,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     
     d = size( SamplingRootCovariance, 2 );
     if d == 0
-        y = dynareOBC.ZeroVecS;
+        y = SolveBoundsProblem( UnconstrainedReturnPath );
         return
     end
     
@@ -180,8 +234,30 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         StandardizedPoints = bsxfun( @plus, StandardizedSamplingMean, StandardizedSamplingRootCovariance * CubaturePoints );
         Points = bsxfun( @plus, UnconstrainedReturnPath, RootConditionalCovariance * StandardizedPoints );
         
-        LLTrue = -0.5 * ( sum( log( eig( RootConditionalCovarianceProduct ) ) ) + sum( StandardizedPoints .* StandardizedPoints ) );
-        LLSampling = -0.5 * ( sum( log( eig( SamplingRootCovariance.' * SamplingRootCovariance ) ) ) + sum( CubaturePoints .* CubaturePoints ) );
+        SamplingRootCovarianceProduct = SamplingRootCovariance.' * SamplingRootCovariance;
+        
+        AltStandardizedRootConditionalCovariance = [ sqrt( eps ) * eye( size( SamplingRootCovarianceProduct ) ), SamplingRootCovarianceProduct \ ( SamplingRootCovariance.' * RootConditionalCovariance ) ];
+        
+        % AltStandardizedRootConditionalCovariance.' = Q * R
+        % AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' = R.' * Q.' * Q * R = R.' * R
+        
+        [ ~, R ] = qr( AltStandardizedRootConditionalCovariance.', 0 );
+        
+        AltStandardizedRootConditionalCovariance = R.';
+        
+        AltStandardizedUnconstrainedReturnPath = SamplingRootCovarianceProduct \ ( SamplingRootCovariance.' * ( - RootConditionalCovariance * StandardizedSamplingMean ) );
+                
+        % Points = UnconstrainedReturnPath + RootConditionalCovariance * StandardizedSamplingMean + SamplingRootCovariance * CubaturePoints
+        % SamplingRootCovarianceProduct \ SamplingRootCovariance.' * ( Points - UnconstrainedReturnPath - RootConditionalCovariance * StandardizedSamplingMean ) = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * SamplingRootCovariance * CubaturePoints = CubaturePoints
+        % Transformed True Mean = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * ( UnconstrainedReturnPath - UnconstrainedReturnPath - RootConditionalCovariance * StandardizedSamplingMean ) = AltStandardizedUnconstrainedReturnPath
+        % Transformed True RootCov = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * RootConditionalCovariance = AltStandardizedRootConditionalCovariance
+        % Points ~ N( UnconstrainedReturnPath, RootConditionalCovariance * RootConditionalCovariance.' )
+        % CubaturePoints ~ N( AltStandardizedUnconstrainedReturnPath, AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' )
+        
+        StandardizedCubaturePoints = AltStandardizedRootConditionalCovariance \ bsxfun( @minus, CubaturePoints, AltStandardizedUnconstrainedReturnPath );
+        
+        LLTrue = -0.5 * ( sum( log( eig( AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' ) ) ) + sum( StandardizedCubaturePoints .* StandardizedCubaturePoints ) );
+        LLSampling = -0.5 * sum( CubaturePoints .* CubaturePoints );
         
         WeightAdjustment = exp( LLTrue - LLSampling ); % min( 1, exp( LLTrue - LLSampling ) );
         CubatureWeights = bsxfun( @times, CubatureWeights, WeightAdjustment(:) );
