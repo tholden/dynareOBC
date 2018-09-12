@@ -220,13 +220,10 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         [ CubatureWeightsCurrent, CubaturePoints, NumPointsCurrent ] = fwtpts( d, CubatureOrder );
         CubatureWeights = zeros( NumPointsCurrent, CubatureOrderP1 );
         CubatureWeights( :, end ) = CubatureWeightsCurrent;
-        NumPoints = zeros( 1, CubatureOrderP1 );
-        NumPoints( end ) = NumPointsCurrent;
         for i = 1 : CubatureOrder
             CubatureWeightsCurrent = fwtpts( d, i - 1 );
             NumPointsCurrent = length( CubatureWeightsCurrent );
             CubatureWeights( 1:NumPointsCurrent, i ) = CubatureWeightsCurrent;
-            NumPoints( i ) = NumPointsCurrent;
         end
     end
     
@@ -264,6 +261,12 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     else
         Points = bsxfun( @plus, SamplingMean, SamplingRootCovariance * CubaturePoints );
     end
+    
+    BadPoints = all( Points > 0 );
+
+    Points( :, BadPoints ) = [];
+    CubatureWeights( BadPoints, : ) = [];
+    NumPoints = sum( CubatureWeights > 0 );
     
     if nargin > 6
         p = TimedProgressBar( NumPoints( end ), 20, varargin{:} );
