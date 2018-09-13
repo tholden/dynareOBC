@@ -119,10 +119,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         
         AltStandardizedUnconstrainedReturnPath = SamplingRootCovarianceProduct \ ( SamplingRootCovariance.' * ( - RootConditionalCovariance * StandardizedSamplingMean ) );
                 
-        BadPoints = all( Points > 0 );
-        
-        CubaturePoints( :, BadPoints ) = [];
-        Points( :, BadPoints ) = [];
+        GoodPoints = any( Points < 0 );
         
         % Points = UnconstrainedReturnPath + RootConditionalCovariance * StandardizedSamplingMean + SamplingRootCovariance * CubaturePoints
         % SamplingRootCovarianceProduct \ SamplingRootCovariance.' * ( Points - UnconstrainedReturnPath - RootConditionalCovariance * StandardizedSamplingMean ) = SamplingRootCovarianceProduct \ SamplingRootCovariance.' * SamplingRootCovariance * CubaturePoints = CubaturePoints
@@ -136,7 +133,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         LLTrue = -0.5 * ( sum( log( eig( AltStandardizedRootConditionalCovariance * AltStandardizedRootConditionalCovariance.' ) ) ) + sum( StandardizedCubaturePoints .* StandardizedCubaturePoints ) );
         LLSampling = -0.5 * sum( CubaturePoints .* CubaturePoints );
         
-        CubatureWeights = exp( LLTrue - LLSampling ) / NumPoints; % min( 1, exp( LLTrue - LLSampling ) / NumPoints );
+        CubatureWeights = exp( LLTrue - LLSampling ) .* GoodPoints / NumPoints; % min( 1, exp( LLTrue - LLSampling ) / NumPoints );
         ConstraintProb  = sum( CubatureWeights );
         
         if ConstraintProb < dynareOBC.ImportanceSamplingMinConstraintProbability
