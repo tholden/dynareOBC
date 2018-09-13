@@ -296,8 +296,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
 
     if PositiveCubatureTolerance
         TmpNumPoints = NumPoints;
-        TmpNumPoints( end ) = MaxCubatureSerialLoop;
-        iMin = find( TmpNumPoints >= MaxCubatureSerialLoop, 1 );
+        TmpNumPoints( end ) = MaxCubatureSerialLoop + 1;
+        iMin = find( TmpNumPoints > MaxCubatureSerialLoop, 1 );
     else
         iMin = iMax;
     end
