@@ -139,7 +139,7 @@ Note:
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
       Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
-      The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the INTEGER largest eigenvalues of the covariance matrix to zero.
+      The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the `INTEGER` largest eigenvalues of the covariance matrix to zero.
     * `CubatureTolerance=FLOAT` (default: `1e-6`)
       Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables some additional speed-ups.
     * `MaxCubatureSerialLoop` (default: `3`)
