@@ -210,12 +210,15 @@ OPTIONS (NOT CASE SENSITIVE!) include:
 	  FastCubature, QuasiMonteCarloLevel or GaussianCubatureDegree options are set. Since a cosine 
 	  windowing function is used, the effective number of periods of uncertainty is roughly half this 
 	  number. 
-	* ImportanceSamplingAccuracy=INTEGER (default: 14) 
+	* ImportanceSamplingAccuracy=INTEGER (default: 12) 
 	  By default, DynareOBC performs integration over future uncertainty via importance sampling, with 
 	  a proposal distribution that roughly approximates the distribution of future paths conditional 
 	  on hitting the bound. This option controls the number of points used in the internal quasi-Monte 
 	  Carlo procedure for obtaining the proposal distribution. Setting this option to 0 disables 
 	  importance sampling. 
+	* ImportanceSamplingMinConstraintProbability=FLOAT (default: 0.0001) 
+	  If the probability of hitting the constraint infuture is approximated as being below this level 
+	  in a period during simulation, then DynareOBC assumes it definitely will not be hit. 
     * CubatureAcceleration 
       When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature 
       rules towards their limit using Wynn's Epsilon algorithm. 
@@ -231,7 +234,7 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       Specifies that the maximum acceptable change in the integrals is the given value, for quasi 
       Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables 
       some additional speed-ups. 
-    * MaxCubatureSerialLoop (default: 3) 
+    * MaxCubatureSerialLoop (default: 2) 
       Determines the maximum number of calls to the solution of the inner bounds problem before a 
       loop is parallelized. 
     * RetrieveConditionalCovariancesParallelizationCutOff (default: 256) 
@@ -249,11 +252,11 @@ OPTIONS (NOT CASE SENSITIVE!) include:
     * FirstOrderAroundMean 
       Takes a linear approximation around the ergodic mean of the non-linear model. If specifying 
       this option, you should set order=2 or order=3 in your mod file. 
-    * FirstOrderConditionalCovariance 
-      When order>1 (possibly with FirstOrderAroundRSS or FirstOrderAroundMean), by default, 
-      DynareOBC uses a second order approximation of the conditional covariance to determine the 
-      space of paths to integrate over. This option specifies that a first order approximation 
-      should be used instead. 
+    * SecondOrderConditionalCovariance 
+      Even when order>1, by default, DynareOBC uses a first order approximation of the conditional 
+      covariance to determine the space of paths to integrate over. This option specifies that a 
+      second order approximation should be used instead. This requires order>1 without 
+      FirstOrderAroundRSS or FirstOrderAroundMean. 
     * MLVSimulationMode=0|1|2|3 (default: 0) 
       If MLVSimulationMode=0, DynareOBC does not attempt to simulate the path of model local 
       variables. 
