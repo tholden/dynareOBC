@@ -156,8 +156,8 @@ Note:
       Takes a linear approximation around the risky steady state of the non-linear model. If specifying this option, you should set `order=2` or `order=3` in your mod file.
     * `FirstOrderAroundMean`
       Takes a linear approximation around the ergodic mean of the non-linear model. If specifying this option, you should set `order=2` or `order=3` in your mod file.
-    * `FirstOrderConditionalCovariance`
-      When `order>1` (possibly with `FirstOrderAroundRSS` or `FirstOrderAroundMean`), by default, DynareOBC uses a second order approximation of the conditional covariance to determine the space of paths to integrate over. This option specifies that a first order approximation should be used instead.
+    * `SecondOrderConditionalCovariance`
+      Even when `order>1`, by default, DynareOBC uses a first order approximation of the conditional covariance to determine the space of paths to integrate over. This option specifies that a second order approximation should be used instead. This requires `order>1` without `FirstOrderAroundRSS` or `FirstOrderAroundMean`.
     * `MLVSimulationMode=0|1|2|3` (default: `0`)
       If `MLVSimulationMode=0`, DynareOBC does not attempt to simulate the path of model local variables.
       If `MLVSimulationMode>0`, DynareOBC generates simulated paths and average impulse responses for each model local variable (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note that to generate impulse responses, you must enable the SlowIRFs option.

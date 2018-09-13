@@ -490,7 +490,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     
     if isfield( dynareOBC, 'A2PowersTrans' )
         LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
-        Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && ~dynareOBC.FirstOrderConditionalCovariance;
+        Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && dynareOBC.SecondOrderConditionalCovariance;
         ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
     else
         ParallelRetrieveConditionalCovariances = false;

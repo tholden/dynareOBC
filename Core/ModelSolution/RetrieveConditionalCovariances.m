@@ -1,6 +1,6 @@
 function [ RootConditionalCovariance, GlobalVarianceShare ] = RetrieveConditionalCovariances( oo, dynareOBC, ReturnPathFirstOrder )
     
-    if dynareOBC.FirstOrderConditionalCovariance
+    if ~dynareOBC.SecondOrderConditionalCovariance
         
         RootConditionalCovariance = dynareOBC.RootConditionalCovariance;
         GlobalVarianceShare = dynareOBC.GlobalVarianceShare;
