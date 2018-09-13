@@ -47,11 +47,11 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
             fprintf( '\n' );
         end
         deflect_ = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
-        dynareOBC.Order = 1;
     else
         deflect_ = [];
     end
     if ~isempty( deflect_ )
+        dynareOBC.Order = 1;
         dynareOBC.Constant = deflect_.y;
         if any( dynareOBC.Constant( ( end - dynareOBC.NumberOfMax + 1 ) : end ) < 0 )
             Info = 19090714;
