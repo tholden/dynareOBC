@@ -142,7 +142,7 @@ Note:
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the `INTEGER` largest eigenvalues of the covariance matrix to zero.
     * `CubatureTolerance=FLOAT` (default: `1e-6`)
       Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables some additional speed-ups.
-    * `MaxCubatureSerialLoop` (default: `3`)
+    * `MaxCubatureSerialLoop` (default: `4`)
       Determines the maximum number of calls to the solution of the inner bounds problem before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)
       Determines the size of matrix beyond which we parallelize certain loops involved in calculating the covariance of the random variables over which we perform cubature.
