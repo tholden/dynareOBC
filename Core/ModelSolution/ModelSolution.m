@@ -52,6 +52,11 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
         deflect_ = [];
     end
     if ~isempty( deflect_ )
+        dynareOBC.Constant = deflect_.y;
+        if any( dynareOBC.Constant( ( end - dynareOBC.NumberOfMax + 1 ) : end ) < 0 )
+            Info = 19090714;
+            return
+        end
         oo.dr.ys = deflect_.y;
         oo.dr.ghx = deflect_.y_x;
         oo.dr.ghu = deflect_.y_u;
