@@ -292,21 +292,14 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     PositiveCubatureTolerance = CubatureTolerance > 0;
     MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
     
-    global MatlabPoolSize
-    if DisableParFor || isempty( MatlabPoolSize )
-        LocalMatlabPoolSize = 1;
-    else
-        LocalMatlabPoolSize = MatlabPoolSize;
-    end
-    CumNumPoints = cumsum( NumPoints );
-    CumNumPoints( end ) = LocalMatlabPoolSize;
-    iMin = find( CumNumPoints >= LocalMatlabPoolSize, 1 );
-    
+    iMax = length( NumPoints );
+
     if PositiveCubatureTolerance
-        iMax = length( NumPoints );
+        TmpNumPoints = NumPoints;
+        TmpNumPoints( end ) = MaxCubatureSerialLoop;
+        iMin = find( TmpNumPoints >= MaxCubatureSerialLoop, 1 );
     else
-        iMin = 1;
-        iMax = 1;
+        iMin = iMax;
     end
     
     y = [];
@@ -314,15 +307,12 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     WarningGenerated = false;
     for i = iMin : iMax
     
-        if PositiveCubatureTolerance
-            if i == iMin
-                jv = 1 : NumPoints( i );
-            else
-                jv = ( NumPoints( i - 1 ) + 1 ) : NumPoints( i );
-            end
+        if i == iMin
+            jv = 1 : NumPoints( i );
         else
-            jv = 1 : NumPoints( end );
+            jv = ( NumPoints( i - 1 ) + 1 ) : NumPoints( i );
         end
+        
         if DisableParFor || length( jv ) <= MaxCubatureSerialLoop
             for j = jv
                 lastwarn( '' );
@@ -359,7 +349,16 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             end
         end
 
-        if PositiveCubatureTolerance 
+        if PositiveCubatureTolerance
+            if ( i == iMin ) && ( i > 1 )
+                if CubatureAcceleration
+                    yMatrixTmp = yMatrix( :, 1 : ( i - 1 ) );
+                    y = max( min( yMatrixTmp, [], 2 ), min( max( yMatrixTmp, [], 2 ), WynnEpsilonTransformation( yMatrixTmp ) ) );
+                else
+                    y = yMatrix( :, i - 1 );
+                end
+            end
+
             if CubatureAcceleration
                 yMatrixTmp = yMatrix( :, 1 : i );
                 yNew = max( min( yMatrixTmp, [], 2 ), min( max( yMatrixTmp, [], 2 ), WynnEpsilonTransformation( yMatrixTmp ) ) );
