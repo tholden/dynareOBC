@@ -258,6 +258,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         
         WeightAdjustment = exp( LLTrue - LLSampling ); % min( 1, exp( LLTrue - LLSampling ) );
         CubatureWeights = bsxfun( @times, CubatureWeights, WeightAdjustment(:) );
+        CubatureWeights = CubatureWeights * ( ConstraintProb / sum( CubatureWeights ) );
     else
         Points = bsxfun( @plus, SamplingMean, SamplingRootCovariance * CubaturePoints );
     end
