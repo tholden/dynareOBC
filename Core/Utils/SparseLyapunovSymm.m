@@ -1,6 +1,10 @@
 function [ X, Norm ] = SparseLyapunovSymm( ATrans, B )
 % Solves the Lyapunov equation X = ATrans.'*X*ATrans + B, for B and X symmetric matrices.
 
+    if isempty( B )
+        B = zeros( size( ATrans, 1 ) );
+    end
+
     X = B;
     APowerTrans = ATrans;
 

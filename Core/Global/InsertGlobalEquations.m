@@ -1,4 +1,4 @@
-function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC, AmpValues ] = InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, MaxArgPattern, CurrentNumParams, CurrentNumVar, dynareOBC )
+function [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInInitVal, dynareOBC, AmpValues ] = InsertGlobalEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInInitVal, MaxArgValues, MaxArgPattern, CurrentNumParams, CurrentNumVar, dynareOBC )
     
     ns = dynareOBC.NumberOfMax;
     nSVASC = size( dynareOBC.StateVariableAndShockCombinations, 1 );

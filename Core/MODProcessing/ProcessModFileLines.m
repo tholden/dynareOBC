@@ -96,12 +96,6 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLi
     if Indices.ModelEnd == 0
         error( 'dynareOBC:MissingBlock', 'End of model block was not found.' );
     end
-    if Indices.ShocksStart == 0
-        error( 'dynareOBC:MissingBlock', 'Start of shocks block was not found.' );
-    end
-    if Indices.ShocksEnd == 0
-        error( 'dynareOBC:MissingBlock', 'End of shocks block was not found.' );
-    end
     if Indices.InitValStart > 0 && Indices.InitValEnd == 0
         error( 'dynareOBC:MissingBlock', 'End of initval block was not found.' );
     end

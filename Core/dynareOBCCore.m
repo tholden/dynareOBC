@@ -46,6 +46,8 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     if dynareOBC.MaxCubatureDimension <= 0 || ( ( ~dynareOBC.FastCubature ) && ( dynareOBC.GaussianCubatureDegree <= 1 ) && ( dynareOBC.QuasiMonteCarloLevel <= 0 ) )
         dynareOBC.NoCubature = true;
+        dynareOBC.PeriodsOfUncertainty = 0;
+        dynareOBC.MaxCubatureDimension = 0;
     else
         dynareOBC.NoCubature = false;
     end
@@ -258,7 +260,18 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.StateVariables{ end + 1 } = [ dynareOBC.EndoVariables{ oo_.dr.order_var(i) } '(-1)' ];
     end
 
-    dynareOBC.Shocks = cellstr( M_.exo_names )';
+    if isfield( M_, 'exo_names' )
+        dynareOBC.Shocks = cellstr( M_.exo_names )';
+    else
+        dynareOBC.Shocks = { };
+        dynareOBC.NoCubature = true;
+        dynareOBC.FastCubature = false;
+        dynareOBC.GaussianCubatureDegree = 0;
+        dynareOBC.QuasiMonteCarloLevel = 0;
+        dynareOBC.HigherOrderSobolDegree = 0;
+        dynareOBC.PeriodsOfUncertainty = 0;
+        dynareOBC.MaxCubatureDimension = 0;
+    end
 
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFShocks', dynareOBC.Shocks );
 
@@ -300,7 +313,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     ToInsertInModelAtEnd = { };
-    ToInsertInShocks = { };
        
     % Other common set-up
 
@@ -345,7 +357,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         fprintf( '\n' );
 
         dynareOBC.StateVariableAndShockCombinations = GenerateCombinations( length( dynareOBC.StateVariablesAndShocks ), dynareOBC.Order );
-        [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
+        [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalSolutionAlgorithm( basevarargin, SolveAlgo, FileLines, Indices, ToInsertBeforeModel, ToInsertInModelAtStart, ToInsertInModelAtEnd, ToInsertInInitVal, MaxArgValues, CurrentNumParams, CurrentNumVar, dynareOBC );
     else
         dynareOBC.StateVariableAndShockCombinations = { };
         GlobalApproximationParameters = [];
@@ -385,13 +397,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     % Insert new variables and equations etc.
 
-    [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, dynareOBC ] = ...
-        InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInShocks, ToInsertInInitVal, MaxArgValues, CurrentNumVar, dynareOBC, GlobalApproximationParameters, AmpValues );
+    [ FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInInitVal, dynareOBC ] = ...
+        InsertShadowEquations( FileLines, ToInsertBeforeModel, ToInsertInModelAtEnd, ToInsertInInitVal, MaxArgValues, CurrentNumVar, dynareOBC, GlobalApproximationParameters, AmpValues );
 
     [ FileLines, Indices ] = PerformInsertion( ToInsertBeforeModel, Indices.ModelStart, FileLines, Indices );
     [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtStart, Indices.ModelStart + 1, FileLines, Indices );
     [ FileLines, Indices ] = PerformInsertion( ToInsertInModelAtEnd, Indices.ModelEnd, FileLines, Indices );
-    [ FileLines, Indices ] = PerformInsertion( ToInsertInShocks, Indices.ShocksStart + 1, FileLines, Indices );
     [ FileLines, ~ ] = PerformInsertion( [ { SteadyStateBlockDeclaration } ToInsertInInitVal { 'end;' } ], Indices.ModelEnd + 1, FileLines, Indices );
 
     %Save the result
