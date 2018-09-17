@@ -26,6 +26,25 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
             return
         end
     end
+    
+    if options.order > 1
+        if ( ~isfield( oo.dr, 'ghs2' ) ) || ( ~isfield( oo.dr, 'ghxx' ) ) || ( ~isfield( oo.dr, 'ghxu' ) ) || ( ~isfield( oo.dr, 'ghuu' ) )
+            options.order = 1;
+            dynareOBC.Order = 1;
+            dynareOBC.FirstOrderAroundRSS1OrMean2 = 0;
+            fprintf( '\n' );
+            disp( 'Falling back on a first order approximation as your model appears to be linear apart from any constraints.' );
+            fprintf( '\n' );
+        elseif options.order > 2
+            if ( ~isfield( oo.dr, 'ghxxx' ) ) || ( ~isfield( oo.dr, 'ghxxu' ) ) || ( ~isfield( oo.dr, 'ghxuu' ) ) || ( ~isfield( oo.dr, 'ghuuu' ) )
+                options.order = 2;
+                dynareOBC.Order = 2;
+                fprintf( '\n' );
+                disp( 'Falling back on a second order approximation as dynare did not generate a complete third order approximation for your model.' );
+                fprintf( '\n' );
+            end
+        end
+    end
 
     if dynareOBC.FirstOrderAroundRSS1OrMean2 > 0
         if dynareOBC.Sparse
