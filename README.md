@@ -59,14 +59,14 @@ If you are using Windows, and you do not have administrative rights on your own 
 
 If you are using a 64-bit version of MATLAB, please ask for the following to be installed:
 
-* https://download.microsoft.com/download/3/b/f/3bf6e759-c555-4595-8973-86b7b4312927/vc_redist.x64.exe
-* ww_ifort_redist_intel64_2017.4.210.msi from inside: https://software.intel.com/sites/default/files/managed/f1/c0/ww_ifort_redist_msi_2017.4.210.zip
+* https://aka.ms/vs/15/release/VC_redist.x64.exe
+* ww_ifort_redist_intel64_2018.3.210.msi from inside: https://software.intel.com/sites/default/files/managed/47/ed/ww_ifort_redist_msi_2018.3.210.zip
 
 If you are using a 32-bit version of MATLAB, please ask for the following to be installed:
 
-* https://download.microsoft.com/download/1/f/e/1febbdb2-aded-4e14-9063-39fb17e88444/vc_redist.x86.exe
+* https://aka.ms/vs/15/release/VC_redist.x86.exe
 * https://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x86.exe
-* ww_ifort_redist_ia32_2017.4.210.msi from inside: https://software.intel.com/sites/default/files/managed/f1/c0/ww_ifort_redist_msi_2017.4.210.zip
+* ww_ifort_redist_ia32_2018.3.210.msi from inside: https://software.intel.com/sites/default/files/managed/47/ed/ww_ifort_redist_msi_2018.3.210.zip
 
 Troubleshooting
 ---------------
