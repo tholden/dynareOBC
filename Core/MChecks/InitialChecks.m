@@ -372,9 +372,9 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( T ) ' periods.' ] );
         disp( 'This is a necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds).' );
         if ptestUseMex
-            DiagIsP = ptest_mex( dynareOBC.d0s );
+            DiagIsP = ptest_mex( dynareOBC.d0s + diag( eps( max( 1, abs( diag( dynareOBC.d0s ) ) ) ) ) );
         else
-            DiagIsP = ptest( dynareOBC.d0s );
+            DiagIsP = ptest( dynareOBC.d0s + diag( eps( max( 1, abs( diag( dynareOBC.d0s ) ) ) ) ) );
         end
         if DiagIsP
             disp( 'A weak necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds) is satisfied.' );
