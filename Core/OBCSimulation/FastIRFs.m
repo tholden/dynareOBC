@@ -38,6 +38,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
             end
             oo.irfs.( IRFName ) = CurrentIRF;
             IRFOffsets.( IRFName ) = TempIRFLROffsets( j, 1:Ts );
+            assignin( 'base', IRFName, CurrentIRF.' );
         end
     end
     dynareOBC.IRFOffsets = IRFOffsets;

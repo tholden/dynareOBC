@@ -136,6 +136,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
                 IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
                 IRFsWithoutBounds.( IRFName ) = median( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = median( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
+                assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
                 TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
                 IRFOffsets.( IRFName ) = repmat( median( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
             end
@@ -144,6 +145,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
                 IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
                 IRFsWithoutBounds.( IRFName ) = median( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = median( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
+                assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
                 TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
                 IRFOffsets.( IRFName ) = repmat( median( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
             end
@@ -152,6 +154,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
                 IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
                 IRFsWithoutBounds.( IRFName ) = mean( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = mean( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
+                assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
                 TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
                 IRFOffsets.( IRFName ) = repmat( mean( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
             end
@@ -160,6 +163,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
                 IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
                 IRFsWithoutBounds.( IRFName ) = mean( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = mean( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
+                assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
                 TmpRunWithBoundsWithoutShock = RunWithBoundsWithoutShock( i, :, : );
                 IRFOffsets.( IRFName ) = repmat( mean( TmpRunWithBoundsWithoutShock(:) ), size( oo.irfs.( IRFName ) ) );
             end
