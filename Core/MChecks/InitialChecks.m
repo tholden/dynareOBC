@@ -94,11 +94,11 @@ function dynareOBC = InitialChecks( dynareOBC )
     yalmip( 'clear' );
 
     if isempty( dynareOBC.d0s )
-        disp( 'Skipping tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        disp( 'Skipping tests of feasibility with infinite T (TimeToEscapeBounds).' );
         disp( 'To run them, set FeasibilityTestGridSize=INTEGER where INTEGER>0.' );
         fprintf( '\n' );
     else
-        disp( 'Performing tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
+        disp( 'Performing tests of feasibility with infinite T (TimeToEscapeBounds).' );
         disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
 
         FTGC = dynareOBC.FeasibilityTestGridSize;
@@ -121,7 +121,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         [ iValues, jValues ] = meshgrid( 1:FTGC, 1:FTGC );
         
-        LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for all sufficiently large T, or the sufficient condition to not be an S matrix for all sufficiently large T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds.\n' );
+        LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for infinite T, or the sufficient condition to not be an S matrix for infinite T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds.\n' );
         
         try
             OpenPool;
@@ -193,7 +193,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
                 if new_varsigma > 0
                     error( 'dynareOBC:EarlyExitParFor', ...
-                        'M is an S matrix for all sufficiently large T, so the LCP is always feasible for sufficiently large T.\nThis is a necessary condition for there to always be a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma lower bound, bounds:\n%.15g %.15g\n', ...
+                        'M is an S matrix for infinite T, so the LCP should be feasible for sufficiently large T.\nThis is a necessary condition for there to always be a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma lower bound, bounds:\n%.15g %.15g\n', ...
                         rhoFC, rhoGC, new_varsigma, vvarsigma ...
                     );
                 elseif ~SkipUpperBound
@@ -205,7 +205,7 @@ function dynareOBC = InitialChecks( dynareOBC )
 
                     if value( varsigma ) <= 0
                         error( 'dynareOBC:EarlyExitParFor', ...
-                            'M is neither an S matrix nor a P matrix for all sufficiently large T, so the LCP is sometimes non-feasible for sufficiently large T.\nThe model does not always possess a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma upper bound:\n%.15g\n', ...
+                            'M is neither an S matrix nor a P matrix for infinite T, so the LCP is likely to be non-feasible in some situations, even for arbitrarily large T.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma upper bound:\n%.15g\n', ...
                             rhoFC, rhoGC, value( varsigma ) ...
                         );
                     end
