@@ -631,4 +631,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     end
 
     dynareOBC = orderfields( dynareOBC );
+    
+    for i = 1 : M_.param_nbr
+        assignin( 'base', strtrim( M_.param_names( i, : ) ), M_.params( i ) );
+    end
+    evalin( 'base', 'dynareOBCTempPostScript;' );
 end

@@ -50,6 +50,11 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLi
                     Indices.SteadyStateModelStart = i;
                 elseif ~isempty( regexp( line, '^stoch_simul(\(.*\))?(\s*\w+,?\s*)*;', 'once' ) )
                     StochSimulCommand = line;
+                    PostScriptFileText = strjoin( FileLines( ( i + 1 ) : end ), '\n' );
+                    PostScriptFile = fopen( 'dynareOBCTempPostScript.m', 'w' );
+                    fprintf( PostScriptFile, '%s', PostScriptFileText );
+                    fclose( PostScriptFile );
+                    rehash;
                     FileLines = FileLines( 1:(i-1) );
                 end
             case 1 % in the model block
