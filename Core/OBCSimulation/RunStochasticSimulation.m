@@ -89,9 +89,22 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     oo.exo_simul = ShockSequence';
     oo.endo_simul = Simulation.total_with_bounds;
     dynareOBC.SimulationsWithoutBounds = Simulation.total;
+    
+    for i = 1 : M.endo_nbr
+        assignin( 'base', strtrim( M.endo_names( i, : ) ), oo.endo_simul( i, : ).' );
+    end
+    
     if dynareOBC.MLVSimulationMode > 0
         dynareOBC.MLVSimulationWithBounds = Simulation.MLVsWithBounds;
         dynareOBC.MLVSimulationWithoutBounds = Simulation.MLVsWithoutBounds;
+
+        MLVNames = dynareOBC.MLVNames;
+        MLVSelect = dynareOBC.MLVSelect;
+        nMLVIRFs = length( MLVSelect );
+        for i = 1 : nMLVIRFs
+            MLVName = MLVNames{MLVSelect(i)};
+            assignin( 'base', MLVName, Simulation.MLVsWithBounds.( MLVName )(:) );
+        end
     end
     
     DispMoments( M, options, oo, dynareOBC );
