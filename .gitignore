@@ -8,6 +8,8 @@ Examples/SmetsWouters*/*.m
 Examples/SmetsWouters*/*.mat
 Examples/ArbitraryMMatrix/*.m
 Examples/ArbitraryMMatrix/*.mat
+Examples/BraunKorberWaki2012/*.m
+Examples/BraunKorberWaki2012/*.mat
 
 *.asv
 *.bak
