@@ -197,7 +197,7 @@ Note:
     * `ShockScale=FLOAT` (default: `1`)
       Scale of shocks for IRFs. This allows the calculation of IRFs to shocks larger or smaller than one standard deviation.
 
-* **Settings for controlling estimation or smoothing**
+* **EXPERIMENTAL Settings for controlling estimation or smoothing**
     * `Estimation`
       Enables estimation of the model's parameters. Note that Estimation requires the MATLAB Statistics and Machine Learning Toolox.
         * `DataFile=STRING` (default: `MOD-FILE-NAME.xlsx`)
