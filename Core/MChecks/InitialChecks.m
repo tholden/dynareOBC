@@ -425,11 +425,21 @@ function dynareOBC = InitialChecks( dynareOBC )
         dynareOBC.MaxParametricSolutionDimension = 0;
     end
 
+    if isfield( dynareOBC, 'A2PowersTrans' )
+        LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
+        Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && dynareOBC.SecondOrderConditionalCovariance;
+        ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
+    else
+        ParallelRetrieveConditionalCovariances = false;
+    end
+    
+    PoolNotNeeded = ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) );
+    
     PoolOpened = false;
     d1sSubMMatrices = dynareOBC.d1sSubMMatrices;
     for Tss = min( ceil( dynareOBC.MaxParametricSolutionDimension / ns ), dynareOBC.LargestPMatrix ) : -1 : 1
         
-        if ~PoolOpened
+        if ~PoolOpened && ( ~PoolNotNeeded || ( Tss >= dynareOBC.MinParametricSolutionParallelisationDimension ) )
             OpenPool;
             PoolOpened = true;
         end
@@ -488,15 +498,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         rehash;
     end
     
-    if isfield( dynareOBC, 'A2PowersTrans' )
-        LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
-        Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && dynareOBC.SecondOrderConditionalCovariance;
-        ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
-    else
-        ParallelRetrieveConditionalCovariances = false;
-    end
-    
-    if ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) )
+    if PoolNotNeeded
         ClosePool;
     end
 

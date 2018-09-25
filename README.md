@@ -255,6 +255,8 @@ Note:
 * **Advanced options**
     * `Bypass`
       Ignores all non-differentiabilities in the model. Useful for debugging.
+    * `MinParametricSolutionParallelisationDimension=INTEGER` (default: `5`)
+      The minimum dimension before the problem of finding a parametric solution is parallelized if a parallel pool is not otherwise needed.
     * `DisplayBoundsSolutionProgress`
       Displays progress solving the bounds problem. Only useful for very hard to solve models under perfect foresight.
     * `CompileSimulationCode`
