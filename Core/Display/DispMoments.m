@@ -35,6 +35,11 @@ try
         MLVName = MLVNames{i};
         y = [ y, dynareOBC.MLVSimulationWithBounds.( MLVName )( Drop+1:end )' ]; %#ok<AGROW>
     end
+    
+    if isempty( y )
+        return
+    end
+    
     m = nanmean2(y);
 
     if options.hp_filter
