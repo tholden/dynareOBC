@@ -1,5 +1,5 @@
 function DispMoments(~, options, oo, dynareOBC)
-% Derived from disp_moments.m in Dynare. Original file follows.
+% Derived from disp_moments.m in Dynare. Original file comment follows.
 
 % Displays moments of simulated variables
 
