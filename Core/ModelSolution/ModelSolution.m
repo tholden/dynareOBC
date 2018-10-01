@@ -17,11 +17,15 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
     options.initial_period = [];
     options.dataset = [];
     
-    if SkipResol
+    if SkipResol && isfield( oo, 'dr' ) && isfield( oo.dr, 'ys' ) && isfield( oo.dr, 'ghx' ) && isfield( oo.dr, 'ghu' ) && ( ( M.endo_nbr == 0 ) || ( ~isempty( oo.dr.ys ) ) ) && ( ( M.nspred == 0 ) || ( ~isempty( oo.dr.ghx ) ) ) && ( ( M.exo_nbr == 0 ) || ( ~isempty( oo.dr.ghu ) ) )
         Info = 0;
     else
-        [ dr, Info, M, options, oo ] = resol( 0, M, options, oo );
-        oo.dr = dr;
+        try
+            [ dr, Info, M, options, oo ] = resol( 0, M, options, oo );
+            oo.dr = dr;
+        catch
+            Info = 2222;
+        end
         if Info ~= 0
             return
         end
