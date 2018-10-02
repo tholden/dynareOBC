@@ -22,16 +22,16 @@ var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     rf mc zcap rk k pk mu c inve y lab pinf w empl ww effort pinf4 r dr 
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
     kpf habf kp hab;
- 
+
 varexo epsilon;
 
 parameters calfa ctou cbeta chab ccs cinvs csadjcost 
            csigma chabb cprobw clandaw csigl cprobp cindw cindp cfc cinvdyn 
            czcap csadjlab crpi crdpi crr cry crdy crhoa crhoas crhob crhog 
-           crhols crhoqs 
-           cscaleea cscaleeas cscaleeb cscaleeg cscaleels cscaleeqs 
-           cscaleem cscaleeinv
-           cscaleepinf cscaleew cscaleer;
+           crhols crhoinv 
+           cscaleea cscaleeas cscaleeb cscaleeg cscaleels cscaleinv 
+           cscaleem cscaleqs
+           cscaleepinf cscaleew;
 
 calfa       = 0.3;
 ctou        = 0.025;
@@ -68,7 +68,7 @@ crhoas      = 0.9238;
 crhob       = 0.8545;
 crhog       = 0.9493;
 crhols      = 0.8894;
-crhoqs      = 0.9273;
+crhoinv     = 0.9273;
 
 // scaling factor of the innovations
 cscaleea    = 0.5978;
@@ -76,15 +76,15 @@ cscaleeas   = 0.0165;
 cscaleeb    = 0.3361;
 cscaleeg    = 0.3247;
 cscaleels   = 3.5197;
-cscaleeqs   = 0.0851;
+cscaleinv   = 0.0851;
 cscaleem    = 0.0808;
-cscaleeinv  = 0.6043;
+cscaleqs    = 0.6043;
 cscaleepinf = 0.1602;
 cscaleew    = 0.2892;
-cscaleer     = 0.081;
 
 model;
 #ea=0;
+#eas=0;
 #epsilon_b=0;
 #eg=0;
 #els=0;
@@ -93,15 +93,16 @@ model;
 #epinf=0;
 #ew=0;
 #em=0;
-#er=0;
 
-r = crr*r(-1) + (1-crr)*(crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+cscaleer*er + 0.01*epsilon(-9); // the value of the ZLB doesn't actually matter for the sake of existence calculations
+r = crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms + 0.01*epsilon(-9);
+// The exact value of the ZLB doesn't matter for the sake of existence calculations.
+// Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
 
 mcf      =   calfa*rkf + (1-calfa)*wf - a;
 zcapf    =   (1/czcap)*rkf;
 rkf      =   wf + labf - kf;
 kf       =   kpf(-1) + zcapf;
-invef    =   (1/(1+cinvdyn*cbeta))*((cinvdyn*invef(-1) + cbeta*invef(+1)) + (1/csadjcost)*pkf) + 0*sinv;
+invef    =   (1/(1+cinvdyn*cbeta))*((cinvdyn*invef(-1) + cbeta*invef(+1)) + (1/csadjcost)*pkf + 0*( sinv - 0 * cbeta * sinv(+1) )  );
 pkf      = - muf - 1*b + muf(+1) + (1-cbeta*(1-ctou))*rkf(+1) + 0*(1-cbeta*(1-ctou))*zcapf(+1) + cbeta*(1-ctou)*pkf(+1) + qs;
 muf      =   muf(+1) + rf - pinff(+1) - b;
 muf      = - csigma*((1-chab)/(1-chab-chabb))*cf + csigma*(chabb/(1-chab-chabb))*habf;
@@ -118,7 +119,7 @@ mc       =   calfa*rk+(1-calfa)*w - a - 0;
 zcap     =   (1/czcap)*rk - 0*(1/czcap)*pk;
 rk       =   w + lab - k;
 k        =   kp(-1) + zcap;
-inve     =   (1/(1+cinvdyn*cbeta))*((cinvdyn*inve(-1) + cbeta*inve(+1)) + (1/csadjcost)*pk) + 1*sinv;
+inve     =   (1/(1+cinvdyn*cbeta))*((cinvdyn*inve(-1) + cbeta*inve(+1)) + (1/csadjcost)*pk + 1*( sinv - 0 * cbeta * sinv(+1) )  );
 pk       = - mu - 1*b - 0*(1-crhols)*ls - 0*0+mu(+1) + 0*b(+1) + (1-cbeta*(1-ctou))*rk(+1) + 0*(1-cbeta*(1-ctou))*zcap(+1)
              + cbeta*(1-ctou)*pk(+1) + qs + 0*sinv;
 mu       =   mu(+1) + r - pinf(+1) - b + 0*b(+1) - 0 - 0*(1-crhols)*ls;
@@ -147,16 +148,16 @@ pinfLAG1 =   pinf(-1);
 pinfLAG2 =   pinfLAG1(-1);
 pinf4    =   pinf + pinfLAG1 + pinfLAG2 + pinfLAG2(-1);
 ygap     =   y - yf;
-as       =   0;
+as       =   crhoas*as(-1) + cscaleeas*eas;
 a        =   crhoa*a(-1) + cscaleea*ea;
 b        =   crhob*b(-1) - cscaleeb*epsilon_b;
-g        =   crhog*g(-1) + cscaleeg*eg;
+g        =   crhog*g(-1) - cscaleeg*eg;
 ls       =   crhols*ls(-1) + cscaleels*els;
-qs       =   crhoqs*qs(-1) + cscaleeqs*eqs;
+sinv     =   crhoinv*sinv(-1) - cscaleinv*einv;
 ms       =   cscaleem*em; //Monetary policy innovation
-sinv     =   cscaleeinv*einv;
-spinf    =   cscaleepinf*epinf;
-sw       =   cscaleew*ew;
+qs       =   -cscaleqs*eqs;
+spinf    =   -cscaleepinf*epinf;
+sw       =   -cscaleew*ew;
 kpf      =   (1-ctou)*kpf(-1) + ctou*invef(-1);
 habf     =   chab*habf(-1) + (1-chab)*cf(-1);
 kp       =   (1-ctou)*kp(-1) + ctou*inve(-1);
