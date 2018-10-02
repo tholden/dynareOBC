@@ -1,7 +1,0 @@
-This folder contains the MOD file for the model with an arbitrary M matrix.
-
-The code as currently written is designed to be run with:
-
-dynareOBC arbitraryM.mod timetoescapebounds=7 timetoreturntosteadystate=7 nocubature
-
-Then, inspect dynareOBC_.MMatrix.
