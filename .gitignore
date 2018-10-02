@@ -58,3 +58,4 @@ checksum
 
 Core/Utils/HigherOrderSobolCache.mat
 Examples/State.mat
+Tests/ComparisonToDynareInBPY2012/ShockSequence.mat

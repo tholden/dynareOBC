@@ -46,7 +46,12 @@ end;
   shocks;
     var e = 1;
   end;
-  stoch_simul( order = 1, periods = 0, irf = 20 ) y pi i err1 err2 err3;
+  stoch_simul( order = 1, periods = 40, irf = 0 ) y pi i err1 err2 err3;
+  figure;
+  subplot( 1, 2, 1 );
+  plot( [ y pi i ] );
+  subplot( 1, 2, 2 );
+  plot( [ err1 err2 err3 ] );
 @#else
   shocks;
     var e;
@@ -54,7 +59,10 @@ end;
     values 1;
   end;
   options_.endogenous_terminal_period = 1;
-  simul( periods = 50, maxit=1000 );
+  simul( periods = 39, maxit=1000 );
   figure;
-  plot( oo_.endo_simul' );
+  subplot( 1, 2, 1 );
+  plot( [ y pi i ] );
+  subplot( 1, 2, 2 );
+  plot( [ err1 err2 err3 ] );
 @#endif
