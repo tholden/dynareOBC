@@ -25,7 +25,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     varsigma = sdpvar( 1, 1 );
     y = sdpvar( Ts * ns, 1 );
     
-    MsScale = 1e4;
+    MsScale = 1e3;
     scaledMs = MsScale * Ms;
     
     Constraints = [ 0 <= y, y <= 1, varsigma <= scaledMs * y ];
