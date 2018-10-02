@@ -3,9 +3,11 @@ $RECYCLE.BIN/
 *.mex*
 
 Examples/FernandezVillaverdeEtAl2012/*.mat
+Examples/FernandezVillaverdeEtAl2012/NKo3simul*.m
 Examples/SmetsWouters*/*.mat
 Examples/ArbitraryMMatrix/*.mat
 Examples/BraunKorberWaki2012/*.mat
+Examples/BraunKorberWaki2012/bkw2012*.m
 
 *.asv
 *.bak
