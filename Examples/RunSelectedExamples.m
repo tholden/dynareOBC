@@ -12,9 +12,11 @@ for i = 1 : length( SelectedExamples )
 
     cd( SelectedExamples{ i } );
     
+    fprintf( '\n\n' );
     disp( [ 'About to run example ' int2str( i ) ', "' SelectedExamples{ i } '".' ] );
     disp( 'Press a key to continue:' );
     pause;
+    fprintf( '\n\n' );
     
     RunExample;
     
