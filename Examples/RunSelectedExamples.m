@@ -18,9 +18,6 @@ for i = 1 : length( SelectedExamples )
     
     RunExample;
     
-    disp( 'Press a key to continue:' );
-    pause;
-    
     cd ..;
     
     load State;
