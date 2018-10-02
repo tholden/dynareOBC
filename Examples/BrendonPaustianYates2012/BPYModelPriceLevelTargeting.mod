@@ -28,5 +28,5 @@ shocks;
     var e = 1;
 end;
 
-stoch_simul( order = 1, periods = 0, irf = 20 ) y p i;
+stoch_simul( order = 1, periods = 0, irf = 0 ) y p i;
   

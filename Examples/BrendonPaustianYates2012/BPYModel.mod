@@ -27,4 +27,5 @@ end;
 shocks;
 	var e = 1;
 end;
+
 stoch_simul( order = 1, periods = 0, irf = 20 ) y pi i;
