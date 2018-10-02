@@ -1,4 +1,4 @@
-@#define T = 6
+@#define T = 5
 
 parameters zero;
 zero = 0;
