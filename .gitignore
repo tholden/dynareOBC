@@ -2,13 +2,9 @@ $RECYCLE.BIN/
 
 *.mex*
 
-Examples/FernandezVillaverdeEtAl2012/*.m
 Examples/FernandezVillaverdeEtAl2012/*.mat
-Examples/SmetsWouters*/*.m
 Examples/SmetsWouters*/*.mat
-Examples/ArbitraryMMatrix/*.m
 Examples/ArbitraryMMatrix/*.mat
-Examples/BraunKorberWaki2012/*.m
 Examples/BraunKorberWaki2012/*.mat
 
 *.asv
