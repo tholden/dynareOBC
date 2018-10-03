@@ -105,9 +105,9 @@ check;
 @#endif
 
 @#ifdef dynareOBC
-    stoch_simul( order = 1, loglinear, periods = 0, irf = 40 ) log_RRe;
+    stoch_simul( order = 1, loglinear, periods = 0, irf = 40 ) log_c log_i log_pi log_RRe;
 @#else
-    stoch_simul( order = 1, loglinear, periods = 0, irf = 40 ) RRe;
+    stoch_simul( order = 1, loglinear, periods = 0, irf = 40 ) c i pi RRe;
 @#endif
 
 
