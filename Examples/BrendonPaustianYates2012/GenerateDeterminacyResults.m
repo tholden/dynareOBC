@@ -6,7 +6,7 @@ dynareOBC BPYModelPersistentLow.mod PTest=20 TimeToEscapeBounds=50 FeasibilityTe
 
 disp( 'Observe that M was found to be a P-matrix with T=20, and that with T=infinity, M is an S-matrix.' );
 
-disp( 'We now run with a stronger response to output growth, alpha_{Delta y} = 1.05' );
+disp( 'We now run with a stronger response to output growth, alpha_{Delta y} = 1.51' );
 disp( 'Press a key to continue:' );
 pause;
 
@@ -19,3 +19,11 @@ disp( 'Press a key to continue:' );
 pause;
 
 dynareOBC BPYModelPriceLevelTargeting.mod TimeToEscapeBounds=1000
+
+disp( 'Observe that M was found to be a P-matrix with T=1000.' );
+disp( 'Press a key to continue:' );
+pause;
+
+dynareOBC BPYModelPriceLevelTargeting.mod TimeToEscapeBounds=20 FeasibilityTestGridSize=20
+
+disp( 'Observe that M was found to be an S matrix for infinite T.' );
