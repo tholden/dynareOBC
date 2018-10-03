@@ -99,7 +99,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         fprintf( '\n' );
     else
         disp( 'Performing tests of feasibility with infinite T (TimeToEscapeBounds).' );
-        disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
+        disp( 'To skip this run DynareOBC with the FeasibilityTestGridSize=0 option.' );
 
         FTGC = dynareOBC.FeasibilityTestGridSize;
         
@@ -275,7 +275,7 @@ function dynareOBC = InitialChecks( dynareOBC )
                 if  dynareOBC.AltPTest == 0
                     if dynareOBC.PTest == 0
                         disp( 'Skipping the full P test, thus we cannot know whether there may be multiple solutions.' );
-                        disp( 'To run the full P test, run dynareOBC again with PTest=INTEGER where INTEGER>0.' );
+                        disp( 'To run the full P test, run DynareOBC again with PTest=INTEGER where INTEGER>0.' );
                     else
                         TM = dynareOBC.PTest;
 

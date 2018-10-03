@@ -274,7 +274,7 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
 
     if ~TimeReversedSolutionError
         disp( 'Performing pre-calculations for the tests of feasibility with arbitrarily large T (TimeToEscapeBounds).' );
-        disp( 'To skip this run dynareOBC with the FeasibilityTestGridSize=0 option.' );
+        disp( 'To skip this run DynareOBC with the FeasibilityTestGridSize=0 option.' );
         
         rhoFmin = max( abs( eig( F ) ) );
         rhoGmin = max( abs( eig( G ) ) );
