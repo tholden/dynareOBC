@@ -60,3 +60,4 @@ priorprocessing.m
 Core/Utils/HigherOrderSobolCache.mat
 Examples/Main/State.mat
 Tests/ComparisonToDynareInBPY2012/ShockSequence.mat
+Examples/Main/ChristianoMottoRostagno2014/State.mat
