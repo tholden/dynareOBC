@@ -175,8 +175,10 @@ Note:
     * `FeasibilityTestGridSize=INTEGER` (default: `0`)
       Specifies the number of points in each of the two axes of the grid on which a test of a sufficient condition for feasibility is performed. Setting a larger number increases the chance of finding feasibility, but may be slow.
       If `FeasibilityTestGridSize=0` then the test is disabled.
+    * `SkipQuickPCheck`
+      Disables the "quick" check to see if the M matrix has any contiguous principal sub-matrices with non-positive determinants.
     * `PTest=INTEGER` (default: `0`)
-       Runs a fast as possible test to see if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to 0 to disable these tests.
+      Runs a fast as possible test to see if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to 0 to disable these tests.
     * `AltPTest=INTEGER` (default: `0`)
       Uses a slower, more verbose procedure to est if the top `INTEGERxINTEGER` submatrix of M is a P matrix. Set this to 0 to disable these tests.
     * `FullTest=INTEGER` (default: `0`)

@@ -227,38 +227,42 @@ function dynareOBC = InitialChecks( dynareOBC )
     LargestPMatrix = dynareOBC.LargestPMatrix;
     T = 0;
     
-    if LargestPMatrix < Ts           
-        if QuickPCheckUseMex
-            disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
-            [ ~, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
-        else
-            disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
-            [ ~, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
-        end
-        
-        QuickPCheckResult = true;
-        for i = 1 : 3
-            if any( IndicesToCheck(i,:) <= 0 )
-                continue
-            end
-            TmpSet = IndicesToCheck(i,1):IndicesToCheck(i,2);
-            if UseVPA
-                TmpDet = double( det( vpa( Ms( TmpSet, TmpSet ) ) ) );
+    if LargestPMatrix < Ts
+        if ~dynareOBC.SkipQuickPCheck
+            if QuickPCheckUseMex
+                disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the MEX version of QuickPCheck.' );
+                disp( 'To skip this, run DynareOBC with the SkipQuickPCheck command line option.' );
+                [ ~, StartEndDet, IndicesToCheck ] = QuickPCheck_mex( Ms );
             else
-                TmpDet = RobustDeterminantDD( Ms( TmpSet, TmpSet ) );
+                disp( 'Checking whether the contiguous principal sub-matrices of M have positive determinants, using the non-MEX version of QuickPCheck.' );
+                disp( 'To skip this, run DynareOBC with the SkipQuickPCheck command line option.' );
+                [ ~, StartEndDet, IndicesToCheck ] = QuickPCheck( Ms );
             end
-            if TmpDet <= 0
-                QuickPCheckResult = false;
-                StartEndDet = [ IndicesToCheck(i,:), TmpDet ];
-                break
+            
+            QuickPCheckResult = true;
+            for i = 1 : 3
+                if any( IndicesToCheck(i,:) <= 0 )
+                    continue
+                end
+                TmpSet = IndicesToCheck(i,1):IndicesToCheck(i,2);
+                if UseVPA
+                    TmpDet = double( det( vpa( Ms( TmpSet, TmpSet ) ) ) );
+                else
+                    TmpDet = RobustDeterminantDD( Ms( TmpSet, TmpSet ) );
+                end
+                if TmpDet <= 0
+                    QuickPCheckResult = false;
+                    StartEndDet = [ IndicesToCheck(i,:), TmpDet ];
+                    break
+                end
             end
-        end
 
-        if QuickPCheckResult
-            fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
-        else
-            ptestVal = -1;
-            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g, so M is not a P-matrix when T (TimeToEscapeBounds) is at least %d.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ), StartEndDet( 2 ) );
+            if QuickPCheckResult
+                fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
+            else
+                ptestVal = -1;
+                fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g, so M is not a P-matrix when T (TimeToEscapeBounds) is at least %d.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ), StartEndDet( 2 ) );
+            end
         end
         
         if ptestVal >= 0

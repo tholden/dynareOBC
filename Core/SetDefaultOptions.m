@@ -71,6 +71,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulationDrop', 100 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'SimulationPeriods', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'SkipFirstSolutions', 0 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'SkipQuickPCheck', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SkipStandardErrors', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'SlowIRFs', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Smoothing', false );
