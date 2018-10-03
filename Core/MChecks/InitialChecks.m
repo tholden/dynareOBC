@@ -258,7 +258,7 @@ function dynareOBC = InitialChecks( dynareOBC )
             fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
         else
             ptestVal = -1;
-            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ) );
+            fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g, so M is not a P-matrix when T (TimeToEscapeBounds) is at least %d.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ), StartEndDet( 2 ) );
         end
         
         if ptestVal >= 0
@@ -363,12 +363,11 @@ function dynareOBC = InitialChecks( dynareOBC )
         else
             T = LargestPMatrix;
         end
-        ptestVal = 1;
     end
     
-    if ptestVal > 0
-        MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( T ) ];
+    if ptestVal > 0 || LargestPMatrix > 0
         fprintf( '\n' );
+        MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( T ) ];
         disp( [ MPTS ' is a P-matrix. There is a unique solution to the model, conditional on the bound binding for at most ' int2str( T ) ' periods.' ] );
         disp( 'This is a necessary condition for M to be a P-matrix with arbitrarily large T (TimeToEscapeBounds).' );
         if ptestUseMex
@@ -383,8 +382,11 @@ function dynareOBC = InitialChecks( dynareOBC )
             disp( 'Thus, for sufficiently large T, M is not a P matrix. There are multiple solutions to the model in at least some states of the world.' );
             disp( 'However, due to your low choice of TimeToEscapeBounds, DynareOBC will only ever find one of these multiple solutions.' );
         end
-    elseif ptestVal < 0
-        disp( 'M is not a P-matrix. There are multiple solutions to the model in at least some states of the world.' );
+    end
+    if ptestVal < 0
+        fprintf( '\n' );
+        MPTS = [ 'The M matrix with T (TimeToEscapeBounds) equal to ' int2str( Ts ) ];
+        disp( [ MPTS ' is not a P-matrix. There are multiple solutions to the model in at least some states of the world.'] );
         disp( 'The one returned will depend on the chosen value of omega.' );
     end
     fprintf( '\n' );
