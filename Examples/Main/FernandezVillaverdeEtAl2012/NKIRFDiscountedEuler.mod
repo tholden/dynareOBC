@@ -1,3 +1,5 @@
+@#includepath "DynareTransformationEngine"
+
 @#include "Initialize.mod"
 @#define EndoVariables = EndoVariables + [ "PI", "0", "theta^(1/(1-varepsilon))" ]
 @#define EndoVariables = EndoVariables + [ "L", "0", "Inf" ]
