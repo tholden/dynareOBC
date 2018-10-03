@@ -20,10 +20,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     [ ~, InputFileBaseName, ~ ] = fileparts( InputFileName );
     HookDisableClearWarning( InputFileBaseName );
-    dynare( InputFileName, run1varargin{:} );
+    DynareError = [];
+    try
+        dynare( InputFileName, run1varargin{:} );
+    catch DynareError
+    end
     try
         rmdir( InputFileBaseName, 's' );
     catch
+    end
+    if ~isempty( DynareError )
+        rethrow( DynareError );
     end
 
     %% Finding non-differentiable functions
