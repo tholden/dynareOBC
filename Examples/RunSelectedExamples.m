@@ -1,6 +1,6 @@
 disp( 'This script runs some of the examples from sub-folders.' );
 
-SelectedExamples = { 'ArbitraryMMatrix', 'BraunKoerberWaki2012' };
+SelectedExamples = { 'ArbitraryMMatrix', 'BraunKoerberWaki2012', 'BrendonPaustianYates2012' };
 
 for i = 1 : length( SelectedExamples )
 
