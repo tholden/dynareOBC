@@ -55,6 +55,7 @@ FastStart.mat
 pou.mat
 time.mat
 checksum
+priorprocessing.m
 
 Core/Utils/HigherOrderSobolCache.mat
 Examples/State.mat
