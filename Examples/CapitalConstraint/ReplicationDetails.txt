@@ -4,7 +4,7 @@ Parameters may be adjusted in GlobalSolution.m.
 
 To run the accuracy tests, run:
 
-clear all; dynareOBC CapitalConstraint.mod periodsofuncertainty=??? [nocubature|fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode
+clear all; dynareOBC CapitalConstraint.mod periodsofuncertainty=??? [fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode
 tmp = abs( dynareOBC_.MLVSimulationWithBounds.cError( 101:end ) );
 disp( [ mean(tmp) sqrt(mean(tmp.^2)) max(tmp) ] );
 
@@ -15,7 +15,7 @@ while pou <= 20;
     save pou.mat pou;
     t1 = java.lang.System.currentTimeMillis;
     save time.mat t1;
-    eval( [ 'clear all; dynareOBC CapitalConstraint.mod periodsofuncertainty=' int2str( pou ) ' [nocubature|fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode' ] );
+    eval( [ 'clear all; dynareOBC CapitalConstraint.mod periodsofuncertainty=' int2str( pou ) ' [fastcubature|maxcubaturedegree=5|quasimontecarlolevel=9] mlvsimulationmode=1 cubaturetolerance=0 compilesimulationcode' ] );
     t2 = java.lang.System.currentTimeMillis;
     load time.mat;
     seconds = ( t2 - t1 ) / 1000;
