@@ -2,12 +2,12 @@ $RECYCLE.BIN/
 
 *.mex*
 
-Examples/FernandezVillaverdeEtAl2012/*.mat
-Examples/FernandezVillaverdeEtAl2012/NKo3simul*.m
-Examples/SmetsWouters*/*.mat
-Examples/ArbitraryMMatrix/*.mat
-Examples/BraunKoerberWaki2012/*.mat
-Examples/BraunKoerberWaki2012/bkw2012*.m
+Examples/Main/FernandezVillaverdeEtAl2012/*.mat
+Examples/Main/FernandezVillaverdeEtAl2012/NKo3simul*.m
+Examples/Main/SmetsWouters*/*.mat
+Examples/Main/ArbitraryMMatrix/*.mat
+Examples/Main/BraunKoerberWaki2012/*.mat
+Examples/Main/BraunKoerberWaki2012/bkw2012*.m
 
 *.asv
 *.bak
@@ -58,5 +58,5 @@ checksum
 priorprocessing.m
 
 Core/Utils/HigherOrderSobolCache.mat
-Examples/State.mat
+Examples/Main/State.mat
 Tests/ComparisonToDynareInBPY2012/ShockSequence.mat
