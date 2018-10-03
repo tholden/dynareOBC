@@ -25,3 +25,8 @@ for i = 1 : length( SelectedExamples )
     load State;
     
 end
+
+try
+    delete State.mat
+catch
+end
