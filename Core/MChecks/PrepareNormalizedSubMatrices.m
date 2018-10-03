@@ -44,16 +44,16 @@ function dynareOBC = PrepareNormalizedSubMatrices( dynareOBC, SlowMode )
             continue;
         end
         
-        TssTns = Tss * ns;
-        
-        if TssTns > 1 && any( abs( angle( eig( Msc ) ) ) >= pi - pi / TssTns )
-            continue;
-        end
-        
         [ ~, pMsc ] = chol( Msc + Msc' );
         if pMsc == 0
             CPMatrix = true;
         else
+            TssTns = Tss * ns;
+        
+            if TssTns > 1 && any( abs( angle( eig( Msc ) ) ) >= pi - pi / TssTns )
+                continue;
+            end
+        
             CompanionMsc = -abs( Msc );
             CompanionMsc = CompanionMsc - 2 * diag( diag( CompanionMsc ) );
             if min( min( inv( CompanionMsc ) ) ) >= 0 % H matrix check
