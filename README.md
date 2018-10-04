@@ -160,7 +160,7 @@ Note:
       Even when `order>1`, by default, DynareOBC uses a first order approximation of the conditional covariance to determine the space of paths to integrate over. This option specifies that a second order approximation should be used instead. This requires `order>1` without `FirstOrderAroundRSS` or `FirstOrderAroundMean`.
     * `MLVSimulationMode=0|1|2|3` (default: `0`)
       If `MLVSimulationMode=0`, DynareOBC does not attempt to simulate the path of model local variables.
-      If `MLVSimulationMode>0`, DynareOBC generates simulated paths and average impulse responses for each model local variable (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking. Note that to generate impulse responses, you must enable the `SlowIRFs` option.
+      If `MLVSimulationMode>0`, DynareOBC generates simulated paths and average impulse responses for each model local variable (MLV) which is used in the model, non-constant, non-forward looking, and not purely backwards looking.
       If `MLVSimulationMode>1`, DynareOBC additionally generates simulated paths and average impulse responses for each non-constant MLV, used in the model, containing forward looking terms.
       If `MLVSimulationMode=2`, then DynareOBC takes the expectation of each forward looking MLV using sparse cubature.
       If `MLVSimulationMode=3`, then DynareOBC takes the expectation of each forward looking MLV using quasi-Monte Carlo integration.
