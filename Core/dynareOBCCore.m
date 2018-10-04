@@ -207,6 +207,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         disp( 'Generating code to recover MLVs.' );
         fprintf( '\n' );
         dynareOBC.OriginalLeadLagIncidence = M_.lead_lag_incidence;
+        dynareOBC.OriginalMaximumEndoLag = M_.maximum_endo_lag;
         dynareOBC = Generate_dynareOBCTempGetMLVs( M_, dynareOBC, 'dynareOBCTemp2_dynamic' );
     else
         dynareOBC.MLVNames = {};

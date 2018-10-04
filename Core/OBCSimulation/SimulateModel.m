@@ -301,13 +301,19 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         OriginalVarSelect( 1:dynareOBC_.OriginalNumVar ) = true;
         LagValuesWithBounds = InitialFullState.total_with_bounds( OriginalVarSelect );
         LagValuesWithoutBounds = InitialFullState.total( OriginalVarSelect );
-        LagIndices = dynareOBC_.OriginalLeadLagIncidence( 1, : ) > 0;
-        CurrentIndices = dynareOBC_.OriginalLeadLagIncidence( 2, : ) > 0;
-        if size( dynareOBC_.OriginalLeadLagIncidence, 1 ) > 2
-            LeadIndices = dynareOBC_.OriginalLeadLagIncidence( 3, : ) > 0;
+               
+        if dynareOBC_.OriginalMaximumEndoLag > 0
+            LagIndices = dynareOBC_.OriginalLeadLagIncidence( dynareOBC_.OriginalMaximumEndoLag, : ) > 0;
+        else
+            LagIndices = [];
+        end
+        CurrentIndices = dynareOBC_.OriginalLeadLagIncidence( dynareOBC_.OriginalMaximumEndoLag + 1, : ) > 0;
+        if size( dynareOBC_.OriginalLeadLagIncidence, 1 ) >= dynareOBC_.OriginalMaximumEndoLag + 2
+            LeadIndices = dynareOBC_.OriginalLeadLagIncidence( dynareOBC_.OriginalMaximumEndoLag + 2, : ) > 0;
         else
             LeadIndices = [];
         end
+
         FutureValues = nan( sum( LeadIndices ), 1 );
         
         if dynareOBC_.MLVSimulationMode > 1
