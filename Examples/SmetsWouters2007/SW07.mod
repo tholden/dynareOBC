@@ -78,32 +78,32 @@ model;
 
 // flexible economy
 
-	      0*(1-calfa)*a + 1*a =  calfa*rkf+(1-calfa)*(wf)  ;
-	      zcapf =  (1/(czcap/(1-czcap)))* rkf  ;
-	      rkf =  (wf)+labf-kf ;
-	      kf =  kpf(-1)+zcapf ;
-	      invef = (1/(1+cbetabar*cgamma))* (  invef(-1) + cbetabar*cgamma*invef(1)+(1/(cgamma^2*csadjcost))*pkf ) +qs ;
+          0*(1-calfa)*a + 1*a =  calfa*rkf+(1-calfa)*(wf)  ;
+          zcapf =  (1/(czcap/(1-czcap)))* rkf  ;
+          rkf =  (wf)+labf-kf ;
+          kf =  kpf(-1)+zcapf ;
+          invef = (1/(1+cbetabar*cgamma))* (  invef(-1) + cbetabar*cgamma*invef(1)+(1/(cgamma^2*csadjcost))*pkf ) +qs ;
           pkf = -rrf-0*b+(1/((1-chabb/cgamma)/(csigma*(1+chabb/cgamma))))*b +(crk/(crk+(1-ctou)))*rkf(1) +  ((1-ctou)/(crk+(1-ctou)))*pkf(1) ;
-	      cf = (chabb/cgamma)/(1+chabb/cgamma)*cf(-1) + (1/(1+chabb/cgamma))*cf(+1) +((csigma-1)*cwhlc/(csigma*(1+chabb/cgamma)))*(labf-labf(+1)) - (1-chabb/cgamma)/(csigma*(1+chabb/cgamma))*(rrf+0*b) + b ;
-	      yf = ccy*cf+ciy*invef+g  +  crkky*zcapf ;
-	      yf = cfc*( calfa*kf+(1-calfa)*labf +a );
-	      wf = csigl*labf 	+(1/(1-chabb/cgamma))*cf - (chabb/cgamma)/(1-chabb/cgamma)*cf(-1) ;
-	      kpf =  (1-cikbar)*kpf(-1)+(cikbar)*invef + (cikbar)*(cgamma^2*csadjcost)*qs ;
+          cf = (chabb/cgamma)/(1+chabb/cgamma)*cf(-1) + (1/(1+chabb/cgamma))*cf(+1) +((csigma-1)*cwhlc/(csigma*(1+chabb/cgamma)))*(labf-labf(+1)) - (1-chabb/cgamma)/(csigma*(1+chabb/cgamma))*(rrf+0*b) + b ;
+          yf = ccy*cf+ciy*invef+g  +  crkky*zcapf ;
+          yf = cfc*( calfa*kf+(1-calfa)*labf +a );
+          wf = csigl*labf   +(1/(1-chabb/cgamma))*cf - (chabb/cgamma)/(1-chabb/cgamma)*cf(-1) ;
+          kpf =  (1-cikbar)*kpf(-1)+(cikbar)*invef + (cikbar)*(cgamma^2*csadjcost)*qs ;
 
 // sticky price - wage economy
 
-	      mc =  calfa*rk+(1-calfa)*(w) - 1*a - 0*(1-calfa)*a ;
-	      zcap =  (1/(czcap/(1-czcap)))* rk ;
-	      rk =  w+lab-k ;
-	      k =  kp(-1)+zcap ;
-	      inve = (1/(1+cbetabar*cgamma))* (  inve(-1) + cbetabar*cgamma*inve(1)+(1/(cgamma^2*csadjcost))*pk ) +qs ;
+          mc =  calfa*rk+(1-calfa)*(w) - 1*a - 0*(1-calfa)*a ;
+          zcap =  (1/(czcap/(1-czcap)))* rk ;
+          rk =  w+lab-k ;
+          k =  kp(-1)+zcap ;
+          inve = (1/(1+cbetabar*cgamma))* (  inve(-1) + cbetabar*cgamma*inve(1)+(1/(cgamma^2*csadjcost))*pk ) +qs ;
           pk = -r+pinf(1)-0*b +(1/((1-chabb/cgamma)/(csigma*(1+chabb/cgamma))))*b + (crk/(crk+(1-ctou)))*rk(1) +  ((1-ctou)/(crk+(1-ctou)))*pk(1) ;
-	      c = (chabb/cgamma)/(1+chabb/cgamma)*c(-1) + (1/(1+chabb/cgamma))*c(+1) +((csigma-1)*cwhlc/(csigma*(1+chabb/cgamma)))*(lab-lab(+1)) - (1-chabb/cgamma)/(csigma*(1+chabb/cgamma))*(r-pinf(+1) + 0*b) +b ;
-	      y = ccy*c+ciy*inve+g  +  1*crkky*zcap ;
-	      y = cfc*( calfa*k+(1-calfa)*lab +a );
-	      pinf =  (1/(1+cbetabar*cgamma*cindp)) * ( cbetabar*cgamma*pinf(1) +cindp*pinf(-1) 
+          c = (chabb/cgamma)/(1+chabb/cgamma)*c(-1) + (1/(1+chabb/cgamma))*c(+1) +((csigma-1)*cwhlc/(csigma*(1+chabb/cgamma)))*(lab-lab(+1)) - (1-chabb/cgamma)/(csigma*(1+chabb/cgamma))*(r-pinf(+1) + 0*b) +b ;
+          y = ccy*c+ciy*inve+g  +  1*crkky*zcap ;
+          y = cfc*( calfa*k+(1-calfa)*lab +a );
+          pinf =  (1/(1+cbetabar*cgamma*cindp)) * ( cbetabar*cgamma*pinf(1) +cindp*pinf(-1) 
                +((1-cprobp)*(1-cbetabar*cgamma*cprobp)/cprobp)/((cfc-1)*curvp+1)*(mc)  )  + spinf ; 
-	      w =  (1/(1+cbetabar*cgamma))*w(-1)
+          w =  (1/(1+cbetabar*cgamma))*w(-1)
                +(cbetabar*cgamma/(1+cbetabar*cgamma))*w(1)
                +(cindw/(1+cbetabar*cgamma))*pinf(-1)
                -(1+cbetabar*cgamma*cindw)/(1+cbetabar*cgamma)*pinf
@@ -111,21 +111,21 @@ model;
                +(1-cprobw)*(1-cbetabar*cgamma*cprobw)/((1+cbetabar*cgamma)*cprobw)*(1/((clandaw-1)*curvw+1))*
                (csigl*lab + (1/(1-chabb/cgamma))*c - ((chabb/cgamma)/(1-chabb/cgamma))*c(-1) -w) 
                + 1*sw ;
-	      r =  max( -conster, crpi*(1-crr)*pinf
+          r =  max( -conster, crpi*(1-crr)*pinf
                +cry*(1-crr)*(y-yf)     
                +crdy*(y-yf-y(-1)+yf(-1))
                +crr*r(-1)
                +ms  );
-	      a = crhoa*a(-1)  + ea;
-	      b = crhob*b(-1) + eb;
-	      g = crhog*(g(-1)) + eg + cgy*ea;
-	      qs = crhoqs*qs(-1) + eqs;
-	      ms = crhoms*ms(-1) + em;
-	      spinf = crhopinf*spinf(-1) + epinfma - cmap*epinfma(-1);
-	          epinfma=epinf;
-	      sw = crhow*sw(-1) + ewma - cmaw*ewma(-1) ;
-	          ewma=ew; 
-	      kp =  (1-cikbar)*kp(-1)+cikbar*inve + cikbar*cgamma^2*csadjcost*qs ;
+          a = crhoa*a(-1)  + ea;
+          b = crhob*b(-1) + eb;
+          g = crhog*(g(-1)) + eg + cgy*ea;
+          qs = crhoqs*qs(-1) + eqs;
+          ms = crhoms*ms(-1) + em;
+          spinf = crhopinf*spinf(-1) + epinfma - cmap*epinfma(-1);
+              epinfma=epinf;
+          sw = crhow*sw(-1) + ewma - cmaw*ewma(-1) ;
+              ewma=ew; 
+          kp =  (1-cikbar)*kp(-1)+cikbar*inve + cikbar*cgamma^2*csadjcost*qs ;
 
 // measurment equations
 
@@ -157,46 +157,46 @@ stderr 0.244391601233500;
 end;
 
 steady_state_model;
-	labobs = -0.1030651669858076;
-	robs = 1.589136485993303;
-	pinfobs = 0.8179822205381722;
-	dy = 0.432026374810516;
-	dc = 0.432026374810516;
-	dinve = 0.432026374810516;
-	dw = 0.432026374810516;
-	ewma = 0;
-	epinfma = 0;
-	zcapf = 0;
-	rkf = 0;
-	kf = 0;
-	pkf = 0;
-	cf = 0;
-	invef = 0;
-	yf = 0;
-	labf = 0;
-	wf = 0;
-	rrf = 0;
-	mc = 0;
-	zcap = 0;
-	rk = 0;
-	k = 0;
-	pk = 0;
-	c = 0;
-	inve = 0;
-	y = 0;
-	lab = 0;
-	pinf = 0;
-	w = 0;
-	r = 0;
-	a = 0;
-	b = 0;
-	g = 0;
-	qs = 0;
-	ms = 0;
-	spinf = 0;
-	sw = 0;
-	kpf = 0;
-	kp = 0;
+    labobs = -0.1030651669858076;
+    robs = 1.589136485993303;
+    pinfobs = 0.8179822205381722;
+    dy = 0.432026374810516;
+    dc = 0.432026374810516;
+    dinve = 0.432026374810516;
+    dw = 0.432026374810516;
+    ewma = 0;
+    epinfma = 0;
+    zcapf = 0;
+    rkf = 0;
+    kf = 0;
+    pkf = 0;
+    cf = 0;
+    invef = 0;
+    yf = 0;
+    labf = 0;
+    wf = 0;
+    rrf = 0;
+    mc = 0;
+    zcap = 0;
+    rk = 0;
+    k = 0;
+    pk = 0;
+    c = 0;
+    inve = 0;
+    y = 0;
+    lab = 0;
+    pinf = 0;
+    w = 0;
+    r = 0;
+    a = 0;
+    b = 0;
+    g = 0;
+    qs = 0;
+    ms = 0;
+    spinf = 0;
+    sw = 0;
+    kpf = 0;
+    kp = 0;
 end;
 
 steady;

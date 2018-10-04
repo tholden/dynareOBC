@@ -17,7 +17,7 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see http://www.gnu.org/licenses/.
 
-estimated_params_init;	 	 
+estimated_params_init;       
 stderr e_lambdaf,        0.0109559606811660;  
 stderr e_muup,           0.0039857917638490;
 stderr e_g,              0.0228127233194570;
@@ -80,6 +80,6 @@ rhoterm_p,               0.9743991813961140;
 @# if stopsignal == 0
 stdsigma2_p,             0.0282985295279650;
 @# endif
-stdsigma1_p,		 0.0700061676650730;
+stdsigma1_p,         0.0700061676650730;
 @# endif
 end;

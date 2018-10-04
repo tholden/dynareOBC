@@ -18,7 +18,7 @@
 varexo epsilon_m, sunspot;
 
 model;
-	@#include "InsertNewModelEquations.mod"
+    @#include "InsertNewModelEquations.mod"
 
     #PIs = PI_STEADY;
     #PI_STARs = ( (1 - theta * (1 / PIs)^(1 - varepsilon) ) / (1 - theta) )^(1/(1 - varepsilon));
@@ -27,37 +27,37 @@ model;
     #Cs = (Ws /(psi * ((1/(1 - Sg_STEADY)) * NUs/ A_STEADY)^vartheta))^(1/(1 + vartheta));
     #Ys = (1 / (1 - Sg_STEADY)) * Cs;
 
-	#Y = (A/NU) * L;
-	#Y_LEAD = (A_LEAD/NU_LEAD) * L_LEAD;
-	#G = Sg*Y;
-	#G_LEAD = Sg_LEAD*Y_LEAD;
-	#PI_STAR = (( 1 - theta * (PI^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
-	#PI_STAR_LEAD = (( 1 - theta * (EPI^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
-	#C = Y - G;
-	#C_LEAD = Y_LEAD - G_LEAD;
-	#W = psi * L^vartheta*C;
-	#MC = W/A;
-	#M = exp(-sigma_m * epsilon_m);
-	#R = exp( max( 0, log( ( PI_STEADY / beta_STEADY ) * ( ((PI/PIs)^phi_pi) * ((Y/Ys)^phi_y) ) * M ) ) );
-	#AUX2 = varepsilon / (varepsilon - 1) * AUX1;
-	#AUX2_LEAD = varepsilon / (varepsilon - 1) * AUX1_LEAD;
-	1 = R * beta_LEAD * ( C / C_LEAD ) / EPI;
-	AUX1 = MC * (Y/C) + theta * beta_LEAD * EPI^(varepsilon) * AUX1_LEAD;
-	AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((EPI^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
-	log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
+    #Y = (A/NU) * L;
+    #Y_LEAD = (A_LEAD/NU_LEAD) * L_LEAD;
+    #G = Sg*Y;
+    #G_LEAD = Sg_LEAD*Y_LEAD;
+    #PI_STAR = (( 1 - theta * (PI^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
+    #PI_STAR_LEAD = (( 1 - theta * (EPI^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
+    #C = Y - G;
+    #C_LEAD = Y_LEAD - G_LEAD;
+    #W = psi * L^vartheta*C;
+    #MC = W/A;
+    #M = exp(-sigma_m * epsilon_m);
+    #R = exp( max( 0, log( ( PI_STEADY / beta_STEADY ) * ( ((PI/PIs)^phi_pi) * ((Y/Ys)^phi_y) ) * M ) ) );
+    #AUX2 = varepsilon / (varepsilon - 1) * AUX1;
+    #AUX2_LEAD = varepsilon / (varepsilon - 1) * AUX1_LEAD;
+    1 = R * beta_LEAD * ( C / C_LEAD ) / EPI;
+    AUX1 = MC * (Y/C) + theta * beta_LEAD * EPI^(varepsilon) * AUX1_LEAD;
+    AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((EPI^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
+    log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
 
     logitT_PI - logitT_EPI(-1) = sunspot;
     
 end;
 
 steady_state_model;
-	@#include "NKDeflationaryTransSteadyState.mod"
-	@#include "InsertNewSteadyStateEquations.mod"
+    @#include "NKDeflationaryTransSteadyState.mod"
+    @#include "InsertNewSteadyStateEquations.mod"
 end;
 
 shocks;
-	@#include "InsertNewShockBlockLines.mod"
-	var epsilon_m = 1;
+    @#include "InsertNewShockBlockLines.mod"
+    var epsilon_m = 1;
     var sunspot = 1;
 end;
 

@@ -26,27 +26,27 @@ varexo epsilon_m;
 var y pi r nu;
 
 model;
-	@#include "InsertNewModelEquations.mod"
-	#Y = (A/NU) * L;
-	#Y_LEAD = (A_LEAD/NU_LEAD) * L_LEAD;
-	#G = Sg*Y;
-	#G_LEAD = Sg_LEAD*Y_LEAD;
-	#PI_STAR = (( 1 - theta * (PI^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
-	#PI_STAR_LEAD = (( 1 - theta * (PI_LEAD^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
-	#C = Y - G;
-	#C_LEAD = Y_LEAD - G_LEAD;
-	#W = psi * L^vartheta * C / ( 1 - u ) ^ ( 1 + vartheta );
-	#MC = W/A;
-	#M = exp(-sigma_m * epsilon_m);
-	#R = exp( max( log( PI_STEADY / beta_STEADY * alpha / ( 1 - u ) ) - log( 1.005 / 0.994 ), log( ( PI_STEADY / beta_STEADY * alpha / ( 1 - u ) ) * ( ((PI/STEADY_STATE(PI))^phi_pi) * ((Y/STEADY_STATE(Y))^phi_y) ) * M ) ) );
-	#AUX2 = varepsilon / (varepsilon - 1) * AUX1;
-	#AUX2_LEAD = varepsilon / (varepsilon - 1) * AUX1_LEAD;
+    @#include "InsertNewModelEquations.mod"
+    #Y = (A/NU) * L;
+    #Y_LEAD = (A_LEAD/NU_LEAD) * L_LEAD;
+    #G = Sg*Y;
+    #G_LEAD = Sg_LEAD*Y_LEAD;
+    #PI_STAR = (( 1 - theta * (PI^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
+    #PI_STAR_LEAD = (( 1 - theta * (PI_LEAD^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
+    #C = Y - G;
+    #C_LEAD = Y_LEAD - G_LEAD;
+    #W = psi * L^vartheta * C / ( 1 - u ) ^ ( 1 + vartheta );
+    #MC = W/A;
+    #M = exp(-sigma_m * epsilon_m);
+    #R = exp( max( log( PI_STEADY / beta_STEADY * alpha / ( 1 - u ) ) - log( 1.005 / 0.994 ), log( ( PI_STEADY / beta_STEADY * alpha / ( 1 - u ) ) * ( ((PI/STEADY_STATE(PI))^phi_pi) * ((Y/STEADY_STATE(Y))^phi_y) ) * M ) ) );
+    #AUX2 = varepsilon / (varepsilon - 1) * AUX1;
+    #AUX2_LEAD = varepsilon / (varepsilon - 1) * AUX1_LEAD;
     #m = alpha  / ( 1 - alpha ) * u / ( 1 - u ) * STEADY_STATE( C ) / ( 1 - u );
-	// 1 = R * beta_LEAD * ( C / C_LEAD ) / PI_LEAD;
+    // 1 = R * beta_LEAD * ( C / C_LEAD ) / PI_LEAD;
     ( 1 - u ) / C = R * beta_LEAD / PI_LEAD * ( ( 1 - u )^2 / C_LEAD + u / m );
-	AUX1 = MC * (Y/C) + theta * beta_LEAD * PI_LEAD^(varepsilon) * AUX1_LEAD;
-	AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((PI_LEAD^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
-	log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
+    AUX1 = MC * (Y/C) + theta * beta_LEAD * PI_LEAD^(varepsilon) * AUX1_LEAD;
+    AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((PI_LEAD^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
+    log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
     y = log( Y );
     pi = log( PI );
     r = log( R );
@@ -67,7 +67,7 @@ steady_state_model;
     AUX1_ = W_ / A_STEADY * (Y_ /C_)/(1 - theta * beta_STEADY * PI_ ^varepsilon);
     AUX2_ = PI_STAR_ * (Y_ /C_)/(1 - theta * beta_STEADY * PI_ ^(varepsilon-1));
     // @#include "NKTransSteadyState.mod"
-	@#include "InsertNewSteadyStateEquations.mod"
+    @#include "InsertNewSteadyStateEquations.mod"
     y = log( Y_ );
     pi = log( PI_STEADY );
     r = log( R_ );
@@ -75,8 +75,8 @@ steady_state_model;
 end;
 
 shocks;
-	@#include "InsertNewShockBlockLines.mod"
-	var epsilon_m = 1;
+    @#include "InsertNewShockBlockLines.mod"
+    var epsilon_m = 1;
 end;
 
 steady;

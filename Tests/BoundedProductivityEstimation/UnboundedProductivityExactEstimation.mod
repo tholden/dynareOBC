@@ -10,17 +10,17 @@ sigma = 0.007;
 varexo epsilon;
 
 model;
-	g = ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon;
-	#mu = ( 1 - rho ) * gBar + rho * g;
-	#rObs = -log( beta ) + gamma * mu - gamma ^ 2 * sigma ^ 2 / 2;
+    g = ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon;
+    #mu = ( 1 - rho ) * gBar + rho * g;
+    #rObs = -log( beta ) + gamma * mu - gamma ^ 2 * sigma ^ 2 / 2;
 end;
 
 shocks;
-	var epsilon = 1;
+    var epsilon = 1;
 end;
 
 steady_state_model;
-	g = gBar;
+    g = gBar;
 end;
 
 steady;

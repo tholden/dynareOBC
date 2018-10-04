@@ -10,18 +10,18 @@ sigma = 0.007;
 varexo epsilon;
 
 model;
-	g = max( 0, ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon );
-	#mu = ( 1 - rho ) * gBar + rho * g;
-	#Int = ( 1 - normcdf( mu / sigma ) ) + ( 1 - normcdf( ( gamma * sigma ^ 2 - mu ) / sigma ) ) * exp( sigma ^ 2 * gamma ^ 2 / 2 - gamma * mu );
-	#rObs = -log( beta * Int );
+    g = max( 0, ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon );
+    #mu = ( 1 - rho ) * gBar + rho * g;
+    #Int = ( 1 - normcdf( mu / sigma ) ) + ( 1 - normcdf( ( gamma * sigma ^ 2 - mu ) / sigma ) ) * exp( sigma ^ 2 * gamma ^ 2 / 2 - gamma * mu );
+    #rObs = -log( beta * Int );
 end;
 
 shocks;
-	var epsilon = 1;
+    var epsilon = 1;
 end;
 
 steady_state_model;
-	g = gBar;
+    g = gBar;
 end;
 
 steady;

@@ -10,20 +10,20 @@ sigma = 0.007;
 varexo epsilon;
 
 model;
-	#mu = ( 1 - rho ) * gBar + rho * g;
-	#rTrue = -log( beta ) + gamma * mu - gamma ^ 2 * sigma ^ 2 / 2;
-	#rError = r - rTrue;
-	g = ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon;
-	1 = beta * exp( r ) * exp( -gamma * g(+1) );
+    #mu = ( 1 - rho ) * gBar + rho * g;
+    #rTrue = -log( beta ) + gamma * mu - gamma ^ 2 * sigma ^ 2 / 2;
+    #rError = r - rTrue;
+    g = ( 1 - rho ) * gBar + rho * g(-1) + sigma * epsilon;
+    1 = beta * exp( r ) * exp( -gamma * g(+1) );
 end;
 
 shocks;
-	var epsilon = 1;
+    var epsilon = 1;
 end;
 
 steady_state_model;
-	g = gBar;
-	r = gamma * gBar -log( beta );
+    g = gBar;
+    r = gamma * gBar -log( beta );
 end;
 
 steady;

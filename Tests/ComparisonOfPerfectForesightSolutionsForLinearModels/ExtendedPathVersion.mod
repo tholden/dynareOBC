@@ -31,7 +31,7 @@ steady_state_model;
 end;
 
 shocks;
-	var e = 1;
+    var e = 1;
 end;
 
 steady;

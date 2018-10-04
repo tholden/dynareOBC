@@ -97,67 +97,67 @@ zetai_p = 1;
 @#else
 
 stdlambdaf_p   =   0.010955960700000  ;  
-stdmuup_p      =   0.003985791800000  ;	 
-stdg_p         =   0.022812723300000  ;	 
-stdmuzstar_p   =   0.007148784800000  ;	 
-stdgamma_p     =   0.008103540300000  ;	 
-stdepsil_p     =   0.004633811900000  ;	 
-stdxp_p        =   0.489344620900000  ;	 
-stdzetac_p     =   0.023325355100000  ;	 
-stdzetai_p     =   0.054964824400000  ;	 
-stdterm_p      =   0.001603753000000  ;	 
+stdmuup_p      =   0.003985791800000  ;  
+stdg_p         =   0.022812723300000  ;  
+stdmuzstar_p   =   0.007148784800000  ;  
+stdgamma_p     =   0.008103540300000  ;  
+stdepsil_p     =   0.004633811900000  ;  
+stdxp_p        =   0.489344620900000  ;  
+stdzetac_p     =   0.023325355100000  ;  
+stdzetai_p     =   0.054964824400000  ;  
+stdterm_p      =   0.001603753000000  ;  
 % Place holder for net worth
 @# if sticky_wages
-xiw_p          =   0.812796311400000  ;	 
+xiw_p          =   0.812796311400000  ;  
 @# else
 xiw_p          =   0.0                ;
 @# endif
-b_p            =   0.735843822700000  ;	 
-Fomegabar_p    =   0.005588569300000  ;	 
-mu_p           =   0.214894511100000  ;	 
-sigmaa_p       =   2.535553419500000  ;	 
-Sdoupr_p       =  10.780000003400000  ;	 
+b_p            =   0.735843822700000  ;  
+Fomegabar_p    =   0.005588569300000  ;  
+mu_p           =   0.214894511100000  ;  
+sigmaa_p       =   2.535553419500000  ;  
+Sdoupr_p       =  10.780000003400000  ;  
 @# if sticky_prices
-xip_p          =   0.741218603400000  ;	 
+xip_p          =   0.741218603400000  ;  
 @# else
 xip_p          =   0.0                ;
 @# endif
 @# if taylor1p5 == 1
 aptil_p        =   1.5;
 @# else
-aptil_p        =   2.396495942700000  ;	 
+aptil_p        =   2.396495942700000  ;  
 @# endif
-rhotil_p       =   0.850296450300000  ;	 
-iota_p         =   0.897367052100000  ;	 
-iotaw_p        =   0.489073535900000  ;	 
-iotamu_p       =   0.936565280700000  ;	 
+rhotil_p       =   0.850296450300000  ;  
+iota_p         =   0.897367052100000  ;  
+iotaw_p        =   0.489073535900000  ;  
+iotamu_p       =   0.936565280700000  ;  
 adytil_p       =   0.364943654300000  ;
 @# if some_financial_data
-@# if signal_corr_nonzero	 
-signal_corr_p  = 0.3861343781103740 ;	 
+@# if signal_corr_nonzero    
+signal_corr_p  = 0.3861343781103740 ;    
 @# else
 signal_corr_p  = 0                  ;
 @# endif
 @# else
 signal_corr_p  = 0                  ;
 @# endif
-rholambdaf_p   = 0.9108528528580380 ;	 
-rhomuup_p      = 0.9870257396836700 ;	 
-rhog_p         = 0.9427215849959780 ;	 
-rhomuzstar_p   = 0.1459051086113400 ;	 
-rhoepsil_p     = 0.8089285617540170 ;	 
-rhosigma_p     = 0.9706370265612010 ;	 
-rhozetac_p     = 0.8968400853887450 ;	 
-rhozetai_p     = 0.9086616567125290 ;	 
-rhoterm_p      = 0.9743991813961140 ;	 
+rholambdaf_p   = 0.9108528528580380 ;    
+rhomuup_p      = 0.9870257396836700 ;    
+rhog_p         = 0.9427215849959780 ;    
+rhomuzstar_p   = 0.1459051086113400 ;    
+rhoepsil_p     = 0.8089285617540170 ;    
+rhosigma_p     = 0.9706370265612010 ;    
+rhozetac_p     = 0.8968400853887450 ;    
+rhozetai_p     = 0.9086616567125290 ;    
+rhoterm_p      = 0.9743991813961140 ;    
 @# if stopsignal == 0  
 stdsigma2_p    = 0.0282985295279650 ;
 @# else
 stdsigma2_p    = 0                  ;
 @# endif
-stdsigma1_p    = 0.0700061676650730 ;	 
-	
-		 
+stdsigma1_p    = 0.0700061676650730 ;    
+    
+         
 
 // Calibrated parameters.
 actil_p           = 0;
