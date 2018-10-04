@@ -1,4 +1,5 @@
 @#includepath "DynareTransformationEngine"
+@#includepath "NKModIncludes"
 
 @#include "Initialize.mod"
 @#define EndoVariables = EndoVariables + [ "PIRel", "0", "theta^(1/(1-varepsilon))" ]
