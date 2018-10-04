@@ -2,12 +2,13 @@ $RECYCLE.BIN/
 
 *.mex*
 
-Examples/Main/FernandezVillaverdeEtAl2012/*.mat
-Examples/Main/FernandezVillaverdeEtAl2012/NKo3simul*.m
-Examples/Main/SmetsWouters*/*.mat
-Examples/Main/ArbitraryMMatrix/*.mat
-Examples/Main/BraunKoerberWaki2012/*.mat
-Examples/Main/BraunKoerberWaki2012/bkw2012*.m
+Examples/FernandezVillaverdeEtAl2012/*.mat
+Examples/FernandezVillaverdeEtAl2012/NKo3simul*.m
+Examples/SmetsWouters*/*.mat
+Examples/ArbitraryMMatrix/*.mat
+Examples/BraunKoerberWaki2012/*.mat
+Examples/BraunKoerberWaki2012/bkw2012*.m
+Examples/State.mat
 
 *.asv
 *.bak
@@ -44,6 +45,7 @@ Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionBound*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/OccBinVersionSteady*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/ExtendedPathVersion*
 Tests/ComparisonOfPerfectForesightSolutionsForLinearModels/*.mat
+Tests/ComparisonToDynareInBPY2012/ShockSequence.mat
 
 .DS_Store
 dynareOBCGlobalResume.mat
@@ -58,5 +60,3 @@ checksum
 priorprocessing.m
 
 Core/Utils/HigherOrderSobolCache.mat
-Examples/Main/State.mat
-Tests/ComparisonToDynareInBPY2012/ShockSequence.mat
