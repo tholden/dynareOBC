@@ -66,4 +66,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 1, irf = 40, periods = 0, irf_shocks = ( epsilon_m ) ) y pi r nu;
+stoch_simul( order = 1, irf = 40, periods = 0, irf_shocks = ( epsilon_beta ) ) y pi r nu;
