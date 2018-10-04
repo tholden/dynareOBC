@@ -1,24 +1,42 @@
-disp( 'This script runs some of the examples from sub-folders.' );
+disp( 'This script runs all the examples from sub-folders.' );
 
-SelectedExamples = { 'ArbitraryMMatrix', 'BraunKoerberWaki2012', 'BrendonPaustianYates2012', 'ChristianoMottoRostagno2014' };
+DirResult = dir;
 
-for i = 1 : length( SelectedExamples )
+j = 0;
 
+for i = 1 : length( DirResult )
+    
+    if DirResult( i ).name( 1 ) == '.'
+        continue
+    end
+    
+    if ~DirResult( i ).isdir
+        continue
+    end
+    
+    j = j + 1;
     WarningState = warning( 'off', 'all' );
-    save State i SelectedExamples WarningState;
+    save State i j DirResult WarningState;
     clear all; %#ok<CLALL>
     load State;
     warning( WarningState );
 
-    cd( SelectedExamples{ i } );
-    
+    DirName = DirResult( i ).name;
+
+    cd( DirName );
+        
     fprintf( '\n\n' );
-    disp( [ 'About to run example ' int2str( i ) ', "' SelectedExamples{ i } '".' ] );
+    disp( [ 'About to run example ' int2str( j ) ', "' DirName '".' ] );
     disp( 'Press a key to continue:' );
     pause;
     fprintf( '\n\n' );
     
-    RunExample;
+    try
+        RunExample;
+    catch Error
+        disp( 'Error running example.' );
+        disp( Error );
+    end
     
     cd ..;
     
