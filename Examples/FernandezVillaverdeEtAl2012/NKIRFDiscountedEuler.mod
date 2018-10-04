@@ -17,7 +17,7 @@
 parameters u alpha;
 
 alpha = 0.94; // 0.97;
-u = 1 - PI_STEADY / beta_STEADY * alpha / 1.0001;
+u = 1 - PI_STEADY / beta_STEADY * alpha / 1.0001; // rho in Mckay Nakamura and Steinsson (2016)
 //beta_STEADY = beta_STEADY * alpha / ( 1 - u );
 psi = psi * ( 1 - u ) ^ ( 1 + vartheta );
 
@@ -35,7 +35,7 @@ model;
     #PI_STAR_LEAD = (( 1 - theta * (PI_LEAD^(varepsilon-1)) ) / (1 - theta))^(1/(1-varepsilon));
     #C = Y - G;
     #C_LEAD = Y_LEAD - G_LEAD;
-    #W = psi * L^vartheta * C / ( 1 - u ) ^ ( 1 + vartheta );
+    #W = psi * ( L / ( 1 - u ) )^vartheta * ( C / ( 1 - u ) - u * m / ( 1 - u ) );
     #MC = W/A;
     #M = exp(-sigma_m * epsilon_m);
     #R = exp( max( log( PI_STEADY / beta_STEADY * alpha / ( 1 - u ) ) - log( 1.005 / 0.994 ), log( ( PI_STEADY / beta_STEADY * alpha / ( 1 - u ) ) * ( ((PI/STEADY_STATE(PI))^phi_pi) * ((Y/STEADY_STATE(Y))^phi_y) ) * M ) ) );
@@ -43,7 +43,7 @@ model;
     #AUX2_LEAD = varepsilon / (varepsilon - 1) * AUX1_LEAD;
     #m = alpha  / ( 1 - alpha ) * u / ( 1 - u ) * STEADY_STATE( C ) / ( 1 - u );
     // 1 = R * beta_LEAD * ( C / C_LEAD ) / PI_LEAD;
-    ( 1 - u ) / C = R * beta_LEAD / PI_LEAD * ( ( 1 - u )^2 / C_LEAD + u / m );
+    1 / ( C / ( 1 - u ) - u * m / ( 1 - u ) ) = R * beta_LEAD / PI_LEAD * ( ( 1 - u ) / ( C_LEAD / ( 1 - u ) - u * m / ( 1 - u ) ) + u / m );
     AUX1 = MC * (Y/C) + theta * beta_LEAD * PI_LEAD^(varepsilon) * AUX1_LEAD;
     AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((PI_LEAD^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
     log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
