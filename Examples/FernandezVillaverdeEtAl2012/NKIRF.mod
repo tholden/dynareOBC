@@ -16,7 +16,7 @@
 
 varexo epsilon_m;
 
-var y pi r nu;
+var log_C log_PI log_R;
 
 model;
     @#include "InsertNewModelEquations.mod"
@@ -38,19 +38,17 @@ model;
     AUX1 = MC * (Y/C) + theta * beta_LEAD * PI_LEAD^(varepsilon) * AUX1_LEAD;
     AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((PI_LEAD^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
     log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
-    y = log( Y );
-    pi = log( PI );
-    r = log( R );
-    nu = log( NU );
+    log_C = log( C );
+    log_PI = log( PI );
+    log_R = log( R );
 end;
 
 steady_state_model;
     @#include "NKTransSteadyState.mod"
     @#include "InsertNewSteadyStateEquations.mod"
-    y = log( Y_ );
-    pi = log( PI_STEADY );
-    r = log( R_ );
-    nu = log( NU_ );
+    log_C = log( C_ );
+    log_PI = log( PI_STEADY );
+    log_R = log( R_ );
 end;
 
 shocks;
@@ -61,4 +59,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 1, irf = 40, periods = 0, irf_shocks = ( epsilon_beta ) ) y pi r nu;
+stoch_simul( order = 1, irf = 100, periods = 0, irf_shocks = ( epsilon_beta ) ) log_C log_L log_beta log_NU log_PI log_R;
