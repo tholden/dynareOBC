@@ -358,7 +358,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         end
 
     else
-    	disp( 'Skipping further P tests, since we have already established that M is a P-matrix.' );
+        disp( 'Skipping further P tests, since we have already established that M is a P-matrix.' );
     end
     
     if LargestPMatrix > 0

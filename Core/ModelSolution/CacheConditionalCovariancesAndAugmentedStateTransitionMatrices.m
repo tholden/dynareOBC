@@ -58,12 +58,12 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 VarianceZ1{ k } = VarianceZ1{ k } + CurrentVariance;
             end
             if Global
-				VarianceZ1Global{ k } = sparse( LengthZ1, LengthZ1 );
-				for i = 1 : k
-					CurrentVariance = A1PowersTrans{ k - i + 1 }.' * BCovXiB * A1PowersTrans{ k - i + 1 };
-					CurrentVariance( abs(CurrentVariance)<eps ) = 0;
-					VarianceZ1Global{ k } = VarianceZ1Global{ k } + CurrentVariance;
-				end
+                VarianceZ1Global{ k } = sparse( LengthZ1, LengthZ1 );
+                for i = 1 : k
+                    CurrentVariance = A1PowersTrans{ k - i + 1 }.' * BCovXiB * A1PowersTrans{ k - i + 1 };
+                    CurrentVariance( abs(CurrentVariance)<eps ) = 0;
+                    VarianceZ1Global{ k } = VarianceZ1Global{ k } + CurrentVariance;
+                end
             end
         end 
     end
@@ -339,19 +339,19 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             
             dynareOBC.RootConditionalCovariance = ObtainRootConditionalCovariance( ConditionalCovariance, dynareOBC.CubaturePruningCutOff, dynareOBC.MaxCubatureDimension );
            
-			if Global
-				ConditionalVarianceGlobal = zeros( T * ns, 1 );
-				
-				for p = 1 : TM1
-					CurrentCov = VarianceZ1Global{ p };
-					ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) );
-					ConditionalVarianceGlobal( 1 + p + StepIndices, 1 ) = ReducedCov;
-				end
-				
-				GlobalVarianceShare = max( 0, min( 1, diag( ConditionalCovariance ) ./ max( eps, ConditionalVarianceGlobal ) ) );
-				GlobalVarianceShare( 1 + StepIndices, 1 ) = 1;
+            if Global
+                ConditionalVarianceGlobal = zeros( T * ns, 1 );
+                
+                for p = 1 : TM1
+                    CurrentCov = VarianceZ1Global{ p };
+                    ReducedCov = full( CurrentCov( inv_order_var( VarIndices_ZeroLowerBounded ), inv_order_var( VarIndices_ZeroLowerBounded ) ) );
+                    ConditionalVarianceGlobal( 1 + p + StepIndices, 1 ) = ReducedCov;
+                end
+                
+                GlobalVarianceShare = max( 0, min( 1, diag( ConditionalCovariance ) ./ max( eps, ConditionalVarianceGlobal ) ) );
+                GlobalVarianceShare( 1 + StepIndices, 1 ) = 1;
 
-				dynareOBC.GlobalVarianceShare = GlobalVarianceShare;
+                dynareOBC.GlobalVarianceShare = GlobalVarianceShare;
                 
                 EndVarianceShare = max( GlobalVarianceShare( T + StepIndices, 1 ) );
                 if EndVarianceShare > eps
@@ -359,8 +359,8 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
                 end
             else
                 dynareOBC.GlobalVarianceShare = [];
-			end
-			
+            end
+            
             dynareOBC.LengthXi = size( Sigma, 1 );
 
         else
@@ -382,13 +382,13 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             
             VarianceY1StateGlobal = cell( TM1, 1 );
             if Global
-				VarianceY1StateGlobal{1} = zeros( nState );
+                VarianceY1StateGlobal{1} = zeros( nState );
             end
 
             for k = 2 : TM1
                 VarianceY1State{k} = VarianceZ1{ k - 1 }( SelectState, SelectState );
                 if Global
-					VarianceY1StateGlobal{k} = VarianceZ1Global{ k - 1 }( SelectState, SelectState );
+                    VarianceY1StateGlobal{k} = VarianceZ1Global{ k - 1 }( SelectState, SelectState );
                 end
             end
 
@@ -399,7 +399,7 @@ function dynareOBC = CacheConditionalCovariancesAndAugmentedStateTransitionMatri
             dynareOBC.LengthXi = LengthXi;
             
             if Global
-				dynareOBC.VarianceY1StateGlobal = VarianceY1StateGlobal;
+                dynareOBC.VarianceY1StateGlobal = VarianceY1StateGlobal;
             end
 
             dynareOBC.VarianceXiSkeleton = sparse( Ci, Cj, Cs, LengthXi, LengthXi );
