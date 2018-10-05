@@ -1,3 +1,5 @@
+// Run with the `MLVSimulationMode=1` command line options.
+
 @#includepath "DynareTransformationEngine"
 @#includepath "NKModIncludes"
 
@@ -15,8 +17,6 @@
 @#include "NKParameters.mod"
 
 varexo epsilon_m;
-
-var log_C log_PI log_R;
 
 model;
     @#include "InsertNewModelEquations.mod"
@@ -38,17 +38,15 @@ model;
     AUX1 = MC * (Y/C) + theta * beta_LEAD * PI_LEAD^(varepsilon) * AUX1_LEAD;
     AUX2 = PI_STAR * ((Y/C) + theta * beta_LEAD * ((PI_LEAD^(varepsilon-1))/PI_STAR_LEAD) * AUX2_LEAD);
     log( NU ) = log( theta * (PI^varepsilon) * NU_LAG + (1 - theta) * PI_STAR^(-varepsilon) );
-    log_C = log( C );
-    log_PI = log( PI );
-    log_R = log( R );
+    #Le = ( 1 / psi * ( varepsilon - 1 ) / varepsilon / ( 1 - Sg ) ) ^ ( 1 / ( 1 + vartheta ) );
+    #Ye = A  * Le;
+    #Ge = Sg * Ye;
+    #Ce = Ye - Ge;
 end;
 
 steady_state_model;
     @#include "NKTransSteadyState.mod"
     @#include "InsertNewSteadyStateEquations.mod"
-    log_C = log( C_ );
-    log_PI = log( PI_STEADY );
-    log_R = log( R_ );
 end;
 
 shocks;
@@ -59,4 +57,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 1, irf = 100, periods = 0, irf_shocks = ( epsilon_beta ) ) log_C log_L log_beta log_NU log_PI log_R;
+stoch_simul( order = 1, irf = 100, periods = 0, irf_shocks = ( epsilon_beta ) ) C L PI NU R beta Ce Le;
