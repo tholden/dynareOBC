@@ -180,7 +180,7 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
         end
     end
 
-    if ns > 0
+    if ns > 0 && ( ( dynareOBC.SimulationPeriods > 0 ) || ( dynareOBC.IRFPeriods > 0 ) || dynareOBC.Estimation || dynareOBC.Smoothing )
         
         if SlowMode
             fprintf( '\n' );
