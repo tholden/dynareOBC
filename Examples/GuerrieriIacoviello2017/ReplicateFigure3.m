@@ -1,5 +1,3 @@
-clear all; %#ok<CLALL>
-
 dynareOBC GI2017.mod ShockSequenceFile=ShockSequenceP.mat MLVSimulationMode=1
 
 irf1P = irf1;
