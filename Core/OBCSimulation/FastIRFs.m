@@ -196,7 +196,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
                 oo.irfs.( IRFName ) = MLVsWithBounds.( MLVName ) - TempIRFLROffsets( j, 1:Ts );
                 IRFsWithoutBounds.( IRFName ) = MLVsWithoutBounds.( MLVName ) - TempIRFLROffsets( j, 1:Ts );
                 IRFOffsets.( IRFName ) = TempIRFLROffsets( j, 1:Ts );
-                assignin( 'base', IRFName, MLVsWithBounds.( MLVName ).' );
+                assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
             end
         end
         dynareOBC.IRFOffsets = IRFOffsets;
