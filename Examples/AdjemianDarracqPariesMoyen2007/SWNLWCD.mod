@@ -11,8 +11,7 @@
 //*************************************************************
 
 var
-    psi psi2
-    wc  wc2
+    WELFARE_CE
     TCU Q C K I L PIE W  PTILD
     UC R
     Dp ZP1 ZP2 Dw ZW1 ZW2
@@ -30,6 +29,7 @@ var
     PIEobs Robs Yobs Cobs Iobs Lobs
     RFobs YFobs CFobs IFobs LFobs
     OGobs Eobs Wobs PIEWobs
+    RR YY CC PIPI LL
     ;
 
 varexo
@@ -78,11 +78,11 @@ mu = 1.3*(1-tauSS);
 muw = 1.5*(1-tauwSS) ;
 
 // If we want to cancel the mean effect in the welfare we have to set:
-subv = 1-1/mu*(1-tauSS) ;
-subvw = 1-1/ muw*(1-tauwSS);
+//subv = 1-1/mu*(1-tauSS) ;
+//subvw = 1-1/ muw*(1-tauwSS);
 //else
-//subv = 0;
-//subvw = 0;
+subv = 0;
+subvw = 0;
 
 Abar = 1;
 size = 1;
@@ -129,6 +129,7 @@ model;
                             - L_BAR*exp(-EE_L)*DwF*(LF)^(1+sig_l)/(1+sig_l)) + beta * WELFAREF(1) ;
 
     /////////////////////////////////////////// Flexible price ///////////////////////////////////////////////////
+    
               ATCUF = 1/czcap*R_KSS*(exp(czcap*(TCUF-1))-1);
               SIF = phi_i/2*(IF/IF(-1)-1)^2;
               SI1F = phi_i*(IF/IF(-1)-1);
@@ -138,15 +139,18 @@ model;
               UCbisF = exp(EE_B)*size*(CF - h*CF(-1))^(-sig_c);
               UCF = UCbisF - beta*h*UCbisF(1);
               QF*(1 - SIF - IF/IF(-1)*SI1F)*exp(EE_I) + beta*QF(1)*UCF(1)/UCF*SI1F(1)*(IF(1)/IF)^2*exp(EE_I(1)) = 1;
-              QF = exp(0*EE_Q)* beta*UCF(1)/UCF*(QF(1)*(1-tau) + TCUF(1)*R_KF(1) - ATCUF(1));
+              //QF = exp(0*EE_Q)* beta*UCF(1)/UCF*(QF(1)*(1-tau) + TCUF(1)*R_KF(1) - ATCUF(1));
+              QF = exp(EE_Q)* beta*UCF(1)/UCF*(QF(1)*(1-tau) + TCUF(1)*R_KF(1) - ATCUF(1));
               KF = (1-tau)*KF(-1)+(1 - phi_i/2*(IF/IF(-1)-1)^2)*IF*exp(EE_I) ;
               LF*WF=(1-alpha)/alpha *(R_KF*TCUF*KF(-1));
-              (1-tauSS)/(mu*(1-subv)) = MCF;
+              (1-tauSS)*exp(0*EE_P)/(mu*(1-subv)) = MCF;
+              // (1-tauSS)*exp(EE_P)/(mu*(1-subv)) = MCF;
               YF = CF + IF + GSS*YSS*exp(EE_G) + ATCUF*KF(-1);
               YF = Abar*(TCUF*KF(-1))^alpha*LF^(1-alpha)*exp(EE_A) - (phi_y-1)*YSS ;
               (muw*(1-subvw)*ZW1F/ZW2F)^(-1/(muw*(1+sig_l)-1)) = WF^(1/(1-muw));
               ZW1F = exp(EE_B)*L_BAR*exp(-EE_L)*LF^(1+sig_l)*WF^((1+sig_l)*muw/(muw-1));
-              ZW2F = (1-tauwSS)*UCF*LF*WF^(muw/(muw-1));
+              ZW2F = (1-tauwSS)*exp(0*EE_W)*UCF*LF*WF^(muw/(muw-1));
+              // ZW2F = (1-tauwSS)*exp(EE_W)*UCF*LF*WF^(muw/(muw-1));
               DwF = WF^((1+sig_l)*muw/(muw-1))*(muw*(1-subvw)*ZW1F/ZW2F)^(-muw*(1+sig_l)/(muw*(1+sig_l)-1));
 
     // Adjunct variables
@@ -229,17 +233,19 @@ model;
 
     // Monetary policy
 
-    Robs = PIE_BAR + r_dpi*((PIEobs- PIE_BAR)-(PIEobs(-1)- PIE_BAR(-1)))
+    // The exact value of the ZLB doesn't matter for the sake of existence calculations.
+    // Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
+    Robs = max( -log( 1.021605136 ) * 100, PIE_BAR + r_dpi*((PIEobs- PIE_BAR)-(PIEobs(-1)- PIE_BAR(-1)))
                   +(1-rho)*( r_pie*(PIEobs(-1) - PIE_BAR(-1))+r_y*(Yobs(-1) - 0*YFobs(-1)))
                   +r_dy*(Yobs - 0*YFobs -(Yobs(-1) - 0*YFobs(-1)))
                   +rho*(Robs(-1)-PIE_BAR(-1))
-                  +E_R;
-
+                  +E_R );
+                  
     // shocks
 
     PIE_BAR = 0 ;// E_PIE_BAR/100
     EE_A = rho_a*EE_A(-1) + E_A/100;
-    EE_B = rho_b*EE_B(-1) + E_B/100 ;
+    EE_B = rho_b*EE_B(-1) - E_B/100 ;
     EE_G = rho_g*EE_G(-1) + E_G/100 ;
     EE_L = rho_l*EE_L(-1) + E_L/100 ;
     EE_I = rho_i*EE_I(-1) + E_I/100 ;
@@ -249,11 +255,12 @@ model;
 
     // Welfare cost: we take the flexible price equilibrium as the reference policy
 
-    psi = 1-((1-sig_c)*(WELFAREF-WELFARE)/WELFAREC+1)^(1/(1-sig_c));
-    wc = psi*100;
-
-    psi2 = ((WELFARE+L_BAR*LF)/(WELFAREF+L_BAR*LF))^(1/(1-sig_c))-1;
-    wc2 = psi2*100;
+    WELFARE_CE = ((WELFARE+L_BAR*LF)/(WELFAREF+L_BAR*LF))^(1/(1-sig_c))-1;
+    RR = log( 1 + ( Robs + log( 1.021605136 ) * 100 ) / 100 );
+    YY = log( Y / YSS );
+    CC = log( C / CSS );
+    PIPI = log( 1 + PIE );
+    LL = log( L / LSS );
 
 end;
 
@@ -336,14 +343,11 @@ steady_state_model;
     EE_W = 0;
     PIE_BAR = 0;
     SI = 0;
-    SIopt = 0;
     SI1 = 0;
-    SI1opt = 0;
     SIF = 0;
     SI1F = 0;
     ATCU = 0 ;
     ATCUF = 0;
-    ATCU1 = R_KSS ;
     PIEobs = 0;
     Robs = 0;
     Yobs = 0;
@@ -356,18 +360,17 @@ steady_state_model;
     IFobs = 0;
     LFobs = 0;
     PTILD = 1;
-    psi=0;
-    wc=0;
-    psi2=0;
-    wc2=0;
     OGobs=0;
     Eobs=0;
     Wobs=0;
     PIEWobs=0;
-    OGobsopt=0;
-    Eobsopt=0;
-    Wobsopt=0;
-    PIEWobsopt=0;
+    
+    WELFARE_CE = 0;
+    RR = log( 1 + ( Robs + log( 1.021605136 ) * 100 ) / 100 );
+    YY = 0;
+    CC = 0;
+    PIPI = 0;
+    LL = 0;
 
 end;
 
@@ -385,10 +388,13 @@ shocks;
     var E_I;
     stderr 1.0029;
 
-    // Inefficient shocks
+    // Originally inefficient shocks, but made efficient in this version.
 
     var E_Q;
     stderr 6.3809;
+
+    // Inefficient shocks
+
     var E_P;
     stderr 0.2826;
     var E_W;
@@ -403,4 +409,4 @@ shocks;
 
 end;
 
-stoch_simul( order=2, irf = 0, periods = 1100 ) wc2;
+stoch_simul( order=1, irf = 40, periods = 0, irf_shocks = ( E_B ) ) YY CC PIPI RR LL WELFARE_CE;
