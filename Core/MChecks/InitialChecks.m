@@ -260,8 +260,12 @@ function dynareOBC = InitialChecks( dynareOBC )
             if QuickPCheckResult
                 fprintf( 'No contiguous principal sub-matrices with negative determinants found. This is a necessary condition for M to be a P-matrix.\n\n' );
             else
-                ptestVal = -1;
-                fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g, so M is not a P-matrix when T (TimeToEscapeBounds) is at least %d.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ), StartEndDet( 2 ) );
+                if LargestPMatrix >= StartEndDet( 2 )
+                    fprintf( 'QuickPCheck produced results that were inconsistent with those derived from our simple criteria for being a P-matrix.\nThis suggests numerical inaccuracy.\nTry running with the UseVPA option.\n\n' );
+                else
+                    ptestVal = -1;
+                    fprintf( 'The sub-matrix with indices %d:%d has determinant %.15g, so M is not a P-matrix when T (TimeToEscapeBounds) is at least %d.\n\n', StartEndDet( 1 ), StartEndDet( 2 ), StartEndDet( 3 ), StartEndDet( 2 ) );
+                end
             end
         end
         
