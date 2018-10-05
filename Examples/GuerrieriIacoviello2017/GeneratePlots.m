@@ -25,7 +25,7 @@ subplot(2,2,3)
 plot(100*irf3P,'b');  hold on
 plot(100*irf3N,'r--');
 ylim([-3 3])
-title({'Total Hours','% from steady state'})
+title({'Hours','% from steady state'})
 hold on; plot(0*irf1P,'k','Linewidth',1)
 grid on
 
