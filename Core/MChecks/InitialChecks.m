@@ -117,9 +117,9 @@ function dynareOBC = InitialChecks( dynareOBC )
 
         LowerBoundUpperBound = min( max( InvIMinusFdNs( :, :, 1 ) + InvIMinusHd0s, [], 2 ) );
         
-        if LowerBoundUpperBound < 0
+        if LowerBoundUpperBound <= 0
             SkipLowerBound = true;
-            disp( 'Skipping calculations for a lower bound on varsigma as the average response to a news shock at infinite horizon is negative. Value:' );
+            disp( 'Skipping calculations for a lower bound on varsigma, as the lower bound will be stricly negative since the average response to a news shock at infinite horizon is negative. Value:' );
             disp( LowerBoundUpperBound );
         else
             SkipLowerBound = false;
