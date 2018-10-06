@@ -1,4 +1,4 @@
-disp( 'This script illustrates IRFs to a 5 standard deviation shock in the Braun Koerber Waki (2012) model.' );
+disp( 'This script illustrates IRFs to 5 standard deviation shocks in the Braun Koerber Waki (2012) model.' );
 
 dynareOBC bkw2012 ShockScale=5
 
