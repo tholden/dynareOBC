@@ -262,8 +262,7 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       variables. 
       If MLVSimulationMode>0, DynareOBC generates simulated paths and average impulse responses for 
       each model local variable (MLV) which is used in the model, non-constant, non-forward 
-      looking, and not purely backwards looking. Note that to generate impulse responses, you must 
-      enable the SlowIRFs option. 
+      looking, and not purely backwards looking. 
       If MLVSimulationMode>1, DynareOBC additionally generates simulated paths and average impulse 
       responses for each non-constant MLV, used in the model, containing forward looking terms. 
       If MLVSimulationMode=2, then DynareOBC takes the expectation of each forward looking MLV 
@@ -290,9 +289,12 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       sufficient condition for feasibility is performed. Setting a larger number increases the 
       chance of finding feasibility, but may be slow. 
       If FeasibilityTestGridSize=0 then the test is disabled. 
+    * SkipQuickPCheck 
+      Disables the "quick" check to see if the M matrix has any contiguous principal sub-matrices 
+      with non-positive determinants. 
     * PTest=INTEGER (default: 0) 
-       Runs a fast as possible test to see if the top INTEGERxINTEGER submatrix of M is a P matrix. 
-       Set this to 0 to disable these tests. 
+      Runs a fast as possible test to see if the top INTEGERxINTEGER submatrix of M is a P matrix. 
+      Set this to 0 to disable these tests. 
     * AltPTest=INTEGER (default: 0) 
       Uses a slower, more verbose procedure to est if the top INTEGERxINTEGER submatrix of M is a P 
       matrix. Set this to 0 to disable these tests. 
