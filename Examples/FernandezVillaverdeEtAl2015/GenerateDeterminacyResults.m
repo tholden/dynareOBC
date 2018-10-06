@@ -1,4 +1,4 @@
-disp( 'We start by examining with the original model.' );
+disp( 'We start by examining the original model.' );
 disp( 'Press a key to continue:' );
 pause;
 
