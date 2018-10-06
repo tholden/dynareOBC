@@ -14,10 +14,12 @@ disp( 'The next figure shows this diagonal.' );
 figure;
 plot( diag( dynareOBC_.MMatrix ) );
 
-disp( 'We now look at the other determinacy properties of this model.' );
-disp( 'Press a key to continue:' );
-pause;
+disp( 'Would you like to see results on determinacy of the Smets Wouters (2003) model modified to include NGDP targeting? (These are very slow, and require large amounts of RAM (e.g. 128GB).)' );
+Input = strtrim( lower( input( 'Press y then return to see them or just return to skip: ', 's' ) ) );
+if ( length( Input ) ~= 1 ) || ( Input( 1 ) ~= 'y' )
+    return
+end
 
-dynareOBC SW03.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=1 Sparse
+dynareOBC SW03NGDPTargeting.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=10 Sparse
 
-disp( 'Observe that now no additional solution was found, and the welfare consequences of the shock are greatly muted.' );
+disp( 'Observe that M was found to be a P-matrix for T=1000 and an S-matrix for T=1000 and T=infinity.' );
