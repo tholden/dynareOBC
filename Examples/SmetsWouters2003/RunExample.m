@@ -20,6 +20,6 @@ if ( length( Input ) ~= 1 ) || ( Input( 1 ) ~= 'y' )
     return
 end
 
-dynareOBC SW03NGDPTargeting.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=10 Sparse
+dynareOBC SW03NGDPTargeting.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=10
 
 disp( 'Observe that M was found to be a P-matrix for T=1000 and an S-matrix for T=1000 and T=infinity.' );
