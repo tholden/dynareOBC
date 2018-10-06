@@ -67,6 +67,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( new_sum_y );
         fprintf( '\n' );
         SkipUpperBound = true;
+        SkipBoth = false;
     elseif new_varsigma <= 1e-6 && new_sum_y > 0
         fprintf( '\n' );
         disp( 'M is not an S matrix, so there are some q for which the LCP (q,M) has no solution.' );
@@ -80,6 +81,7 @@ function dynareOBC = InitialChecks( dynareOBC )
             warning( 'dynareOBC:InconsistentSResults', 'The alternative test suggests that M is an S matrix. Results cannot be trusted. This may be caused by numerical inaccuracies.' );
         end
         SkipUpperBound = false;
+        SkipBoth = false;
     else
         fprintf( '\n' );
         disp( 'Due to numerical inaccuracies, we cannot tell if M is an S matrix.' );
@@ -88,7 +90,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'sum of y from the alternative problem (zero means M is an S matrix):' );
         disp( new_sum_y );
         fprintf( '\n' );
-        SkipUpperBound = true;
+        SkipBoth = true;
     end
     
     yalmip( 'clear' );
@@ -97,6 +99,9 @@ function dynareOBC = InitialChecks( dynareOBC )
         disp( 'Skipping tests of feasibility with infinite T (TimeToEscapeBounds).' );
         disp( 'To run them, set FeasibilityTestGridSize=INTEGER where INTEGER>0.' );
         fprintf( '\n' );
+    elseif SkipBoth
+        disp( 'Skipping tests of feasibility with infinite T (TimeToEscapeBounds) since if results for finite T are unreliable due to numerical inaccuracies, so too will be results for infinite T.' );
+        fprintf( '\n' );        
     else
         disp( 'Performing tests of feasibility with infinite T (TimeToEscapeBounds).' );
         disp( 'To skip this run DynareOBC with the FeasibilityTestGridSize=0 option.' );
@@ -110,116 +115,144 @@ function dynareOBC = InitialChecks( dynareOBC )
         InvIMinusFdNs = dynareOBC.InvIMinusFdNs;
         dNs = dynareOBC.dNs;
 
-        rhoF = dynareOBC.rhoF;
-        rhoG = dynareOBC.rhoG;
-        CF = dynareOBC.CF;
-        CH = dynareOBC.CH;
-        D = dynareOBC.D;
-
-        tmp = ones( 1, ns ) * Ts;
-        CellMs = mat2cell( Ms, tmp, tmp );
+        LowerBoundUpperBound = min( max( InvIMinusFdNs( :, :, 1 ) + InvIMinusHd0s, [], 2 ) );
         
-        [ iValues, jValues ] = meshgrid( 1:FTGC, 1:FTGC );
-        
-        LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for infinite T, or the sufficient condition to not be an S matrix for infinite T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds, or try installing an alternative LP solver.\n' );
-        
-        try
-            OpenPool;
-            parfor GridIndex = 1 : numel( iValues )
-
-                varsigma = sdpvar( 1, 1 );
-                y = sdpvar( Ts * ns, 1 );
-                yInf = sdpvar( ns, 1 );
-
-                LBConstraints0 = [ 0 <= y, y <= 1, 0 <= yInf, yInf <= 1 ];
-                UBConstraints0 = [ 0 <= y, y <= 1 ];
-
-                Objective = -varsigma;
-
-                i = iValues( GridIndex );
-                j = jValues( GridIndex );
-                rhoFC = rhoF( i ); %#ok<*PFBNS>
-                rhoGC = rhoG( j );
-                CFC = CF( i );
-                CHC = CH( i );
-                DC = D( i, j );
-
-                rhoFCv = rhoFC .^ ( ( 1:Ts )' );
-                rhoGCv = rhoGC .^ ( ( 1:Ts )' );
-
-                dSumIndices = bsxfun( @plus, ( 1:Ts )', (Ts-1):-1:0 );
-
-                DenomFG = 1 ./ ( 1 - rhoFC * rhoGC );
-                DenomF = 1 ./ ( 1 - rhoFC );
-                DenomG = 1 ./ ( 1 - rhoGC );
-                DenomFG_G = DenomFG * DenomG;
-
-                LBConstraints = [];
-                UBConstraints = [];
-                for ConVar = 1 : ns % row index
-                    LBMinimand1 = zeros( Ts, 1 );
-                    LBMinimand2 = zeros( Ts, 1 );
-                    LBMinimand3 = 0;
-                    UBMinimand = zeros( Ts, 1 );
-                    for ConShock = 1 : ns % column index
-                        yC = y( ( 1:Ts ) + ( ConShock - 1 ) * Ts );
-                        yInfC = yInf( ConShock );
-                        Norm_d0C = Norm_d0( ConShock );
-                        InvIMinusHd0sC = InvIMinusHd0s( ConVar, ConShock );
-                        InvIMinusHdPsC = squeeze( InvIMinusHdPs( ConVar, ConShock, : ) );
-                        InvIMinusFdNsC = squeeze( InvIMinusFdNs( ConVar, ConShock, : ) );
-                        dNsC = squeeze( dNs( ConVar, ConShock, : ) );
-
-                        LBMinimand1 = LBMinimand1 + CellMs{ ConVar, ConShock } * yC + InvIMinusHdPsC( Ts:-1:1 ) * yInfC - DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
-                        LBMinimand2 = LBMinimand2 + ( dNsC( dSumIndices ) - DC / DenomFG * rhoFCv( end ) * rhoFCv * rhoGCv' ) * yC + ( InvIMinusFdNsC( 1 ) - InvIMinusFdNsC( 1:Ts ) ) * yInfC + InvIMinusHd0sC * yInfC - DC * rhoFCv * rhoFCv( end ) * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
-                        LBMinimand3 = LBMinimand3 - CFC * DenomF * rhoFC * rhoFCv( end ) * ( 1 - rhoFCv( end ) ) * Norm_d0C - CFC * rhoFC * rhoFCv( end ) * NormInvIMinusF * Norm_d0C * yInfC + InvIMinusFdNsC( 1 ) * yInfC + InvIMinusHd0sC * yInfC - DC * rhoFC * rhoFCv( end ) * rhoFCv( end ) * rhoGC * DenomFG_G;
-
-                        UBMinimand = UBMinimand + CellMs{ ConVar, ConShock } * yC + CHC * Norm_d0C * DenomG * rhoGCv( Ts:-1:1 ) + DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G;
-                    end
-                    LBConstraints = [ LBConstraints; LBMinimand1; LBMinimand2; LBMinimand3 ];
-                    UBConstraints = [ UBConstraints; UBMinimand ];
-                end
-                Diagnostics = optimize( [ LBConstraints0, varsigma <= LBConstraints ], Objective, dynareOBC.LPOptions );
-
-                if Diagnostics.problem ~= 0
-                    error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-                end
-
-                vvarsigma = value( varsigma );
-                vy = value( y );
-                vy = max( 0, vy ./ max( 1, max( vy ) ) );
-                assign( y, vy );
-                new_varsigma = min( value( LBConstraints ) );
-
-                if new_varsigma > 0
-                    error( 'dynareOBC:EarlyExitParFor', ...
-                        'M is an S matrix for infinite T, so the LCP should be feasible for sufficiently large T.\nThis is a necessary condition for there to always be a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma lower bound, bounds:\n%.15g %.15g\n', ...
-                        rhoFC, rhoGC, new_varsigma, vvarsigma ...
-                    );
-                elseif ~SkipUpperBound
-                    Diagnostics = optimize( [ UBConstraints0, varsigma <= UBConstraints ], Objective, dynareOBC.LPOptions );
-
-                    if Diagnostics.problem ~= 0
-                        error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-                    end
-
-                    if value( varsigma ) <= 0
-                        error( 'dynareOBC:EarlyExitParFor', ...
-                            'M is neither an S matrix nor a P matrix for infinite T, so the LCP is likely to be non-feasible in some situations, even for arbitrarily large T.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma upper bound:\n%.15g\n', ...
-                            rhoFC, rhoGC, value( varsigma ) ...
-                        );
-                    end
-                end
-            end
-        catch ErrStruct
-            if strcmp( ErrStruct.identifier, 'dynareOBC:EarlyExitParFor' )
-                LoopMessage = ErrStruct.message;
-            else
-                rethrow( ErrStruct );
-            end
+        if LowerBoundUpperBound < 0
+            SkipLowerBound = true;
+            disp( 'Skipping calculations for a lower bound on varsigma as the average response to a news shock at infinite horizon is negative. Value:' );
+            disp( LowerBoundUpperBound );
+        else
+            SkipLowerBound = false;
         end
         
-        fprintf( 1, '\n%s\n', LoopMessage );
+        if SkipUpperBound
+            disp( 'Skipping calculations for an upper bound on varsigma, as the upper bound will be strictly positive since M is an S-matrix.' );
+        end
+        
+        if ( ~SkipUpperBound ) || ( ~SkipLowerBound )
+        
+            rhoF = dynareOBC.rhoF;
+            rhoG = dynareOBC.rhoG;
+            CF = dynareOBC.CF;
+            CH = dynareOBC.CH;
+            D = dynareOBC.D;
+
+            tmp = ones( 1, ns ) * Ts;
+            CellMs = mat2cell( Ms, tmp, tmp );
+
+            [ iValues, jValues ] = meshgrid( 1:FTGC, 1:FTGC );
+
+            LoopMessage = sprintf( 'M did not pass either the sufficient condition to be an S matrix for infinite T, or the sufficient condition to not be an S matrix for infinite T.\nTo discover the properties of M, try reruning with higher TimeToEscapeBounds, or try installing an alternative LP solver.\n' );
+
+            try
+                OpenPool;
+                parfor GridIndex = 1 : numel( iValues )
+
+                    varsigma = sdpvar( 1, 1 );
+                    y = sdpvar( Ts * ns, 1 );
+                    yInf = sdpvar( ns, 1 );
+
+                    LBConstraints0 = [ 0 <= y, y <= 1, 0 <= yInf, yInf <= 1 ];
+                    UBConstraints0 = [ 0 <= y, y <= 1 ];
+
+                    Objective = -varsigma;
+
+                    i = iValues( GridIndex );
+                    j = jValues( GridIndex );
+                    rhoFC = rhoF( i ); %#ok<*PFBNS>
+                    rhoGC = rhoG( j );
+                    CFC = CF( i );
+                    CHC = CH( i );
+                    DC = D( i, j );
+
+                    rhoFCv = rhoFC .^ ( ( 1:Ts )' );
+                    rhoGCv = rhoGC .^ ( ( 1:Ts )' );
+
+                    dSumIndices = bsxfun( @plus, ( 1:Ts )', (Ts-1):-1:0 );
+
+                    DenomFG = 1 ./ ( 1 - rhoFC * rhoGC );
+                    DenomF = 1 ./ ( 1 - rhoFC );
+                    DenomG = 1 ./ ( 1 - rhoGC );
+                    DenomFG_G = DenomFG * DenomG;
+
+                    LBConstraints = [];
+                    UBConstraints = [];
+                    for ConVar = 1 : ns % row index
+                        LBMinimand1 = zeros( Ts, 1 );
+                        LBMinimand2 = zeros( Ts, 1 );
+                        LBMinimand3 = 0;
+                        UBMinimand = zeros( Ts, 1 );
+                        for ConShock = 1 : ns % column index
+                            yC = y( ( 1:Ts ) + ( ConShock - 1 ) * Ts );
+                            yInfC = yInf( ConShock );
+                            Norm_d0C = Norm_d0( ConShock );
+                            InvIMinusHd0sC = InvIMinusHd0s( ConVar, ConShock );
+                            InvIMinusHdPsC = squeeze( InvIMinusHdPs( ConVar, ConShock, : ) );
+                            InvIMinusFdNsC = squeeze( InvIMinusFdNs( ConVar, ConShock, : ) );
+                            dNsC = squeeze( dNs( ConVar, ConShock, : ) );
+
+                            if ~SkipLowerBound
+                                LBMinimand1 = LBMinimand1 + CellMs{ ConVar, ConShock } * yC + InvIMinusHdPsC( Ts:-1:1 ) * yInfC - DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
+                                LBMinimand2 = LBMinimand2 + ( dNsC( dSumIndices ) - DC / DenomFG * rhoFCv( end ) * rhoFCv * rhoGCv' ) * yC + ( InvIMinusFdNsC( 1 ) - InvIMinusFdNsC( 1:Ts ) ) * yInfC + InvIMinusHd0sC * yInfC - DC * rhoFCv * rhoFCv( end ) * rhoGC * rhoGCv( end ) * DenomFG_G * yInfC;
+                                LBMinimand3 = LBMinimand3 - CFC * DenomF * rhoFC * rhoFCv( end ) * ( 1 - rhoFCv( end ) ) * Norm_d0C - CFC * rhoFC * rhoFCv( end ) * NormInvIMinusF * Norm_d0C * yInfC + InvIMinusFdNsC( 1 ) * yInfC + InvIMinusHd0sC * yInfC - DC * rhoFC * rhoFCv( end ) * rhoFCv( end ) * rhoGC * DenomFG_G;
+                            end
+
+                            UBMinimand = UBMinimand + CellMs{ ConVar, ConShock } * yC + CHC * Norm_d0C * DenomG * rhoGCv( Ts:-1:1 ) + DC * rhoFCv * rhoGC * rhoGCv( end ) * DenomFG_G;
+                        end
+                        LBConstraints = [ LBConstraints; LBMinimand1; LBMinimand2; LBMinimand3 ];
+                        UBConstraints = [ UBConstraints; UBMinimand ];
+                    end
+                    
+                    if SkipLowerBound
+                        new_varsigma = -1;
+                        vvarsigma = -1;
+                    else
+                        
+                        Diagnostics = optimize( [ LBConstraints0, varsigma <= LBConstraints ], Objective, dynareOBC.LPOptions );
+
+                        if Diagnostics.problem ~= 0
+                            error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                        end
+
+                        vvarsigma = value( varsigma );
+                        vy = value( y );
+                        vy = max( 0, vy ./ max( 1, max( vy ) ) );
+                        assign( y, vy );
+                        new_varsigma = min( value( LBConstraints ) );
+                    
+                    end
+
+                    if new_varsigma > 0
+                        error( 'dynareOBC:EarlyExitParFor', ...
+                            'M is an S matrix for infinite T, so the LCP should be feasible for sufficiently large T.\nThis is a necessary condition for there to always be a solution.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma lower bound, bounds:\n%.15g %.15g\n', ...
+                            rhoFC, rhoGC, new_varsigma, vvarsigma ...
+                        );
+                    elseif ~SkipUpperBound
+                        Diagnostics = optimize( [ UBConstraints0, varsigma <= UBConstraints ], Objective, dynareOBC.LPOptions );
+
+                        if Diagnostics.problem ~= 0
+                            error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                        end
+
+                        if value( varsigma ) <= 0
+                            error( 'dynareOBC:EarlyExitParFor', ...
+                                'M is neither an S matrix nor a P matrix for infinite T, so the LCP is likely to be non-feasible in some situations, even for arbitrarily large T.\nphiF:\n%.15g\nphiG:\n%.15g\nvarsigma upper bound:\n%.15g\n', ...
+                                rhoFC, rhoGC, value( varsigma ) ...
+                            );
+                        end
+                    end
+                end
+            catch ErrStruct
+                if strcmp( ErrStruct.identifier, 'dynareOBC:EarlyExitParFor' )
+                    LoopMessage = ErrStruct.message;
+                else
+                    rethrow( ErrStruct );
+                end
+            end
+
+            fprintf( 1, '\n%s\n', LoopMessage );
+        
+        end
     end
     
     global QuickPCheckUseMex ptestUseMex AltPTestUseMex
