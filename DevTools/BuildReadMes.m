@@ -45,7 +45,7 @@ try
         
     delete ReadMe.pdf;
     try
-        addpath( 'C:\Program Files (x86)\Pandoc' );
+        addpath( 'C:\Program Files\Pandoc' );
     catch
     end
     !pandoc README.md -f gfm -o ReadMe.pdf -N --toc --wrap=none --pdf-engine=xelatex -V papersize=A4 -V fontsize=10pt -V lang=en-GB -V documentclass=article -V margin-left=2.54cm -V margin-right=2.54cm -V margin-top=2.54cm -V margin-bottom=2.54cm -V mainfont=TeXGyrePagella -V sansfont=TeXGyreAdventor -V monofont=TeXGyreCursor -V links-as-notes -V colorlinks
