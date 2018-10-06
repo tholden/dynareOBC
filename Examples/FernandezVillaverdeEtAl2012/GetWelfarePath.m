@@ -1,4 +1,4 @@
-function [ welfare_ce_percent, welfare_ce_percent_, welfare, welfare_ ] = GetWelfarePath( C, L, Ce, Le, beta, beta_STEADY, A_STEADY, Sg_STEADY, PI_STEADY, varepsilon, theta, vartheta, psi )
+function [ welfare_ce, welfare_ce_, welfare, welfare_ ] = GetWelfarePath( C, L, Ce, Le, beta, beta_STEADY, A_STEADY, Sg_STEADY, PI_STEADY, varepsilon, theta, vartheta, psi )
 
     % Calculates the percentage extra consumption you would have to give to the inhabitant of an economy with flexible prices to make them indifferent between being in their economy and being in the sticky price economy.
     % Since the flexible price economy does not have the price dispersion distortion, this number will usually be negative.
@@ -20,7 +20,7 @@ function [ welfare_ce_percent, welfare_ce_percent_, welfare, welfare_ ] = GetWel
     Ce_ = Ye_       - Ge_;
     
     welfare_e_ = beta_STEADY / ( 1 - beta_STEADY ) * ( log( Ce_ ) - psi * Le_ ^ ( 1 + vartheta ) / ( 1 + vartheta ) );
-    welfare_ce_percent_ = 100 * ( exp( ( welfare_ - welfare_e_ ) ./ ce_impact_multiplier_ ) - 1 );
+    welfare_ce_ = exp( ( welfare_ - welfare_e_ ) ./ ce_impact_multiplier_ );
     
     welfare = zeros( size( C ) );
     welfare_e = zeros( size( C ) );
@@ -37,6 +37,6 @@ function [ welfare_ce_percent, welfare_ce_percent_, welfare, welfare_ ] = GetWel
         ce_impact_multiplier( t ) = beta( t ) * ( 1 + ce_impact_multiplier( t + 1 ) );
     end
     
-    welfare_ce_percent = 100 * ( exp( ( welfare - welfare_e ) ./ ce_impact_multiplier ) - 1 );
+    welfare_ce = exp( ( welfare - welfare_e ) ./ ce_impact_multiplier );
     
 end

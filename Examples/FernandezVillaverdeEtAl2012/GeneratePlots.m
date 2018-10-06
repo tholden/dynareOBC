@@ -39,10 +39,12 @@ dynareOBC NKIRF.mod ShockScale=10 MLVSimulationMode=1
 
 PlotWithWelfare;
 
-disp( 'We now show with the "fundamental" solution following a 10 standard deviation discount factor shock.' );
+disp( 'We now show an alternative solution following a 10 standard deviation discount factor shock.' );
 disp( 'Press a key to continue:' );
 pause;
 
 dynareOBC NKIRF.mod ShockScale=10 SkipFirstSolutions=1 MLVSimulationMode=1
 
 PlotWithWelfare;
+
+disp( 'Observe that the outcome is much worse, with the economy essentially shutting down.' );
