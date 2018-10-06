@@ -85,7 +85,7 @@ cscaleew    = 0.2892;
 model;
 
 p = p(-1) + pinf - STEADY_STATE(pinf);
-r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap + 0.1*p)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms);
+r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap + p)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms);
 
 // The exact value of the ZLB doesn't matter for the sake of existence calculations.
 // Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
