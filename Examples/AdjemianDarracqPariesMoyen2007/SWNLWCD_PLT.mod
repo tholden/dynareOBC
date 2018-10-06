@@ -258,7 +258,7 @@ model;
 
     // Welfare cost: we take the flexible price equilibrium as the reference policy
 
-    WELFARE_CE = ((WELFARE+L_BAR*LF)/(WELFAREF+L_BAR*LF))^(1/(1-sig_c))-1;
+    WELFARE_CE = log( ((WELFARE+L_BAR*LF)/(WELFAREF+L_BAR*LF))^(1/(1-sig_c)) );
     RR = log( 1 + ( Robs + log( 1.021605136 ) * 100 ) / 100 );
     YY = log( Y / YSS );
     CC = log( C / CSS );
