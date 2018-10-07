@@ -119,14 +119,15 @@ function dynareOBC = InitialChecks( dynareOBC )
         
         if LowerBoundUpperBound <= 0
             SkipLowerBound = true;
-            disp( 'Skipping calculations for a lower bound on varsigma, as the lower bound will be stricly negative since the average response to a news shock at infinite horizon is negative. Value:' );
+            disp( 'Skipping calculations for a lower bound on varsigma, as the lower bound will be uninformative since the average response to a news shock at infinite horizon is negative.' );
+            disp( 'Value:' );
             disp( LowerBoundUpperBound );
         else
             SkipLowerBound = false;
         end
         
         if SkipUpperBound
-            disp( 'Skipping calculations for an upper bound on varsigma, as the upper bound will be strictly positive since M is an S-matrix.' );
+            disp( 'Skipping calculations for an upper bound on varsigma, as the upper bound will be uninformative since M is an S-matrix.' );
         end
         
         if ( ~SkipUpperBound ) || ( ~SkipLowerBound )
