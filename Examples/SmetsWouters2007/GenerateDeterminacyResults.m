@@ -1,6 +1,6 @@
 disp( 'We start by showing that M is not an S-matris in the Smets Wouters (2007) model, with T=1000 or with T=infinity.' );
 
-dynareOBC SW07.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=10
+dynareOBC SW07.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=20
 
 disp( 'Observe that M was found to not be an S-matrix with T=1000 or T=infinity.' );
 
