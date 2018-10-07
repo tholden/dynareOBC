@@ -144,9 +144,6 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       If the simulation is at the bound for at most this number of periods divided by the number of 
       bounds, then a pre-computed solution will be used, increasing the speed of long simulations, 
       or those involving integration. 
-    * Omega=FLOAT (default: 1000) 
-      The tightness of the constraint on the news shocks. If this is large, solutions with news 
-      shocks close to zero will be returned when there are multiple solutions. 
     * MILPSolver=STRING 
       (default: gurobi,cplex,xpress,mosek,scip,cbc,intlinprog,lpsolve,glpk,*) 
       DynareOBC uses YALMIP internally for solving a mixed integer linear programming problem. This 
@@ -161,6 +158,11 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       By default, DynareOBC finds a solution in which the last period at the bound is as soon as 
       possible. This option makes DynareOBC just solve the bounds problem at the longest horizon 
       (i.e. TimeToEscapeBounds). 
+    * Omega=FLOAT (default: 1000) 
+      The tightness of the constraint on the news shocks. If this is large, solutions with news 
+      shocks close to zero will be returned when there are multiple solutions. It is often helpful 
+      to combine this option with FullHorizon so that DynareOBC does not just choose the solution 
+      which escapes the bound first. 
     * SkipFirstSolutions=INTEGER (default: 0) 
       If this is greater than 0, then DynareOBC ignores the first INTEGER solutions it finds, 
       unless no other solutions are found, in which case it takes the last found one. Thus, without 
