@@ -297,11 +297,11 @@ function dynareOBC( InputFileName, varargin )
 %       Disables the "quick" check to see if the M matrix has any contiguous principal sub-matrices 
 %       with non-positive determinants. 
 %     * PTest=INTEGER (default: 0) 
-%       Runs a fast as possible test to see if the top INTEGERxINTEGER submatrix of M is a P matrix. 
+%       Runs a fast as possible test to see if the top INTEGERxINTEGER submatrix of M is a P-matrix. 
 %       Set this to 0 to disable these tests. 
 %     * AltPTest=INTEGER (default: 0) 
-%       Uses a slower, more verbose procedure to est if the top INTEGERxINTEGER submatrix of M is a P 
-%       matrix. Set this to 0 to disable these tests. 
+%       Uses a slower, more verbose procedure to est if the top INTEGERxINTEGER submatrix of M is a 
+%       P-matrix. Set this to 0 to disable these tests. 
 %     * FullTest=INTEGER (default: 0) 
 %       Runs very slow tests to see if the top INTEGERxINTEGER submatrix of M is a P(0) and/or 
 %       (strictly) semi-monotone matrix. 
