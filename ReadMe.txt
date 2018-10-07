@@ -289,8 +289,8 @@ OPTIONS (NOT CASE SENSITIVE!) include:
 * For controlling and performing model diagnostics 
     * FeasibilityTestGridSize=INTEGER (default: 0) 
       Specifies the number of points in each of the two axes of the grid on which a test of a 
-      sufficient condition for feasibility is performed. Setting a larger number increases the 
-      chance of finding feasibility, but may be slow. 
+      sufficient condition for feasibility with T=infinity is performed. Setting a larger number 
+      increases the chance of finding feasibility, but may be slow. 
       If FeasibilityTestGridSize=0 then the test is disabled. 
     * SkipQuickPCheck 
       Disables the "quick" check to see if the M matrix has any contiguous principal sub-matrices 
