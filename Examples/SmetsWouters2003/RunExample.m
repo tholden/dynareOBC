@@ -14,12 +14,12 @@ disp( 'The next figure shows this diagonal.' );
 figure;
 plot( diag( dynareOBC_.MMatrix ) );
 
-disp( 'Would you like to see results on determinacy of the Smets Wouters (2003) model modified to include NGDP targeting? (These are very slow, and require large amounts of RAM (e.g. 128GB).)' );
+disp( 'Would you like to see results on determinacy of the Smets Wouters (2003) model modified to include NGDP targeting? (These are very slow, and require at least 32GB of RAM.)' );
 Input = strtrim( lower( input( 'Press y then return to see them or just return to skip: ', 's' ) ) );
 if ( length( Input ) ~= 1 ) || ( Input( 1 ) ~= 'y' )
     return
 end
 
-dynareOBC SW03NGDPTargeting.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=10
+dynareOBC SW03PLT.mod TimeToEscapeBounds=1000 FeasibilityTestGridSize=10 SkipQuickPCheck
 
-disp( 'Observe that M was found to be a P-matrix for T=1000 and an S-matrix for T=1000 and T=infinity.' );
+disp( 'Observe that M was found to be an S-matrix for T=1000 and T=infinity.' );
