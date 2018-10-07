@@ -132,9 +132,10 @@ function dynareOBC( InputFileName, varargin )
 %  
 % * For controlling the inner solution procedure 
 %     * TimeToEscapeBounds=INTEGER (default: 32) 
-%       The number of periods following a shock after which the model is expected to be away from any 
-%       occasionally binding constraints. Note that when a global solution is requested, this value 
-%       is ignored, and the maximum of the requested number of IRF periods, and the value of 
+%       The number of periods after which the model is expected to be away from any occasionally 
+%       binding constraints. If there is no solution which finally escapes within this time, 
+%       DynareOBC will produce an error. Note that when a global solution is requested, this value is 
+%       ignored, and the maximum of the requested number of IRF periods, and the value of 
 %       TimeToReturnToSteadyState, is used instead. 
 %     * TimeToReturnToSteadyState=INTEGER (default: 64) 
 %       The number of periods in which to verify that the constraints are not being violated. If this 
