@@ -238,8 +238,8 @@ model;
 
     // The exact value of the ZLB doesn't matter for the sake of existence calculations.
     // Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
-    Robs = max( -log( 1.021605136 ) * 100, PIE_BAR + 0.01 * Pobs + r_dpi*((PIEobs- PIE_BAR)-(PIEobs(-1)- PIE_BAR(-1)))
-                  +(1-rho)*( r_pie*(PIEobs(-1) - PIE_BAR(-1))+r_y*(Yobs(-1) - 0*YFobs(-1)))
+    Robs = max( -log( 1.021605136 ) * 100, PIE_BAR + r_dpi*((PIEobs- PIE_BAR)-(PIEobs(-1)- PIE_BAR(-1)))
+                  +(1-rho)*( 0.1 * Pobs + r_pie*(PIEobs(-1) - PIE_BAR(-1))+r_y*(Yobs(-1) - 0*YFobs(-1)))
                   +r_dy*(Yobs - 0*YFobs -(Yobs(-1) - 0*YFobs(-1)))
                   +rho*(Robs(-1)-PIE_BAR(-1))
                   +E_R );
