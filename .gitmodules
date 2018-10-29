@@ -19,6 +19,6 @@
 [submodule "Extern/DoubleDouble"]
 	path = Extern/DoubleDouble
 	url = https://github.com/tholden/DoubleDouble.git
-[submodule "Examples/Main/FernandezVillaverdeEtAl2012/DynareTransformationEngine"]
+[submodule "Examples/FernandezVillaverdeEtAl2015/DynareTransformationEngine"]
 	path = Examples/FernandezVillaverdeEtAl2015/DynareTransformationEngine
 	url = https://github.com/tholden/DynareTransformationEngine.git
