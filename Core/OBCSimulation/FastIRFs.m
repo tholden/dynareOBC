@@ -53,33 +53,33 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
     if dynareOBC.MLVSimulationMode > 0
         
         if ~dynareOBC.NoCubature
-            fprint( '\n' );
+            fprintf( '\n' );
             disp( 'MLVSimulationMode>0 is not supported with cubature and without the SlowIRFs option. Skipping MLV simulation.' );
             disp( 'Consider specifying SlowIRFs in future.' );
-            fprint( '\n' );
+            fprintf( '\n' );
             return
         end
         
         if dynareOBC.Global
-            fprint( '\n' );
+            fprintf( '\n' );
             disp( 'MLVSimulationMode>0 is not supported with global and without the SlowIRFs option. Skipping MLV simulation.' );
             disp( 'Consider specifying SlowIRFs in future.' );
-            fprint( '\n' );
+            fprintf( '\n' );
             return
         end
         
         if dynareOBC.MLVSimulationMode > 1
-            fprint( '\n' );
+            fprintf( '\n' );
             disp( 'Only MLVSimulationMode=1 is supported without the SlowIRFs option. DynareOBC will act as if you specified MLVSimulationMode=1.' );
             disp( 'Consider specifying SlowIRFs in future.' );
-            fprint( '\n' );            
+            fprintf( '\n' );            
         end
         
         if dynareOBC.Order > 1
-            fprint( '\n' );
+            fprintf( '\n' );
             disp( 'MLV simulation without SlowIRFs is a bad idea with order>1.' );
             disp( 'Consider specifying SlowIRFs in future.' );
-            fprint( '\n' );            
+            fprintf( '\n' );            
         end
         
         MLVNames = dynareOBC.MLVNames;
