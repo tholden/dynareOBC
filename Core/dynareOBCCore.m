@@ -199,7 +199,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         MaxArgValues = dynareOBCTempGetMaxArgValues( oo_.steady_state, [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );
     end
     if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
-        error( 'dynareOBC:JustBinding', 'dynareOBC does not support cases in which the constraint just binds in steady-state.' );
+        error( 'dynareOBC:JustBinding', 'DynareOBC does not support cases in which the constraint just binds in steady-state.' );
     end
 
     if dynareOBC.MLVSimulationMode > 0
