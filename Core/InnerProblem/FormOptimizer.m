@@ -47,6 +47,10 @@ function dynareOBC = FormOptimizer( dynareOBC )
         else
             Constraints = [ 0 <= yn, yn <= z, 0 <= alpha, 0 <= alpha * qn + Mc * yn, alpha * qns( CssIndices ) + Msc * yn <= omega * ( 1 - z ), sum_z( end ) >= 0.5 ];
         end
+        if dynareOBC.LeadConstraint > 0
+            zt = reshape( z, Tss, ns );
+            Constraints = [ Constraints, zt( :, [ 1 : ( dynareOBC.LeadConstraint - 1 ), ( dynareOBC.LeadConstraint + 1 ) : ns ] ) > -0.5 + zt( :, dynareOBC.LeadConstraint ) ]; %#ok<AGROW>
+        end
         Objective = -alpha;
         dynareOBC.Optimizer{ Tss } = optimizer( Constraints, Objective, dynareOBC.MILPOptions, qn, Output );
     end
