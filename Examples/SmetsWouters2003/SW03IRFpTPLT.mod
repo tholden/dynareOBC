@@ -89,7 +89,7 @@ p = p(-1) + pinf - STEADY_STATE(pinf);
 
 #rT = crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms;
 
-r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms + 800 * min( -1e-8, p + 0 * epsilon_b ) );
+r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms + 800 * min( 0, p + 0 * epsilon_b ) );
 
 // The exact value of the ZLB doesn't matter for the sake of existence calculations.
 // Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
@@ -239,9 +239,9 @@ hab = 0;
 
 yobs = 0;
 cobs = 0;
-piobs = 0;
+pobs = 1e-8; // 0.000195813553678691;
 robs = log( 1.021605136 );
-p = 0;
+p = 100 * pobs;
 
 end;
 
