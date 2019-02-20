@@ -51,6 +51,10 @@ function dynareOBC = FormOptimizer( dynareOBC )
             zt = reshape( z, Tss, ns );
             Constraints = [ Constraints, zt( :, [ 1 : ( dynareOBC.LeadConstraint - 1 ), ( dynareOBC.LeadConstraint + 1 ) : ns ] ) >= -0.5 + repmat( zt( :, dynareOBC.LeadConstraint ), 1, ns - 1 ) ]; %#ok<AGROW>
         end
+        if dynareOBC.NotAtBoundInPeriod > 0
+            zt = reshape( z, Tss, ns );
+            Constraints = [ Constraints, zt( dynareOBC.NotAtBoundInPeriod, : ) <= 0.5 ]; %#ok<AGROW>
+        end
         Objective = -alpha;
         dynareOBC.Optimizer{ Tss } = optimizer( Constraints, Objective, dynareOBC.MILPOptions, qn, Output );
     end

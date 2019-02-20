@@ -464,7 +464,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ParametricSolutionHorizon = 0;
     dynareOBC.ParametricSolutionMode = 0;
     
-    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.ReverseSearch || ( dynareOBC.LeadConstraint > 0 ) || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.ReverseSearch || ( dynareOBC.LeadConstraint > 0 ) || ( dynareOBC.NotAtBoundInPeriod > 0 ) || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
         dynareOBC.MaxParametricSolutionDimension = 0;
     end
 

@@ -50,6 +50,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'NoGraph', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoMoments', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoSkewLikelihood', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'NotAtBoundInPeriod', 0 );    
     dynareOBC = SetDefaultOption( dynareOBC, 'NoTLikelihood', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'Omega', 1000 * ( 1 + eps ) );
     dynareOBC = SetDefaultOption( dynareOBC, 'Order', 2 );
