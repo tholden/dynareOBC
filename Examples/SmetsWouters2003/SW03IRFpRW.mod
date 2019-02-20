@@ -150,8 +150,8 @@ a        =   crhoa*a(-1) + cscaleea*ea;
 b        =   crhob*b(-1) - cscaleeb*epsilon_b;
 g        =   crhog*g(-1) - cscaleeg*eg;
 ls       =   crhols*ls(-1) + cscaleels*els;
-sinv     =   crhoinv*sinv(-1) - cscaleinv*einv;
-ms       =   cscaleem*em; //Monetary policy innovation
+sinv     =   crhoinv*sinv(-1) + cscaleinv*einv;
+ms       =   -cscaleem*em; //Monetary policy innovation
 qs       =   -cscaleqs*eqs;
 spinf    =   -cscaleepinf*epinf;
 sw       =   -cscaleew*ew;
@@ -243,6 +243,7 @@ cobs = 0;
 piobs = 0;
 robs = log( 1.021605136 );
 p = 0;
+z = 0;
 
 end;
 

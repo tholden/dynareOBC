@@ -22,7 +22,7 @@ var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     rf mc zcap rk k pk mu c inve y lab pinf w empl ww effort pinf4 r dr 
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
     kpf habf kp hab yobs cobs pobs robs;
-var p;
+var p z;
 
 varexo ea eas epsilon_b eg els eqs einv epinf ew em;
 
@@ -87,7 +87,11 @@ model;
 
 p = p(-1) + pinf - STEADY_STATE(pinf);
 
-r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms + 10 * min( -1e-8, p - STEADY_STATE( p ) ) );
+#rT = crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms;
+z = z(-1) + max( 1e-8, r - rT );
+
+r = max( -log( 1.021605136 ) * 100, crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms + 800 * min( -1e-8, p ) );
+
 // The exact value of the ZLB doesn't matter for the sake of existence calculations.
 // Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
 
@@ -146,8 +150,8 @@ a        =   crhoa*a(-1) + cscaleea*ea;
 b        =   crhob*b(-1) - cscaleeb*epsilon_b;
 g        =   crhog*g(-1) - cscaleeg*eg;
 ls       =   crhols*ls(-1) + cscaleels*els;
-sinv     =   crhoinv*sinv(-1) - cscaleinv*einv;
-ms       =   cscaleem*em; //Monetary policy innovation
+sinv     =   crhoinv*sinv(-1) + cscaleinv*einv;
+ms       =   -cscaleem*em; //Monetary policy innovation
 qs       =   -cscaleqs*eqs;
 spinf    =   -cscaleepinf*epinf;
 sw       =   -cscaleew*ew;
@@ -239,6 +243,7 @@ cobs = 0;
 piobs = 0;
 robs = log( 1.021605136 );
 p = 0;
+z = 0;
 
 end;
 
