@@ -215,8 +215,13 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
             y = SolveBoundsProblem( UnconstrainedReturnPath );
             if ~isempty( dynareOBC.IRFsForceAtBoundIndices )
                 seps = sqrt( eps );
+                Periods = union( find( y ~= 0 ), dynareOBC.IRFsForceAtBoundIndices );
                 while any( UnconstrainedReturnPath( dynareOBC.IRFsForceAtBoundIndices ) + dynareOBC.MMatrix( dynareOBC.IRFsForceAtBoundIndices, : ) * y > seps ) || any( UnconstrainedReturnPath + dynareOBC.MMatrix * y < seps )
-                    Periods = union( find( ( y ~= 0 ) | ( UnconstrainedReturnPath( dynareOBC.sIndices ) + dynareOBC.MsMatrix * y < seps ) ), dynareOBC.IRFsForceAtBoundIndices );
+                    OldPeriods = Periods;
+                    Periods = union( Periods, find( UnconstrainedReturnPath( dynareOBC.sIndices ) + dynareOBC.MsMatrix * y < seps ) );
+                    if Periods == OldPeriods
+                        error( 'dynareOBC:ForceAtBoundsIterativeFailure', 'The iterative ForceAtBounds procedure failed. Note, this does not mean very much about the model!' );
+                    end
                     y( Periods ) = -dynareOBC.MMatrix( Periods, Periods ) \ UnconstrainedReturnPath( Periods );
                 end
             end
