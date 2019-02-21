@@ -595,21 +595,29 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 fprintf( '\n' );
                 dynareOBC.IRFsForceAtBoundIndices = [];
                 dynareOBC.IRFsForceNotAtBoundIndices = [];
-            elseif ~isnumeric( dynareOBC.IRFsForceAtBoundIndices )
-                if dynareOBC.IRFsForceAtBoundIndices( 1 ) ~= '['
-                    dynareOBC.IRFsForceAtBoundIndices = [ '[' dynareOBC.IRFsForceAtBoundIndices ];
+            else
+                if isempty( dynareOBC.IRFsForceAtBoundIndices )
+                    dynareOBC.IRFsForceAtBoundIndices = [];
+                elseif ~isnumeric( dynareOBC.IRFsForceAtBoundIndices )
+                    if dynareOBC.IRFsForceAtBoundIndices( 1 ) ~= '['
+                        dynareOBC.IRFsForceAtBoundIndices = [ '[' dynareOBC.IRFsForceAtBoundIndices ];
+                    end
+                    if dynareOBC.IRFsForceAtBoundIndices( end ) ~= ']'
+                        dynareOBC.IRFsForceAtBoundIndices = [ dynareOBC.IRFsForceAtBoundIndices ']' ];
+                    end
+                    dynareOBC.IRFsForceAtBoundIndices = eval( dynareOBC.IRFsForceAtBoundIndices );
                 end
-                if dynareOBC.IRFsForceAtBoundIndices( end ) ~= ']'
-                    dynareOBC.IRFsForceAtBoundIndices = [ dynareOBC.IRFsForceAtBoundIndices ']' ];
+                if isempty( dynareOBC.IRFsForceNotAtBoundIndices )
+                    dynareOBC.IRFsForceNotAtBoundIndices = [];
+                elseif ~isnumeric( dynareOBC.IRFsForceNotAtBoundIndices )
+                    if dynareOBC.IRFsForceNotAtBoundIndices( 1 ) ~= '['
+                        dynareOBC.IRFsForceNotAtBoundIndices = [ '[' dynareOBC.IRFsForceNotAtBoundIndices ];
+                    end
+                    if dynareOBC.IRFsForceNotAtBoundIndices( end ) ~= ']'
+                        dynareOBC.IRFsForceNotAtBoundIndices = [ dynareOBC.IRFsForceNotAtBoundIndices ']' ];
+                    end
+                    dynareOBC.IRFsForceNotAtBoundIndices = eval( dynareOBC.IRFsForceNotAtBoundIndices );
                 end
-                dynareOBC.IRFsForceAtBoundIndices = eval( dynareOBC.IRFsForceAtBoundIndices );
-                if dynareOBC.IRFsForceNotAtBoundIndices( 1 ) ~= '['
-                    dynareOBC.IRFsForceNotAtBoundIndices = [ '[' dynareOBC.IRFsForceNotAtBoundIndices ];
-                end
-                if dynareOBC.IRFsForceNotAtBoundIndices( end ) ~= ']'
-                    dynareOBC.IRFsForceNotAtBoundIndices = [ dynareOBC.IRFsForceNotAtBoundIndices ']' ];
-                end
-                dynareOBC.IRFsForceNotAtBoundIndices = eval( dynareOBC.IRFsForceNotAtBoundIndices );
             end
         else
             dynareOBC.IRFsForceAtBoundIndices = [];
