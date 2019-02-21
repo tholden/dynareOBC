@@ -216,7 +216,7 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
             if ~isempty( dynareOBC.IRFsForceAtBoundIndices )
                 seps = sqrt( eps );
                 while any( UnconstrainedReturnPath( dynareOBC.IRFsForceAtBoundIndices ) + dynareOBC.MMatrix( dynareOBC.IRFsForceAtBoundIndices, : ) * y > seps ) || any( UnconstrainedReturnPath + dynareOBC.MMatrix * y < seps )
-                    Periods = union( find( ( y ~= 0 ) | ( UnconstrainedReturnPath + dynareOBC.MMatrix * y < seps ) ), dynareOBC.IRFsForceAtBoundIndices );
+                    Periods = union( find( ( y ~= 0 ) | ( UnconstrainedReturnPath( dynareOBC.sIndices ) + dynareOBC.MsMatrix * y < seps ) ), dynareOBC.IRFsForceAtBoundIndices );
                     y( Periods ) = -dynareOBC.MMatrix( Periods, Periods ) \ UnconstrainedReturnPath( Periods );
                 end
             end
