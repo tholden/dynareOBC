@@ -215,12 +215,9 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
             y = SolveBoundsProblem( UnconstrainedReturnPath );
             if ~isempty( dynareOBC.IRFsForceAtBoundPeriods )
                 seps = sqrt( eps );
-                while any( UnconstrainedReturnPath( dynareOBC.IRFsForceAtBoundPeriods ) + dynareOBC.MMatrix( dynareOBC.IRFsForceAtBoundPeriods, : ) * y > seps )
-                    Periods = union( find( y ~= 0 ), dynareOBC.IRFsForceAtBoundPeriods );
+                while any( UnconstrainedReturnPath( dynareOBC.IRFsForceAtBoundPeriods ) + dynareOBC.MMatrix( dynareOBC.IRFsForceAtBoundPeriods, : ) * y > seps ) || any( UnconstrainedReturnPath + dynareOBC.MMatrix * y < seps )
+                    Periods = union( find( ( y ~= 0 ) | ( UnconstrainedReturnPath + dynareOBC.MMatrix * y < seps ) ), dynareOBC.IRFsForceAtBoundPeriods );
                     y( Periods ) = -dynareOBC.MMatrix( Periods, Periods ) \ UnconstrainedReturnPath( Periods );
-                    yt = y;
-                    yt( setdiff( Periods, dynareOBC.IRFsForceAtBoundPeriods ) ) = 0;
-                    y = yt + SolveBoundsProblem( UnconstrainedReturnPath + dynareOBC.MMatrix * yt );
                 end
             end
         else
