@@ -582,17 +582,20 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
         dynareOBC = orderfields( dynareOBC );
         
-        if ~isempty( dynareOBC.IRFsForceAtBoundIndices )
+        if ~isempty( dynareOBC.IRFsForceAtBoundIndices ) || ~isempty( dynareOBC.IRFsForceNotAtBoundIndices )
             if dynareOBC.SlowIRFs
                 fprintf( '\n' );
                 disp( 'Ignoring IRFsForceAtBoundIndices due to SlowIRFs option.' );
                 fprintf( '\n' );
+                dynareOBC.IRFsForceAtBoundIndices = [];
+                dynareOBC.IRFsForceNotAtBoundIndices = [];
             elseif ~dynareOBC.NoCubature
                 fprintf( '\n' );
                 disp( 'Ignoring IRFsForceAtBoundIndices due to cubature being enabled.' );
                 fprintf( '\n' );
-            end
-            if ~isnumeric( dynareOBC.IRFsForceAtBoundIndices )
+                dynareOBC.IRFsForceAtBoundIndices = [];
+                dynareOBC.IRFsForceNotAtBoundIndices = [];
+            elseif ~isnumeric( dynareOBC.IRFsForceAtBoundIndices )
                 if dynareOBC.IRFsForceAtBoundIndices( 1 ) ~= '['
                     dynareOBC.IRFsForceAtBoundIndices = [ '[' dynareOBC.IRFsForceAtBoundIndices ];
                 end
@@ -601,6 +604,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 end
                 dynareOBC.IRFsForceAtBoundIndices = eval( dynareOBC.IRFsForceAtBoundIndices );
             end
+        else
+            dynareOBC.IRFsForceAtBoundIndices = [];
+            dynareOBC.IRFsForceNotAtBoundIndices = [];
         end
 
         if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1

@@ -31,6 +31,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFPeriods', 40 );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFsAroundZero', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'IRFsForceAtBoundIndices', '' );
+    dynareOBC = SetDefaultOption( dynareOBC, 'IRFsForceNotAtBoundIndices', '' );
     dynareOBC = SetDefaultOption( dynareOBC, 'LeadConstraint', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'LPSolver', 'xpress,gurobi,cplex,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*' );
     dynareOBC = SetDefaultOption( dynareOBC, 'MaxCubatureDimension', 128 );
