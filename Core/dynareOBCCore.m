@@ -581,6 +581,27 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         end
 
         dynareOBC = orderfields( dynareOBC );
+        
+        if ~isempty( dynareOBC.IRFsForceAtBoundPeriods )
+            if dynareOBC.SlowIRFs
+                fprintf( '\n' );
+                disp( 'Ignoring IRFsForceAtBoundPeriods due to SlowIRFs option.' );
+                fprintf( '\n' );
+            elseif ~dynareOBC.NoCubature
+                fprintf( '\n' );
+                disp( 'Ignoring IRFsForceAtBoundPeriods due to cubature being enabled.' );
+                fprintf( '\n' );
+            end
+            if ~isnumeric( dynareOBC.IRFsForceAtBoundPeriods )
+                if dynareOBC.IRFsForceAtBoundPeriods( 1 ) ~= '['
+                    dynareOBC.IRFsForceAtBoundPeriods = [ '[' dynareOBC.IRFsForceAtBoundPeriods ];
+                end
+                if dynareOBC.IRFsForceAtBoundPeriods( end ) ~= ']'
+                    dynareOBC.IRFsForceAtBoundPeriods = [ dynareOBC.IRFsForceAtBoundPeriods ']' ];
+                end
+                dynareOBC.IRFsForceAtBoundPeriods = eval( dynareOBC.IRFsForceAtBoundPeriods );
+            end
+        end
 
         if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1
             OpenPool;

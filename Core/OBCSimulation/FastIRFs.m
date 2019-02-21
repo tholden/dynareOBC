@@ -213,6 +213,14 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
     if dynareOBC.NumberOfMax > 0
         if dynareOBC.NoCubature
             y = SolveBoundsProblem( UnconstrainedReturnPath );
+            if ~isempty( dynareOBC.IRFsForceAtBoundPeriods )
+                seps = sqrt( eps );
+                while any( UnconstrainedReturnPath( dynareOBC.IRFsForceAtBoundPeriods ) + dynareOBC.MMatrix( dynareOBC.IRFsForceAtBoundPeriods, : ) * y > seps )
+                    Periods = union( find( y > 0 ), dynareOBC.IRFsForceAtBoundPeriods );
+                    y( Periods ) = -dynareOBC.MMatrix( Periods, Periods ) \ UnconstrainedReturnPath( Periods );
+                    y = y + SolveBoundsProblem( UnconstrainedReturnPath + dynareOBC.MMatrix * y );
+                end
+            end
         else
             [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, false, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
             if dynareOBC.Global
