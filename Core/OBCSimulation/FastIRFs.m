@@ -213,15 +213,16 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
     if dynareOBC.NumberOfMax > 0
         if dynareOBC.NoCubature
             y = SolveBoundsProblem( UnconstrainedReturnPath );
-            if ~isempty( dynareOBC.IRFsForceAtBoundIndices )
+            if ~isempty( dynareOBC.IRFsForceAtBoundIndices ) || ~isempty( dynareOBC.IRFsForceNotAtBoundIndices )
                 seps = sqrt( eps );
+                y( dynareOBC.IRFsForceNotAtBoundIndices ) = 0;
                 Periods = union( find( y ~= 0 ), dynareOBC.IRFsForceAtBoundIndices );
                 y( Periods ) = -dynareOBC.MMatrix( Periods, Periods ) \ UnconstrainedReturnPath( Periods );
                 while any( UnconstrainedReturnPath( dynareOBC.IRFsForceAtBoundIndices ) + dynareOBC.MMatrix( dynareOBC.IRFsForceAtBoundIndices, : ) * y > seps ) || any( UnconstrainedReturnPath + dynareOBC.MMatrix * y < -seps )
                     OldPeriods = Periods;
-                    Periods = union( Periods, find( UnconstrainedReturnPath( dynareOBC.sIndices ) + dynareOBC.MsMatrix * y < seps ) );
+                    Periods = setdiff( union( Periods, find( UnconstrainedReturnPath( dynareOBC.sIndices ) + dynareOBC.MsMatrix * y < seps ) ), dynareOBC.IRFsForceNotAtBoundIndices );
                     if ( numel( Periods ) == numel( OldPeriods ) ) && all( Periods(:) == OldPeriods(:) )
-                        error( 'dynareOBC:ForceAtBoundsIterativeFailure', 'The iterative ForceAtBounds procedure failed. Note, this does not mean very much about the model!' );
+                        error( 'dynareOBC:ForceAtBoundsIterativeFailure', 'The iterative ForceAtBounds/ForceNotAtBounds procedure failed. Note, this does not mean very much about the model!' );
                     end
                     y( Periods ) = -dynareOBC.MMatrix( Periods, Periods ) \ UnconstrainedReturnPath( Periods );
                 end
