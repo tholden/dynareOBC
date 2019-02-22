@@ -60,4 +60,6 @@ for i = 1 : NPlots
         set( hs, 'YLim', YLim( :, j ) );
     end
     tightfigadv( hf );
+    savefig( hf, int2str( i ), 'compact' );
+    saveas( hf, int2str( i ), 'meta' );
 end
