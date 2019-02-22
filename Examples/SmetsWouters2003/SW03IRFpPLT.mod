@@ -23,7 +23,7 @@ var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
     kpf habf kp hab;
 var yobs cobs lobs piobs pobs robs;
-var p z;
+var p;
 
 varexo ea eas epsilon_b eg els eqs einv epinf ew em;
 
@@ -89,9 +89,8 @@ model;
 p = p(-1) + pinf - STEADY_STATE(pinf);
 
 #rT = crr*r(-1) + (1-crr)*(as + crpi* pinf + cry*ygap)+crdpi*(pinf-pinf(-1))+crdy*(ygap-ygap(-1))+ms;
-z = z(-1) + r - rT;
 
-r = max( -log( 1.021605136 ) * 100, rT - z );
+r = max( -log( 1.021605136 ) * 100, rT + 0.1 * p );
 
 // The exact value of the ZLB doesn't matter for the sake of existence calculations.
 // Here we take the mean value from the Fagan Henry and Mestre 2001 dataset, over the data period used by Smets Wouters (2003).
@@ -251,7 +250,6 @@ pobs = 1e-8; // 0.000195813553678691;
 robs = log( 1.021605136 ) * 100 * scale_;
 
 p = pobs * scale_;
-z = 0;
 
 end;
 

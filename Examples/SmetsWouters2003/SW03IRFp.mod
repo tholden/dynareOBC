@@ -21,7 +21,8 @@
 var mcf zcapf rkf kf pkf muf cf invef yf labf pinff wf pf emplf rrf effortf
     rf mc zcap rk k pk mu c inve y lab pinf w empl ww effort pinf4 r dr 
     pinfLAG1 pinfLAG2 ygap a as b g ls qs ms sinv spinf sw 
-    kpf habf kp hab yobs cobs pobs robs;
+    kpf habf kp hab;
+var yobs cobs lobs piobs pobs robs;
 var p;
 
 varexo ea eas epsilon_b eg els eqs einv epinf ew em;
@@ -156,11 +157,13 @@ habf     =   chab*habf(-1) + (1-chab)*cf(-1);
 kp       =   (1-ctou)*kp(-1) + ctou*inve(-1);
 hab      =   chab*hab(-1) + (1-chab)*c(-1);
 
-#scale = 1 / 100;
+#scale = 1; // / 100;
 yobs = y * scale;
 cobs = c * scale;
+lobs = lab * scale;
+piobs = pinf * scale;
 pobs = p * scale;
-robs = r / 100 + log( 1.021605136 );
+robs = r * scale + log( 1.021605136 ) * 100 * scale;
 
 end;
 
@@ -234,11 +237,16 @@ habf = 0;
 kp = 0;
 hab = 0;
 
+scale_ = 1;
+
 yobs = 0;
 cobs = 0;
+lobs = 0;
 piobs = 0;
-robs = log( 1.021605136 );
-p = 0;
+pobs = 1e-8; // 0.000195813553678691;
+robs = log( 1.021605136 ) * 100 * scale_;
+
+p = pobs * scale_;
 
 end;
 
@@ -246,4 +254,4 @@ steady;
 
 check;
 
-stoch_simul( order=1, irf=40, periods=0, irf_shocks = ( epsilon_b ) ) yobs cobs pobs robs;
+stoch_simul( order=1, irf=40, periods=0, irf_shocks = ( epsilon_b ) ) yobs cobs lobs piobs pobs robs;
