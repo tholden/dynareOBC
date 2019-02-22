@@ -1,3 +1,4 @@
+clear variables
 close all
 
 dynareOBC SW03IRFp.mod ShockScale=22.5 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1
