@@ -4,7 +4,6 @@ close all
 dynareOBC SW03IRFp.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1
 dynareOBC SW03IRFp.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1 IRFsForceAtBoundIndices=[5]
 dynareOBC SW03IRFp.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1 IRFsForceAtBoundIndices=[5:6]
-dynareOBC SW03IRFp.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1 IRFsForceAtBoundIndices=[5:8]
 dynareOBC SW03IRFp.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1 IRFsForceAtBoundIndices=[1] IRFsForceNotAtBoundIndices=[4]
 dynareOBC SW03IRFpTPLT.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0
 dynareOBC SW03IRFpPLT.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=1
@@ -13,13 +12,12 @@ dynareOBC SW03IRFpRW.mod ShockScale=15.8 DisplayBoundsSolutionProgress MultiThre
 dynareOBC SW03IRFp.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0
 dynareOBC SW03IRFp.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0 IRFsForceAtBoundIndices=[5]
 dynareOBC SW03IRFp.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0 IRFsForceAtBoundIndices=[5:6]
-dynareOBC SW03IRFp.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0 IRFsForceAtBoundIndices=[5:8]
 dynareOBC SW03IRFp.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0 IRFsForceAtBoundIndices=[1] IRFsForceNotAtBoundIndices=[4]
 dynareOBC SW03IRFpTPLT.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0
 dynareOBC SW03IRFpPLT.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0
 dynareOBC SW03IRFpRW.mod ShockScale=16.2 DisplayBoundsSolutionProgress MultiThreadBoundsProblem TimeToEscapeBounds=32 SkipFirstSolutions=0
 
-NPlots = 16;
+NPlots = 14;
 
 Titles = { 'Output', 'Consumption', 'Hours Worked', 'Quarterly Inflation', 'Price Level', 'Quarterly Nominal Interest Rate' };
 
