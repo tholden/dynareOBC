@@ -89,7 +89,7 @@ for k = 0 : 1
             hs = hf.Children( j );
 
             axis( hs, 'square' );
-            title( hs, Titles{ j } );
+            title( hs, Titles{ NSubPlots + 1 - j } );
             set( hs, 'XLim', XLim( :, j ) );
             set( hs, 'YLim', YLim( :, j ) );
 
