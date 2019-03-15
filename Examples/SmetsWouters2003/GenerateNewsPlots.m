@@ -50,7 +50,7 @@ for i = 1 : NPlots
         set( hs1, 'XLim', XLim( :, j ) );
         set( hs1, 'YLim', YLim( :, j ) );
         hold( hs1, 'on' );
-        plot( hs1, hs2.Children( end ).XData, hs2.Children( end ).YData, ':' );
+        plot( hs1, hs2.Children( end ).XData, hs2.Children( end ).YData, 'b-' );
         hold( hs1, 'off' );
     end
     tightfigadv( hf1 );
