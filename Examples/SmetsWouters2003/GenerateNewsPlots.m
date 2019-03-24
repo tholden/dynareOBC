@@ -4,11 +4,11 @@ close all
 NPlots = 4;
 
 for i = 1 : NPlots
-    eval( [ 'dynareOBC SW03IRFpNews.mod Bypass -DHorizon=' int2str( i - 1 ) ] );
+    eval( [ 'dynareOBC SW03IRFpNews.mod Bypass NoClearAll -DHorizon=' int2str( i - 1 ) ] );
 end
 
 for i = 1 : NPlots
-    eval( [ 'dynareOBC SW03IRFpPLTNews.mod Bypass -DHorizon=' int2str( i - 1 ) ] );
+    eval( [ 'dynareOBC SW03IRFpPLTNews.mod Bypass NoClearAll -DHorizon=' int2str( i - 1 ) ] );
 end
 
 Titles = { 'Output', 'Consumption', 'Hours Worked', 'Quarterly Inflation', 'Price Level', 'Quarterly Nominal Interest Rate' };
@@ -32,7 +32,7 @@ YLim = [ min( YLims( 1, :, : ), [], 3 ); max( YLims( 2, :, : ), [], 3 ) ];
 
 for i = 1 : ( 2 * NPlots )
     hf1 = figure( i );
-    set( hf1, 'Position', [ 100 100 1280 800 ] );
+    % set( hf1, 'Position', [ 100 100 1280 800 ] );
     for j = 1 : NSubPlots
         hs1 = hf1.Children( j );
         axis( hs1, 'square' );
