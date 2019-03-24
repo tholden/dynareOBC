@@ -7,17 +7,9 @@ for i = 1 : NPlots
     eval( [ 'dynareOBC SW03IRFpNews.mod Bypass -DHorizon=' int2str( i - 1 ) ] );
 end
 
-delete SW03IRFpNews*.m
-delete SW03IRFpNews.log
-rmdir SW03IRFpNews s
-
 for i = 1 : NPlots
     eval( [ 'dynareOBC SW03IRFpPLTNews.mod Bypass -DHorizon=' int2str( i - 1 ) ] );
 end
-
-delete SW03IRFpPLTNews*.m
-delete SW03IRFpPLTNews.log
-rmdir SW03IRFpPLTNews s
 
 Titles = { 'Output', 'Consumption', 'Hours Worked', 'Quarterly Inflation', 'Price Level', 'Quarterly Nominal Interest Rate' };
 
