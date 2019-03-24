@@ -25,6 +25,8 @@ if Regenerate %#ok<*UNRCH>
 
     NPlots = 8;
     
+    Regenerate = true;
+    
 else
     
     NPlots = 8;
@@ -81,7 +83,7 @@ for k = 0 : 1
 
         hf = figure( i + NPlots * k );
         if Regenerate
-            set( hf, 'Position', [ 100 100 1280 800 ] );
+            % set( hf, 'Position', [ 100 100 1280 800 ] );
         end
 
         for j = 1 : NSubPlots
@@ -93,6 +95,9 @@ for k = 0 : 1
             set( hs, 'XLim', XLim( :, j ) );
             set( hs, 'YLim', YLim( :, j ) );
 
+            if j <= NSubPlots / 2
+                hs.Position(2) = hs.Position(2) + 0.1;
+            end
         end
 
         tightfigadv( hf );
