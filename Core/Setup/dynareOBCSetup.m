@@ -69,7 +69,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with DynareOBC. Please update dynare.' );
     end
 
-    if ~ismember( 'noclearall', varargin )
+    if ~ismember( 'noclearall', lower( varargin ) )
         WarningState = warning( 'off', 'all' );
         try
             evalin( 'base', 'clear all;' );
