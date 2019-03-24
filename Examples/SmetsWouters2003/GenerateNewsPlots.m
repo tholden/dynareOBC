@@ -39,6 +39,9 @@ for i = 1 : ( 2 * NPlots )
         title( hs1, Titles{ NSubPlots + 1 - j } );
         set( hs1, 'XLim', XLim( :, j ) );
         set( hs1, 'YLim', YLim( :, j ) );
+        if j <= NSubPlots / 2
+            hs1.Position(2) = hs1.Position(2) + 0.1;
+        end
     end
     tightfigadv( hf1 );
     savefig( hf1, [ 'News' int2str( i ) ], 'compact' );
