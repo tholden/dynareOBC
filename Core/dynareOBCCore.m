@@ -213,7 +213,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.MLVNames = {};
     end
 
-    if M_.orig_endo_nbr ~= M_.endo_nbr
+    if ( M_.orig_endo_nbr ~= M_.endo_nbr ) && ( dynareOBC.NumberOfMax > 0 ) && ( ~dynareOBC.Bypass )
         error( 'dynareOBC:AuxiliaryVariables', 'DynareOBC is unsupported on models with lags or leads on exogenous variables, or lags or leads on endogenous variables greater than one period.\nPlease manually add additional variables for these lags and leads.\nFor example, to introduce lags of an exogenous variable e, define a new endogenous variable e_ENDO with equation e_ENDO = e, then replace e(-1) with e_ENDO(-1).\nAnd, to introduce a second lag of an endogenous variable x, introduce a new endogenous variable x_LAG with equation x_LAG = x(-1), then replace x(-2) with x_LAG(-1).' );
     end
 
