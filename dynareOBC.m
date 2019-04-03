@@ -574,7 +574,7 @@ function dynareOBC( InputFileName, varargin )
         try
             fprintf( '\n' );
             ReadMeText = fileread( [ dynareOBCPath '/ReadMe.txt' ] );
-            fprintf( '%s', ReadMeText );
+            fprintf( '%s', strrep( ReadMeText, sprintf( '\r\n' ), sprintf( '\n' ) ) ); %#ok<SPRINTFN>
         catch
             error( 'dynareOBC:ReadMeDisplay', 'Error displaying read-me.' );
         end
