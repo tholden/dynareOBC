@@ -69,20 +69,20 @@ function [ Info, M, options, oo, dynareOBC ] = ModelSolution( SkipResol, M, opti
             disp( 'Computing the first order approximation around the selected non-steady-state point.' );
             fprintf( '\n' );
         end
-        deflect_ = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
+        [ deflect, M, oo ] = compute_deflected_linear_approximation( M, options, oo, dynareOBC.FirstOrderAroundRSS1OrMean2 );
     else
-        deflect_ = [];
+        deflect = [];
     end
-    if ~isempty( deflect_ )
+    if ~isempty( deflect )
         dynareOBC.Order = 1;
-        dynareOBC.Constant = deflect_.y;
+        dynareOBC.Constant = deflect.y;
         if any( dynareOBC.Constant( ( end - dynareOBC.NumberOfMax + 1 ) : end ) < 0 )
             Info = 19090714;
             return
         end
-        oo.dr.ys = deflect_.y;
-        oo.dr.ghx = deflect_.y_x;
-        oo.dr.ghu = deflect_.y_u;
+        oo.dr.ys = deflect.y;
+        oo.dr.ghx = deflect.y_x;
+        oo.dr.ghu = deflect.y_u;
     end
 
     oo.steady_state = oo.dr.ys;
