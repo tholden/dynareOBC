@@ -482,7 +482,7 @@ function dynareOBC = InitialChecks( dynareOBC )
         ParallelRetrieveConditionalCovariances = false;
     end
     
-    PoolNotNeeded = ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) );
+    PoolNotNeeded = ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && ~dynareOBC.SimulateOnGridPoints && dynareOBC.MLVSimulationMode <= 1 ) );
     
     PoolOpened = false;
     d1sSubMMatrices = dynareOBC.d1sSubMMatrices;

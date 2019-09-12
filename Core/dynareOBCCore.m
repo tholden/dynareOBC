@@ -624,7 +624,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.IRFsForceNotAtBoundIndices = [];
         end
 
-        if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1
+        if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1 || dynareOBC.SimulateOnGridPoints
             OpenPool;
         end
         StoreGlobals( M_, options_, oo_, dynareOBC );
