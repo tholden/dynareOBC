@@ -1,6 +1,6 @@
-figure( 1 );
+figure( 100 );
 
-subplot( 1, 2, 1 );
+subplot( 2, 2, 1 );
 
 N = min( size( dynareOBC_.MMatrix ) );
 

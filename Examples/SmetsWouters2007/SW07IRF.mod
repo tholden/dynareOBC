@@ -158,8 +158,8 @@ model;
 
         y_obs = y / 100;
         c_obs = c / 100;
-        pi_obs = pinfobs / 100;
-        r_obs = robs / 100;
+        pi_obs = 4 * pinfobs / 100;
+        r_obs = 4 * robs / 100;
 
 end; 
 
@@ -227,8 +227,8 @@ steady_state_model;
     kp = 0;
 y_obs = 0;
 c_obs = 0;
-pi_obs = pinfobs / 100;
-r_obs = robs / 100;
+pi_obs = 4 * pinfobs / 100;
+r_obs = 4 * robs / 100;
 end;
 
 steady;
