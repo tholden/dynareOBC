@@ -1,0 +1,10 @@
+figure( 1 );
+
+subplot( 1, 2, 1 );
+
+N = min( size( dynareOBC_.MMatrix ) );
+
+plot( 0 : ( N - 1 ), diag( dynareOBC_.MMatrix ), 0 : ( N - 1 ), zeros( 1, N ) );
+
+set( gca, 'FontName', 'TeXGyrePagella' );
+set( gca, 'FontSize', 26 );
