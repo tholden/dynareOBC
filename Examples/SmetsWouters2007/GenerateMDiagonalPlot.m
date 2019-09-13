@@ -9,6 +9,8 @@ plot( 0 : ( N - 1 ), diag( dynareOBC_.MMatrix ), 0 : ( N - 1 ), zeros( 1, N ) );
 set( gca, 'FontName', 'TeXGyrePagella' );
 set( gca, 'FontSize', 26 );
 
+title( 'The Smets & Wouters (2007) model' );
+
 subplot( 1, 2, 1 );
 YLim1 = get( gca, 'YLim' );
 subplot( 1, 2, 2 );
