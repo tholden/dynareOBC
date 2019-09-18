@@ -1,10 +1,12 @@
 try
     load ExtendedPathResults.mat;
-    addpath( [ fileparts( which( 'dynare' ) ) '\occbin' ] );
+    disp( 'Note that this requires OccBin to be in your MATLAB Path!' );
     [ ~, OBEndoSequence ] = solve_one_constraint( 'OccBinVersionSteady', 'OccBinVersionBound', 'd<-(1-beta)', 'd>-(1-beta)', ShockSequence', 'e', length( ShockSequence + 1000 ), 100 );
     beta = 0.99;
     OBEndoSequence = bsxfun( @plus, OBEndoSequence', [ 0; 0; 1 - beta; 1 - beta; 0 ] );
-catch
+catch Error
+    disp( 'Error in OccBin:' );
+    disp( Error.message );
     OBEndoSequence = [];
 end
 try

@@ -9,3 +9,5 @@ load OccBinResults.mat OBEndoSequence
 if ~isempty( OBEndoSequence )
     figure(2); plot(OBEndoSequence'-DOBCEndoSequence');
 end
+
+disp( 'Note that the difference between the various results are all very small.' );
