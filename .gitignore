@@ -19,6 +19,7 @@ Examples/State.mat
 *.eps
 *.jnl
 *.orig
+*.png
 
 dynareOBCTemp*
 *deleteThis*
