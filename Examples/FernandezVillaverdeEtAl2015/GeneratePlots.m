@@ -6,6 +6,8 @@ pause;
 
 dynare NewsNK
 
+PrepareFigure;
+
 try
     delete NewsNK_*.*
     delete NewsNK.m
@@ -19,6 +21,8 @@ disp( 'Press a key to continue:' );
 pause;
 
 dynare NewsNKIndexation
+
+PrepareFigure;
 
 try
     delete NewsNKIndexation_*.*

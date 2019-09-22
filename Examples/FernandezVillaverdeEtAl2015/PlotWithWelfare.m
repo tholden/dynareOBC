@@ -20,8 +20,5 @@ hold on;
 plot( Times, welfare_ce_ * ones( size( welfare_ce ) ), '-r', 'linewidth', 0.5 );
 plot( Times, welfare_ce_WO, ':k', 'linewidth', 1 );
 hold off;
-title( 'welfare c.e. (Z)' );
 
-for i = 1 : 6
-    set( subplot( 3, 2, i ), 'XLim', [ 1 , 40 ] );
-end
+PrepareWelfareFigure;
