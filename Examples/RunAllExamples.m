@@ -14,6 +14,10 @@ for i = 1 : length( DirResult )
         continue
     end
     
+    if strcmp( DirResult( i ).name, 'FigureUtils' )
+        continue
+    end
+    
     j = j + 1;
     WarningState = warning( 'off', 'all' );
     save State i j DirResult WarningState;
