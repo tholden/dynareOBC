@@ -68,6 +68,7 @@ rm -f -r -d -- **/*.zip
 rm -f -r -d -- **/*.eps
 rm -f -r -d -- **/*.jnl
 rm -f -r -d -- **/*.orig
+rm -f -r -d -- **/*.png
 
 echo 4
 
