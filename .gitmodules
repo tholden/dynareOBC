@@ -19,9 +19,9 @@
 [submodule "Extern/DoubleDouble"]
 	path = Extern/DoubleDouble
 	url = https://github.com/tholden/DoubleDouble.git
-[submodule "Examples/FernandezVillaverdeEtAl2015/DynareTransformationEngine"]
-	path = Examples/FernandezVillaverdeEtAl2015/DynareTransformationEngine
-	url = https://github.com/tholden/DynareTransformationEngine.git
 [submodule "Extern/export_fig"]
 	path = Extern/export_fig
 	url = https://github.com/altmany/export_fig.git
+[submodule "Examples/FernandezVillaverdeEtAl2015/DynareTransformationEngine"]
+	path = Examples/FernandezVillaverdeEtAl2015/DynareTransformationEngine
+	url = https://github.com/tholden/DynareTransformationEngine.git
