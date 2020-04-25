@@ -1,6 +1,8 @@
 DynareOBC: A toolkit for handling occasionally binding constraints with Dynare, by Tom Holden.
 ==============================================================================================
 
+***Note: DynareOBC does not currently support Dynare 4.6.x. Please stick with Dynare 4.5.x for now.***
+
 Background
 ----------
 
