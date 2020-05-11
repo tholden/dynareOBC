@@ -68,6 +68,8 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     if return_dynare_version( dynare_version ) < 4.4
         error( 'dynareOBC:OldDynare', 'Your version of dynare is too old to use with DynareOBC. Please update dynare.' );
     end
+    
+    Dynare46OrLater = return_dynare_version( dynare_version ) >= 4.6;
 
     if ~ismember( 'noclearall', lower( varargin ) )
         WarningState = warning( 'off', 'all' );
@@ -100,6 +102,8 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     if isempty( dynareOBC_ )
         dynareOBC_ = struct;
     end
+    
+    dynareOBC_.Dynare46OrLater = Dynare46OrLater;
 
     FNameDots = strfind( InputFileName, '.' );
     if isempty( FNameDots )
@@ -122,7 +126,11 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         error( 'dynareOBC:Arguments', 'You cannot select both FirstOrderAroundRSS and FirstOrderAroundMean.' );
     end
 
-    basevarargin( end + 1 : end + 6 ) = { 'noclearall', 'nolinemacro', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
+    basevarargin( end + 1 : end + 5 ) = { 'noclearall', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
+    
+    if ~Dynare46OrLater
+        basevarargin( end + 1 ) = { 'nolinemacro' };
+    end
 
     if strcmpi( InputFileName, 'TestSolvers' )
         EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} );
