@@ -23,6 +23,7 @@ Examples/State.mat
 *.emf
 
 dynareOBCTemp*
++dynareOBCTemp*
 *deleteThis*
 ~*
 outcmaes*.*
