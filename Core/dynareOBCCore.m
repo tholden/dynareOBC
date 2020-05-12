@@ -191,7 +191,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     global oo_ M_
     oo_.steady_state = oo_.dr.ys;
 
-    Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTemp2_static' );
+    Generate_dynareOBCTempGetMaxArgValues( dynareOBC.DynareVersion, dynareOBC.NumberOfMax, 'dynareOBCTemp2' );
 
     if LogLinear
         MaxArgValues = dynareOBCTempGetMaxArgValues( exp( oo_.steady_state ), [ oo_.exo_steady_state; oo_.exo_det_steady_state ], M_.params );

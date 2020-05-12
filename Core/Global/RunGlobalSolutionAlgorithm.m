@@ -51,7 +51,7 @@ function [ GlobalApproximationParameters, MaxArgValues, AmpValues ] = RunGlobalS
 
     [ GlobalApproximationParameters, M, oo ] = GlobalModelSolution( M_, options_, oo_, dynareOBC );
 
-    Generate_dynareOBCTempGetMaxArgValues( dynareOBC.NumberOfMax, 'dynareOBCTempG_static' );
+    Generate_dynareOBCTempGetMaxArgValues( dynareOBC.DynareVersion, dynareOBC.NumberOfMax, 'dynareOBCTempG' );
     MaxArgValues = dynareOBCTempGetMaxArgValues( oo.steady_state, [ oo.exo_steady_state; oo.exo_det_steady_state ], M.params );
     if any( MaxArgValues( :, 1 ) == MaxArgValues( :, 2 ) )
         error( 'dynareOBC:JustBinding', 'DynareOBC does not support cases in which the constraint just binds in steady-state.' );
