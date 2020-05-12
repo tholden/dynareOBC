@@ -1,4 +1,9 @@
 function dynareOBC = Generate_dynareOBCTempGetMLVs( M, dynareOBC, FileName )
+
+    if dynareOBC.DynareVersion >= 4.6
+        error( 'dynareOBC:MLVSimulationUnsupportedWithDynare46', 'At present, simulating MLVs is not supported with Dynare 4.6 or later. Please use Dynare 4.5.x instead.' );
+    end
+
     % read in the _dynamic.m file
     FileText = fileread( [ FileName '.m' ] );
     % truncate the function after the last assignment to a MLV
