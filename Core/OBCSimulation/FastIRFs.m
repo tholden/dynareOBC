@@ -9,6 +9,9 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
     SS = M.Sigma_e + 1e-14 * eye( M.exo_nbr );
     cs = spsqrtm( SS );
     
+    EndoNames = strtrim( cellstr( M.endo_names ) );
+    ExoNames  = strtrim( cellstr( M.exo_names ) );
+    
     if dynareOBC.MLVSimulationMode> 0
         VariableSelect = 1 : M.endo_nbr;
     else
@@ -36,7 +39,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
         
         for k = 1:length( VariableSelect )
             j = VariableSelect( k );
-            IRFName = [ deblank( M.endo_names( j, : ) ) '_' deblank( M.exo_names( i, : ) ) ];
+            IRFName = [ EndoNames{ j } '_' ExoNames{ i } ];
             CurrentIRF = TempIRFs( j, 1:Ts );
             IRFsWithoutBounds.( IRFName ) = CurrentIRF;
             if dynareOBC.NumberOfMax > 0
@@ -117,13 +120,13 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
 
         for i = dynareOBC.ShockSelect
             
-            ShockName = deblank( M.exo_names( i, : ) );
+            ShockName = ExoNames{ i };
             
             IRFsAsArrayWithBounds = zeros( dynareOBC.OriginalNumVar, Ts );
             IRFsAsArrayWithoutBounds = zeros( dynareOBC.OriginalNumVar, Ts );
             
             for j = 1 : dynareOBC.OriginalNumVar
-                IRFName = [ deblank( M.endo_names( j, : ) ) '_' ShockName ];
+                IRFName = [ EndoNames{ j } '_' ShockName ];
                 IRFsAsArrayWithBounds( j, : ) = oo.irfs.( IRFName ) + IRFOffsets.( IRFName );
                 IRFsAsArrayWithoutBounds( j, : ) = IRFsWithoutBounds.( IRFName ) + IRFOffsets.( IRFName );
             end

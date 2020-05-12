@@ -7,14 +7,17 @@ function PlotIRFs( M, options, oo, dynareOBC )
     NoDisplay = dynareOBC.NoDisplay;
     GraphFormat = options.graph_format;
     
+    EndoNames = strtrim( cellstr( M.endo_names ) );
+    ExoNames  = strtrim( cellstr( M.exo_names ) );
+    
     for i = dynareOBC.ShockSelect
-        CurrentShock = deblank( M.exo_names( i, : ) );
+        CurrentShock = ExoNames{ i };
         IRFs = zeros( 0, T );
         IRFsWithoutBounds = zeros( 0, T );
         IRFOffsets = zeros( 0, T );
         VariableNames = { };
         for j = dynareOBC.VariableSelect
-            CurrentVariable = deblank( M.endo_names( j, : ) );
+            CurrentVariable = EndoNames{ j };
             IRFName = [ CurrentVariable '_' CurrentShock ];
             if isfield( oo.irfs, IRFName )
                 CurrentIRF = oo.irfs.( IRFName );

@@ -320,10 +320,12 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     [ FileLines, Indices ] = PerformDeletion( Indices.InitValStart, Indices.InitValEnd, FileLines, Indices );
     [ FileLines, Indices ] = PerformDeletion( Indices.SteadyStateModelStart, Indices.SteadyStateModelEnd, FileLines, Indices );
+    
+    ParamNames = strtrim( cellstr( M_.param_names ) );
 
     ToInsertBeforeModel = cell( 1, M_.param_nbr );
     for ParamIndex = 1 : M_.param_nbr
-        ToInsertBeforeModel{ ParamIndex } = sprintf( '%s=%.17e;', strtrim( M_.param_names( ParamIndex, : ) ), M_.params( ParamIndex ) );
+        ToInsertBeforeModel{ ParamIndex } = sprintf( '%s=%.17e;', ParamNames{ ParamIndex }, M_.params( ParamIndex ) );
     end
 
     ToInsertInModelAtEnd = { };
@@ -690,7 +692,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     dynareOBC = orderfields( dynareOBC );
     
     for i = 1 : M_.param_nbr
-        assignin( 'base', strtrim( M_.param_names( i, : ) ), M_.params( i ) );
+        assignin( 'base', ParamNames{ i }, M_.params( i ) );
     end
     evalin( 'base', 'dynareOBCTempPostScript;' );
 end

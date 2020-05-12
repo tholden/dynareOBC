@@ -9,6 +9,9 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
     Replications = dynareOBC.Replications;
     OriginalNumVarExo = dynareOBC.OriginalNumVarExo;
     
+    EndoNames = strtrim( cellstr( M.endo_names ) );
+    ExoNames  = strtrim( cellstr( M.exo_names ) );
+    
     ShockSequence = zeros( dynareOBC.OriginalNumVarExo, T2, Replications );
     
     RunWithBoundsWithoutShock = zeros( M.endo_nbr, T2, Replications );
@@ -133,7 +136,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
         
         if dynareOBC.MedianIRFs
             for i = dynareOBC.VariableSelect
-                IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFName = [ EndoNames{ i } '_' ExoNames{ ShockIndex } ];
                 IRFsWithoutBounds.( IRFName ) = median( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = median( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
                 assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
@@ -142,7 +145,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
             end
             for i = 1 : nMLVIRFs
                 MLVName = MLVNames{MLVSelect(i)};
-                IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFName = [ MLVName '_' ExoNames{ ShockIndex } ];
                 IRFsWithoutBounds.( IRFName ) = median( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = median( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
                 assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
@@ -151,7 +154,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
             end
         else
             for i = dynareOBC.VariableSelect
-                IRFName = [ deblank( M.endo_names( i, : ) ) '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFName = [ EndoNames{ i } '_' ExoNames{ ShockIndex } ];
                 IRFsWithoutBounds.( IRFName ) = mean( RunWithoutBoundsWithShock( i, :, : ) - RunWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = mean( RunWithBoundsWithShock( i, :, : ) - RunWithBoundsWithoutShock( i, :, : ), 3 );
                 assignin( 'base', IRFName, oo.irfs.( IRFName ).' );
@@ -160,7 +163,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
             end
             for i = 1 : nMLVIRFs
                 MLVName = MLVNames{MLVSelect(i)};
-                IRFName = [ MLVName '_' deblank( M.exo_names( ShockIndex, : ) ) ];
+                IRFName = [ MLVName '_' ExoNames{ ShockIndex } ];
                 IRFsWithoutBounds.( IRFName ) = mean( MLVsWithoutBoundsWithShock( i, :, : ) - MLVsWithoutBoundsWithoutShock( i, :, : ), 3 );
                 oo.irfs.( IRFName ) = mean( MLVsWithBoundsWithShock( i, :, : ) - MLVsWithBoundsWithoutShock( i, :, : ), 3 );
                 assignin( 'base', IRFName, oo.irfs.( IRFName ).' );

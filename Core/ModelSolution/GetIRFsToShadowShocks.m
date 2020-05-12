@@ -16,7 +16,12 @@ function dynareOBC = GetIRFsToShadowShocks( M, oo, dynareOBC )
     exo_simul = [repmat(oo.exo_steady_state',klen,1) repmat(oo.exo_det_steady_state',klen,1)];
     iyv = M.lead_lag_incidence';
     z = repmat(oo.dr.ys,1,klen);
-    [ ~, jacobia ] = feval( [M.fname '_dynamic'],full(z(find(iyv(:)))),full(exo_simul), full(M.params), full(oo.dr.ys), M.maximum_lag + 1 ); %#ok<FNDSB>
+    
+    if dynareOBC.DynareVersion < 4.6
+        [ ~, jacobia ] = feval( [M.fname '_dynamic'],full(z(find(iyv(:)))),full(exo_simul), full(M.params), full(oo.dr.ys), M.maximum_lag + 1 ); %#ok<FNDSB>
+    else
+        [ ~, jacobia ] = feval( [M.fname '.dynamic'],full(z(find(iyv(:)))),full(exo_simul), full(M.params), full(oo.dr.ys), M.maximum_lag + 1 ); %#ok<FNDSB>
+    end
     
     %% end code taken from stochastic_solvers
     

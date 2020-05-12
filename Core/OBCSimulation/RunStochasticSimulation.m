@@ -90,8 +90,10 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     oo.endo_simul = Simulation.total_with_bounds;
     dynareOBC.SimulationsWithoutBounds = Simulation.total;
     
+    EndoNames = strtrim( cellstr( M.endo_names ) );
+    
     for i = 1 : M.endo_nbr
-        assignin( 'base', strtrim( M.endo_names( i, : ) ), oo.endo_simul( i, : ).' );
+        assignin( 'base', EndoNames{ i }, oo.endo_simul( i, : ).' );
     end
     
     if dynareOBC.MLVSimulationMode > 0
