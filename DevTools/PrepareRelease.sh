@@ -69,10 +69,15 @@ rm -f -r -d -- **/*.eps
 rm -f -r -d -- **/*.jnl
 rm -f -r -d -- **/*.orig
 rm -f -r -d -- **/*.png
+rm -f -r -d -- **/*.emf
+rm -f -r -d -- **/*.synctex.gz
+rm -f -r -d -- **/*.toc
+rm -f -r -d -- **/*.aux
 
 echo 4
 
 rm -f -r -d -- **/dynareOBCTemp*
+rm -f -r -d -- **/+dynareOBCTemp*
 rm -f -r -d -- **/*deleteThis*
 rm -f -r -d -- **/~*
 rm -f -r -d -- **/outcmaes*.*
