@@ -32,4 +32,7 @@ MFileText = fileread( 'dynareOBCTempSolution.m' );
 MFileText = regexprep( MFileText, '^\s*for\s+([^=]+)=([^,;]+)(,|;|$)', 'for $1 = coder.unroll\( $2 \);', 'ignorecase', 'lineanchors', 'dotexceptnewline' );
 MFile = fopen( 'dynareOBCTempSolution.m', 'w' );
 fprintf( MFile, '%s', MFileText );
+
+WarningState = warning( 'off', 'MATLAB:subscripting:noSubscriptsSpecified' );
 codegen -config cfg dynareOBCTempSolution -args ARGS{1} -o dynareOBCTempSolution_mex
+warning( WarningState );

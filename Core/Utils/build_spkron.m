@@ -35,4 +35,6 @@ ARGS{1}{3} = coder.typeof(int32(0));
 ARGS{1}{4} = coder.typeof(0,[Inf  3],[1 0]);
 
 %% Invoke MATLAB Coder.
+WarningState = warning( 'off', 'MATLAB:subscripting:noSubscriptsSpecified' );
 codegen -config cfg spkron_internal_mex -args ARGS{1}
+warning( WarningState );

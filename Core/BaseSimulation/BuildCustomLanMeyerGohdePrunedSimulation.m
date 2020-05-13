@@ -58,4 +58,6 @@ ARGS{1}{8}.total = coder.typeof(dynareOBC.Constant);
 ARGS{1}{8}.total_with_bounds = coder.typeof(dynareOBC.Constant); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
+WarningState = warning( 'off', 'MATLAB:subscripting:noSubscriptsSpecified' );
 codegen -config cfg CustomLanMeyerGohdePrunedSimulation -args ARGS{1} -o dynareOBCTempCustomLanMeyerGohdePrunedSimulation
+warning( WarningState );

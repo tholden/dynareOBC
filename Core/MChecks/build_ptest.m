@@ -31,4 +31,6 @@ ARGS{1} = cell(1,1);
 ARGS{1}{1} = coder.typeof(0,[Inf Inf],[1 1]);
 
 %% Invoke MATLAB Coder.
+WarningState = warning( 'off', 'MATLAB:subscripting:noSubscriptsSpecified' );
 codegen -config cfg ptest -args ARGS{1}
+warning( WarningState );

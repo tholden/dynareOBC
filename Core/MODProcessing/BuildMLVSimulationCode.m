@@ -45,4 +45,6 @@ end
 ARGS{1}{4} = coder.typeof( zeros( M.endo_nbr, 1 ) ); %#ok<NASGU>
 
 %% Invoke MATLAB Coder.
+WarningState = warning( 'off', 'MATLAB:subscripting:noSubscriptsSpecified' );
 codegen -config cfg dynareOBCTempGetMLVs -args ARGS{1} -o dynareOBCTempGetMLVs
+warning( WarningState );
