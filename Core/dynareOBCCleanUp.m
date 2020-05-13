@@ -28,8 +28,8 @@ function dynareOBCCleanUp
         
         ToSearch = ToSearchList{ DirIndex };
         
-        if isempty( ToSearch ) || ~isempty( strfind( ToSearch, MatlabRoot ) )
-            continue;
+        if isempty( ToSearch ) || contains( ToSearch, MatlabRoot ) 
+            continue
         end
                 
         try
@@ -52,6 +52,16 @@ function dynareOBCCleanUp
         try
             delete timedProgressbar_*.*
         catch
+        end
+        
+        RemainingFiles = [ dir( 'dynareOBCTemp*.*' ); dir( 'timedProgressbar_*.*' ) ];
+        
+        for i = 1 : length( RemainingFiles )
+            RemainingFile = RemainingFiles( i ).name;
+            try
+                delete( RemainingFile );
+            catch
+            end
         end
     
     end
