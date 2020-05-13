@@ -23,9 +23,12 @@ function Generate_dynareOBCTempGetMaxArgValues( DynareVersion, NumberOfMax, File
         
         TElements = regexp( FileText, '\<T\s*\(\s*(\d+)\s*\)\s*=', 'tokens' );
         
-        TElement = TElements{ end };
-        
-        FileText = regexprep( FileText, '\<assert\s*\(\s*length\(\s*T\s*\)\s*>=\s*\d+\s*\)\s*;', [ 'T = zeros( ' TElement{ 1 } ', 1 ); MaxArgValues = zeros( ' int2str( NumberOfMax ) ', 2 );' ] );
+        if isempty( TElements )
+            FileText = regexprep( FileText, '\<assert\s*\(\s*length\(\s*T\s*\)\s*>=\s*\d+\s*\)\s*;', [ 'MaxArgValues = zeros( ' int2str( NumberOfMax ) ', 2 );' ] );
+        else
+            TElement = TElements{ end };
+            FileText = regexprep( FileText, '\<assert\s*\(\s*length\(\s*T\s*\)\s*>=\s*\d+\s*\)\s*;', [ 'T = zeros( ' TElement{ 1 } ', 1 ); MaxArgValues = zeros( ' int2str( NumberOfMax ) ', 2 );' ] );
+        end
         
     else
         
