@@ -131,5 +131,5 @@ find . -empty -type d -delete
 
 echo Done
 
-echo -n "https://github.com/tholden/dynareOBC/releases/download/vX.XX.TODO/dynareOBCRelease.zip" > CurrentVersionURL.txt
+echo -n "https://github.com/tholden/dynareOBC/releases/download/vX.XX.XX.TODO/dynareOBCRelease.zip" > CurrentVersionURL.txt
 echo Now update CurrentVersionURL.txt
