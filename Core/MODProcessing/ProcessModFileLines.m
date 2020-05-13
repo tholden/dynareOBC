@@ -56,12 +56,19 @@ function [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLi
                     fclose( PostScriptFile );
                     rehash;
                     FileLines = FileLines( 1:(i-1) );
+                elseif ~isempty( regexp( line, '^var\>', 'once' ) ) || ~isempty( regexp( line, '^varexo\>', 'once' ) ) || ~isempty( regexp( line, '^varexo_det\>', 'once' ) ) || ~isempty( regexp( line, '^parameters\>', 'once' ) ) || ~isempty( regexp( line, '^trend_var\>', 'once' ) ) || ~isempty( regexp( line, '^log_trend_var\>', 'once' ) ) || ~isempty( regexp( line, '^model_local_variable\>', 'once' ) )
+                    line = regexprep( line, '\$[^$]*\$', ' ' );
+                    line = regexprep( line, '\(([^\)]*(''[^'']*'')?)*\)', ' ' );
+                    line = regexprep( line, '\s+', ' ' );
+                    FileLines{ write_i } = line;
                 end
             case 1 % in the model block
                 if strcmp( line, 'end;' )
                     SearchState = 0;
                     Indices.ModelEnd = i;
                 else
+                    line = regexprep( line, '\s*\[([^\]]*(''[^'']*'')?)*\]\s*', '' );
+                    FileLines{ write_i } = line;
                     [ TempIndexStart, TempIndexEnd ] = regexp( line, '(?<=(^\#dynareOBCMaxFunc))\d+', 'once' );
                     if isempty( TempIndexStart )
                         [ FileLines, TempCounter, dynareOBC.NumberOfMax, write_i ] = ProcessModelLines( line, FileLines, TempCounter, dynareOBC.NumberOfMax, write_i );
