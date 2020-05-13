@@ -2,6 +2,10 @@ function dynareOBC( InputFileName, varargin )
 % DynareOBC: A toolkit for handling occasionally binding constraints with Dynare, by Tom Holden. 
 % ============================================================================================== 
 %  
+% Note: DynareOBC currently only has limited support for Dynare 4.6.x. MLV simulation is not 
+% supported under Dynare 4.6.x and there may be other problems. I recommend sticking with Dynare 
+% 4.5.x for now. 
+%  
 % Background 
 % ---------- 
 %  
