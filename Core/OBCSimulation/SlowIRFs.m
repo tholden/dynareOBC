@@ -61,11 +61,15 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
             RunWithoutBoundsWithoutShock( :, :, k ) = Simulation.total( :, IRFIndices );
             
             if MLVSimulationMode > 0
+                CurrentMLVsWithBoundsWithoutShock = zeros( nMLVIRFs, T2 );
+                CurrentMLVsWithoutBoundsWithoutShock = zeros( nMLVIRFs, T2 );
                 for i = 1 : nMLVIRFs
                     MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
-                    MLVsWithBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
-                    MLVsWithoutBoundsWithoutShock( i, :, k ) = Simulation.MLVsWithoutBounds.( MLVName )( :, IRFIndices );
+                    CurrentMLVsWithBoundsWithoutShock( i, : ) = Simulation.MLVsWithBounds.( MLVName )( :, IRFIndices );
+                    CurrentMLVsWithoutBoundsWithoutShock( i, : ) = Simulation.MLVsWithoutBounds.( MLVName )( :, IRFIndices );
                 end
+                MLVsWithBoundsWithoutShock( :, :, k ) = CurrentMLVsWithBoundsWithoutShock;
+                MLVsWithoutBoundsWithoutShock( :, :, k ) = CurrentMLVsWithoutBoundsWithoutShock;
             end
 
             SimulationFieldNames = fieldnames( Simulation );
@@ -113,11 +117,15 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
                 RunWithoutBoundsWithShock( :, :, k ) = Simulation.total;
                 
                 if MLVSimulationMode > 0
+                    CurrentMLVsWithBoundsWithShock = zeros( nMLVIRFs, T2 );
+                    CurrentMLVsWithoutBoundsWithShock = zeros( nMLVIRFs, T2 );
                     for i = 1 : nMLVIRFs
                         MLVName = MLVNames{MLVSelect(i)}; %#ok<PFBNS>
-                        MLVsWithBoundsWithShock( i, :, k ) = Simulation.MLVsWithBounds.( MLVName );
-                        MLVsWithoutBoundsWithShock( i, :, k ) = Simulation.MLVsWithoutBounds.( MLVName );
+                        CurrentMLVsWithBoundsWithShock( i, : ) = Simulation.MLVsWithBounds.( MLVName );
+                        CurrentMLVsWithoutBoundsWithShock( i, : ) = Simulation.MLVsWithoutBounds.( MLVName );
                     end
+                    MLVsWithBoundsWithShock( :, :, k ) = CurrentMLVsWithBoundsWithShock;
+                    MLVsWithoutBoundsWithShock( :, :, k ) = CurrentMLVsWithoutBoundsWithShock;
                 end
             catch Error
                 warning( WarningState );
