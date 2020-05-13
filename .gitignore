@@ -21,6 +21,7 @@ Examples/State.mat
 *.orig
 *.png
 *.emf
+*.synctex.gz
 
 dynareOBCTemp*
 +dynareOBCTemp*
