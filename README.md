@@ -124,18 +124,16 @@ Note:
 * **For controlling cubature**
     * `Cubature`
       Turns on cubature. By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses to integrate over future uncertainty, using the options below.
-    * `QuasiMonteCarloLevel=INTEGER` (default: `0`)
-      By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option greater than zero removes this simplifying assumption, and uses quasi-Monte Carlo (Sobol) integration with at most `2^(1+INTEGER) - 1` samples (if `HigherOrderSobolDegree` is zero) or `2^(1+INTEGER)` samples (otherwise) to integrate over future uncertainty.
-    * `HigherOrderSobolDegree=INTEGER` (default: `0`)
-      Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one, when `QuasiMonteCarloLevel` is positive. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
       Controls the number of periods of uncertainty over which DynareOBC integrates when `Cubature` is turned on. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
+    * `QuasiMonteCarloLevel=INTEGER` (default: `15`)
+      To generate an initial point set, DynareOBC uses quasi-Monte Carlo (Sobol) integration with at most `2^(1+INTEGER) - 1` samples (if `HigherOrderSobolDegree` is zero) or `2^(1+INTEGER)` samples (otherwise) to integrate over future uncertainty.
+    * `HigherOrderSobolDegree=INTEGER` (default: `0`)
+      Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
       Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the `INTEGER` largest eigenvalues of the covariance matrix to zero.
-    * `CubatureTolerance=FLOAT` (default: `1e-6`)
-      Specifies that the maximum acceptable change in the integrals is the given value, for quasi Monte Carlo or default cubature. Setting this to zero disables adaptive cubature, and enables some additional speed-ups.
     * `MaxCubatureSerialLoop` (default: `2`)
       Determines the maximum number of calls to the solution of the inner bounds problem before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)
