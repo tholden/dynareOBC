@@ -20,7 +20,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
     
     TempIRFLROffsets = repmat( dynareOBC.Mean, 1, T );
     TempIRFSROffsets = zeros( length( VariableSelect ), Ts );
-    if dynareOBC.NumberOfMax > 0 && ( ~dynareOBC.NoCubature || dynareOBC.Global )
+    if dynareOBC.NumberOfMax > 0 && ( dynareOBC.Cubature || dynareOBC.Global )
         Shock = zeros( M.exo_nbr, 1 );
         y = FastIRFsInternal( Shock, 'the base path', M, oo, dynareOBC );
         for k = 1:length( VariableSelect )
@@ -55,7 +55,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
 
     if dynareOBC.MLVSimulationMode > 0
         
-        if ~dynareOBC.NoCubature
+        if dynareOBC.Cubature
             fprintf( '\n' );
             disp( 'MLVSimulationMode>0 is not supported with cubature and without the SlowIRFs option. Skipping MLV simulation.' );
             disp( 'Consider specifying SlowIRFs in future.' );
@@ -214,7 +214,12 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
     UnconstrainedReturnPath = vec( TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBounded, : )' );
     
     if dynareOBC.NumberOfMax > 0
-        if dynareOBC.NoCubature
+        if dynareOBC.Cubature
+            [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, false, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
+            if dynareOBC.Global
+                y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC );
+            end
+        else
             y = SolveBoundsProblem( UnconstrainedReturnPath );
             if ~isempty( dynareOBC.IRFsForceAtBoundIndices ) || ~isempty( dynareOBC.IRFsForceNotAtBoundIndices )
                 seps = sqrt( eps );
@@ -232,11 +237,6 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
                 if dynareOBC.DisplayBoundsSolutionProgress
                     disp( y );
                 end
-            end
-        else
-            [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, false, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
-            if dynareOBC.Global
-                y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC );
             end
         end
     else

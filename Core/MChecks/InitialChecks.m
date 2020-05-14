@@ -470,19 +470,19 @@ function dynareOBC = InitialChecks( dynareOBC )
     dynareOBC.ParametricSolutionHorizon = 0;
     dynareOBC.ParametricSolutionMode = 0;
     
-    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.ReverseSearch || ( dynareOBC.LeadConstraint > 0 ) || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature ) ) )
+    if dynareOBC.Estimation || dynareOBC.FullHorizon || dynareOBC.ReverseSearch || ( dynareOBC.LeadConstraint > 0 ) || ( ~dynareOBC.Smoothing && dynareOBC.SimulationPeriods == 0 && ( dynareOBC.IRFPeriods == 0 || ( ~dynareOBC.SlowIRFs && ~dynareOBC.Cubature ) ) )
         dynareOBC.MaxParametricSolutionDimension = 0;
     end
 
     if isfield( dynareOBC, 'A2PowersTrans' )
         LengthZ2 = size( dynareOBC.A2PowersTrans{1}, 1 );
-        Order2ConditionalCovariance = ( ~dynareOBC.NoCubature ) && dynareOBC.SecondOrderConditionalCovariance;
+        Order2ConditionalCovariance = dynareOBC.Cubature && dynareOBC.SecondOrderConditionalCovariance;
         ParallelRetrieveConditionalCovariances = ( LengthZ2 >= dynareOBC.RetrieveConditionalCovariancesParallelizationCutOff ) && Order2ConditionalCovariance;
     else
         ParallelRetrieveConditionalCovariances = false;
     end
     
-    PoolNotNeeded = ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && ~dynareOBC.SimulateOnGridPoints && dynareOBC.MLVSimulationMode <= 1 ) );
+    PoolNotNeeded = ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~ParallelRetrieveConditionalCovariances && ~dynareOBC.SlowIRFs && ~dynareOBC.Cubature && ~dynareOBC.SimulateOnGridPoints && dynareOBC.MLVSimulationMode <= 1 ) );
     
     PoolOpened = false;
     d1sSubMMatrices = dynareOBC.d1sSubMMatrices;

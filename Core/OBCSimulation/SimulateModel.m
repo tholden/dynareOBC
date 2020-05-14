@@ -228,13 +228,13 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
 
                     yOld = y;
                     try
-                        if dynareOBC_.NoCubature
-                            y = SolveBoundsProblem( UnconstrainedReturnPath );
-                        else
+                        if dynareOBC_.Cubature
                             [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo_, dynareOBC_, ReturnPathStruct.first, DisableParFor );
                             if dynareOBC_.Global
                                 y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, ReturnPath( dynareOBC_.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC_ );
                             end
+                        else
+                            y = SolveBoundsProblem( UnconstrainedReturnPath );
                         end
                         [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
                     catch Error

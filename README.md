@@ -122,22 +122,14 @@ Note:
       Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability. This will severely compromise accuracy.
 
 * **For controlling cubature**
-    * `FastCubature`
-      By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses a degree 3 monomial cubature rule without negative weights (but involving evaluations far from the origin) to integrate over future uncertainty.
-    * `GaussianCubatureDegree=INTEGER` (default: `0`)
-      By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option greater than one removes this simplifying assumption, and uses sparse Gaussian cubature to integrate over future uncertainty. `INTEGER` specifies the degree of polynomial which will be integrated exactly in the highest degree cubature performed. Values above `51` are treated as equal to `51`. Note that enabling the option `CubatureSmoothing` or setting `CubatureTolerance>0` may mean that the result does not integrate the stated degree polynomials exactly.
+    * `Cubature`
+      Turns on cubature. By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses to integrate over future uncertainty, using the options below.
     * `QuasiMonteCarloLevel=INTEGER` (default: `0`)
       By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option greater than zero removes this simplifying assumption, and uses quasi-Monte Carlo (Sobol) integration with at most `2^(1+INTEGER) - 1` samples (if `HigherOrderSobolDegree` is zero) or `2^(1+INTEGER)` samples (otherwise) to integrate over future uncertainty.
     * `HigherOrderSobolDegree=INTEGER` (default: `0`)
       Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one, when `QuasiMonteCarloLevel` is positive. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
-      Controls the number of periods of uncertainty over which DynareOBC integrates when one of the `FastCubature`, `QuasiMonteCarloLevel` or `GaussianCubatureDegree` options are set. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
-    * `ImportanceSamplingAccuracy=INTEGER` (default: `12`)
-      By default, DynareOBC performs integration over future uncertainty via importance sampling, with a proposal distribution that roughly approximates the distribution of future paths conditional on hitting the bound. This option controls the number of points used in the internal quasi-Monte Carlo procedure for obtaining the proposal distribution. Setting this option to `0` disables importance sampling.
-    * `ImportanceSamplingMinConstraintProbability=FLOAT` (default: `0.0001`)
-      If the probability of hitting the constraint infuture is approximated as being below this level in a period during simulation, then DynareOBC assumes it definitely will not be hit.
-    * `CubatureAcceleration`
-      When DynareOBC is invoked with this option, DynareOBC accelerates convergence of the cubature rules towards their limit using Wynn's Epsilon algorithm.
+      Controls the number of periods of uncertainty over which DynareOBC integrates when `Cubature` is turned on. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
       Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
@@ -148,6 +140,8 @@ Note:
       Determines the maximum number of calls to the solution of the inner bounds problem before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)
       Determines the size of matrix beyond which we parallelize certain loops involved in calculating the covariance of the random variables over which we perform cubature.
+    * `FastCubature`
+      Deprecated. Now equivalent to `Cubature`.
     * `ImportanceSampling`
       Ignored. Left in for backwards compatibility.
     * `NoCubature`

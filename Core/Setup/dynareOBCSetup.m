@@ -130,6 +130,14 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         warning( 'dynareOBC:FastCubatureDeprecated', 'The FastCubature option has been deprecated. It is now equivalent to the Cubature option, which turns on cubature.' );
         dynareOBC_.Cubature = true;
     end
+    
+    if dynareOBC_.Global
+        dynareOBC_.Cubature = true;
+    end
+    
+    dynareOBC_ = rmfield( dynareOBC_, 'FastCubature' );
+    dynareOBC_ = rmfield( dynareOBC_, 'ImportanceSampling' );
+    dynareOBC_ = rmfield( dynareOBC_, 'NoCubature' );
 
     basevarargin( end + 1 : end + 5 ) = { 'noclearall', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
     

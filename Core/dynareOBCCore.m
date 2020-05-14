@@ -56,16 +56,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     [ FileLines, Indices, StochSimulCommand, dynareOBC ] = ProcessModFileLines( FileLines, dynareOBC );
 
-    if dynareOBC.MaxCubatureDimension <= 0 || ( ( ~dynareOBC.FastCubature ) && ( dynareOBC.GaussianCubatureDegree <= 1 ) && ( dynareOBC.QuasiMonteCarloLevel <= 0 ) )
-        dynareOBC.NoCubature = true;
+    if ( dynareOBC.MaxCubatureDimension <= 0 ) || ( ~dynareOBC.Cubature )
+        dynareOBC.Cubature = false;
         dynareOBC.PeriodsOfUncertainty = 0;
         dynareOBC.MaxCubatureDimension = 0;
-    else
-        dynareOBC.NoCubature = false;
     end
 
     if dynareOBC.NumberOfMax == 0
-        dynareOBC.NoCubature = true;
+        dynareOBC.Cubature = false;
         dynareOBC.Global = false;
         dynareOBC.FullHorizon = false;
     end
@@ -240,7 +238,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         LPOptions.gurobi.NumericFocus = 3;
         dynareOBC = SetDefaultOption( dynareOBC, 'LPOptions', LPOptions );
         dynareOBC = SetDefaultOption( dynareOBC, 'MILPOptions', sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.MILPSolver ) );
-        if dynareOBC.MultiThreadBoundsProblem || ( ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.NoCubature && dynareOBC.MLVSimulationMode <= 1 ) ) )
+        if dynareOBC.MultiThreadBoundsProblem || ( ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && ~dynareOBC.Cubature && dynareOBC.MLVSimulationMode <= 1 ) ) )
             dynareOBC.MILPOptions.bintprog.UseParallel = 1;
             dynareOBC.MILPOptions.clp.numThreads = 0;
             dynareOBC.MILPOptions.fmincon.UseParallel = 1;
@@ -272,9 +270,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         dynareOBC.Shocks = cellstr( M_.exo_names )';
     else
         dynareOBC.Shocks = { };
-        dynareOBC.NoCubature = true;
-        dynareOBC.FastCubature = false;
-        dynareOBC.GaussianCubatureDegree = 0;
+        dynareOBC.Cubature = false;
         dynareOBC.QuasiMonteCarloLevel = 0;
         dynareOBC.HigherOrderSobolDegree = 0;
         dynareOBC.PeriodsOfUncertainty = 0;
@@ -358,10 +354,6 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     %% Global polynomial approximation
 
     if dynareOBC.Global
-        if dynareOBC.NoCubature
-            error( 'dynareOBC:GlobalNoCubature', 'If specifying the Global option, you must also specify a cubature mode.' );
-        end
-        
         fprintf( '\n' );
         disp( 'Beginning to solve for the global polynomial approximation to the bounds.' );
         fprintf( '\n' );
@@ -387,14 +379,14 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     fprintf( '\n' );
     
     dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PTest, dynareOBC.AltPTest, dynareOBC.FullTest ] );
-    if ~dynareOBC.NoCubature
+    if dynareOBC.Cubature
         dynareOBC.TimeToEscapeBounds = max( [ dynareOBC.TimeToEscapeBounds, dynareOBC.PeriodsOfUncertainty ] );
     end
     dynareOBC.InternalIRFPeriods = max( dynareOBC.TimeToEscapeBounds + 1, dynareOBC.TimeToReturnToSteadyState );
     if ~dynareOBC.SlowIRFs
         dynareOBC.InternalIRFPeriods = max( dynareOBC.InternalIRFPeriods, dynareOBC.IRFPeriods );
     end
-    if ~dynareOBC.NoCubature
+    if dynareOBC.Cubature
         dynareOBC.InternalIRFPeriods = max( dynareOBC.InternalIRFPeriods, dynareOBC.PeriodsOfUncertainty + 1 );
     end
     
@@ -585,7 +577,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 fprintf( '\n' );
                 dynareOBC.IRFsForceAtBoundIndices = [];
                 dynareOBC.IRFsForceNotAtBoundIndices = [];
-            elseif ~dynareOBC.NoCubature
+            elseif dynareOBC.Cubature
                 fprintf( '\n' );
                 disp( 'Ignoring IRFsForceAtBoundIndices and IRFsForceNotAtBoundIndices due to cubature being enabled.' );
                 fprintf( '\n' );
@@ -620,7 +612,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.IRFsForceNotAtBoundIndices = [];
         end
 
-        if ~dynareOBC.NoCubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1 || dynareOBC.SimulateOnGridPoints
+        if dynareOBC.Cubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1 || dynareOBC.SimulateOnGridPoints
             OpenPool;
         end
         StoreGlobals( M_, options_, oo_, dynareOBC );
@@ -639,7 +631,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
                 end
                 [ oo_, dynareOBC ] = SlowIRFs( M_, oo_, dynareOBC );
             else
-                if dynareOBC.Order > 1 || ~dynareOBC.NoCubature
+                if dynareOBC.Order > 1 || dynareOBC.Cubature
                     fprintf( '\n' );
                     disp( 'Note that IRFs generated with FastIRFs are an approximation to the true average IRF.' );
                     if ~dynareOBC.IRFsAroundZero
