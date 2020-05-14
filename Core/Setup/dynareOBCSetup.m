@@ -125,6 +125,11 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     if dynareOBC_.FirstOrderAroundRSS1OrMean2 > 2
         error( 'dynareOBC:Arguments', 'You cannot select both FirstOrderAroundRSS and FirstOrderAroundMean.' );
     end
+    
+    if dynareOBC_.FastCubature
+        warning( 'dynareOBC:FastCubatureDeprecated', 'The FastCubature option has been deprecated. It is now equivalent to the Cubature option, which turns on cubature.' );
+        dynareOBC_.Cubature = true;
+    end
 
     basevarargin( end + 1 : end + 5 ) = { 'noclearall', 'console', 'nograph', 'nointeractive', '-DdynareOBC=1' };
     
