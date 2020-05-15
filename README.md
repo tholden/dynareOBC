@@ -124,12 +124,16 @@ Note:
 * **For controlling cubature**
     * `Cubature`
       Turns on cubature. By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses to integrate over future uncertainty, using the options below.
+    * `CubatureRegions=INTEGER` (default: `1`)
+      The cubature method splits the integration space into INTEGER regions, and uses an integration rule that is exact for polynomials of degree given by `CubatureDegree` over each region. Setting this to a value greater than 1 automatically turns on `Cubature`.
+    * `CubatureDegree=INTEGER` (default: `1`)
+      The cubature method splits the integration space into INTEGER regions, and uses an integration rule that is exact for polynomials of degree given by `CubatureDegree` over each region. Setting this to a value greater than 1 automatically turns on `Cubature`.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
       Controls the number of periods of uncertainty over which DynareOBC integrates when `Cubature` is turned on. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
     * `QuasiMonteCarloLevel=INTEGER` (default: `15`)
       To generate an initial point set, DynareOBC uses quasi-Monte Carlo (Sobol) integration with at most `2^(1+INTEGER) - 1` samples (if `HigherOrderSobolDegree` is zero) or `2^(1+INTEGER)` samples (otherwise) to integrate over future uncertainty.
     * `HigherOrderSobolDegree=INTEGER` (default: `0`)
-      Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level.
+      Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level. Setting this to a value greater than 0 automatically turns on `Cubature`.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
       Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
@@ -244,7 +248,7 @@ Note:
 * **EXPERIMENTAL settings for controlling accuracy**
     * `Global`
       Without this, DynareOBC assumes agents realise that shocks may arrive in the near future which push them towards the bound, but they do not take into account the risk of hitting the bound in the far future. With the global option, DynareOBC assumes agents take into account the risk of hitting the bound at all horizons. Note that under the global solution algorithm, dotted lines give the responses with the polynomial approximation to the bound. They are not the response ignoring the bound entirely.
-      Requires the MATLAB Optimization toolbox, or an alternative non-linear least squares routine, see above for details.
+      Requires the MATLAB Optimization toolbox, or an alternative non-linear least squares routine, see above for details. Implies the `Cubature` option.
         * `Resume`
           Resumes an interrupted solution iteration, when using global.
 

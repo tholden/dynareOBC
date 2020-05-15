@@ -88,7 +88,16 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         warning( WarningState );
     end
     
-    addpath( fileparts( which( 'dynare' ) ) );
+    DynarePath = fileparts( which( 'dynare' ) );
+    NDynarePath = length( DynarePath );
+    CurrentPaths = strsplit( path, ';' );
+    for i = 1 : length( CurrentPaths )
+        CurrentPath = CurrentPaths{i};
+        if length( CurrentPath ) > NDynarePath && all( CurrentPath( 1:NDynarePath ) == DynarePath )
+            rmpath( CurrentPath );
+        end
+    end
+    addpath( DynarePath );
 
     CompileMEX( dynareOBCPath, Update );
     
@@ -128,13 +137,19 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     if dynareOBC_.QuasiMonteCarloLevel <= 0
         error( 'dynareOBC:Arguments', 'QuasiMonteCarloLevel must be strictly positive.' );
     end
+    if dynareOBC_.CubatureRegions <= 0
+        error( 'dynareOBC:Arguments', 'CubatureRegions must be strictly positive.' );
+    end
+    if dynareOBC_.CubatureDegree <= 0
+        error( 'dynareOBC:Arguments', 'CubatureDegree must be strictly positive.' );
+    end
     
     if dynareOBC_.FastCubature
         warning( 'dynareOBC:FastCubatureDeprecated', 'The FastCubature option has been deprecated. It is now equivalent to the Cubature option, which turns on cubature.' );
         dynareOBC_.Cubature = true;
     end
     
-    if dynareOBC_.Global
+    if dynareOBC_.Global || dynareOBC_.CubatureRegions > 1 || dynareOBC_.CubatureDegree > 1 || dynareOBC_.HigherOrderSobolDegree > 0
         dynareOBC_.Cubature = true;
     end
     

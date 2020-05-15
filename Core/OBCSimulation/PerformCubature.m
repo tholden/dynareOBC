@@ -17,14 +17,126 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         NumPoints = 2 .^ QuasiMonteCarloLevelP1 - 1;
         CubaturePoints = SobolSequence( BaseDimension, NumPoints );
     end
-    CubatureWeights = 1 / NumPoints;
+    CubatureWeight = 1 / NumPoints;
     
     Points = bsxfun( @plus, UnconstrainedReturnPath, RootConditionalCovariance * CubaturePoints );
     
-    IrrelevantPoints = all( Points > 0 );
+    Tolerance = dynareOBC.Tolerance;
+    
+    SupNormPoints = max( abs( Points ) );
+    SupNormPoints( SupNormPoints < Tolerance ) = 1;
+    
+    PointsScaled = Points ./ SupNormPoints;
+    
+    IrrelevantPoints = all( PointsScaled >= -Tolerance );
 
     Points( :, IrrelevantPoints ) = [];
     NumPoints = size( Points, 2 );
+    
+    CubatureRegions = dynareOBC.CubatureRegions;
+    
+    if NumPoints > CubatureRegions
+        
+        if CubatureRegions > 1
+        
+            % Get initial centroid locations
+            NormalizedPoints = Points ./ sqrt( sum( Points .* Points ) );
+            IDs = ones( NumPoints, 1 );
+            NumRegions = 1;
+            
+            while NumRegions < CubatureRegions
+
+                if NumRegions > 1
+                    RegionSSEs = zeros( NumRegions, 1 );
+                    for i = 1 : NumRegions
+                        PointSelect = IDs == i;
+                        Mean = mean( NormalizedPoints( :, PointSelect ), 2 );
+                        RegionSSEs( i ) = sum( sum( bsxfun( @minus, NormalizedPoints( :, PointSelect ), Mean ) .^ 2 ) );
+                    end
+                    [ ~, ToSplit ] = max( RegionSSEs );
+                else
+                    ToSplit = 1;
+                end
+                
+                PointIndices = find( IDs == ToSplit );
+                
+                C = cov( NormalizedPoints( :, PointIndices ).' );
+                [ w, ~ ] = eigs( C, 1 );
+                w = w ./ sqrt( sum( w .* w ) );
+                
+                Projection = NormalizedPoints( :, PointIndices ).' * w;
+                
+                Projection = Projection - mean( Projection );
+                
+                NRegion = numel( Projection );
+                
+                SortedProjection = sort( Projection );
+                
+                CumSumSortedProjection = cumsum( SortedProjection( 1 : ( end - 1 ) ) );
+                
+                jRegion = ( 1 : ( NRegion - 1 ) ).';
+                
+                Maximand = ( CumSumSortedProjection .* CumSumSortedProjection ) ./ ( jRegion .* ( NRegion - jRegion ) ); % Continuous Otsu's method
+                
+                [ ~, CutOffIndex ] = max( Maximand );
+                
+                CutOff = SortedProjection( CutOffIndex );
+                
+                % SelectClusterL = Projection <= CutOff;
+                SelectClusterR = Projection > CutOff;
+                
+                NumRegions = NumRegions + 1;
+                
+                IDs( PointIndices( SelectClusterR ) ) = NumRegions;
+                
+            end
+            
+            StartCentroids = zeros( size( NormalizedPoints, 1 ), CubatureRegions );
+            
+            for i = 1 : CubatureRegions
+                StartCentroids( :, i ) = mean( NormalizedPoints( :, IDs == i ), 2 );
+            end
+            
+            assert( numel( unique( IDs ) ) == CubatureRegions );
+            
+            if dynareOBC.Debug
+                kmeansDisplay = 'iter';
+            else
+                kmeansDisplay = 'off';
+            end
+
+            % Refine with the kmeans algorithm
+            IDs = kmeans( Points.', CubatureRegions, 'Start', StartCentroids.', 'Display', kmeansDisplay, 'Distance', 'cosine', 'OnlinePhase', 'on', 'MaxIter', 1000 );
+
+            UniqueIDs = unique( IDs );
+            
+            assert( numel( UniqueIDs ) == CubatureRegions );
+
+            NumPoints = numel( UniqueIDs );
+            
+            NewPoints = zeros( size( Points, 1 ), NumPoints );
+            CubatureWeights = zeros( 1, NumPoints );
+
+            for i = 1 : NumPoints
+                PointSelect = IDs == UniqueIDs( i );
+                NewPoints( :, i ) = mean( Points( :, PointSelect ), 2 );
+                CubatureWeights( i ) = CubatureWeight * sum( PointSelect );
+            end
+
+            Points = NewPoints;
+        
+        else
+            
+            CubatureWeights = CubatureWeight * NumPoints;
+            Points = mean( Points, 2 );
+            NumPoints = 1;
+            
+        end
+        
+    else
+        CubatureWeights = repmat( CubatureWeight, 1, NumPoints );
+    end
+    
     
     if nargin > 6
         p = TimedProgressBar( NumPoints( end ), 20, varargin{:} );
