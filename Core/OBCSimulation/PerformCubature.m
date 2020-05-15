@@ -41,6 +41,13 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         
             % Get initial centroid locations
             NormalizedPoints = Points ./ sqrt( sum( Points .* Points ) );
+            NormalizedPoints = [ NormalizedPoints.', min( 0, NormalizedPoints.' ) ];
+            [ ~, NormalizedPoints, NormalizedPointsVariances ] = pca( NormalizedPoints );
+            assert( issorted( NormalizedPointsVariances, 'descend' ) );
+            NormalizedPointsVariances( NormalizedPointsVariances < dynareOBC.CubaturePruningCutOff * NormalizedPointsVariances( 1 ) ) = 0;
+            NormalizedPointsVariances( ( dynareOBC.MaxCubatureDimension + 1 ) : end ) = 0;
+            NormalizedPoints = NormalizedPoints( :, NormalizedPointsVariances > eps );
+            
             IDs = ones( NumPoints, 1 );
             NumRegions = 1;
             
@@ -50,8 +57,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                     RegionSSEs = zeros( NumRegions, 1 );
                     for i = 1 : NumRegions
                         PointSelect = IDs == i;
-                        Mean = mean( NormalizedPoints( :, PointSelect ), 2 );
-                        RegionSSEs( i ) = sum( sum( bsxfun( @minus, NormalizedPoints( :, PointSelect ), Mean ) .^ 2 ) );
+                        Mean = mean( NormalizedPoints( PointSelect, : ) );
+                        RegionSSEs( i ) = sum( sum( bsxfun( @minus, NormalizedPoints( PointSelect, : ), Mean ) .^ 2 ) );
                     end
                     [ ~, ToSplit ] = max( RegionSSEs );
                 else
@@ -60,11 +67,14 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 
                 PointIndices = find( IDs == ToSplit );
                 
-                C = cov( NormalizedPoints( :, PointIndices ).' );
-                [ w, ~ ] = eigs( C, 1 );
-                w = w ./ sqrt( sum( w .* w ) );
-                
-                Projection = NormalizedPoints( :, PointIndices ).' * w;
+                if NumRegions == 1
+                    Projection = NormalizedPoints( PointIndices, 1 );
+                else
+                    C = cov( NormalizedPoints( PointIndices, : ) );
+                    [ w, ~ ] = eigs( C, 1 );
+                    w = w ./ sqrt( sum( w .* w ) );
+                    Projection = NormalizedPoints( PointIndices, : ) * w;
+                end
                 
                 Projection = Projection - mean( Projection );
                 
@@ -91,10 +101,10 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 
             end
             
-            StartCentroids = zeros( size( NormalizedPoints, 1 ), CubatureRegions );
+            StartCentroids = zeros( CubatureRegions, size( NormalizedPoints, 2 ) );
             
             for i = 1 : CubatureRegions
-                StartCentroids( :, i ) = mean( NormalizedPoints( :, IDs == i ), 2 );
+                StartCentroids( i, : ) = mean( NormalizedPoints( IDs == i, : ) );
             end
             
             assert( numel( unique( IDs ) ) == CubatureRegions );
@@ -106,7 +116,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             end
 
             % Refine with the kmeans algorithm
-            IDs = kmeans( Points.', CubatureRegions, 'Start', StartCentroids.', 'Display', kmeansDisplay, 'Distance', 'cosine', 'OnlinePhase', 'on', 'MaxIter', 100 * CubatureRegions );
+            IDs = kmeans( NormalizedPoints, CubatureRegions, 'Start', StartCentroids, 'Display', kmeansDisplay, 'OnlinePhase', 'on', 'MaxIter', 100 * CubatureRegions );
 
             UniqueIDs = unique( IDs );
             
