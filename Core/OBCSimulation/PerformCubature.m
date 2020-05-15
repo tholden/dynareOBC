@@ -106,7 +106,7 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             end
 
             % Refine with the kmeans algorithm
-            IDs = kmeans( Points.', CubatureRegions, 'Start', StartCentroids.', 'Display', kmeansDisplay, 'Distance', 'cosine', 'OnlinePhase', 'on', 'MaxIter', 1000 );
+            IDs = kmeans( Points.', CubatureRegions, 'Start', StartCentroids.', 'Display', kmeansDisplay, 'Distance', 'cosine', 'OnlinePhase', 'on', 'MaxIter', 100 * CubatureRegions );
 
             UniqueIDs = unique( IDs );
             
