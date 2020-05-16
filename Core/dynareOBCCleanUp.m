@@ -3,8 +3,6 @@ function dynareOBCCleanUp
     disp( 'Cleaning up.' );
     fprintf( '\n' );
     
-    ClosePool;
-    
     WarningState = warning( 'off', 'all' );
     
     try

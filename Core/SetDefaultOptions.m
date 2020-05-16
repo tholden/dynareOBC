@@ -44,6 +44,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'MLVSimulationSubSample', 1 );
     dynareOBC = SetDefaultOption( dynareOBC, 'MultiThreadBoundsProblem', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoCleanUp', false );
+    dynareOBC = SetDefaultOption( dynareOBC, 'NoPoolClose', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoCorr', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoCubature', true );
     dynareOBC = SetDefaultOption( dynareOBC, 'NoDisplay', false );    

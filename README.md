@@ -263,6 +263,8 @@ Note:
       Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
     * `NoCleanup`
       Prevents the deletion of DynareOBC's temporary files. Useful for debugging.
+    * `NoPoolClose`
+      Prevents DynareOBC closing parallel pools.
     * `OrderOverride=1|2|3`
       Overrides the order of approximation set within the call to stoch_simul.
     * `ShockSequenceFile=FILENAME.mat`
