@@ -218,6 +218,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if dynareOBC.NumberOfMax > 0
         EnforceRequirementsAndGeneratePathFunctor( );
         LPOptions = sdpsettings( 'verbose', 0, 'cachesolvers', 1, 'solver', dynareOBC.LPSolver );
+        dynareOBC = SetDefaultOption( dynareOBC, 'CubatureLPOptions', LPOptions );
         OptionsFieldNames = fieldnames( LPOptions );
         for i = 1 : length( OptionsFieldNames )
             CurrentField = LPOptions.( OptionsFieldNames{i} );
@@ -252,6 +253,11 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.MILPOptions.gurobi.Threads = 1;
             dynareOBC.MILPOptions.knitro.UseParallel = 0;
             dynareOBC.MILPOptions.quadprogbb.use_single_processor = 1;
+        end
+        if dynareOBC.Debug
+            dynareOBC.LPOptions.verbose         = 1;
+            dynareOBC.CubatureLPOptions.verbose = 1;
+            dynareOBC.MILPOptions.verbose       = 1;
         end
     end
     dynareOBC = orderfields( dynareOBC );

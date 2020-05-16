@@ -136,6 +136,8 @@ Note:
       Setting this option greater than `0` makes DynareOBC use a Higher Order Sobol sequence, rather than a standard one. Values larger than the minimum of `50` and `52` divided by the integration dimension are capped to that level. Setting this to a value greater than 0 automatically turns on `Cubature`.
     * `CubaturePruningCutOff=FLOAT` (default: `0.01`)
       Eigenvalues of the covariance matrix of the distribution from which we integrate that are below `FLOAT` times the maximum eigenvalue are "pruned" to zero, in order to increase integration speed.
+    * `CubatureRelWeightCutOff=FLOAT` (default: `0.0001`)
+      Cubature node weights that are below `FLOAT` times the maximum cubature node weight in a region are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the `INTEGER` largest eigenvalues of the covariance matrix to zero.
     * `MaxCubatureSerialLoop` (default: `2`)

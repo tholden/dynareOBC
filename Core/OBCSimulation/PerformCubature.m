@@ -37,18 +37,18 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     
     if NumPoints > CubatureRegions
         
+        CubaturePruningCutOff = dynareOBC.CubaturePruningCutOff;
+        MaxCubatureDimension  = dynareOBC.MaxCubatureDimension;
+        
+        IDs = ones( NumPoints, 1 );
+        
         if CubatureRegions > 1
         
             % Get initial centroid locations
             NormalizedPoints = Points ./ sqrt( sum( Points .* Points ) );
             NormalizedPoints = [ NormalizedPoints.', min( 0, NormalizedPoints.' ) ];
-            [ ~, NormalizedPoints, NormalizedPointsVariances ] = pca( NormalizedPoints );
-            assert( issorted( NormalizedPointsVariances, 'descend' ) );
-            NormalizedPointsVariances( NormalizedPointsVariances < dynareOBC.CubaturePruningCutOff * NormalizedPointsVariances( 1 ) ) = 0;
-            NormalizedPointsVariances( ( dynareOBC.MaxCubatureDimension + 1 ) : end ) = 0;
-            NormalizedPoints = NormalizedPoints( :, NormalizedPointsVariances > eps );
+            NormalizedPoints = TrimmedPCA( NormalizedPoints, CubaturePruningCutOff, MaxCubatureDimension );
             
-            IDs = ones( NumPoints, 1 );
             NumRegions = 1;
             
             while NumRegions < CubatureRegions
@@ -121,26 +121,85 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             UniqueIDs = unique( IDs );
             
             assert( numel( UniqueIDs ) == CubatureRegions );
+            assert( all( UniqueIDs(:).' == 1 : CubatureRegions ) );
 
-            NumPoints = numel( UniqueIDs );
+        end
+        
+        CubatureCATCHDegree = dynareOBC.CubatureCATCHDegree;
+        
+        if CubatureCATCHDegree <= 0
+        
+            NumPoints = CubatureRegions;
             
             NewPoints = zeros( size( Points, 1 ), NumPoints );
             CubatureWeights = zeros( 1, NumPoints );
 
             for i = 1 : NumPoints
-                PointSelect = IDs == UniqueIDs( i );
+                PointSelect = IDs == i;
                 NewPoints( :, i ) = mean( Points( :, PointSelect ), 2 );
                 CubatureWeights( i ) = CubatureWeight * sum( PointSelect );
             end
 
             Points = NewPoints;
-        
+            
         else
             
-            CubatureWeights = CubatureWeight * NumPoints;
-            Points = mean( Points, 2 );
-            NumPoints = 1;
+            Degree1Basis = [ Points.', min( 0, Points.' ) ];
+            Degree1Basis = TrimmedPCA( Degree1Basis, CubaturePruningCutOff, MaxCubatureDimension );
+            Degree1Basis = Degree1Basis ./ std( Degree1Basis );
+            Degree1Basis = [ ones( NumPoints, 1 ), Degree1Basis ];
             
+            Basis = Degree1Basis;
+            
+            NDegree1Basis = size( Degree1Basis, 2 );
+            NBasis = NDegree1Basis;
+            
+            Degree1Basis = reshape( Degree1Basis, NumPoints, 1, NDegree1Basis );
+            
+            for Degree = 2 : CubatureCATCHDegree
+                
+                Basis = reshape( bsxfun( @times, Basis, Degree1Basis ), NumPoints, NBasis * NDegree1Basis );
+                Basis = TrimmedPCA( Basis, CubaturePruningCutOff, MaxCubatureDimension );
+                Basis = Basis ./ std( Basis );
+                Basis = [ ones( NumPoints, 1 ), Basis ]; %#ok<AGROW>
+                
+                NewNBasis = size( Basis, 2 );
+                assert( NewNBasis >= NBasis );
+                
+                if NewNBasis == NBasis
+                    CubatureCATCHDegree = Degree;
+                    break
+                else
+                    NBasis = NewNBasis;
+                end
+                
+            end
+            
+            Basis = bsxfun( @times, Basis, 1 ./ max( abs( Basis ) ) );
+            
+            ObjectiveVector = sum( max( 0, -Points ) .^ ( CubatureCATCHDegree + 1 ) ).';
+            ObjectiveVector = ObjectiveVector .* ( 1 ./ max( abs( ObjectiveVector ) ) );
+            
+            WeightsVector = sdpvar( NumPoints, 1 );
+            Diagnostics = optimize( [ WeightsVector >= 0, Basis.' * WeightsVector == sum( Basis ).' * CubatureWeight ], ObjectiveVector.' * WeightsVector, dynareOBC.CubatureLPOptions );
+           
+            if Diagnostics.problem ~= 0
+                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+            end
+            
+            WeightsVector = value( WeightsVector );
+            
+            MaxWeightsVector = max( WeightsVector );
+            
+            PointSelect = WeightsVector > dynareOBC.CubatureRelWeightCutOff * MaxWeightsVector;
+            
+            Points = Points( :, PointSelect );
+            CubatureWeights = WeightsVector( PointSelect );
+            
+            CubatureWeights = CubatureWeights .* ( ( CubatureWeight * NumPoints ) ./ sum( CubatureWeights ) );
+            
+            NumPoints = size( Points, 2 );
+
         end
         
     else
@@ -208,4 +267,12 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         warning( 'dynareOBC:CubatureWarnings', 'Warnings were generated in the inner cubature loop; try increasing TimeToEscapeBounds.' );
     end
 
+end
+
+function X = TrimmedPCA( X, CubaturePruningCutOff, MaxCubatureDimension )
+    [ ~, X, D ] = pca( X );
+    assert( issorted( D, 'descend' ) );
+    D( D < CubaturePruningCutOff * D( 1 ) ) = 0;
+    D( ( MaxCubatureDimension + 1 ) : end ) = 0;
+    X = X( :, D > eps );
 end

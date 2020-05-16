@@ -7,6 +7,7 @@ function dynareOBC = SetDefaultOptions( dynareOBC )
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureRegions', 1 );
     dynareOBC = SetDefaultOption( dynareOBC, 'CubatureCATCHDegree', 0 );
     dynareOBC = SetDefaultOption( dynareOBC, 'CubaturePruningCutOff', 0.01 );
+    dynareOBC = SetDefaultOption( dynareOBC, 'CubatureRelWeightCutOff', 0.0001 );
     dynareOBC = SetDefaultOption( dynareOBC, 'DataFile', [ dynareOBC.BaseFileName '.xlsx' ] );
     dynareOBC = SetDefaultOption( dynareOBC, 'Debug', false );
     dynareOBC = SetDefaultOption( dynareOBC, 'DisplayBoundsSolutionProgress', false );
