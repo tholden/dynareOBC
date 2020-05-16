@@ -47,7 +47,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
 
     addpath( [ dynareOBCPath '/Core/' ] );
     addpath( [ dynareOBCPath '/Core/Utils/' ] );
-    ClosePool( true );
+    ClosePool( ismember( 'nopoolclose', lower( varargin ) ) );
     dynareOBCCleanUp;
     
     addpath( [ dynareOBCPath '/Core/MChecks/' ] );
