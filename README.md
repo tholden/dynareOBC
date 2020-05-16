@@ -125,9 +125,9 @@ Note:
     * `Cubature`
       Turns on cubature. By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses to integrate over future uncertainty, using the options below.
     * `CubatureRegions=INTEGER` (default: `1`)
-      The cubature method splits the integration space into INTEGER regions, and uses an integration rule that is exact for polynomials of degree given by `CubatureDegree` over each region. Setting this to a value greater than 1 automatically turns on `Cubature`.
-    * `CubatureDegree=INTEGER` (default: `1`)
-      The cubature method splits the integration space into INTEGER regions, and uses an integration rule that is exact for polynomials of degree given by `CubatureDegree` over each region. Setting this to a value greater than 1 automatically turns on `Cubature`.
+      The cubature method splits the integration space into INTEGER regions, and then integrates separately over each region. Setting this to a value greater than `1` automatically turns on `Cubature`.
+    * `CubatureCATCHDegree=INTEGER` (default: `0`)
+      If this option is set to its default of `0`, then DynareOBC approximates the integral over a region with the value of the function at the mean of the points in the region. If this option is set to a value `INTEGER` greater than `0`, then Caratheodory-Tchakaloff (CATCH) subsampling is used, with basis functions consisting of all monomials in `q` and `max{0,q}` with degree less or equal to `INTEGER`. Setting this to a value greater than `0` automatically turns on `Cubature`.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)
       Controls the number of periods of uncertainty over which DynareOBC integrates when `Cubature` is turned on. Since a cosine windowing function is used, the effective number of periods of uncertainty is roughly half this number.
     * `QuasiMonteCarloLevel=INTEGER` (default: `15`)

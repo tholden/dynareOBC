@@ -140,8 +140,8 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     if dynareOBC_.CubatureRegions <= 0
         error( 'dynareOBC:Arguments', 'CubatureRegions must be strictly positive.' );
     end
-    if dynareOBC_.CubatureDegree <= 0
-        error( 'dynareOBC:Arguments', 'CubatureDegree must be strictly positive.' );
+    if dynareOBC_.CubatureCATCHDegree < 0
+        error( 'dynareOBC:Arguments', 'CubatureCATCHDegree must be non-negative.' );
     end
     
     if dynareOBC_.FastCubature
@@ -149,7 +149,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         dynareOBC_.Cubature = true;
     end
     
-    if dynareOBC_.Global || dynareOBC_.CubatureRegions > 1 || dynareOBC_.CubatureDegree > 1 || dynareOBC_.HigherOrderSobolDegree > 0
+    if dynareOBC_.Global || dynareOBC_.CubatureRegions > 1 || dynareOBC_.CubatureCATCHDegree > 0 || dynareOBC_.HigherOrderSobolDegree > 0
         dynareOBC_.Cubature = true;
     end
     
