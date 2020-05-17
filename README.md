@@ -269,6 +269,8 @@ Note:
       Prevents the deletion of DynareOBC's temporary files. Useful for debugging.
     * `NoPoolClose`
       Prevents DynareOBC closing parallel pools.
+    * `NoRestorePath`
+      Prevents DynareOBC restoring the original path.
     * `OrderOverride=1|2|3`
       Overrides the order of approximation set within the call to stoch_simul.
     * `ShockSequenceFile=FILENAME.mat`
