@@ -248,9 +248,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.MILPOptions.quadprogbb.use_single_processor = 0;
         else
             dynareOBC.MILPOptions.bintprog.UseParallel = 0;
-            dynareOBC.MILPOptions.clp.numThreads = 1;
+            dynareOBC.MILPOptions.clp.numThreads = 2;
             dynareOBC.MILPOptions.fmincon.UseParallel = 0;
-            dynareOBC.MILPOptions.gurobi.Threads = 1;
+            dynareOBC.MILPOptions.gurobi.Threads = 2;
             dynareOBC.MILPOptions.knitro.UseParallel = 0;
             dynareOBC.MILPOptions.quadprogbb.use_single_processor = 1;
         end
@@ -263,9 +263,9 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.CubatureLPOptions.quadprogbb.use_single_processor = 0;
         else
             dynareOBC.CubatureLPOptions.bintprog.UseParallel = 0;
-            dynareOBC.CubatureLPOptions.clp.numThreads = 1;
+            dynareOBC.CubatureLPOptions.clp.numThreads = 2;
             dynareOBC.CubatureLPOptions.fmincon.UseParallel = 0;
-            dynareOBC.CubatureLPOptions.gurobi.Threads = 1;
+            dynareOBC.CubatureLPOptions.gurobi.Threads = 2;
             dynareOBC.CubatureLPOptions.knitro.UseParallel = 0;
             dynareOBC.CubatureLPOptions.quadprogbb.use_single_processor = 1;
         end
