@@ -64,7 +64,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         Simulation.total_with_bounds( :, 1:2:end ) = Simulation.total_with_bounds( :, 1:2:end ) + GridOffsets;
 
         if DisplayProgress
-            p = TimedProgressBar( NumberOfGridPoints, 50, 'Computing simulations on grid points. Please wait for around ', '. Progress: ', 'Computing simulations on grid points. Completed in ' );
+            p = TimedProgressBar( NumberOfGridPoints, 50, 'Computing simulations on grid points. Predicted to finish within ', '. Progress: ', 'Computing simulations on grid points.               Completed in ' );
         else
             p = [];
         end
@@ -157,7 +157,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         if isempty( Simulation )
             if DisplayProgress
-                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing base simulation. Please wait for around ', '. Progress: ', 'Computing base simulation. Completed in ' );
+                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing base simulation. Predicted to finish within ', '. Progress: ', 'Computing base simulation.               Completed in ' );
             else
                 p = [];
             end
@@ -203,7 +203,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             WarningPeriods = { };
 
             if DisplayProgress
-                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing simulation. Please wait for around ', '. Progress: ', 'Computing simulation. Completed in ' );
+                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing simulation. Predicted to finish within ', '. Progress: ', 'Computing simulation.               Completed in ' );
             else
                 p = [];
             end
@@ -347,7 +347,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         
         if DisplayProgress
-            p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing model local variable paths. Please wait for around ', '. Progress: ', 'Computing model local variable paths. Completed in ' );
+            p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing model local variable paths. Predicted to finish within ', '. Progress: ', 'Computing model local variable paths.               Completed in ' );
         else
             p = [];
         end

@@ -43,7 +43,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
     
     SqrtmSigma_e = spsqrtm( M.Sigma_e( PositiveVarianceShocks, PositiveVarianceShocks ) );
     
-    p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Please wait for around ', '. Progress: ', 'Computing base path for average IRFs. Completed in ' );
+    p = TimedProgressBar( Replications, 20, 'Computing base path for average IRFs. Predicted to finish within ', '. Progress: ', 'Computing base path for average IRFs.               Completed in ' );
     
     WarningGenerated = false;
     MLVSimulationMode = dynareOBC.MLVSimulationMode;
@@ -102,7 +102,7 @@ function [ oo, dynareOBC ] = SlowIRFs( M, oo, dynareOBC )
     for ShockIndex = dynareOBC.ShockSelect
         Shock = dynareOBC.ShockScale * cs( M.exo_names_orig_ord, ShockIndex );
 
-        p = TimedProgressBar( Replications, 20, [ 'Computing average IRFs for shock ' dynareOBC.Shocks{ShockIndex} '. Please wait for around ' ], '. Progress: ', [ 'Computing average IRFs for shock ' dynareOBC.Shocks{ShockIndex} '. Completed in ' ] );
+        p = TimedProgressBar( Replications, 20, [ 'Computing average IRFs for shock ' dynareOBC.Shocks{ShockIndex} '. Predicted to finish within ' ], '. Progress: ', [ 'Computing average IRFs for shock ' dynareOBC.Shocks{ShockIndex} '.               Completed in ' ] );
     
         parfor k = 1: Replications
             lastwarn( '' );

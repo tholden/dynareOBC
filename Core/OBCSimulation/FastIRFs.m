@@ -136,7 +136,7 @@ function [ oo, dynareOBC ] = FastIRFs( M, oo, dynareOBC )
             LagValuesWithBounds = dynareOBC.Mean( OriginalVarSelect );
             LagValuesWithoutBounds = LagValuesWithBounds;
 
-            p = TimedProgressBar( ceil( Ts / 10 ), 50, [ 'Computing model local variable paths for response to shock ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing model local variable paths for response to shock ' ShockName '. Completed in ' ] );
+            p = TimedProgressBar( ceil( Ts / 10 ), 50, [ 'Computing model local variable paths for response to shock ' ShockName '. Predicted to finish within ' ], '. Progress: ', [ 'Computing model local variable paths for response to shock ' ShockName '.               Completed in ' ] );
 
             for j = 1 : nMLV
                 MLVName = MLVNames{j};
@@ -215,7 +215,7 @@ function [ y, TempIRFStruct ] = FastIRFsInternal( Shock, ShockName, M, oo, dynar
     
     if dynareOBC.NumberOfMax > 0
         if dynareOBC.Cubature
-            [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, false, [ 'Computing required integral for fast IRFs for ' ShockName '. Please wait for around ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '. Completed in ' ] );
+            [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, oo, dynareOBC, TempIRFStruct.first, false, [ 'Computing required integral for fast IRFs for ' ShockName '. Predicted to finish within ' ], '. Progress: ', [ 'Computing required integral for fast IRFs for ' ShockName '.               Completed in ' ] );
             if dynareOBC.Global
                 y = SolveGlobalBoundsProblem( y, GlobalVarianceShare, UnconstrainedReturnPath, TempIRFStruct.total( dynareOBC.VarIndices_ZeroLowerBoundedLongRun, : )', dynareOBC );
             end
