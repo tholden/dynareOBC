@@ -143,6 +143,13 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             NewPoints = cell( 1, CubatureRegions );
             CubatureWeights = cell( 1, CubatureRegions );
             
+            if ( nargin > 6 ) && ( CubatureRegions > 1 )
+                vararginAlt = strrep( varargin, 'integral', 'cubature rules' );
+                p = TimedProgressBar( CubatureRegions, 20, vararginAlt{:} );
+            else
+                p = [];
+            end
+
             for i = 1 : CubatureRegions
             
                 PointSelect = IDs == i;
@@ -206,8 +213,16 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 NewPoints{ i } = CurrentPoints;
                 CubatureWeights{ i } = CurrentWeights;
             
+                if ~isempty( p )
+                    p.progress;
+                end
+                
             end
             
+            if ~isempty( p )
+                p.stop;
+            end
+
             NewPoints       = cell2mat( NewPoints );
             CubatureWeights = cell2mat( CubatureWeights );
             
@@ -220,23 +235,18 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         CubatureWeights = repmat( CubatureWeight, 1, NumPoints );
     end
     
-    
-    if nargin > 6
-        p = TimedProgressBar( NumPoints( end ), 20, varargin{:} );
-    else
-        p = [];
-    end
-    
     y = zeros( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
 
-    if ~isempty( p )
-        p.progress;
-    end
-    
     MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
     
     WarningGenerated = false;
 
+    if nargin > 6
+        p = TimedProgressBar( NumPoints, 20, varargin{:} );
+    else
+        p = [];
+    end
+    
     if DisableParFor || NumPoints <= MaxCubatureSerialLoop
         for j = 1 : NumPoints
             lastwarn( '' );
