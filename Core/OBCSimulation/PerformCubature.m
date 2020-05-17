@@ -144,15 +144,15 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
             
         else
             
-            Degree1Basis = [ Points.', min( 0, Points.' ) ];
-            Degree1Basis = TrimmedPCA( Degree1Basis, CubaturePruningCutOff, MaxCubatureDimension );
-            Degree1Basis = Degree1Basis ./ std( Degree1Basis );
-            Degree1Basis = [ ones( NumPoints, 1 ), Degree1Basis ];
+            Basis = [ Points.', min( 0, Points.' ) ];
+            Basis = TrimmedPCA( Basis, CubaturePruningCutOff, MaxCubatureDimension );
+            Basis = Basis ./ std( Basis );
+            Basis = [ ones( NumPoints, 1 ), Basis ];
             
-            Basis = Degree1Basis;
+            Degree1Basis = Basis;
             
-            NDegree1Basis = size( Degree1Basis, 2 );
-            NBasis = NDegree1Basis;
+            NBasis = size( Basis, 2 );
+            NDegree1Basis = NBasis;
             
             Degree1Basis = reshape( Degree1Basis, NumPoints, 1, NDegree1Basis );
             
