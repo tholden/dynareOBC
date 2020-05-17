@@ -215,7 +215,7 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
 
     evalin( 'base', 'global dynareOBC_' );
     
-    if ~dynareOBC.NoRestorePath
+    if ~dynareOBC_.NoRestorePath
         path( OriginalPath );
     end
     
