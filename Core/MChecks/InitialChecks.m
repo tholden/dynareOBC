@@ -548,7 +548,7 @@ function dynareOBC = InitialChecks( dynareOBC )
     end
     
     if PoolNotNeeded
-        ClosePool( dynareOBC.NoPoolClose );
+        ClosePool( dynareOBC.NoPoolClose, false );
     end
 
     yalmip( 'clear' );

@@ -1,19 +1,23 @@
-function ClosePool( NoPoolClose )
+function ClosePool( NoPoolClose, ClearPool )
    
     WarningState = warning( 'off', 'all' );
     
     if NoPoolClose
         
-        try
-            CurrentPool = gcp( 'nocreate' );
-        catch
-            CurrentPool = [];
-        end
-        
-        if ~isempty( CurrentPool )
-            spmd
-                evalin( 'base', 'clear all;' ); %#ok<SPEVB>
+        if ClearPool
+            
+            try
+                CurrentPool = gcp( 'nocreate' );
+            catch
+                CurrentPool = [];
             end
+
+            if ~isempty( CurrentPool )
+                spmd
+                    evalin( 'base', 'clear all;' ); %#ok<SPEVB>
+                end
+            end
+        
         end
         
     else
