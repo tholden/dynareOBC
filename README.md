@@ -140,6 +140,8 @@ Note:
       Cubature node weights that are below `FLOAT` times the maximum cubature node weight in a region are "pruned" to zero, in order to increase integration speed.
     * `MaxCubatureDimension=INTEGER` (default: `128`)
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the `INTEGER` largest eigenvalues of the covariance matrix to zero.
+    * `MultiThreadCubatureRuleCreation`
+      Some LP solvers are multi-threaded. By default though, DynareOBC turns off the LP solver's multi-threading when possible, unless DynareOBC is not doing any parallel simulation. Enabling this option will restore the multi-threading of certain solvers. Since DynareOBC parallelizes at a higher level (e.g. over cubature regions, or in MLV simulation, slow IRF computation, or estimation), this usually slows down runs.
     * `MaxCubatureSerialLoop` (default: `2`)
       Determines the maximum number of calls to the solution of the inner bounds problem, or cubature rule creation problem, before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)

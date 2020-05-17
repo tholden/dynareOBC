@@ -254,6 +254,21 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.MILPOptions.knitro.UseParallel = 0;
             dynareOBC.MILPOptions.quadprogbb.use_single_processor = 1;
         end
+        if dynareOBC.MultiThreadCubatureRuleCreation || ( ~dynareOBC.Estimation && ~dynareOBC.Smoothing && ( ( dynareOBC.SimulationPeriods == 0 && dynareOBC.IRFPeriods == 0 ) || ( ~dynareOBC.SlowIRFs && dynareOBC.CubatureRegions == 1 && dynareOBC.MLVSimulationMode <= 1 ) ) )
+            dynareOBC.CubatureLPOptions.bintprog.UseParallel = 1;
+            dynareOBC.CubatureLPOptions.clp.numThreads = 0;
+            dynareOBC.CubatureLPOptions.fmincon.UseParallel = 1;
+            dynareOBC.CubatureLPOptions.gurobi.Threads = 0;
+            dynareOBC.CubatureLPOptions.knitro.UseParallel = 1;
+            dynareOBC.CubatureLPOptions.quadprogbb.use_single_processor = 0;
+        else
+            dynareOBC.CubatureLPOptions.bintprog.UseParallel = 0;
+            dynareOBC.CubatureLPOptions.clp.numThreads = 1;
+            dynareOBC.CubatureLPOptions.fmincon.UseParallel = 0;
+            dynareOBC.CubatureLPOptions.gurobi.Threads = 1;
+            dynareOBC.CubatureLPOptions.knitro.UseParallel = 0;
+            dynareOBC.CubatureLPOptions.quadprogbb.use_single_processor = 1;
+        end
         if dynareOBC.Debug
             dynareOBC.LPOptions.verbose         = 1;
             dynareOBC.CubatureLPOptions.verbose = 1;
