@@ -77,12 +77,12 @@ classdef TimedProgressBar < handle
                 obj.waitMsg= [ repmat( ' ', 1, finishSz - waitSz ), ...
                     waitMsg ];
             end
-            obj.format= [ '%03d:%02d:%04.1f' ...         % hh:mm:ss.s
+            obj.format= [ '%03d:%02d:%04.1f' ...         % hhh:mm:ss.s
                           obj.percentDoneMsg '%3.0f%%']; % 4 characters wide, percentage
             obj.textWidth= length(obj.waitMsg) + 3 + 1 + 2 + 1 + 4 + ...
                            length(obj.percentDoneMsg) + 1 + 2 + 1;
             fprintf(1, [ '\n' repmat( ' ', 1, 20 ) '\n' ] );  % buffers multitasking uncertanties of the output to the command line
-            obj.showStatus( 0, [ repmat( ' ', 1, obj.textWidth-4 ),'  0%' ]  );
+            obj.showStatus( 0, [ obj.waitMsg sprintf( obj.format, 999, 59, 59.9, 0 ) ]  );
         end
         
         function percent= progress(obj)
