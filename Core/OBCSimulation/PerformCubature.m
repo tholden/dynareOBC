@@ -129,79 +129,93 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
         
         if CubatureCATCHDegree <= 0
         
-            NumPoints = CubatureRegions;
-            
-            NewPoints = zeros( size( Points, 1 ), NumPoints );
-            CubatureWeights = zeros( 1, NumPoints );
+            NewPoints = zeros( size( Points, 1 ), CubatureRegions );
+            CubatureWeights = zeros( 1, CubatureRegions );
 
-            for i = 1 : NumPoints
+            for i = 1 : CubatureRegions
                 PointSelect = IDs == i;
                 NewPoints( :, i ) = mean( Points( :, PointSelect ), 2 );
                 CubatureWeights( i ) = CubatureWeight * sum( PointSelect );
             end
 
-            Points = NewPoints;
-            
         else
             
-            Basis = [ Points.', min( 0, Points.' ) ];
-            Basis = TrimmedPCA( Basis, CubaturePruningCutOff, MaxCubatureDimension );
-            Basis = Basis ./ std( Basis );
-            Basis = [ ones( NumPoints, 1 ), Basis ];
+            NewPoints = cell( 1, CubatureRegions );
+            CubatureWeights = cell( 1, CubatureRegions );
             
-            Degree1Basis = Basis;
+            for i = 1 : CubatureRegions
             
-            NBasis = size( Basis, 2 );
-            NDegree1Basis = NBasis;
-            
-            Degree1Basis = reshape( Degree1Basis, NumPoints, 1, NDegree1Basis );
-            
-            for Degree = 2 : CubatureCATCHDegree
+                PointSelect = IDs == i;
+                CurrentPoints = Points( :, PointSelect );
+                CurrentNumPoints = size( CurrentPoints, 2 );
                 
-                Basis = reshape( bsxfun( @times, Basis, Degree1Basis ), NumPoints, NBasis * NDegree1Basis );
+                Basis = [ CurrentPoints.', min( 0, CurrentPoints.' ) ];
                 Basis = TrimmedPCA( Basis, CubaturePruningCutOff, MaxCubatureDimension );
                 Basis = Basis ./ std( Basis );
-                Basis = [ ones( NumPoints, 1 ), Basis ]; %#ok<AGROW>
-                
-                NewNBasis = size( Basis, 2 );
-                assert( NewNBasis >= NBasis );
-                
-                if NewNBasis == NBasis
-                    CubatureCATCHDegree = Degree;
-                    break
-                else
-                    NBasis = NewNBasis;
-                end
-                
-            end
-            
-            Basis = bsxfun( @times, Basis, 1 ./ max( abs( Basis ) ) );
-            
-            ObjectiveVector = sum( max( 0, -Points ) .^ ( CubatureCATCHDegree + 1 ) ).';
-            ObjectiveVector = ObjectiveVector .* ( 1 ./ max( abs( ObjectiveVector ) ) );
-            
-            WeightsVector = sdpvar( NumPoints, 1 );
-            Diagnostics = optimize( [ WeightsVector >= 0, Basis.' * WeightsVector == sum( Basis ).' * CubatureWeight ], ObjectiveVector.' * WeightsVector, dynareOBC.CubatureLPOptions );
-           
-            if Diagnostics.problem ~= 0
-                error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
-            end
-            
-            WeightsVector = value( WeightsVector );
-            
-            MaxWeightsVector = max( WeightsVector );
-            
-            PointSelect = WeightsVector > dynareOBC.CubatureRelWeightCutOff * MaxWeightsVector;
-            
-            Points = Points( :, PointSelect );
-            CubatureWeights = WeightsVector( PointSelect );
-            
-            CubatureWeights = CubatureWeights .* ( ( CubatureWeight * NumPoints ) ./ sum( CubatureWeights ) );
-            
-            NumPoints = size( Points, 2 );
+                Basis = [ ones( CurrentNumPoints, 1 ), Basis ]; %#ok<AGROW>
 
+                Degree1Basis = Basis;
+
+                NBasis = size( Basis, 2 );
+                NDegree1Basis = NBasis;
+
+                Degree1Basis = reshape( Degree1Basis, CurrentNumPoints, 1, NDegree1Basis );
+
+                for Degree = 2 : CubatureCATCHDegree
+
+                    Basis = reshape( bsxfun( @times, Basis, Degree1Basis ), CurrentNumPoints, NBasis * NDegree1Basis );
+                    Basis = TrimmedPCA( Basis, CubaturePruningCutOff, MaxCubatureDimension );
+                    Basis = Basis ./ std( Basis );
+                    Basis = [ ones( CurrentNumPoints, 1 ), Basis ]; %#ok<AGROW>
+
+                    NewNBasis = size( Basis, 2 );
+                    assert( NewNBasis >= NBasis );
+
+                    if NewNBasis == NBasis
+                        CubatureCATCHDegree = Degree;
+                        break
+                    else
+                        NBasis = NewNBasis;
+                    end
+
+                end
+
+                Basis = bsxfun( @times, Basis, 1 ./ max( abs( Basis ) ) );
+
+                ObjectiveVector = sum( max( 0, -CurrentPoints ) .^ ( CubatureCATCHDegree + 1 ) ).';
+                ObjectiveVector = ObjectiveVector .* ( 1 ./ max( abs( ObjectiveVector ) ) );
+
+                WeightsVector = sdpvar( CurrentNumPoints, 1 );
+                Diagnostics = optimize( [ WeightsVector >= 0, Basis.' * WeightsVector == sum( Basis ).' * CubatureWeight ], ObjectiveVector.' * WeightsVector, dynareOBC.CubatureLPOptions );
+
+                if Diagnostics.problem ~= 0
+                    error( 'dynareOBC:FailedToSolveLPProblem', [ 'This should never happen. Double-check your DynareOBC install, or try a different solver. Internal error message: ' Diagnostics.info ] );
+                end
+
+                WeightsVector = value( WeightsVector );
+
+                MaxWeightsVector = max( WeightsVector );
+
+                PointSelect = WeightsVector > dynareOBC.CubatureRelWeightCutOff * MaxWeightsVector;
+
+                CurrentPoints = CurrentPoints( :, PointSelect );
+                CurrentWeights = WeightsVector( PointSelect ).';
+
+                CurrentWeights = CurrentWeights .* ( ( CubatureWeight * CurrentNumPoints ) ./ sum( CurrentWeights ) );
+                
+                NewPoints{ i } = CurrentPoints;
+                CubatureWeights{ i } = CurrentWeights;
+            
+            end
+            
+            NewPoints       = cell2mat( NewPoints );
+            CubatureWeights = cell2mat( CubatureWeights );
+            
         end
         
+        Points = NewPoints;
+        NumPoints = size( Points, 2 );
+
     else
         CubatureWeights = repmat( CubatureWeight, 1, NumPoints );
     end
