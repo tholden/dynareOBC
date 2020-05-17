@@ -201,7 +201,7 @@ function dynareOBC( InputFileName, varargin )
 %       If this option is set to its default of 0, then DynareOBC approximates the integral over a 
 %       region with the value of the function at the mean of the points in the region. If this option 
 %       is set to a value INTEGER greater than 0, then Caratheodory-Tchakaloff (CATCH) subsampling is 
-%       used, with basis functions consisting of all monomials in q and max{0,q} with degree less or 
+%       used, with basis functions consisting of all monomials in q and min{0,q} with degree less or 
 %       equal to INTEGER. Setting this to a value greater than 0 automatically turns on Cubature. 
 %     * PeriodsOfUncertainty=INTEGER (default: 16) 
 %       Controls the number of periods of uncertainty over which DynareOBC integrates when Cubature 
@@ -305,7 +305,7 @@ function dynareOBC( InputFileName, varargin )
 %     * UseVPA 
 %       Enables more accurate evaluation of determinants using the symbolic toolbox. 
 %     * LPSolver=STRING 
-%       (default: xpress,gurobi,cplex,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*) 
+%       (default: gurobi,cplex,xpress,mosek,scip,linprog,glpk,lpsolve,cdd,qsopt,*) 
 %       Specifies the preferred solver to use for the linear programming problem that is solved when 
 %       checking whether matrices are S/S_0. To find out what solvers are available to you, run 
 %       dynareOBC TestSolvers, and examine the list displayed by YALMIP. 
