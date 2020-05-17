@@ -141,7 +141,7 @@ Note:
     * `MaxCubatureDimension=INTEGER` (default: `128`)
       The maximum dimension over which to integrate. If the algorithm needs to integrate over a larger space, it will "prune" all but the `INTEGER` largest eigenvalues of the covariance matrix to zero.
     * `MaxCubatureSerialLoop` (default: `2`)
-      Determines the maximum number of calls to the solution of the inner bounds problem before a loop is parallelized.
+      Determines the maximum number of calls to the solution of the inner bounds problem, or cubature rule creation problem, before a loop is parallelized.
     * `RetrieveConditionalCovariancesParallelizationCutOff` (default: `256`)
       Determines the size of matrix beyond which we parallelize certain loops involved in calculating the covariance of the random variables over which we perform cubature.
     * `FastCubature`

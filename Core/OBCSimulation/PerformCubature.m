@@ -33,6 +33,8 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     Points( :, IrrelevantPoints ) = [];
     NumPoints = size( Points, 2 );
     
+    MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
+    
     CubatureRegions = dynareOBC.CubatureRegions;
     
     if NumPoints > CubatureRegions
@@ -153,14 +155,23 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 p = [];
             end
 
-            for i = 1 : CubatureRegions
-            
-                [ NewPoints{ i }, CubatureWeights{ i } ] = GetCubatureRule( Points( :, IDs == i ), CubatureWeight, CubatureCATCHDegree, CubaturePruningCutOff, MaxCubatureDimension, CubatureLPOptions, CubatureRelWeightCutOff );
-                
-                if ~isempty( p )
-                    p.progress;
+            if DisableParFor || CubatureRegions <= MaxCubatureSerialLoop
+                for i = 1 : CubatureRegions
+                    [ NewPoints{ i }, CubatureWeights{ i } ] = GetCubatureRule( Points( :, IDs == i ), CubatureWeight, CubatureCATCHDegree, CubaturePruningCutOff, MaxCubatureDimension, CubatureLPOptions, CubatureRelWeightCutOff );
+                    if ~isempty( p )
+                        p.progress;
+                    end
                 end
-                
+            else
+                for i = 1 : CubatureRegions
+                    NewPoints{ i } = Points( :, IDs == i );
+                end
+                parfor i = 1 : CubatureRegions
+                    [ NewPoints{ i }, CubatureWeights{ i } ] = GetCubatureRule( NewPoints{ i }, CubatureWeight, CubatureCATCHDegree, CubaturePruningCutOff, MaxCubatureDimension, CubatureLPOptions, CubatureRelWeightCutOff );
+                    if ~isempty( p )
+                        p.progress;
+                    end
+                end
             end
             
             if ~isempty( p )
@@ -181,8 +192,6 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
     
     y = zeros( dynareOBC.TimeToEscapeBounds * dynareOBC.NumberOfMax, 1 );
 
-    MaxCubatureSerialLoop = dynareOBC.MaxCubatureSerialLoop;
-    
     WarningGenerated = false;
 
     if nargin > 6
