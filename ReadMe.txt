@@ -196,7 +196,7 @@ OPTIONS (NOT CASE SENSITIVE!) include:
       The cubature method splits the integration space into INTEGER regions, and then integrates 
       separately over each region. Setting this to a value greater than 1 automatically turns on 
       Cubature. 
-    * CubatureClusteringEffort (default: 0) 
+    * CubatureClusteringEffort=INTEGER (default: 0) 
       Determines how much effort DynareOBC puts into finding "good" clusters. If this is equal to 
       0, it uses a simple hierarchical method. If it is equal to 1 it uses k-means clustering 
       without the "online" final step. If it is equal to 2 it uses k-means clustering with the 
