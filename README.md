@@ -126,6 +126,8 @@ Note:
       Turns on cubature. By default DynareOBC assumes that agents are "surprised" by the existence of the bound. (At `order=1`, this is equivalent to a perfect foresight solution to the model.) Setting this option removes this simplifying assumption, and uses to integrate over future uncertainty, using the options below.
     * `CubatureRegions=INTEGER` (default: `1`)
       The cubature method splits the integration space into INTEGER regions, and then integrates separately over each region. Setting this to a value greater than `1` automatically turns on `Cubature`.
+    * `CubatureClusteringEffort` (default: `0`)
+      Determines how much effort DynareOBC puts into finding "good" clusters. If this is equal to `0`, it uses a simple hierarchical method. If it is equal to `1` it uses k-means clustering without the "online" final step. If it is equal to `2` it uses k-means clustering with the "online" final step.
     * `CubatureCATCHDegree=INTEGER` (default: `0`)
       If this option is set to its default of `0`, then DynareOBC approximates the integral over a region with the value of the function at the mean of the points in the region. If this option is set to a value `INTEGER` greater than `0`, then Caratheodory-Tchakaloff (CATCH) subsampling is used, with basis functions consisting of all monomials in `q` and `min{0,q}` with degree less or equal to `INTEGER`. Setting this to a value greater than `0` automatically turns on `Cubature`.
     * `PeriodsOfUncertainty=INTEGER` (default: `16`)

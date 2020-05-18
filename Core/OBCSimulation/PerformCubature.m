@@ -103,22 +103,30 @@ function [ y, GlobalVarianceShare ] = PerformCubature( UnconstrainedReturnPath, 
                 
             end
             
-            StartCentroids = zeros( CubatureRegions, size( NormalizedPoints, 2 ) );
-            
-            for i = 1 : CubatureRegions
-                StartCentroids( i, : ) = mean( NormalizedPoints( IDs == i, : ) );
-            end
-            
             assert( numel( unique( IDs ) ) == CubatureRegions );
             
-            if dynareOBC.Debug
-                kmeansDisplay = 'iter';
-            else
-                kmeansDisplay = 'off';
-            end
+            if dynareOBC.CubatureClusteringEffort > 0
+                StartCentroids = zeros( CubatureRegions, size( NormalizedPoints, 2 ) );
 
-            % Refine with the kmeans algorithm
-            IDs = kmeans( NormalizedPoints, CubatureRegions, 'Start', StartCentroids, 'Display', kmeansDisplay, 'OnlinePhase', 'on', 'MaxIter', 100 * CubatureRegions );
+                for i = 1 : CubatureRegions
+                    StartCentroids( i, : ) = mean( NormalizedPoints( IDs == i, : ) );
+                end
+            
+                if dynareOBC.Debug
+                    kmeansDisplay = 'iter';
+                else
+                    kmeansDisplay = 'off';
+                end
+
+                if dynareOBC.CubatureClusteringEffort > 1
+                    kmeansOnlinePhase = 'on';
+                else
+                    kmeansOnlinePhase = 'off';
+                end
+                
+                % Refine with the kmeans algorithm
+                IDs = kmeans( NormalizedPoints, CubatureRegions, 'Start', StartCentroids, 'Display', kmeansDisplay, 'OnlinePhase', kmeansOnlinePhase, 'MaxIter', 100 * CubatureRegions );
+            end
 
             UniqueIDs = unique( IDs );
             
