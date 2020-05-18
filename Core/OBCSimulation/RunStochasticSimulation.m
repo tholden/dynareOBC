@@ -56,10 +56,12 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
         if exist( dynareOBC.InitialStateFile, 'file' ) == 2
             FileData = load( dynareOBC.InitialStateFile, 'InitialState' );
             if isfield( FileData, 'InitialState' )
-                InitialState = FileData.InitialState;
-                if ~all( size( InitialState ) == [ nEndo, 1 ] )
-                    error( 'dynareOBC:LoadedInitialStateWrongSize', 'The loaded InitialState was not the correct size. Expected %d x %d, found %d x %d.', nEndo, 1, size( InitialState, 1 ), size( InitialState, 2 ) );
+                InitialStateTmp = FileData.InitialState;
+                if ~all( size( InitialStateTmp ) == [ nEndo - dynareOBC.NumberOfMax, 1 ] )
+                    error( 'dynareOBC:LoadedInitialStateWrongSize', 'The loaded InitialState was not the correct size. Expected %d x %d, found %d x %d.', nEndo - dynareOBC.NumberOfMax, 1, size( InitialStateTmp, 1 ), size( InitialStateTmp, 2 ) );
                 end
+                InitialState = full( dynareOBC.Constant );
+                InitialState( 1 : numel( InitialStateTmp ) ) = InitialStateTmp;
             else
                 error( 'dynareOBC:LoadedInitialStateFileWrongVariables', 'The given shock sequence file did not contain an InitialState variable.' );
             end
