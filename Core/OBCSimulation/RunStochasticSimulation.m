@@ -49,7 +49,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
     end
     
     if isempty( dynareOBC.InitialStateFile )
-        Simulation = SimulateModel( ShockSequence, true );
+        Simulation = SimulateModel( ShockSequence, true, [], false, false );
     else
         nEndo = M.endo_nbr;
         
@@ -85,7 +85,7 @@ function [ oo, dynareOBC ] = RunStochasticSimulation( M, options, oo, dynareOBC 
         end
         InitialFullState = orderfields( InitialFullState );
         
-        Simulation = SimulateModel( ShockSequence, true, InitialFullState );
+        Simulation = SimulateModel( ShockSequence, true, InitialFullState, false, false );
     end
     
     oo.exo_simul = ShockSequence';
