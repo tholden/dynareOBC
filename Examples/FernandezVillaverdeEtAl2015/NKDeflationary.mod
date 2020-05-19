@@ -68,4 +68,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 1, irf = 0, periods = 0 );
+stoch_simul( order = 1, irf = 0, periods = 10000 );
