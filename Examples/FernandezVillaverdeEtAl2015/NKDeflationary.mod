@@ -17,10 +17,6 @@
 
 varexo epsilon_m, sunspot;
 
-parameters ZeroParam;
-
-ZeroParam = 0;
-
 model;
     @#include "InsertNewModelEquations.mod"
 
