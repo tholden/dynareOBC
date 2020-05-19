@@ -18,6 +18,7 @@
 varexo epsilon_m, sunspot;
 
 model;
+
     @#include "InsertNewModelEquations.mod"
 
     #PIs = PI_STEADY;

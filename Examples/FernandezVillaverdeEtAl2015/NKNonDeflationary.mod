@@ -22,6 +22,7 @@ parameters ZeroParam;
 ZeroParam = 0;
 
 model;
+
     @#include "InsertNewModelEquations.mod"
 
     #PIs = PI_STEADY;
