@@ -120,6 +120,8 @@ Note:
       Some MILP solvers occasionally throw errors for no good reason, e.g. because of temporary unavailability of a license server. This option makes DynareOBC keep retrying following an error in the optimizer.
     * `IgnoreBoundFailures`
       Makes DynareOBC atttempt to continue even after it has failed to solve the bounds problem due to e.g. infeasability. This will severely compromise accuracy.
+    * `OtherMODFile=STRING`
+      If, during simulation, DynareOBC fails to solve a bounds problem, then with this option enabled, it assumes that agents in the model switch their long-run beliefs to be governed by the other MOD file `STRING`. For example, in a ZLB context, the original MOD file may be solved around the positive inflation steady-state, while the other MOD file is solved around the indeterminate deflationary steady-state (with the indeterminacy resolved via adding a sunspot equation). The other MOD file must have the same endogenous and exogenous variables as the original, in the same order.
 
 * **For controlling cubature**
     * `Cubature`
@@ -267,6 +269,8 @@ Note:
       Displays progress solving the bounds problem. Only useful for very hard to solve models under perfect foresight.
     * `CompileSimulationCode`
       Compiles the code used for simulating the base model, without the bound. May speed up long simulations.
+    * `SkipAllSimulation`
+      Ignores any IRF or stochastic simulation instructions from the `stoch_simul` command.
     * `NoCleanup`
       Prevents the deletion of DynareOBC's temporary files. Useful for debugging.
     * `NoPoolClose`

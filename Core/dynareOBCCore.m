@@ -572,7 +572,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
 
     %% Simulating
 
-    if dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0 || dynareOBC.Smoothing
+    if ~dynareOBC.SkipAllSimulation && ( dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0 || dynareOBC.Smoothing )
     
         fprintf( '\n' );
         disp( 'Preparing to simulate the model.' );

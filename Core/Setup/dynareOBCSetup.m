@@ -192,11 +192,70 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         return;
     end
 
+    global M_ options_ oo_
+    
     CoreError = [];
-    try
-        dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
-    catch CaughtCoreError
-        CoreError = CaughtCoreError;
+    
+    if ~isempty( dynareOBC_.OtherMODFile )
+        
+        if dynareOBC_.MaxParametricSolutionDimension > 0
+            dynareOBC_.MaxParametricSolutionDimension = 0;
+            disp( '' );
+            disp( 'Setting MaxParametricSolutionDimension to 0 since the OtherMODFile option is non-empty.' );
+            disp( '' );
+        end
+        
+        if dynareOBC_.CompileSimulationCode
+            dynareOBC_.CompileSimulationCode = false;
+            disp( '' );
+            disp( 'Disabling CompileSimulationCode since the OtherMODFile option is non-empty.' );
+            disp( '' );
+        end
+        
+        if dynareOBC_.Cubature
+            dynareOBC_.Cubature = false;
+            disp( '' );
+            disp( 'Disabling Cubature since the OtherMODFile option is non-empty.' );
+            disp( '' );
+        end
+        
+        if dynareOBC_.Global
+            dynareOBC_.Global = false;
+            disp( '' );
+            disp( 'Disabling Global since the OtherMODFile option is non-empty.' );
+            disp( '' );
+        end
+        
+        dynareOBCOriginal = dynareOBC_;
+        dynareOBC_.SkipAllSimulation = true;
+
+        try
+            dynareOBC_ = dynareOBCCore( dynareOBC_.OtherMODFile, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
+        catch CaughtCoreError
+            CoreError = CaughtCoreError;
+        end
+        
+        dynareOBC_.SkipAllSimulation = false;
+        
+        dynareOBCOriginal.OtherMOD = struct;
+        
+        dynareOBCOriginal.OtherMOD.dynareOBC = dynareOBC_;
+        dynareOBCOriginal.OtherMOD.M         = M_;
+        dynareOBCOriginal.OtherMOD.options   = options_;
+        dynareOBCOriginal.OtherMOD.oo        = oo_;
+        
+        dynareOBC_ = dynareOBCOriginal;
+        
+    end
+    
+    if isempty( CoreError )
+    
+        try
+            dynareOBC_ = dynareOBCCore( InputFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
+        catch CaughtCoreError
+            CoreError = CaughtCoreError;
+        end
+    
     end
         
     
