@@ -35,6 +35,16 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
     else
         % DisplayProgress = false;
         InitialFullState = orderfields( InitialFullState );
+        if dynareOBC_.Order == 1
+            assert( max( abs( InitialFullState.first + InitialFullState.bound_offset + dynareOBC_.Constant - InitialFullState.total_with_bounds ) ) < sqrt( eps ), 'dynareOBC:InitialFullStateNotAddingUp', 'Initial full state does not add up as expected.' );
+            assert( max( abs( InitialFullState.first + dynareOBC_.Constant - InitialFullState.total ) ) < sqrt( eps ), 'dynareOBC:InitialFullStateNotAddingUp', 'Initial full state does not add up as expected.' );
+        elseif dynareOBC_.Order == 2
+            assert( max( abs( InitialFullState.first + InitialFullState.second + InitialFullState.bound_offset + dynareOBC_.Constant - InitialFullState.total_with_bounds ) ) < sqrt( eps ), 'dynareOBC:InitialFullStateNotAddingUp', 'Initial full state does not add up as expected.' );
+            assert( max( abs( InitialFullState.first + InitialFullState.second + dynareOBC_.Constant - InitialFullState.total ) ) < sqrt( eps ), 'dynareOBC:InitialFullStateNotAddingUp', 'Initial full state does not add up as expected.' );
+        elseif dynareOBC_.Order == 3
+            assert( max( abs( InitialFullState.first + InitialFullState.second + InitialFullState.first_sigma_2 + InitialFullState.third + InitialFullState.bound_offset + dynareOBC_.Constant - InitialFullState.total_with_bounds ) ) < sqrt( eps ), 'dynareOBC:InitialFullStateNotAddingUp', 'Initial full state does not add up as expected.' );
+            assert( max( abs( InitialFullState.first + InitialFullState.second + InitialFullState.first_sigma_2 + InitialFullState.third + dynareOBC_.Constant - InitialFullState.total ) ) < sqrt( eps ), 'dynareOBC:InitialFullStateNotAddingUp', 'Initial full state does not add up as expected.' );
+        end
     end
     if nargin < 4
         SkipMLVSimulation = false;
@@ -556,8 +566,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             
         end
         
-        InitialFullState.first = InitialFullState.first + InitialFullState.bound_offset + full( dynareOBC_.Constant );
-        InitialFullState.bound_offset = zeros( size( InitialFullState.bound_offset ) );
+        OldConstant = full( dynareOBC_.Constant );
 
         Files = dir( '**/dynareOBCTemp*' );
         [ ~, FilesSortOrder ] = sort( cellfun( @length, { Files.folder } ), 'descend' );
@@ -599,8 +608,10 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         
         dynareOBC_.OtherMOD = OriginalMOD;
         
-        InitialFullState.first = InitialFullState.first - full( dynareOBC_.Constant );
-        % InitialFullState.constant = full( dynareOBC_.Constant );
+        InitialFullState.first = InitialFullState.first + InitialFullState.bound_offset + OldConstant - full( dynareOBC_.Constant );
+        InitialFullState.total = InitialFullState.total + InitialFullState.bound_offset;
+        InitialFullState.bound_offset = zeros( size( InitialFullState.bound_offset ) );
+        InitialFullState.total_with_bounds = InitialFullState.total;
         
         NewSimulation = SimulateModel( ShockSequence( :, ( SimulationLength + 1 ) : end ), DisplayProgress, InitialFullState, SkipMLVSimulation, DisableParFor );
         
@@ -611,10 +622,11 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             end
         end
         
+        NewSimulationLength = size( ShockSequence( :, ( SimulationLength + 1 ) : end ), 2 );
         for i = 1 : nMLV
             MLVName = MLVNames{i};
-            Simulation.MLVsWithBounds.( MLVName )( ( SimulationLength + 1 ) : end )    = NewSimulation.MLVsWithBounds.( MLVName );
-            Simulation.MLVsWithoutBounds.( MLVName )( ( SimulationLength + 1 ) : end ) = NewSimulation.MLVsWithoutBounds.( MLVName );
+            Simulation.MLVsWithBounds.( MLVName )( ( SimulationLength + 1 ) : ( SimulationLength + NewSimulationLength ) )    = NewSimulation.MLVsWithBounds.( MLVName );
+            Simulation.MLVsWithoutBounds.( MLVName )( ( SimulationLength + 1 ) : ( SimulationLength + NewSimulationLength ) ) = NewSimulation.MLVsWithoutBounds.( MLVName );
         end
 
     end
