@@ -28,6 +28,7 @@ model;
     #Cs = (Ws /(psi * ((1/(1 - Sg_STEADY)) * NUs/ A_STEADY)^vartheta))^(1/(1 + vartheta));
     #Ys = (1 / (1 - Sg_STEADY)) * Cs;
 
+    #Y_LAG = (A_LAG/NU_LAG) * L_LAG;
     #Y = (A/NU) * L;
     #Y_LEAD = (A_LEAD/NU_LEAD) * L_LEAD;
     #G = Sg*Y;
@@ -39,7 +40,7 @@ model;
     #W = psi * L^vartheta*C;
     #MC = W/A;
     #M = exp(-sigma_m * epsilon_m);
-    #R = exp( max( 0, log( ( PI_STEADY / beta_STEADY ) * ( ((PI/PIs)^phi_pi) * ((Y/Ys)^phi_y) ) * M ) ) );
+    #R = exp( max( 0, log( ( PI_STEADY / beta_STEADY ) * ( ((PI/PIs)^phi_pi) * ((Y/Y_LAG)^phi_y) ) * M ) ) ); // Make the Taylor rule a function of Y_LAG to make existence more likely about the second steady state.
     #AUX2 = varepsilon / (varepsilon - 1) * AUX1;
     #AUX2_LEAD = varepsilon / (varepsilon - 1) * AUX1_LEAD;
     1 = R * beta_LEAD * ( C / C_LEAD ) / EPI;
@@ -65,4 +66,4 @@ end;
 steady;
 check;
 
-stoch_simul( order = 1, irf = 0, periods = 10000 );
+stoch_simul( order = 1, irf = 0, periods = 10000 ) Y L PI R;
