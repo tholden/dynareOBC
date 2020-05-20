@@ -191,46 +191,71 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         end
         return;
     end
-
-    global M_ options_ oo_
+    
+    dynareOBC_.OtherMOD = [];
     
     CoreError = [];
+
+    global M_ options_ oo_
     
     if ~isempty( dynareOBC_.OtherMODFile )
         
         if dynareOBC_.MaxParametricSolutionDimension > 0
             dynareOBC_.MaxParametricSolutionDimension = 0;
-            disp( '' );
+            disp( ' ' );
             disp( 'Setting MaxParametricSolutionDimension to 0 since the OtherMODFile option is non-empty.' );
-            disp( '' );
+            disp( ' ' );
         end
         
         if dynareOBC_.CompileSimulationCode
             dynareOBC_.CompileSimulationCode = false;
-            disp( '' );
+            disp( ' ' );
             disp( 'Disabling CompileSimulationCode since the OtherMODFile option is non-empty.' );
-            disp( '' );
+            disp( ' ' );
         end
         
         if dynareOBC_.Cubature
-            dynareOBC_.Cubature = false;
-            disp( '' );
-            disp( 'Disabling Cubature since the OtherMODFile option is non-empty.' );
-            disp( '' );
+            warning( 'dynareOBC:CubatureWithOtherMODFile', 'Enabling Cubature and OtherMODFile may produce unexpected behaviour. Agents will switch their long-run beliefs when there is a positive probability of no solution.' );
         end
         
         if dynareOBC_.Global
             dynareOBC_.Global = false;
-            disp( '' );
+            disp( ' ' );
             disp( 'Disabling Global since the OtherMODFile option is non-empty.' );
-            disp( '' );
+            disp( ' ' );
+        end
+        
+        if dynareOBC_.SimulateOnGridPoints
+            dynareOBC_.SimulateOnGridPoints = false;
+            disp( ' ' );
+            disp( 'Disabling SimulateOnGridPoints since the OtherMODFile option is non-empty.' );
+            disp( ' ' );
         end
         
         dynareOBCOriginal = dynareOBC_;
+        
         dynareOBC_.SkipAllSimulation = true;
+        
+        OtherFileName = dynareOBC_.OtherMODFile;
+        
+        FNameDots = strfind( OtherFileName, '.' );
+        if isempty( FNameDots )
+            dynareOBC_.BaseFileName = OtherFileName;
+        else
+            dynareOBC_.BaseFileName = OtherFileName( 1:(FNameDots(end)-1) );
+        end
+        
+        dynareOBC_.SaveMacroName = [ dynareOBC_.BaseFileName '-macroexp.mod' ];
+        dynareOBC_.DataFile = '';
+        
+        dynareOBC_.OtherMODFile = InputFileName;
+        
+        OriginalOtherMODFileSwitchToProbability      = dynareOBC_.OtherMODFileSwitchToProbability;
+        dynareOBC_.OtherMODFileSwitchToProbability   = dynareOBC_.OtherMODFileSwitchFromProbability;
+        dynareOBC_.OtherMODFileSwitchFromProbability = OriginalOtherMODFileSwitchToProbability;
 
         try
-            dynareOBC_ = dynareOBCCore( dynareOBC_.OtherMODFile, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, InputFileName, varargin{:} ) );
+            dynareOBC_ = dynareOBCCore( OtherFileName, basevarargin, dynareOBC_, @() EnforceRequirementsAndGeneratePath( Update, OriginalPath, CurrentFolder, dynareOBCPath, OtherFileName, varargin{:} ) );
         catch CaughtCoreError
             CoreError = CaughtCoreError;
         end

@@ -570,8 +570,17 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
         error( 'dynareOBC:FailedToSolve', 'DynareOBC failed to find a solution to the model.' );
     end
 
+    if ~isempty( dynareOBC.OtherMOD )
+        
+        assert( M_.endo_nbr == dynareOBC.OtherMOD.M.endo_nbr, 'dynareOBC:OtherMODDifferentStructure', 'With the OtherMODFile option, both MOD files must have the same endogenous and exogenous variables, in the same order.' );
+        assert( M_.exo_nbr == dynareOBC.OtherMOD.M.exo_nbr, 'dynareOBC:OtherMODDifferentStructure', 'With the OtherMODFile option, both MOD files must have the same endogenous and exogenous variables, in the same order.' );
+        assert( isequal( char( M_.endo_names ), char( dynareOBC.OtherMOD.M.endo_names ) ), 'dynareOBC:OtherMODDifferentStructure', 'With the OtherMODFile option, both MOD files must have the same endogenous and exogenous variables, in the same order.' );
+        assert( isequal( char( M_.exo_names ), char( dynareOBC.OtherMOD.M.exo_names ) ), 'dynareOBC:OtherMODDifferentStructure', 'With the OtherMODFile option, both MOD files must have the same endogenous and exogenous variables, in the same order.' );
+        
+    end
+    
     %% Simulating
-
+    
     if ~dynareOBC.SkipAllSimulation && ( dynareOBC.IRFPeriods > 0 || dynareOBC.SimulationPeriods > 0 || dynareOBC.Smoothing )
     
         fprintf( '\n' );

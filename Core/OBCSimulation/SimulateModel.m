@@ -1,11 +1,12 @@
 function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFullState, SkipMLVSimulation, DisableParFor )
 
-    global M_ oo_ dynareOBC_
+    global M_ options_ oo_ dynareOBC_
         
     Ts = dynareOBC_.TimeToEscapeBounds;
     ns = dynareOBC_.NumberOfMax;
    
     SimulationLength = size( ShockSequence, 2 );
+    OriginalSimulationLength = SimulationLength;
     
     if nargin < 2
         DisplayProgress = true;
@@ -32,7 +33,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         InitialFullState.total_with_bounds = InitialFullState.total;
         InitialFullState = orderfields( InitialFullState );
     else
-        DisplayProgress = false;
+        % DisplayProgress = false;
         InitialFullState = orderfields( InitialFullState );
     end
     if nargin < 4
@@ -157,7 +158,14 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         if isempty( Simulation )
             if DisplayProgress
-                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing base simulation. Predicted to finish within ', '. Progress: ', 'Computing base simulation.               Completed in ' );
+                if isempty( dynareOBC_.OtherMOD )
+                    p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing base simulation. Predicted to finish within ', '. Progress: ', 'Computing base simulation.               Completed in ' );
+                else
+                    p = [];
+                    disp( ' ' );
+                    disp( 'Computing base simulation.' );
+                    disp( ' ' );
+                end
             else
                 p = [];
             end
@@ -202,12 +210,32 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             WarningIDs = { };
             WarningPeriods = { };
 
-            if DisplayProgress
-                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing simulation. Predicted to finish within ', '. Progress: ', 'Computing simulation.               Completed in ' );
+            if DisplayProgress 
+                if isempty( dynareOBC_.OtherMOD )
+                    p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing simulation. Predicted to finish within ', '. Progress: ', 'Computing simulation.               Completed in ' );
+                else
+                    p = [];
+                    disp( ' ' );
+                    disp( 'Computing simulation.' );
+                    disp( ' ' );
+                end
             else
                 p = [];
             end
+            
             for t = 1 : SimulationLength
+                if ~isempty( dynareOBC_.OtherMOD ) && dynareOBC_.OtherMODFileSwitchToProbability > realmin
+                    Uniform = rand;
+                    if Uniform <= dynareOBC_.OtherMODFileSwitchToProbability
+                        SimulationLength = t - 1;
+                        if DisplayProgress
+                            disp( [ 'Exogenously switching steady states after ' int2str( t ) ' periods due to a random draw.' ] );
+                        end
+                        p = [];
+                        break
+                    end
+                end
+                
                 lastwarn( '' );
                 WarningState = warning( 'off', 'all' );
                 try
@@ -243,6 +271,14 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                             y = [ Reshaped_yOld( 2:end, : ); zeros( 1, ns ) ];
                             y = y(:);
                             warning( 'dynareOBC:BoundFailureCaught', [ 'The following error was caught while solving the bounds problem:\n' Error.message '\nContinuing due to IgnoreBoundFailures option.' ] );
+                        elseif ~isempty( dynareOBC_.OtherMOD )
+                            warning( WarningState );
+                            SimulationLength = t - 1;
+                            if DisplayProgress
+                                disp( [ 'Endogenously switching steady states after ' int2str( t ) ' periods due to problem in simulation: ' Error.message ] );
+                            end
+                            p = [];
+                            break
                         else
                             rethrow( Error );
                         end
@@ -347,7 +383,14 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         end
         
         if DisplayProgress
-            p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing model local variable paths. Predicted to finish within ', '. Progress: ', 'Computing model local variable paths.               Completed in ' );
+            if isempty( dynareOBC_.OtherMOD )
+                p = TimedProgressBar( ceil( SimulationLength / 10 ), 50, 'Computing model local variable paths. Predicted to finish within ', '. Progress: ', 'Computing model local variable paths.               Completed in ' );
+            else
+                p = [];
+                disp( ' ' );
+                disp( 'Computing model local variable paths.' );
+                disp( ' ' );
+            end
         else
             p = [];
         end
@@ -455,7 +498,16 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 LagValuesWithoutBounds = CurrentValuesWithoutBounds;
             catch Error
                 warning( WarningState );
-                rethrow( Error );
+                if ~isempty( dynareOBC_.OtherMOD )
+                    SimulationLength = t - 1;
+                    if DisplayProgress
+                        disp( [ 'Switching steady states after ' int2str( t ) ' periods due to problem in MLV simulation: ' Error.message ] );
+                    end
+                    p = [];
+                    break
+                else
+                    rethrow( Error );
+                end
             end
             
             [ WarningMessages, WarningIDs, WarningPeriods ] = UpdateWarningList( t, WarningMessages, WarningIDs, WarningPeriods );
@@ -481,6 +533,66 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 warning( WarningMessages{i} );
             end
         end
+    else
+        MLVNames = {};
+        nMLV     = 0;
+    end
+    
+    if SimulationLength < OriginalSimulationLength
+        
+        assert( ~isempty( dynareOBC_.OtherMOD ) );
+        assert( size( ShockSequence, 2 ) == OriginalSimulationLength );
+        
+        if SimulationLength > 0
+            
+            InitialFullState = struct;
+
+            for i = 1 : length( SimulationFieldNames )
+                CurrentFieldName = SimulationFieldNames{ i };
+                if ~strcmp( CurrentFieldName, 'constant' )
+                    InitialFullState.( CurrentFieldName ) = Simulation.( CurrentFieldName )( :, SimulationLength );
+                end
+            end
+            
+        end
+        
+        InitialFullState.bound_offset = InitialFullState.bound_offset + full( dynareOBC_.Constant );
+
+        OtherMOD = dynareOBC_.OtherMOD;
+        
+        dynareOBC_.OtherMOD = [];
+        
+        OriginalMOD = struct;
+        OriginalMOD.dynareOBC = dynareOBC_;
+        OriginalMOD.M         = M_;
+        OriginalMOD.options   = options_;
+        OriginalMOD.oo        = oo_;
+        
+        dynareOBC_ = OtherMOD.dynareOBC;
+        M_         = OtherMOD.M;
+        options_   = OtherMOD.options;
+        oo_        = OtherMOD.oo;
+        
+        dynareOBC_.OtherMOD = OriginalMOD;
+        
+        InitialFullState.bound_offset = InitialFullState.bound_offset - full( dynareOBC_.Constant );
+        % InitialFullState.constant = full( dynareOBC_.Constant );
+        
+        NewSimulation = SimulateModel( ShockSequence( :, ( SimulationLength + 1 ) : end ), DisplayProgress, InitialFullState, SkipMLVSimulation, DisableParFor );
+        
+        for i = 1 : length( SimulationFieldNames )
+            CurrentFieldName = SimulationFieldNames{ i };
+            if ~strcmp( CurrentFieldName, 'constant' )
+                Simulation.( CurrentFieldName )( :, ( SimulationLength + 1 ) : end ) = NewSimulation.( CurrentFieldName );
+            end
+        end
+        
+        for i = 1 : nMLV
+            MLVName = MLVNames{i};
+            Simulation.MLVsWithBounds.( MLVName )( ( SimulationLength + 1 ) : end )    = NewSimulation.MLVsWithBounds.( MLVName );
+            Simulation.MLVsWithoutBounds.( MLVName )( ( SimulationLength + 1 ) : end ) = NewSimulation.MLVsWithoutBounds.( MLVName );
+        end
+
     end
 
 end
