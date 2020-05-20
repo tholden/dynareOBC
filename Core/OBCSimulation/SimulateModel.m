@@ -556,7 +556,8 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
             
         end
         
-        InitialFullState.bound_offset = InitialFullState.bound_offset + full( dynareOBC_.Constant );
+        InitialFullState.first = InitialFullState.first + InitialFullState.bound_offset + full( dynareOBC_.Constant );
+        InitialFullState.bound_offset = zeros( size( InitialFullState.bound_offset ) );
 
         OtherMOD = dynareOBC_.OtherMOD;
         
@@ -575,7 +576,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         
         dynareOBC_.OtherMOD = OriginalMOD;
         
-        InitialFullState.bound_offset = InitialFullState.bound_offset - full( dynareOBC_.Constant );
+        InitialFullState.first = InitialFullState.first - full( dynareOBC_.Constant );
         % InitialFullState.constant = full( dynareOBC_.Constant );
         
         NewSimulation = SimulateModel( ShockSequence( :, ( SimulationLength + 1 ) : end ), DisplayProgress, InitialFullState, SkipMLVSimulation, DisableParFor );
