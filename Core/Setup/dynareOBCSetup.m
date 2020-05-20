@@ -249,6 +249,8 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         dynareOBC_.SkipAllSimulation = false;
         
         Files = dir( '**/dynareOBCTemp*' );
+        [ ~, FilesSortOrder ] = sort( cellfun( @length, { Files.folder } ), 'descend' );
+        Files = Files( FilesSortOrder );
         for i = 1 : length( Files )
             File = Files( i );
             movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCTemp', 'dynareOBCOtherTemp' ) ], 'f' );

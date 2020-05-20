@@ -229,7 +229,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                     if Uniform <= dynareOBC_.OtherMODFileSwitchToProbability
                         SimulationLength = t - 1;
                         if DisplayProgress
-                            disp( [ 'Exogenously switching steady states after ' int2str( t ) ' periods due to a random draw.' ] );
+                            disp( [ 'Exogenously switching steady states after ' int2str( t - 1 ) ' periods due to a random draw.' ] );
                         end
                         p = [];
                         break
@@ -275,7 +275,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                             warning( WarningState );
                             SimulationLength = t - 1;
                             if DisplayProgress
-                                disp( [ 'Endogenously switching steady states after ' int2str( t ) ' periods due to problem in simulation: ' Error.message ] );
+                                disp( [ 'Endogenously switching steady states after ' int2str( t - 1 ) ' periods due to problem in simulation: ' Error.message ] );
                             end
                             p = [];
                             break
@@ -501,7 +501,7 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
                 if ~isempty( dynareOBC_.OtherMOD )
                     SimulationLength = t - 1;
                     if DisplayProgress
-                        disp( [ 'Switching steady states after ' int2str( t ) ' periods due to problem in MLV simulation: ' Error.message ] );
+                        disp( [ 'Switching steady states after ' int2str( t - 1 ) ' periods due to problem in MLV simulation: ' Error.message ] );
                     end
                     p = [];
                     break
@@ -560,16 +560,22 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         InitialFullState.bound_offset = zeros( size( InitialFullState.bound_offset ) );
 
         Files = dir( '**/dynareOBCTemp*' );
+        [ ~, FilesSortOrder ] = sort( cellfun( @length, { Files.folder } ), 'descend' );
+        Files = Files( FilesSortOrder );
         for i = 1 : length( Files )
             File = Files( i );
             movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCTemp', 'dynareOBCAltOtherTemp' ) ], 'f' );
         end
         Files = dir( '**/dynareOBCOtherTemp*' );
+        [ ~, FilesSortOrder ] = sort( cellfun( @length, { Files.folder } ), 'descend' );
+        Files = Files( FilesSortOrder );
         for i = 1 : length( Files )
             File = Files( i );
             movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCOtherTemp', 'dynareOBCTemp' ) ], 'f' );
         end
         Files = dir( '**/dynareOBCAltOtherTemp*' );
+        [ ~, FilesSortOrder ] = sort( cellfun( @length, { Files.folder } ), 'descend' );
+        Files = Files( FilesSortOrder );
         for i = 1 : length( Files )
             File = Files( i );
             movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCAltOtherTemp', 'dynareOBCOtherTemp' ) ], 'f' );
