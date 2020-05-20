@@ -210,11 +210,34 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
             disp( 'Disabling Global since the OtherMODFile option is non-empty.' );
             disp( ' ' );
         end
-        
+        if dynareOBC_.Estimation
+            dynareOBC_.Estimation = false;
+            disp( ' ' );
+            disp( 'Disabling Estimation since the OtherMODFile option is non-empty.' );
+            disp( ' ' );
+        end
+        if dynareOBC_.Smoothing
+            dynareOBC_.Smoothing = false;
+            disp( ' ' );
+            disp( 'Disabling Smoothing since the OtherMODFile option is non-empty.' );
+            disp( ' ' );
+        end
         if dynareOBC_.SimulateOnGridPoints
             dynareOBC_.SimulateOnGridPoints = false;
             disp( ' ' );
             disp( 'Disabling SimulateOnGridPoints since the OtherMODFile option is non-empty.' );
+            disp( ' ' );
+        end
+        if dynareOBC_.SlowIRFs
+            dynareOBC_.SlowIRFs = false;
+            disp( ' ' );
+            disp( 'Disabling SlowIRFs since the OtherMODFile option is non-empty.' );
+            disp( ' ' );
+        end
+        if dynareOBC_.MedianIRFs
+            dynareOBC_.MedianIRFs = false;
+            disp( ' ' );
+            disp( 'Disabling MedianIRFs since the OtherMODFile option is non-empty.' );
             disp( ' ' );
         end
         
