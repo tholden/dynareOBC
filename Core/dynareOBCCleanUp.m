@@ -44,7 +44,31 @@ function dynareOBCCleanUp
         catch
         end
         try
+            rmdir dynareOBCOtherTemp* s
+        catch
+        end
+        try
+            rmdir +dynareOBCOtherTemp* s
+        catch
+        end
+        try
+            rmdir dynareOBCAltOtherTemp* s
+        catch
+        end
+        try
+            rmdir +dynareOBCAltOtherTemp* s
+        catch
+        end
+        try
             delete dynareOBCTemp*.*;
+        catch
+        end
+        try
+            delete dynareOBCOtherTemp*.*;
+        catch
+        end
+        try
+            delete dynareOBCAltOtherTemp*.*;
         catch
         end
         try

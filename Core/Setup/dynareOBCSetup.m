@@ -200,20 +200,6 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
     
     if ~isempty( dynareOBC_.OtherMODFile )
         
-        if dynareOBC_.MaxParametricSolutionDimension > 0
-            dynareOBC_.MaxParametricSolutionDimension = 0;
-            disp( ' ' );
-            disp( 'Setting MaxParametricSolutionDimension to 0 since the OtherMODFile option is non-empty.' );
-            disp( ' ' );
-        end
-        
-        if dynareOBC_.CompileSimulationCode
-            dynareOBC_.CompileSimulationCode = false;
-            disp( ' ' );
-            disp( 'Disabling CompileSimulationCode since the OtherMODFile option is non-empty.' );
-            disp( ' ' );
-        end
-        
         if dynareOBC_.Cubature
             warning( 'dynareOBC:CubatureWithOtherMODFile', 'Enabling Cubature and OtherMODFile may produce unexpected behaviour. Agents will switch their long-run beliefs when there is a positive probability of no solution.' );
         end
@@ -261,6 +247,13 @@ function dynareOBCSetup( OriginalPath, CurrentFolder, dynareOBCPath, InputFileNa
         end
         
         dynareOBC_.SkipAllSimulation = false;
+        
+        Files = dir( '**/dynareOBCTemp*' );
+        for i = 1 : length( Files )
+            File = Files( i );
+            movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCTemp', 'dynareOBCOtherTemp' ) ], 'f' );
+        end
+        rehash path;
         
         dynareOBCOriginal.OtherMOD = struct;
         

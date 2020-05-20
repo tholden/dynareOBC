@@ -559,6 +559,23 @@ function Simulation = SimulateModel( ShockSequence, DisplayProgress, InitialFull
         InitialFullState.first = InitialFullState.first + InitialFullState.bound_offset + full( dynareOBC_.Constant );
         InitialFullState.bound_offset = zeros( size( InitialFullState.bound_offset ) );
 
+        Files = dir( '**/dynareOBCTemp*' );
+        for i = 1 : length( Files )
+            File = Files( i );
+            movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCTemp', 'dynareOBCAltOtherTemp' ) ], 'f' );
+        end
+        Files = dir( '**/dynareOBCOtherTemp*' );
+        for i = 1 : length( Files )
+            File = Files( i );
+            movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCOtherTemp', 'dynareOBCTemp' ) ], 'f' );
+        end
+        Files = dir( '**/dynareOBCAltOtherTemp*' );
+        for i = 1 : length( Files )
+            File = Files( i );
+            movefile( [ File.folder '/' File.name ], [ File.folder '/' strrep( File.name, 'dynareOBCAltOtherTemp', 'dynareOBCOtherTemp' ) ], 'f' );
+        end
+        rehash path;
+       
         OtherMOD = dynareOBC_.OtherMOD;
         
         dynareOBC_.OtherMOD = [];
