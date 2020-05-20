@@ -72,6 +72,13 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
     if dynareOBC.OrderOverride > 0
         dynareOBC.Order = dynareOBC.OrderOverride;
     end
+    if ~isempty( dynareOBC.OtherMODFile ) && dynareOBC.IRFPeriods > 0
+        dynareOBC.IRFPeriods = 0;
+        disp( ' ' );
+        disp( 'Disabling IRF simulation since the OtherMODFile option is non-empty.' );
+        disp( ' ' );
+    end
+        
 
     dynareOBC = orderfields( dynareOBC );
 
@@ -642,7 +649,7 @@ function dynareOBC = dynareOBCCore( InputFileName, basevarargin, dynareOBC, Enfo
             dynareOBC.IRFsForceNotAtBoundIndices = [];
         end
 
-        if dynareOBC.Cubature || dynareOBC.SlowIRFs || dynareOBC.MLVSimulationMode > 1 || dynareOBC.SimulateOnGridPoints
+        if dynareOBC.Cubature || ( dynareOBC.SlowIRFs && dynareOBC.IRFPeriods > 0 ) || dynareOBC.MLVSimulationMode > 1 || dynareOBC.SimulateOnGridPoints
             OpenPool;
         end
         StoreGlobals( M_, options_, oo_, dynareOBC );
