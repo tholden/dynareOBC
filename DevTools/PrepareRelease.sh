@@ -48,9 +48,7 @@ rm -f Core/*.mex*
 
 echo 1
 
-rm -f Examples/FernandezVillaverdeEtAl2012/*.m
 rm -f Examples/FernandezVillaverdeEtAl2012/*.mat
-rm -f Examples/SmetsWouters*/*.m
 rm -f Examples/SmetsWouters*/*.mat
 
 echo 2
