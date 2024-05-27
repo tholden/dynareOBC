@@ -16,17 +16,18 @@ cfg.ConstantInputs = 'Remove';
 cfg.GenerateReport = true;
 cfg.ConstantFoldingTimeout = 2147483647;
 cfg.EnableVariableSizing = true;
-cfg.DynamicMemoryAllocation = 'AllVariableSizeArrays';
+cfg.EnableDynamicMemoryAllocation = true;
 cfg.SaturateOnIntegerOverflow = false;
 cfg.EnableAutoExtrinsicCalls = false;
-cfg.InlineThreshold = 2147483647;
-cfg.InlineThresholdMax = 2147483647;
-cfg.InlineStackLimit = 2147483647;
+cfg.InlineBetweenUserFunctions = 'Always';
+cfg.InlineBetweenMathWorksFunctions = 'Always';
+cfg.InlineBetweenUserAndMathWorksFunctions = 'Always';
 cfg.StackUsageMax = 2000000;
 cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = false;
 cfg.ExtrinsicCalls = false;
 cfg.GlobalDataSyncMethod = 'NoSync';
+cfg.SIMDAcceleration = 'Full';
 
 %% Define argument types for entry-point 'CustomLanMeyerGohdePrunedSimulation'.
 ARGS = cell(1,1);

@@ -11,21 +11,22 @@ cfg.GenerateReport = true;
 cfg.ConstantFoldingTimeout = 2147483647;
 if dynareOBC.Estimation || dynareOBC.Smoothing
     cfg.EnableVariableSizing = true;
-    cfg.DynamicMemoryAllocation = 'AllVariableSizeArrays';
+    cfg.EnableDynamicMemoryAllocation = true;
 else
     cfg.EnableVariableSizing = false;
-    cfg.DynamicMemoryAllocation = 'Off';
+    cfg.EnableDynamicMemoryAllocation = false;
 end
 cfg.SaturateOnIntegerOverflow = false;
 cfg.EnableAutoExtrinsicCalls = false;
-cfg.InlineThreshold = 2147483647;
-cfg.InlineThresholdMax = 2147483647;
-cfg.InlineStackLimit = 2147483647;
+cfg.InlineBetweenUserFunctions = 'Always';
+cfg.InlineBetweenMathWorksFunctions = 'Always';
+cfg.InlineBetweenUserAndMathWorksFunctions = 'Always';
 cfg.StackUsageMax = 2000000;
 cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = false;
 cfg.ExtrinsicCalls = false;
 cfg.GlobalDataSyncMethod = 'NoSync';
+cfg.SIMDAcceleration = 'Full';
 
 %% Define argument types for entry-point 'dynareOBCTempGetMLVs'.
 ARGS = cell(1,1);

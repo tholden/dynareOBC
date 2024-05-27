@@ -12,18 +12,19 @@ cfg.CustomSourceCode = '#define muDoubleScalarIsNaN( x ) 0';
 cfg.MATLABSourceComments = true;
 cfg.GenerateReport = true;
 cfg.ConstantFoldingTimeout = 2147483647;
-cfg.DynamicMemoryAllocation = 'AllVariableSizeArrays';
+cfg.EnableDynamicMemoryAllocation = true;
 cfg.SaturateOnIntegerOverflow = false;
 cfg.EnableAutoExtrinsicCalls = false;
-cfg.InlineThreshold = 2147483647;
-cfg.InlineThresholdMax = 2147483647;
-cfg.InlineStackLimit = 2147483647;
+cfg.InlineBetweenUserFunctions = 'Always';
+cfg.InlineBetweenMathWorksFunctions = 'Always';
+cfg.InlineBetweenUserAndMathWorksFunctions = 'Always';
 cfg.StackUsageMax = 16777216;
 cfg.IntegrityChecks = false;
 cfg.ResponsivenessChecks = false;
 cfg.ExtrinsicCalls = false;
 cfg.EchoExpressions = false;
 cfg.GlobalDataSyncMethod = 'NoSync';
+cfg.SIMDAcceleration = 'Full';
 
 %% Define argument types for entry-point 'ptest'.
 ARGS = cell(1,1);
